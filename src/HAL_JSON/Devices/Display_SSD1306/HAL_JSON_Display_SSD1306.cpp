@@ -31,6 +31,10 @@
 
 namespace HAL_JSON {
 
+    bool Display_SSD1306::HasAddress(uint8_t addr) {
+        return addr == 0x3C || addr == 0x3D; 
+    }
+
     Device* Display_SSD1306::Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire) {
         return new Display_SSD1306(jsonObj, type, wire);
     }

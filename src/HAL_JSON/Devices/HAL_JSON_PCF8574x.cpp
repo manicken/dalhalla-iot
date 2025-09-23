@@ -24,6 +24,11 @@
 #include "HAL_JSON_PCF8574x.h"
 
 namespace HAL_JSON {
+
+    bool PCF8574x::HasAddress(uint8_t addr) {
+        return (addr >= 0x20 && addr <= 0x27) || // PCF8574
+               (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
+    }
     
     PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(UIDPathMaxLength::One,type), wire(&wire) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);

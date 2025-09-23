@@ -30,8 +30,8 @@
 namespace HAL_JSON {
 
     const I2C_DeviceTypeDef I2C_DeviceRegistry[] = {
-        {"SSD1306", Display_SSD1306::Create, Display_SSD1306::VerifyJSON},
-        {"PCF8574x",  PCF8574x::Create, PCF8574x::VerifyJSON},
+        {"SSD1306", Display_SSD1306::Create, Display_SSD1306::VerifyJSON, Display_SSD1306::HasAddress},
+        {"PCF8574x",  PCF8574x::Create, PCF8574x::VerifyJSON, PCF8574x::HasAddress},
         /** mandatory null terminator */
         {nullptr, nullptr, nullptr}
     };
@@ -43,5 +43,18 @@ namespace HAL_JSON {
             if (strcasecmp(def.typeName, type) == 0) return &def;
         }
         return nullptr;
+    }
+    std::string describeI2CAddress(uint8_t addr) {
+        std::string deviceNames;
+        deviceNames.reserve(32); // to minimize heap fragmentation
+        bool first = true;
+        for (int i = 0; I2C_DeviceRegistry[i].typeName != nullptr; i++) {
+            if (I2C_DeviceRegistry[i].HasAddress_Function(addr)) {
+                if (first == false) deviceNames += ',';
+                else first = false;
+                deviceNames += I2C_DeviceRegistry[i].typeName;
+            }
+        }
+        return std::move(deviceNames);
     }
 }

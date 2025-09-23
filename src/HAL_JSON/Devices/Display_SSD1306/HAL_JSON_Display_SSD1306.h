@@ -48,6 +48,7 @@ namespace HAL_JSON {
 
         static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         static bool VerifyJSON(const JsonVariant &jsonObj);
+        static bool HasAddress(uint8_t addr);
         
         Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         ~Display_SSD1306();

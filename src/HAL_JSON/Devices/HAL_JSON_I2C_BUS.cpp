@@ -239,7 +239,7 @@ namespace HAL_JSON {
             return HALOperationResult::Success;
         }
         else if (zcCmd == "list") {
-            val.out_value = '[';
+            val.out_value = '{';
             bool first = true;
             for (uint8_t addr=1; addr<127; ++addr) {
                 wire->beginTransmission(addr);
@@ -248,10 +248,12 @@ namespace HAL_JSON {
                     else if (first) first = false;
                     val.out_value += "\"0x";
                     val.out_value += Convert::toHex(addr);
+                    val.out_value += "\":\"";
+                    val.out_value += describeI2CAddress(addr);
                     val.out_value += "\"";
                 }
             }
-            val.out_value += ']';
+            val.out_value += '}';
             return HALOperationResult::Success;
         }
         return HALOperationResult::UnsupportedCommand;

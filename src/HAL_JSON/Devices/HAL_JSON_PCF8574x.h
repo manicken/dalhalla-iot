@@ -43,6 +43,8 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        static bool HasAddress(uint8_t addr);
+
         PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
 
         HALOperationResult read(HALValue& val) override;
