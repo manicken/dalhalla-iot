@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+<title>Scheduler</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script type='text/javascript' src='schedule/main.js'></script>
+<script type='text/javascript' src='schedule/helpers.js'></script>
+<link rel="stylesheet" type="text/css" href="schedule/style.css"/>
+<script type='text/javascript' src='main.js'></script>
+<script type='text/javascript' src='helpers.js'></script>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+
+</head>
+
+<body>
+  <!-- test code
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput">
+    <button type="submit">Upload File</button>
+  </form>-->
+  <div class="Menu">
+    <div class="MenuItem"><a href="/index.html"><button type="button" style="width:170px;">back to MainMenus</button></a></div>
+    <div class="MenuItem"><button type="button" onclick="saveSchedules()" style="width:75px; font-weight:bold;">save</button></div>
+    <div class="MenuItem"><button type="button" onclick="loadSchedules()" style="width:75px; font-weight:bold;">reload</button></div>
+    <!--<input type="text" id="fname" name="fname"><br><br>-->
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="openTab(event, 'dataTable_timers')">timers</button>
+    <button class="tab" onclick="openTab(event, 'dataTable_daily')">daily</button>
+    <button class="tab" onclick="openTab(event, 'dataTable_weekly')">weekly</button>
+    <button class="tab" onclick="openTab(event, 'dataTable_explicit')">explicit</button>
+  </div>
+  <div class="entities">
+    <table id="dataTable_timers" class="tab-content">
+      <thead>
+        <tr>
+          <th class="colHour">Hour</th>
+          <th class="colMinute">Minute</th>
+          <th class="colSecond">Second</th>
+          <th class="colFunction">Function</th>
+          <th class="colParameters">Parameters</th>
+          <th class="colRemove"></th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody_timers">
+        
+      </tbody>
+    </table>
+    <table id="dataTable_daily" class="tab-content" style="display:none;">
+      <thead>
+        <tr>
+          <th class="colHour">Hour</th>
+          <th class="colMinute">Minute</th>
+          <th class="colSecond">Second</th>
+          <th class="colFunction">Function</th>
+          <th class="colParameters">Parameters</th>
+          <th class="colRemove"></th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody_daily">
+        
+      </tbody>
+    </table>
+    <table id="dataTable_weekly" class="tab-content" style="display:none;">
+      <thead>
+        <tr>
+          <th class="colDow">DOW</th>
+          <th class="colHour">Hour</th>
+          <th class="colMinute">Minute</th>
+          <th class="colSecond">Second</th>
+          <th class="colFunction">Function</th>
+          <th class="colParameters">Parameters</th>
+          <th class="colRemove"></th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody_weekly">
+        
+      </tbody>
+    </table>
+    <table id="dataTable_explicit" class="tab-content" style="display:none;">
+      <thead>
+        <tr>
+          <th class="colYear">Year</th>
+          <th class="colMonth">Month</th>
+          <th class="colDay">Day</th>
+          <th class="colHour">Hour</th>
+          <th class="colMinute">Minute</th>
+          <th class="colSecond">Second</th>
+          <th class="colFunction">Function</th>
+          <th class="colParameters">Parameters</th>
+          <th class="colRemove"></th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody_explicit">
+        
+      </tbody>
+    </table>
+    <div class="MenuItem"><button type="button" onclick="addNewItem()" style="width:75px; font-weight:bold;">Add</button></div>
+  </div>
+  <div id='info'></div>
+</body>
+</html>

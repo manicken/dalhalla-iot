@@ -1,0 +1,14 @@
+if ((hum#humidity>= 50) and (var1 ==0)) then
+  var0=1
+  BIREL_SET=0
+elseif ((hum < 40) && (var1+(2*(0-1)) == 1)) then
+  var1= 0 and var2 = 0
+  var3 =2 ; var4 = 0
+  var5 +=0
+  var7 <<= 1
+  var8 = 0
+  BIREL_RST=0
+  var9 = 5+var8+ \
+    var0*3 \
+    var1/42
+endif

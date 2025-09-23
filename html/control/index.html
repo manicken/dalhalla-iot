@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<title>Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" /> 
+<script type='text/javascript' src='control/main.js'></script>
+<link rel="stylesheet" type="text/css" href="control/style.css"/>
+</head>
+
+<body>
+  <div class="cmdRow">
+    <div><select class="cmdTarget"><option value="FAN">FAN</option><option value="RF433">RF433</option></select></div>
+    <div><input class="cmdInput" value='"val":255'/></div>
+    <div><button type="button" class="sendBtn">send</button></div>
+  </div>
+  <div class="cmdRow">
+    <div><select class="cmdTarget"><option value="FAN">FAN</option><option value="RF433">RF433</option></select></div>
+    <div><input class="cmdInput" value='"val":32'/></div>
+    <div><button type="button" class="sendBtn">send</button></div>
+  </div>
+  <div class="cmdRow">
+    <div><select class="cmdTarget"><option value="RF433">RF433</option><option value="FAN">FAN</option></select></div>
+    <div><input class="cmdInput" value="3"/></div>
+    <div><button type="button" class="sendBtn">send</button></div>
+  </div>
+  <div id='info'></div>
+</body>
+</html>

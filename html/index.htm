@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html" charset="ISO-8859-1" />
+  <style>
+    h1 {
+      text-shadow: 2px 2px 5px gray;
+      margin-left:10px;
+    }
+    h2 {
+      text-shadow: 3px 3px 5px gray;
+      text-decoration-line: underline;
+      margin:0px;
+    }
+    button {
+      padding:5px;
+      margin-top:10px;
+    }
+    .group {
+      border:1px solid black;
+      margin:5px;
+      padding:10px;
+
+    }
+  </style>
+</head>
+<body>
+<h1>V&#228;xthus multi temperature samt en fuktighetssensor!</h1>
+<div class="group">
+<button onclick="document.location='./edit'">Editor</button><br>
+<button onclick="document.location='./info'">Info</button><br>
+</div>
+<div class="group">
+<h2>Device Manager</h2>
+<button onclick="document.location='./DeviceManager/reloadJson'">reload JSON</button><br>
+<button onclick="document.location='./DeviceManager/listAll1wireDevices'">listAll1wireDevices</button><br>
+<button onclick="document.location='./DeviceManager/getAll1wireTemps'">getAll1wireTemps</button><br>
+<button onclick="document.location='./DeviceManager/printDevices'">printDevices</button><br>
+</div>
+<div class="group">
+<h2>Thingspeak</h2>
+<button onclick="document.location='./thingspeak/view'">Viewer</button><br>
+<button onclick="document.location='./thingspeak/refresh'">reload JSON</button><br>
+<button onclick="document.location='./thingspeak/getDataUrl'">get data</button><br>
+</div>
+<div class="group">
+<h2>Scheduler</h2>
+<button onclick="document.location='./schedule'">Scheduler (non mobile)</button><br>
+<button onclick="document.location='./schedule/refresh'">reload JSON</button><br>
+</div>
+</body>
+</html>

@@ -1,0 +1,395 @@
+
+
+.MenuItem {
+    display:inline-block;
+    margin:5px;
+    
+  }
+  .MenuItem button {
+    background-color:#AAA;
+    padding:10px;
+    font-size:16px;
+    border-radius: 10px;
+  }
+.verticalSeperator {
+    border:solid 1px #CCC;
+    height: 0px;
+}
+
+.addNewItem {
+    margin-top: 5px;
+    /*align-items: center;*/
+}
+.addNewItem button {
+    display: flex; /* Make it a block-level element */
+    margin: 0 auto; /* Center horizontally */
+    border-radius: 5px;
+    background-color: rgb(154, 183, 226);
+    font-size: 1.5em;
+}
+
+
+.schedule-item {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: auto auto;
+    border-bottom: 2px solid #CCC;
+}
+
+.schedule-list {
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 10px;
+    border: solid 1px;
+    overflow-y: scroll;
+
+}
+.schedule-item-params {
+   font-size: 0.8em;
+}
+
+.time {
+    font-size: 30px;
+    margin-right: 20px;
+}
+
+.details p {
+    margin: 0;
+    margin-top: 5px;
+}
+
+button {
+    background-color: #ccc;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.schedule-item-var {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 0px solid rgba(0, 0, 0, 0.8);
+    
+}
+
+.schedule-item-var:nth-child(2) {
+    grid-row: span 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    
+}
+
+/***************************************************/
+/*               Modal styles                      */
+/***************************************************/
+.modal {
+  display: none; /* Hidden by default */
+  position: absolute; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0px; /* Position at the left edge */
+  top: 0px; /* Position at the top edge */
+  width: 100%;
+  /*height: 100%;*/ /* Full height */
+  /*overflow: auto;*/ /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black background with opacity */
+
+}
+.modal-content {
+  position: absolute;
+  left:1px;
+  top:1px;
+  margin-top: 0px;
+  background-color: #fefefe;
+  /*width: 100%;*/
+
+  border-radius: 10px;
+  padding: 0px;
+  border: 1px solid #888;
+  
+  height: 99%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+.modal-innerContent {
+  height: 99%;
+  background-color: #f3f4ff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  padding-top: 0px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+/*****************************/
+/* modal title bar and items */
+/*****************************/
+.modal-title-bar {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: #e5e7fd;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  border-bottom: 2px solid #888;
+  height: 32px;
+  padding-top:2px;
+  padding-left: 2px;
+  font-size: 1.1em;
+  font-family: Verdana,Arial,sans-serif;
+  font-weight: bold;
+}
+.modal-title-bar-item {
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  
+}
+#modal-title {
+  padding-left: 10px;
+  padding-top: 4px;
+}
+/***************/
+/* modal close */
+/***************/
+.modal-close {
+  color: #aaa;
+  /*float: right;*/
+  /*position: absolute;
+  left: 10px;
+  right: auto;
+  top: 0px;*/
+  margin-top: -2px;
+  margin-left: -1px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: top left;
+  width: 32px;
+}
+.modal-close:hover,
+.modal-close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+/************/
+/* modal ok */
+/************/
+.modal-ok {
+  color: rgb(0, 66, 0);
+  text-align: right;
+  padding-right: 5px;
+  margin-top: -2px;
+  width: 64px;
+  align-self: right;
+  justify-self: right;
+}
+.modal-ok:hover,
+.modal-ok:focus {
+  color:rgb(255, 0, 0)k;
+  text-decoration: none;
+  cursor: pointer;
+}
+/***************************************************/
+/*                  edit remove item               */
+/***************************************************/
+.edit-remove-item {
+  display: none;
+  padding-top: 4px;
+}
+.edit-remove-item button {
+  display: flex;
+  margin: 0 auto; /* Center horizontally */
+  font-size: 1em;
+  border-radius: 5px;
+}
+.edit-remove-item.active {
+  display: block;
+}
+/***************************************************/
+/*                  edit mode select               */
+/***************************************************/
+.edit-mode {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+.edit-mode select {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  padding: 3px;
+  padding-top: 1px;
+  border-radius: 10px;
+  font-size: 2em;
+}
+.edit-mode label {
+  font-size: 1.5em;
+}
+/***************************************************/
+/*             edit function select                */
+/***************************************************/
+.edit-func {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+.edit-func select {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  padding-top: 1px;
+  border-radius: 10px;
+  font-size: 2em;
+}
+.edit-func label {
+  font-size: 1.5em;
+}
+/***************************************************/
+/*                    edit params                  */
+/***************************************************/
+.edit-params {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+.edit-params.active {
+  display: block;
+}
+.edit-params textarea {
+  border-radius: 5px;
+  width: 100%; /* Make the textarea fill its container horizontally */
+  height: 100%; /* Make the textarea fill its container vertically */
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+  resize: none; /* Prevent resizing by the user */
+  padding: 5px;
+  font-size: 1.5em;
+}
+/***************************************************/
+/*     edit function parameter template insert     */
+/***************************************************/
+.edit-func-param-template {
+  display: none;
+  padding-top: 10px;
+}
+.edit-func-param-template.active {
+  display: block;
+}
+.edit-func-param-template label {
+  font-size: 1.5em;
+}
+.edit-func-param-template select {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  padding-top: 1px;
+  border-radius: 10px;
+  font-size: 2em;
+}
+.edit-func-param-template button {
+  border-radius: 5px;
+  height: 32px;
+  font-size: 1.2em;
+}
+/***************************************************/
+/*                   edit time                     */
+/***************************************************/
+.edit-time.active, .edit-timer.active {
+  display: grid;
+}
+/***************************/
+/* edit hour minute second */
+/***************************/
+.edit-hms {
+  padding-top: 10px;
+  display: none;
+  grid-template-columns: repeat(3, auto);
+  text-align: center;
+}
+.edit-hms label {
+  font-size: 1.5em;
+  /*border: 1px solid;*/ /*debug*/
+}
+.edit-hms input {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  max-width: 70px;
+  font-size: 3em;
+  text-align: center;
+  justify-self: center;
+}
+/***********************/
+/* edit year month day */
+/***********************/
+.edit-ymd {
+  padding-top: 10px;
+   display: none;
+   grid-template-columns: repeat(3, auto);
+   text-align: center;
+}
+.edit-ymd.active {
+  display: grid;
+}
+.edit-ymd label {
+  font-size: 1.5em;
+  /*border: 1px solid;*/ /*debug*/
+}
+.edit-ymd input {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  max-width: 70px;
+  font-size: 3em;
+  text-align: center;
+  justify-self: center;
+}
+#edit-time-y {
+  max-width: 115px;
+}
+/***************/
+/* edit weekly */
+/***************/
+.edit-weekly-container {
+  display: flex; /* Use flexbox for container */
+  justify-content: center; /* Center children horizontally */
+  /* Optionally, you can add styles for container */
+  /* align-items: center; */ /* Optionally, center vertically */
+  /* Other container styles */
+}
+.edit-weekly {
+  padding-top: 10px;
+  display: none;
+}
+.edit-weekly.active {
+  display: block;
+}
+/*
+  Hide radio button (the round disc)
+  we will use just the label to create pushbutton effect
+*/
+input[type=radio] {
+  display:none; 
+  margin:10px;
+  
+}
+/*
+Change the look'n'feel of labels (which are adjacent to radiobuttons).
+Add some margin, padding to label
+*/
+input[type=radio] + label {
+  border-radius: 22px;
+  line-height: 40px;
+  display:inline-block;
+  margin-top:0px;
+  width: 44px;
+  text-align: center;
+
+  padding-left:0px;
+
+  font-size: 1em;
+  font-family: Verdana,Arial,sans-serif;
+
+  height: 44px;
+  
+  background-color: #e7e7e7;
+  border-color: #ddd;
+}
+/*
+Change background color for label next to checked radio button
+to make it look like highlighted button
+*/
+input[type=radio]:checked + label { 
+ background-image: none;
+  background-color:#d4d2fd;
+}

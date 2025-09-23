@@ -1,0 +1,58 @@
+{"uid":"433","type":"TX433","pin":19,"note":"rf433 sender", 
+	"protocols":[
+	    "comment texts can be used like this and are ignored by the HAL devmgr parser",
+	    "this is a comment to describe how bit_encoding works:",
+		"the items in the array are allways in groups of two items (please note that spaces can be used to make the grouping easier)",
+		"(other configurations are invalid and will cause the json load to fail),",
+		"they allways define the timings in uS, the first timing state is defined by active_state, and the following will alternate from that",
+		"please note that other special data can be defined here, such as F (floating) that is used by many fixed code switches",
+		"data format is the following: {name:bitcount:defaultvalue} not that the order here define the order which they are sent out {n1:1:1}{n2:1:1}{n3:1:0}{n4:1:1} will be sent as 1101 (defined by def values)",
+		"also note that the default value parameter can be skipped and then the default value of zero vwill be used",
+		"in the FCA dataformat i define a dummy parameter this is then not required at the unit def list data field, and the default value to send in such situations are defined by the additional parameter ",
+		"also note that the first char in the units data block define which type that data is in",
+		{"name":"FCA","encoding":"pulse_length",
+		    "active_state":1,
+			"bit_encoding":{
+				"0":[470,1410, 470,1410],
+				"1":[1410,470, 1410,470],
+				"F":[470,1410, 1410,470]
+			},
+			"preamble":[275,2675],"repeat":5,"repeat_delay":10000,
+			"datalength":12,
+			"dataformat":"{ch:4:0001}{btn:4:0001}{dummy:3:111}{state:1:0}",
+			"note":"fixed code A"
+		},
+		"note the version of switches i have, do actually not use the 1 timing instead the float timing is used",
+		{"name":"FCB","encoding":"pulse_length",
+		    "active_state":1,
+			"bit_encoding":{
+				"0":[470,1410, 470,1410],
+				"1":[470,1410, 1410,470]
+			},
+			"preamble":[470,14500],"repeat":5,"repeat_delay":0,
+			"datalength":12,
+			"dataformat":"{ch:4:0001}{btn:4:0001}{dummy:3:111}{state:1:0}",
+			"note":"fixed code B"
+		},
+		"note here cuid = constant uid",
+		{"name":"LC","encoding":"pulse_length",
+			"active_state":1,
+			
+			"bit_encoding":{
+				"0":[270,270, 270,1280],
+				"1":[270,1280, 270,270],
+				"E":[270,0],
+			},
+			"preamble":[270,2650],"repeat":5,"repeat_delay":10000,
+			"datalength":32,
+			"dataformat":"{uid:24}{cuid:2:10}{grp_btn:1:0}{state:1:0}{btn:4:0}{end:1:E}",
+			"note":"learning code"
+		},
+	],
+	"units": [
+		{"uid":"D1","protocol":"LC","data":"01002002100","note":"taklampa"},
+		{"uid":"D2","protocol":"LC","data":"01002002100","note":"taklampa2"},
+		{"uid":"D3","protocol":"FCA","data":{"ch":"b01001","unit":"b01","state":"b1"},"note":"taklampa3"},
+		{"uid":"D4","protocol":"FCB","data":"01002002100","note":"taklampa4"}
+	]
+}

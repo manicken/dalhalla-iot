@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<title>Scheduler for mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script type='text/javascript' src='/schedule/mobile/main.js'></script>
+<script type='text/javascript' src='/schedule/helpers.js'></script>
+<link rel="stylesheet" type="text/css" href="/schedule/mobile/style.css"/>
+<link rel="stylesheet" type="text/css" href="/schedule/checkbox.css"/>
+
+</head>
+
+<body>
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div id="modal-content" class="modal-content">
+            <div class="modal-title-bar">
+                <div class="modal-close modal-title-bar-item" onclick="closeModal()">&times;</div>
+                <div id="modal-title" class="modal-title-bar-item">Edit schedule item</div>
+                <div class="modal-ok modal-title-bar-item" onclick="okModal()">OK</div>
+            </div>
+            <div class="modal-innerContent">
+                <div class="edit-mode">
+                    <label for="edit-mode">Mode:</label>
+                    <select id="edit-mode" onchange="refreshEditScheduleItem_mode(this.value)">
+                        <option value="timer">timer</option>
+                        <option value="daily">daily</option>
+                        <option value="weekly">weekly</option>
+                        <option value="explicit">explicit</option>
+                    </select>
+                </div>
+                <div class="edit-weekly-container">
+                    <div class="edit-weekly active">
+                        <input type="radio" id="edit-weekly-mon" name="radios" value="all" checked>
+                        <label for="edit-weekly-mon">mon</label>
+                        <input type="radio" id="edit-weekly-tue" name="radios"value="false">
+                        <label for="edit-weekly-tue">tue</label>
+                        <input type="radio" id="edit-weekly-wed" name="radios" value="true">
+                        <label for="edit-weekly-wed">wed</label>
+                        <input type="radio" id="edit-weekly-thu" name="radios" value="true">
+                        <label for="edit-weekly-thu">thu</label>
+                        <input type="radio" id="edit-weekly-fri" name="radios" value="true">
+                        <label for="edit-weekly-fri">fri</label>
+                        <input type="radio" id="edit-weekly-sat" name="radios" value="true">
+                        <label for="edit-weekly-sat">sat</label>
+                        <input type="radio" id="edit-weekly-sun" name="radios" value="true">
+                        <label for="edit-weekly-sun">sun</label>
+                    </div>
+                </div>
+                <div class="edit-ymd active">
+                    <label>Year</label>
+                    <label>Month</label>
+                    <label>Day</label>
+                    <input id="edit-time-y" type="text" value='2024' maxlength="4" min="0" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-time-M" type="text" value='2' maxlength="2"  min="1" max="12" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-time-d" type="text" value='22' maxlength="2"  min="1" max="31" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                </div>
+                <div class="edit-hms edit-time active">
+                    <label for="edit-time-h">Hour</label>
+                    <label for="edit-time-m">Minute</label>
+                    <label for="edit-time-s">Second</label>
+                    <input id="edit-time-h" type="text" leadingZero="" value="00" maxlength="2" min="0" max="23" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-time-m" type="text" leadingZero="" value="00" maxlength="2" min="0" max="59" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-time-s" type="text" leadingZero="" value="00" maxlength="2" min="0" max="59" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                </div>
+                <div class="edit-hms edit-timer active">
+                    <label>Hours</label>
+                    <label>Minutes</label>
+                    <label>Seconds</label>
+                    <input id="edit-timer-h" type="text" value="0" maxlength="2" min="0" max="24" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-timer-m" type="text" value="0" maxlength="2" min="0" max="59" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                    <input id="edit-timer-s" type="text" value="0" maxlength="2" min="0" max="59" onchange="handleNumberInputChange(this)" onkeydown="handleNumberInputKeyDown(event)">
+                </div>
+                <div class="edit-func">
+                    <label for="edit-func-options">Func:</label>
+                    <select id="edit-func-options" onchange="scheduleFuncChanged(this.value)">
+                        
+                    </select>
+                </div>
+                <div class="edit-func-param-template active">
+                    <label for="edit-func-param-template-options">Template:</label>
+                    <select id="edit-func-param-template-options">
+                        
+                    </select>
+                    <button type="button" onclick="insertParamTemplate()" >insert</button>
+                </div>
+                <div class="edit-params active">
+                    <label for="edit-params">Parameters:</label>
+                    <textarea id="edit-params" class="full-size"></textarea>
+                </div>
+                <div class="edit-remove-item active">
+                    <button type="button" onclick="removeItem()" >Remove</button>
+                </div>
+            </div>
+            
+        </div>
+      
+      </div>
+    <div class="Menu">
+        <div class="MenuItem"><a href="/index.html"><button type="button" style="width:170px;">back to MainMenu</button></a></div>
+        <div class="MenuItem"><button type="button" onclick="saveSchedules()" style="width:75px; font-weight:bold;">save</button></div>
+        <div class="MenuItem"><button type="button" onclick="loadSchedules()" style="width:75px; font-weight:bold;">reload</button></div>
+        <!--<div class="MenuItem"></div><button onclick="openModal()">Open Modal</button></div>-->
+        <!--<input type="text" id="fname" name="fname"><br><br>-->
+    </div>
+    
+    <div id="item-list" class="schedule-list">
+        <!--this first item defines the template for one schedule list item-->
+        <div id="schedule-item-template" class="schedule-item">
+            <div class="schedule-item-var time">00:00:00</div>
+            <div class="schedule-item-var enable_switch">
+                <label class="el-switch">
+                    <input type="checkbox" name="switch">
+                    <span class="el-switch-style"></span>
+                </label>
+            </div>
+            <div class="schedule-item-var details">
+                <p class="schedule-item-mode">Everyday</p>
+                <p class="schedule-item-func">functionName</p>
+                <p class="schedule-item-params">{}</p>
+            </div>
+        </div>
+        
+        <div class="schedule-item">
+            <div class="schedule-item-var time">12:00</div>
+            <div class="schedule-item-var enable_switch">
+                <label class="el-switch">
+                    <input type="checkbox" name="switch">
+                    <span class="el-switch-style"></span>
+                </label>
+            </div>
+            <div class="schedule-item-var details">
+                <p class="schedule-item-mode">Mon Tue Wed Thu Fri Sat Sun</p>
+                <p class="schedule-item-func">functionName</p>
+                <p class="schedule-item-params">{}</p>
+            </div>
+        </div>
+        <div class="verticalSeperator"></div>
+        <div class="schedule-item">
+            <div class="schedule-item-var time">12:00</div>
+            <div class="schedule-item-var enable_switch">
+                <label class="el-switch">
+                    <input type="checkbox" name="switch">
+                    <span class="el-switch-style"></span>
+                </label>
+            </div>
+            <div class="schedule-item-var details">
+                <p class="schedule-item-mode">2024-01-29</p>
+                <p class="schedule-item-func">functionName</p>
+                <p class="schedule-item-params">{}</p>
+            </div>
+        </div>
+    </div>
+    <div class="addNewItem">
+        <button onclick="addNewSchedule()">Add Schedule</button>
+    </div>
+    <div id='info'></div>
+</body>
+</html>

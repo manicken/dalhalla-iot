@@ -1,0 +1,84 @@
+on dummyTrigger then
+	
+	if temps:a:a > 25 && var1 == 0 then
+	  var1 = 1
+	  i2c:disp:var = 0xFF
+	  neo#color = 0xFF0000
+	  BIRELSET = 0
+	elseif temps:a:a < 25 && var1 == 1 then
+	  var1 = 0
+	  i2c:disp:var = 0
+	  neo#color = 0x00FF00
+	  BIRELRST = 0
+	endif
+	// store in temp vars
+	rgb16 = ((i2c:pcf2 << 8) & 0xFF00) | i2c:pcf1
+	i2c:disp:rgb16 = rgb16
+	
+	red = (rgb16 >> 11) & 0x1F
+	green = (rgb16 >> 5) & 0x3F
+  blue = rgb16 & 0x1F
+  
+  red = (red << 3)// | (var7 >> 2)
+  green = (green << 2)// | (var8 >> 4)
+  blue = (blue << 3)// | (var9 >> 2)
+  
+  i2c:disp:red = red
+  i2c:disp:green = green
+  i2c:disp:blue = blue
+  
+  neo#color = (red << 16) | (green << 8) | blue
+endon
+/*
+if ((hum#humidity>= 50) and (var1 ==0)) then // count 2 using a variable to create a state machine
+
+    //BIRELSET=0 // =0 mean that the pre programmed pulse lenght will be used
+    var0=0
+
+elseif var1 == true then
+	var1 = false
+    
+elseif ((hum < 40) && (var1+(2*(0-1)) > 1)) then // count 11
+
+    //BIRELRST=0 // =0 mean that the pre programmed pulse lenght will be used
+    
+    //var1= 1 and var2 = 2
+    var3 =0-3 ; var4 = 4
+    var5 =5  + var5
+    var5 +=5
+	var5 = var5 // this shows the value of the compound operation
+    //var6 <= 0 // this is invalid
+	var7 = 255
+    var7 = var7 >> 1 // valid
+    
+    if (var6 < 5) then // count 2
+        var8 = 8 + var8
+	else
+        var9 = 9 + var9
+    endif
+    
+    // the following demostrates how multiline actions can be formed
+    // note while using \ it must be precedenced by a space
+    var9 = 9+var8+ \
+            var0*3+ \
+            var1/42
+    
+    // tests write and read only devices
+	wr_var=rd_var
+    //rd_var = 1
+    //rd_var += 1
+    //wr_var += 1
+    //var0 = wr_var
+    
+    //|=var7+= = -= 0 /= // this is very unlikely to happend but tests all variants
+else
+	var2=42
+	var9 = 3.14*3
+
+endif
+
+
+on var1#trigger then
+	var4 = 4
+	
+endon

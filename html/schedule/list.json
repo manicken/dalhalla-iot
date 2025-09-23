@@ -1,0 +1,11 @@
+[
+{"mode":"timer","h":1,"m":10,"func":"ntp_sync"},
+{"mode":"timer","s":1,"func":"ntp_sync"},
+{"mode":"timer","m":1,"s":20,"func":"ntp_sync"},
+{"mode":"daily","h":0,"func":"fan","params":{"val":255}},
+{"mode":"daily","h":8,"func":"fan","params":{"val":160}},
+{"mode":"daily","h":18,"func":"fan","params":{"val":32}},
+{"mode":"weekly","D":"wed","h":0,"func":"ntp_sync"},
+{"mode":"weekly","D":"sat","h":0,"func":"ntp_sync"},
+{"mode":"explicit","y":2024,"M":1,"d":1,"h":0,"func":"ntp_sync"}
+]

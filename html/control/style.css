@@ -1,0 +1,19 @@
+.cmdRow
+{
+   display:grid;
+   grid-template-columns: 80px 200px 32px;
+   margin:10px;
+}
+.sendBtn
+{
+  width:128px;
+  height:32px;
+}
+.cmdInput
+{
+  height:32px;
+}
+.cmdTarget
+{
+  height:32px;
+}

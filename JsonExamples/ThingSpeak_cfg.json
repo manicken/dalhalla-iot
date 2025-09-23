@@ -1,0 +1,23 @@
+{
+    "comment":"here every property name represents the channel api key, and the value represents a property list of field nr vs. device uid, ",
+    "comment2":"(note. if the property name starts with comment like this, then it's just ignored)",
+    "comment3":"avoid big comments because they will be loaded into memory",
+    "comment4":"if a property name is debug: then debug_output mean print every to the serial output, dont_send_to_server mean just what it say",
+    "debug":{"debug_output":0,"dont_send_to_server":0},
+    "channel1_write_key":{
+        "1":"1D1",
+        "2":"1D5",
+        "3":"1D2",
+        "4":"1D3",
+        "5":"1D4",
+        "6":"1D6",
+        "7":"1D7",
+        "8":"D11"
+    },
+    "channel2_write_key":{
+        "0":"0",
+        "1":"1",
+        "2":"2"
+    }
+}
+

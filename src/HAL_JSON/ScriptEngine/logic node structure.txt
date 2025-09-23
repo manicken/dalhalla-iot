@@ -1,0 +1,63 @@
+
+
+for the following example tree:
+
+[LogicalAnd]
+  [LogicalOr]
+    - calc: [2 4 9 + 2 * 1 - * 3 * 2 >]
+    - calc: [b 5 <]
+  [LogicalAnd]
+    - calc: [c 60 / 6 ==]
+    [LogicalOr]
+      - calc: [d 70 * 7 ==]
+      - calc: [e 80 + 8 ==]
+	  
+	  
+when a node is a pure calcRPN 
+only the pointer to that calcRPN array is set as the context
+
+a logic node is a struct with two variables:
+struct LogicExecNode {
+    void* childA;  // either LogicExecNode* or CalcRPNContext
+    void* childB;  // either LogicExecNode* or CalcRPNContext
+	bool (*handler)(LogicExecNode*); // points to one of EvalAnd_LL, EvalAnd_LC, etc.
+};
+ where either child can be a ptr to a calcRPN array(handler/context item) or to annother logic node struct
+ 
+ then we need 4 static handler functions for each logic type so total 8 functions
+ 
+ childA is LogicExecNode and childB is LogicExecNode
+ childA is LogicExecNode and childB is CalcRPN
+ childA is CalcRPN and childB is LogicExecNode
+ childA is CalcRPN and childB is CalcRPN
+ 
+ // like this
+bool EvalAnd_LL(LogicExecNode* context);  // LL (logic logic)
+bool EvalAnd_LC(LogicExecNode* context); // LC (logic calc)
+bool EvalAnd_CL(LogicExecNode* context); // CL (calc logic)
+bool EvalAnd_CC(LogicExecNode* context); // CC (calc calc)
+
+bool EvalOr_LL(LogicExecNode* context);    // LL
+bool EvalOr_LC(LogicExecNode* context);  // LC
+bool EvalOr_CL(LogicExecNode* context);  // CL
+bool EvalOr_CC(LogicExecNode* context); // CC
+ 
+ 
+ if the expression only contain a calcRPN we utilize the ExpressionTokens containLogicOperators field
+ so that we can create a simple root element where the context is a single ptr to the rpnArray
+ 
+ example tree:
+ - calc: [hum#temp 50 >=]
+ 
+ 
+ 
+ script loading is as follows:
+ 1. run Expressions::CalcStackSizesInit();
+ 2. loop throught all script files and validate them, inside ValidateExpression i call CalcStackSizes which calculates the current expression and updates needed stack sizes accordoly
+ 3. if all script validation passes i then run Expressions::InitStacks();
+    this will allocate all needed extra memory to parse all scripts
+ 4. start the actual script parse and load each script file into my internal indirect dispatch functionptr+context structure
+ 5. when all scripts are loaded i run Expressions::ClearStacks();
+ 
+ In my final version i will somehow try to calculate the total required memory usage for
+ my internal runtime exec structures and use heap 'forming' to make sure that the structures do not leave big holes of memory

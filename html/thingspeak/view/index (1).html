@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<header>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script src="/schedule/helpers.js"></script>
+  <script src="helpers.js"></script>
+
+  <style>
+    .Menu {
+      margin-left:10px;
+      padding-top:10px;
+    }
+    .MenuItem {
+    display:inline-block;
+    margin:5px;
+    
+    }
+    #rangeBackButton,#rangeForwardButton {
+      width:42px;
+    }
+    .MenuItem button {
+      background-color:#9c85af;
+      padding:10px;
+      font-size:16px;
+      border-radius: 10px;
+    }
+    .info {
+      border:1px solid black;
+    }
+    .DateSelect {
+      width:200px;
+      height:42px;
+      font-weight:bold;
+    }
+    #RangeType {
+      width:200px;
+      height:42px;
+      font-weight:bold;
+    }
+  </style>
+</header>
+<body>
+<div class="Menu">
+    
+    <div class="MenuItem"><select id="RangeType" onChange="rangeTypeChanged()"></select></div>
+    <div class="MenuItem"><button type="button" id="rangeBackButton" onclick="rangeBack()">&#60;</button></div>
+    <div class="MenuItem"><button type="button" id="rangeForwardButton" onclick="rangeForward()">&#62;</button></div>
+    <div class="MenuItem"><input class="DateSelect" id="StartDate"></input></div>
+    <div class="MenuItem"><input class="DateSelect" id="EndDate"></input></div>
+    <div class="MenuItem"><a href="/index.html"><button id="backToMenu" type="button" style="width:170px; background-color:#a3a3a3">back to MainMenus</button></a></div>
+  </div>
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+<div class="info" id="status"></div>
+<div class="info" id="log"></div>
+<div class="info" id="log2"></div>
+
+<!--
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8hammerjs@2.0.8"></script>
+<script src="path/to/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
+-->
+<script>
+  var RangeTypeDef = {
+    Custom:0,
+    Hour:1,
+    Day:2,
+    Week:3,
+    Month:4,
+  }
+  window.addEventListener('load', documentLoaded);
+  
+  var SelectedRangeType = 0;
+  function rangeTypeChanged()
+  {
+    SelectedRangeType = document.getElementById("RangeType").value;
+    if (SelectedRangeType == 0) { // custom range
+      document.getElementById("rangeBackButton").hidden = true;
+      document.getElementById("rangeForwardButton").hidden = true;
+      document.getElementById("StartDate").removeAttribute("disabled");
+      document.getElementById("EndDate").removeAttribute("disabled");
+    }
+    else { // all other options
+      document.getElementById("rangeBackButton").hidden = false;
+      document.getElementById("rangeForwardButton").hidden = false;
+      document.getElementById("StartDate").setAttribute("disabled","disabled");
+      document.getElementById("EndDate").setAttribute("disabled","disabled");
+      DateTimeTestEnd = new Date();
+      DateTimeTestStart = new Date(DateTimeTestEnd);
+      changeDateTime(DateTimeTestStart, RangeDefs[SelectedRangeType], -1);
+      updateRangeInputBoxes();
+      readData({start:DateTimeTestStart, end:DateTimeTestEnd});
+    }
+    //console.log("Range type changed:" + SelectedRangeType);
+  }
+
+  
+
+  function changeHour(d,amount) {d.setHours(d.getHours()+amount)};
+  function changeDay(d,amount) {d.setDate(d.getDate()+amount)};
+  function changeMonth(d,amount) {d.setMonth(d.getMonth()+amount)};
+  function changeWeek(d,amount) {d.setDate(d.setDate()+amount*7)}; // TODO fix this function to actually work for weeks
+  /** @param {Date} d
+   * @param {RangeTypeDef} rtd
+   */
+  function changeDateTime(d,rd,dir){
+    if (rd.type == RangeTypeDef.Day) changeDay(d, rd.amount*dir);
+    else if (rd.type == RangeTypeDef.Hour) changeHour(d, rd.amount*dir);
+    else if (rd.type == RangeTypeDef.Week) changeWeek(d, rd.amount*dir);
+    else if (rd.type == RangeTypeDef.Month) changeMonth(d, rd.amount*dir);
+  }
+
+  var RangeDefs = [
+    {label:"Custom Range",  type:RangeTypeDef.Custom, amount:0}, // 0
+    {label:"1 hour",     type:RangeTypeDef.Hour,   amount:1},    // 1
+    {label:"2 hours",  type:RangeTypeDef.Hour,   amount:2},      // 2
+    {label:"4 hours",  type:RangeTypeDef.Hour,   amount:4},      
+    {label:"6 hours",  type:RangeTypeDef.Hour,   amount:6},
+    {label:"8 hours",  type:RangeTypeDef.Hour,   amount:8},
+    {label:"12 hours", type:RangeTypeDef.Hour,   amount:12},
+    {label:"24 hours", type:RangeTypeDef.Hour,   amount:24},
+    {label:"Day",           type:RangeTypeDef.Day,    amount:1},
+    {label:"7 days",   type:RangeTypeDef.Day,    amount:7},
+    {label:"Week",          type:RangeTypeDef.Week,   amount:1},
+    {label:"30 days",  type:RangeTypeDef.Day,    amount:30},
+    {label:"Month",         type:RangeTypeDef.Month,  amount:1},
+  ];
+  
+  function getIndexOfRangeDefLabel(label)
+  {
+    for (var i=0;i<RangeDefs.length;i++)
+      if (RangeDefs[i].label == label) return i;
+      
+    return -1;
+  }
+  function getRangeTypeStrings()
+  {
+    var ret = [];
+    for (var i=0;i<RangeDefs.length;i++)
+      ret.push(RangeDefs[i].label);
+    return ret;
+  }
+
+  function documentLoaded()
+  {
+      
+      document.getElementById("RangeType").innerHTML = getOptionsHtml(getRangeTypeStrings(), false, 7);
+      setupDateTimePicker();
+      
+      if (checkIfMobileDevice() == true)
+      {
+        document.getElementById("backToMenu").hidden = true;
+        
+        document.getElementById("rangeBackButton").style.width = "84px";
+        document.getElementById("rangeBackButton").style.height = "84px";
+        document.getElementById("rangeBackButton").style.fontSize  = "50px";
+        
+        document.getElementById("rangeForwardButton").style.width = "84px";
+        document.getElementById("rangeForwardButton").style.height = "84px";
+        document.getElementById("rangeForwardButton").style.fontSize = "50px";
+        
+        document.getElementById("StartDate").style.width = "290px";
+        document.getElementById("StartDate").style.height = "84px";
+        document.getElementById("StartDate").style.fontSize = "25px";
+        
+        document.getElementById("EndDate").style.width = "290px";
+        document.getElementById("EndDate").style.height = "84px";
+        document.getElementById("EndDate").style.fontSize = "25px";
+        
+        
+        document.getElementById("RangeType").style.width = "320px";
+        document.getElementById("RangeType").style.height = "84px";
+        document.getElementById("RangeType").style.fontSize  = "30px";
+
+      }
+      
+
+      document.getElementById("rangeBackButton").hidden = true;
+      document.getElementById("rangeForwardButton").hidden = true;
+      
+      var indexOfDefaultSelection = getIndexOfRangeDefLabel("24 hours");
+      if (indexOfDefaultSelection != -1) {
+          document.getElementById("RangeType").value = indexOfDefaultSelection;
+      }
+      else
+      {
+        document.getElementById("RangeType").value = 1; // set the first after Custom range
+      }
+      rangeTypeChanged();
+  }
+  /** @type {Date} */
+  var DateTimeTestStart = new Date();
+  var DateTimeTestEnd = new Date();
+
+  function updateRangeInputBoxes()
+  {
+    flatpickr_startDate.setDate(DateTimeTestStart);
+    flatpickr_endDate.setDate(DateTimeTestEnd);
+  }
+  function addToLog2(str)
+  {
+    document.getElementById('log2').innerHTML += str + "<br>";
+  }
+  function rangeBack()
+  {
+    DateTimeTestEnd = new Date(DateTimeTestStart);
+    changeDateTime(DateTimeTestStart, RangeDefs[SelectedRangeType], -1);
+    //var log = "range back - start:" + DateTimeTestStart.toJSON() + ", end:" + DateTimeTestEnd.toJSON();
+    //addToLog2(log);
+    updateRangeInputBoxes();
+    readData({start:DateTimeTestStart, end:DateTimeTestEnd});
+  }
+
+  function rangeForward()
+  {
+    DateTimeTestStart = new Date(DateTimeTestEnd);
+    changeDateTime(DateTimeTestEnd, RangeDefs[SelectedRangeType], 1);
+    //var log = "range forward - start:" + DateTimeTestStart.toJSON() + ", end:" + DateTimeTestEnd.toJSON();
+    //addToLog2(log);
+    updateRangeInputBoxes();
+    readData({start:DateTimeTestStart, end:DateTimeTestEnd});
+  }
+
+  var startDateTime = undefined;
+  var endDateTime = undefined;
+  var flatpickr_startDate = undefined;
+  var flatpickr_endDate = undefined;
+
+  function setupDateTimePicker()
+  {
+      var options = {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+          //maxDate: "today",
+          defaultDate: "today",
+          time_24hr: true,
+      };
+      flatpickr_startDate = flatpickr("#StartDate", {
+          ...options,
+          onChange: function(selectedDates, dateStr, instance){
+              // ...
+              var d = selectedDates[0];
+              if (d == undefined) return;
+              startDateTime = d;
+              document.getElementById('log').innerHTML = "startdate changed:<br>"+ getDateTimeUTC_urlFormat(d).replace("%20", " ");
+              //console.log("startdate changed:", getDateTimeUTC_urlFormat(d));
+              readData({start:startDateTime, end:endDateTime});
+              
+              
+          },
+      });
+      flatpickr_endDate = flatpickr("#EndDate", {
+          ...options,
+          onChange: function(selectedDates, dateStr, instance){
+              // ...
+              var d = selectedDates[0];
+              if (d == undefined) return;
+              endDateTime = d;
+              //console.log("enddate changed:", getDateTimeUTC_urlFormat(d));
+              document.getElementById('log').innerHTML = "enddate changed:<br>"+ getDateTimeUTC_urlFormat(d).replace("%20", " ");
+              readData({start:startDateTime, end:endDateTime});
+          },
+      });
+  }
+
+  function getTwoDigitNumber(value)
+  {
+    //return value;
+    value = parseInt(value);
+    if (value < 10) return "0" + value.toString();
+    else return value.toString();
+  }
+
+  /** @param {DateTime} d */
+  function getDateTimeUTC_urlFormat(d)
+  {
+      return d.getUTCFullYear() + "-" 
+        + getTwoDigitNumber((d.getUTCMonth()+1)) + "-" 
+        + getTwoDigitNumber(d.getUTCDate()) + "%20" 
+        + getTwoDigitNumber(d.getUTCHours()) + ":" 
+        + getTwoDigitNumber(d.getUTCMinutes()) + ":" 
+        + getTwoDigitNumber(d.getUTCSeconds());
+  }
+  /** @param {DateTime} d */
+  function getDateTime_urlFormat(d)
+  {
+      return d.getFullYear() + "-" 
+        + getTwoDigitNumber((d.getMonth()+1)) + "-" 
+        + getTwoDigitNumber(d.getDate()) + "%20" 
+        + getTwoDigitNumber(d.getHours()) + ":" 
+        + getTwoDigitNumber(d.getMinutes()) + ":" 
+        + getTwoDigitNumber(d.getSeconds());
+  }
+
+  var latestUrl = "";
+  function readData(options)
+  {
+      document.getElementById('status').innerHTML = "loading data...";
+      
+      var channelId = "2777767";
+      if (options == undefined) options = {};
+      options.api_read_key = undefined;
+      options.resultCount = 8000;
+      //options.average = 60;
+      
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      if (urlParams.get("average")!=undefined) options.average = urlParams.get("average");
+      if (urlParams.get("resultCount")!=undefined) options.resultCount = urlParams.get("resultCount");
+      if (urlParams.get("api_read_key")!=undefined) options.api_read_key = urlParams.get("api_read_key");
+      if (urlParams.get("channelId")!=undefined) channelId = urlParams.get("channelId");
+
+      var url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?`;
+      
+      if (options.resultCount != undefined) url += `results=${options.resultCount}`;
+      if (options.api_read_key != undefined) url += `&api_key=${options.api_read_key}`;
+      if (options.average != undefined) url += `&average=${options.average}`;
+      if (options.start != undefined) url += `&start=${getDateTimeUTC_urlFormat(options.start)}`;
+      if (options.end != undefined) url += `&end=${getDateTimeUTC_urlFormat(options.end)}`;
+      console.log(url);
+      latestUrl = url;
+      getFile(url, function(contents) {
+          var data = JSON.parse(contents);
+          var labels = [];
+          var dataSets = [];
+          var dataCount = data.feeds.length;
+          for (var fi=0;fi<8;fi++) {
+              var fieldName = "field"+(fi+1);
+              var label = data.channel[fieldName] + ` (${data.feeds[dataCount-1][fieldName]})`;
+              dataSets.push({label:label, data:[], borderWidth:2, lineTension:0.3});//, borderColor: '#ff8800', backgroundColor:'#88FF00'});
+          }
+          for (var i=0;i<dataCount;i++) {
+            var dateTime = new Date(data.feeds[i].created_at);
+            labels.push(getDateTime_urlFormat(dateTime).replace("%20", " "));
+            for (var fi=0;fi<8;fi++) {
+                dataSets[fi].data.push(data.feeds[i]["field"+(fi+1)]);
+            }
+          }
+          dataSets[7].hidden = true; // hide hydro by default
+          setData(labels,dataSets);
+          document.getElementById('status').innerHTML = "";
+      }, function(){
+          document.getElementById('status').innerHTML = "fail to get data from thingspeak @ url:<br>" + latestUrl;
+      });
+  }
+  var currentChart = undefined;
+  function setData(labels,dataSets)
+  {
+      const ctx = document.getElementById('myChart');
+      if (currentChart != undefined) currentChart.destroy();
+      currentChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: dataSets
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true
+                  }
+              }
+          }
+      });
+  }
+</script>
+</body>
+</html>

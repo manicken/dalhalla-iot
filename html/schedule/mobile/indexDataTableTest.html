@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<title>Scheduler for mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script type='text/javascript' src='/schedule/mobile/main.js'></script>
+<script type='text/javascript' src='/schedule/helpers.js'></script>
+<link rel="stylesheet" type="text/css" href="/schedule/mobile/style.css"/>
+<link rel="stylesheet" type="text/css" href="/schedule/checkbox.css"/>
+
+</head>
+
+
+<body>
+    <div class="Menu">
+        <div class="MenuItem"><a href="/index.html"><button type="button" style="width:170px;">back to MainMenus</button></a></div>
+        <div class="MenuItem"><button type="button" onclick="saveSchedules()" style="width:75px; font-weight:bold;">save</button></div>
+        <div class="MenuItem"><button type="button" onclick="loadSchedules()" style="width:75px; font-weight:bold;">reload</button></div>
+        <!--<input type="text" id="fname" name="fname"><br><br>-->
+    </div>
+    
+    <div id="item_list" class="list">
+        <div class="list">
+            <div class="schedule-item">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="time">00:00</div>
+                            </td>
+                            <td rowspan="2" class="item-enable-switch">
+                                <label class="el-switch">
+                                  <input type="checkbox" name="switch">
+                                  <span class="el-switch-style"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="details">
+                                    <p>Everyday</p>
+                                    <p>Switch 1: ON</p>
+                                </div>
+                            </td>
+                            
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="verticalSeperator"></div>
+            <div class="schedule-item">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="time">12:00</div>
+                    </td>
+                    <td rowspan="2" class="item-enable-switch">
+                        <label class="el-switch">
+                          <input type="checkbox" name="switch">
+                          <span class="el-switch-style"></span>
+                        </label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="details">
+                        <p>Mon Tue Wed Thu Fri Sat Sun</p>
+                        <p>Switch 1: OFF</p>
+                      </div>
+                    </td>
+                    
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="verticalSeperator"></div>
+            <div class="schedule-item">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="time">12:00</div>
+                            </td>
+                            <td rowspan="2" class="item-enable-switch">
+                                <label class="el-switch">
+                                  <input type="checkbox" name="switch">
+                                  <span class="el-switch-style"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="details">
+                                    <p>2024-01-29</p>
+                                    <p>Switch 1: OFF</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="addNewItem">
+        <button>Add Schedule</button>
+    </div>
+    <div id='info'></div>
+</body>
+</html>
+
+<!--
+    
+-->

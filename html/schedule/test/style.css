@@ -1,0 +1,32 @@
+body {
+    width: 100%; /* Default width */
+}
+
+/* Media query for devices with a maximum width of 767px (typically mobile devices) */
+@media (max-width: 767px) {
+    body {
+        width: auto; /* Adjust width as needed for mobile devices */
+    }
+}
+
+/* Media query for devices with a minimum width of 768px (typically desktop devices) */
+@media (min-width: 768px) {
+    body {
+        width: 80%; /* Adjust width as needed for desktop devices */
+        margin: 0 auto; /* Center-align body content */
+    }
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: center; /* Vertically align items */
+}
+
+.time, .details {
+    flex: 1; /* Distribute remaining space equally */
+}
+
+.item-enable-switch {
+    margin-left: 10px; /* Add space between elements */
+}

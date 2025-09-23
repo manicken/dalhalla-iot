@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/schedule/checkbox.css"/>
+<style>
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  padding: 10px;
+}
+.grid-item {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+}
+.grid-item:nth-child(2) {
+  grid-row: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<div class="grid-container">
+  <div class="grid-item"><div class="time">12:00</div></div>
+  <div class="grid-item">
+    <label class="el-switch">
+        <input type="checkbox" name="switch">
+        <span class="el-switch-style"></span>
+    </label>
+  </div>
+  <div class="grid-item">
+    
+  </div>  
+  <div class="grid-item">4</div>
+  <div class="grid-item">5</div>
+  <div class="grid-item">6</div>  
+  <div class="grid-item">7</div>
+  <div class="grid-item">8</div>
+  <div class="grid-item">9</div>  
+</div>
+<div id='info'></div>
+<script>
+
+function setState(msg) {
+    document.getElementById("info").innerHTML = msg;
+}
+/* Storing user's device details in a variable*/
+let details = navigator.userAgent;
+
+/* Regular expression containing some mobile devices keywords to search it in details string*/
+let regexp = /android|iphone|kindle|ipad/i;
+
+/* Test the regular expression against the details string, it returns boolean value*/
+let isMobileDevice = regexp.test(details);
+
+if (isMobileDevice) {
+    document.body.style.width = "auto";
+    document.body.style.margin = "0 auto"; /* Center-align body content */
+  setState("You are using a Mobile Device");
+} else {
+    document.body.style.width = "320px";
+    setState("You are using Desktop");
+}
+</script>
+
+</body>
+</html>
