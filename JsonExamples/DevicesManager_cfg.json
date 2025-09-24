@@ -53,7 +53,7 @@
       {"uid":"D1","model":"lc","anid":"hello"}
     ]
   },
-  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":23,"refreshtimesec":5,"items": [
+  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":23,"refreshtimemin":5,"items": [
 	  {"uid":"GT1","opcode":"02","addr":"0209","valuetype":"float"},
 	  {"uid":"GT2","opcode":"02","addr":"020A","valuetype":"float"},
 	  {"uid":"GT3","opcode":"02","addr":"020B","valuetype":"float"},
