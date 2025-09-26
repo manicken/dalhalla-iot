@@ -30,19 +30,31 @@ namespace LittleFS_ext
     FileResult load_from_file(const char* file_name, String &contents) {
         contents = "";
         
+        
         File this_file = LittleFS.open(file_name, "r");
         if (!this_file) { // failed to open the file, retrn empty result
             return FileResult::FileNotFound;
         }
+        contents.reserve(this_file.size()); // to minimize heap fragmentation
+
         while (this_file.available()) {
-            contents += (char)this_file.read();
+            char c = this_file.read();
+            if (c == '\r') {
+                // if next is '\n', skip next \r and only use \n
+                if (this_file.peek() == '\n') {
+                    this_file.read(); // remove \n from input
+                }
+                c = '\n'; // normalize
+            }
+            contents += c;
+            //contents += (char)this_file.read();
         }
         
         this_file.close();
         return FileResult::Success;
     }
 
-    FileResult load_from_file(const char* file_name, char *buff) {
+    /*FileResult load_from_file(const char* file_name, char *buff) {
         File this_file = LittleFS.open(file_name, "r");
         if (!this_file) { // failed to open the file, retrn empty result
             return FileResult::FileNotFound;
@@ -54,7 +66,7 @@ namespace LittleFS_ext
         *buff = 0x00;
         this_file.close();
         return FileResult::Success;
-    }
+    }*/
     FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize) {
         File this_file = LittleFS.open(file_name, "r");
         if (!this_file) {
@@ -77,7 +89,20 @@ namespace LittleFS_ext
         // Read contents
         size_t index = 0;
         while (this_file.available() && index < size) {
-            buffer[index++] = this_file.read();
+            int cInt = this_file.read();
+            if (cInt < 0) break;  // EOF safety
+            char c = static_cast<char>(cInt);
+
+            if (c == '\r') {
+                // if next is '\n', skip next \r and only use \n
+                if (this_file.peek() == '\n') {
+                    this_file.read(); // remove \n from input
+                    buffer[index++] = ' '; // replace with whitespace for now as something later one requires it
+                }
+                c = '\n'; // normalize
+            }
+            buffer[index++] = c;
+           // buffer[index++] = this_file.read();
         }
         buffer[index] = '\0'; // Null-terminate
 

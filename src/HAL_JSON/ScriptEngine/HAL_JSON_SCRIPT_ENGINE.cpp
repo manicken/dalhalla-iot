@@ -30,9 +30,13 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
 
 #if defined(_WIN32) || defined(__linux__)
-#define DEMO_SCRIPT_FILE_PATH "script1.txt"
+#define SCRIPTS_DIRECTORY   "scripts/"
+#define DEFAULT_SCRIPT_FILE "script1.txt"
+#define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
 #else
-#define DEMO_SCRIPT_FILE_PATH "/scripts/script1.txt"
+#define SCRIPTS_DIRECTORY     "/scripts/"
+#define DEFAULT_SCRIPT_FILE "script1.txt"
+#define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
 #endif
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -55,12 +59,7 @@ namespace HAL_JSON {
         int ScriptsBlock::scriptBlocksCount = 0;
         int ScriptsBlock::currentScriptIndex = 0;
 
-        bool ValidateAllActiveScripts()
-        {
-            bool valid = true;
-            valid = ScriptEngine::Parser::ReadAndParseScriptFile(DEMO_SCRIPT_FILE_PATH, nullptr);
-            return valid;
-        }
+        
 
         void ScriptsBlock::ScriptFileParsed(Tokens& tokens) {
             Expressions::ReportInfo("\n");
@@ -85,40 +84,96 @@ namespace HAL_JSON {
             Expressions::ReportInfo("**************************************************************************************\n");
         }
 
-        bool ScriptsBlock::LoadAllActiveScripts()
+        ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) { }
+        ScriptsToLoad::~ScriptsToLoad() {
+            delete[] scriptsListContents;
+            scriptsListContents = nullptr;
+            delete[] scriptFileList;
+            scriptFileList = nullptr;
+            scriptFileCount = 0;
+        }
+        void ScriptsToLoad::InitScriptList(int count) {
+            delete[] scriptFileList;
+            scriptFileList = nullptr;
+            if (count > 0) {
+                scriptFileList = new ZeroCopyString[count];
+            }
+            scriptFileCount = count;
+        }
+
+        bool ValidateAllActiveScripts(ScriptsToLoad& scriptsToLoad)
+        {
+            bool valid = true;
+            int count = scriptsToLoad.scriptFileCount;
+            ZeroCopyString* files = scriptsToLoad.scriptFileList;
+            for (int i = 0;i<count;i++) {
+                std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
+                valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
+                if (valid == false) return false;
+            }
+            return true;
+        }
+
+        bool ScriptsBlock::LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad)
         {
             delete[] scriptBlocks;
             scriptBlocks = nullptr;
             scriptBlocksCount = 0;
-            
-            // here i will load the active scripts file and parse which scripts to load
-            // and how many to load
-            // currently for development first test we only load one file
-            
-            int count = 1; // set to 1 for development test
+            int count = scriptsToLoad.scriptFileCount;
+            ZeroCopyString* files = scriptsToLoad.scriptFileList;
+
             scriptBlocks = new ScriptBlock[count];
             scriptBlocksCount = count;
-
+            bool valid = true; // absolute failsafe
             for (int i = 0;i<count;i++) {
                 currentScriptIndex = i;
                 // this should now pass and execute the given callback
-                ScriptEngine::Parser::ReadAndParseScriptFile(DEMO_SCRIPT_FILE_PATH, ScriptFileParsed);
+                std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
+                valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), ScriptFileParsed);
+                if (valid == false) return false;
             }
             return true;
         }
 
         bool ValidateAndLoadAllActiveScripts()
         {
+            ScriptsToLoad scriptsToLoad;
+            bool useDefaultFile = false;
+
+            if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
+                
+                size_t fileSize = 0;
+                LittleFS_ext::FileResult res = LittleFS_ext::load_from_file(SCRIPTS_LIST_FILE_PATH, &scriptsToLoad.scriptsListContents, &fileSize);
+                if (res != LittleFS_ext::FileResult::Success) {
+                    useDefaultFile = true;
+                }
+                else {
+                    int scriptCount = Parser::CountTokens(scriptsToLoad.scriptsListContents);
+                    scriptsToLoad.InitScriptList(scriptCount);
+                    if (false == Parser::Tokenize(scriptsToLoad.scriptsListContents, scriptsToLoad.scriptFileList, scriptsToLoad.scriptFileCount)) {
+                        useDefaultFile = true;
+                    }
+                }
+            } else {
+                useDefaultFile = true;
+            }
+            if (useDefaultFile) {
+                printf("\nUsing default script file: script1.txt\n");
+                scriptsToLoad.InitScriptList(1);
+                scriptsToLoad.scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
+            }
+
             ScriptsBlock::running = false;
             ScriptEngine::Expressions::CalcStackSizesInit();
-            if (ValidateAllActiveScripts() == false) return false;
+            if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
+                printf("\nValidateAllActiveScripts fail!\"n");
+                GlobalLogger.printAllLogs(Serial, false);
+                return false;
+            }
             
             ScriptEngine::Expressions::InitStacks();
-            if (ScriptsBlock::LoadAllActiveScripts() == false) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-#include <iostream>
-                std::cout << "Serious problem could not load scripts\n";
-#endif
+            if (ScriptsBlock::LoadAllActiveScripts(scriptsToLoad) == false) {
+                printf("\nSERIOUS problem could not load scripts!\"n");
                 return false;
             }
             ScriptsBlock::running = true;

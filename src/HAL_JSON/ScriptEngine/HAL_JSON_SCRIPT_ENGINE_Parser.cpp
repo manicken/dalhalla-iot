@@ -45,13 +45,13 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("Rule Set Parse:"), msg);
     #endif
         }
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         void Parser::ReportInfo(std::string msg) {
-            std::cout << msg;
+            printf("\n%s\n", msg.c_str());
         }
-#else
-#define ReportInfo(msg)        
-#endif
+//#else
+//#define ReportInfo(msg)        
+//#endif
         
         
 
@@ -125,6 +125,40 @@ namespace HAL_JSON {
                 }
             }
             return count;
+        }
+
+        bool Parser::Tokenize(char* buffer, ZeroCopyString* items, int tokenCount) {
+            char* p = buffer;
+            
+            int tokenIndex = 0;
+
+            while (*p) {
+                
+                // Skip whitespace
+                while (*p && isspace(static_cast<unsigned char>(*p))) {
+                    p++;
+                }
+                // End of string
+                if (!*p) break;
+                // Start of token
+                char* token_start = p;
+
+                while (*p && !isspace(static_cast<unsigned char>(*p))) {
+                    p++;
+                }
+                // Null-terminate token
+                if (*p) {
+                    *p = '\0';
+                    p++;
+                }
+                if (tokenIndex == tokenCount) {
+                    return false; // something went terrible wrong
+                }
+                items[tokenIndex++].start = token_start;
+                items[tokenIndex++].end = p-1;
+            }
+            
+            return true;
         }
 
         bool Parser::Tokenize(char* buffer, Tokens& _tokens) {
@@ -803,7 +837,7 @@ namespace HAL_JSON {
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            FixNewLines(fileContents);
+            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents);
@@ -955,7 +989,7 @@ namespace HAL_JSON {
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            FixNewLines(fileContents);
+            //FixNewLines(fileContents); // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents);
@@ -1006,6 +1040,7 @@ namespace HAL_JSON {
             ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(tokens);
             LogicRPNNode* lrpnNode = Expressions::BuildLogicTree(newDirect);
             ReportInfo("\n\nnew complete RPN:");
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
                 ExpressionToken& tok = newDirect->items[i];
                 //if (tok->type == TokenType::Operand)
@@ -1013,12 +1048,14 @@ namespace HAL_JSON {
                 //else
                 //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
             }
+#endif
             ReportInfo("\n");
             ReportInfo("\n\ntree view:\n");
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             Expressions::printLogicRPNNodeTree(lrpnNode, 0);
             //ReportInfo("\n\nadvanced tree view:\n");
             //Expressions::PrintLogicRPNNodeAdvancedTree(lrpnNode, 0);
-
+#endif
             Expressions::ClearStacks();
             delete[] fileContents;
 
@@ -1039,7 +1076,7 @@ namespace HAL_JSON {
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            FixNewLines(fileContents);
+            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents);

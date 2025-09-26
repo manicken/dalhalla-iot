@@ -34,6 +34,7 @@ namespace LittleFS_ext {
         AllocFail,
         FileReadError
     };
+    /** using this is safe, note this file reader normalizes \r,\r\n to simple \n */
     FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize);
 
 }

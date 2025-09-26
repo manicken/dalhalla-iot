@@ -43,9 +43,10 @@ namespace MainConfig {
             lastJSONread_Error = "cfg file did not exist";
             return false;
         }
-        int size = LittleFS_ext::getFileSize(MAIN_CONFIG_CONFIG_JSON_FILE);
-        char jsonBuffer[size + 1]; // +1 for null char
-        if (LittleFS_ext::load_from_file(MAIN_CONFIG_CONFIG_JSON_FILE, jsonBuffer) != LittleFS_ext::FileResult::Success)
+        //int size = LittleFS_ext::getFileSize(MAIN_CONFIG_CONFIG_JSON_FILE);
+        size_t size = 0;
+        char* jsonBuffer = nullptr;//[size + 1]; // +1 for null char
+        if (LittleFS_ext::load_from_file(MAIN_CONFIG_CONFIG_JSON_FILE, &jsonBuffer, &size) != LittleFS_ext::FileResult::Success)
         {
             lastJSONread_Error = "error could not load json file";
             return false;

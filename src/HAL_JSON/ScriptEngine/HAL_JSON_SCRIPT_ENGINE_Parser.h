@@ -91,9 +91,9 @@ namespace HAL_JSON {
         private:
             
             static void ReportError(const char* msg);
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             static void ReportInfo(std::string msg);
-#endif
+//#endif
             //static inline bool IsType(const Token& t, const char* str) { return t.EqualsIC(str); }
 
             /** special note,
@@ -103,8 +103,10 @@ namespace HAL_JSON {
             static void FixNewLines(char* buffer);
             static void StripComments(char* buffer);
 
-            static int CountTokens(char* buffer);
+            
+            /** used only for scripts */
             static bool Tokenize(char* buffer, Tokens& tokens);
+            
 
             /** used by VerifyBlocks */
             static int Count_IfTokens(Tokens& tokens);
@@ -143,6 +145,9 @@ namespace HAL_JSON {
          * if the callback is set this is considered a Load function
          * if the callback is not set (nullptr) then it's validate only
          */
+            static int CountTokens(char* buffer);
+            /** can be used to tokenize a simple string, based on whitespace */
+            static bool Tokenize(char* buffer, ZeroCopyString* items, int tokenCount);
             static bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(Tokens& tokens) = nullptr);
 
 

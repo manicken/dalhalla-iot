@@ -34,7 +34,7 @@ namespace LittleFS_ext
         AllocFail,
         FileReadError
     };
-
+    /** note this file reader normalizes \r,\r\n to simple \n  */
     FileResult load_from_file(const char* file_name, String &contents);
     /** please note that using this function is not safe,
      * and buff size must be bigger or equal to filesize + 1
@@ -42,8 +42,8 @@ namespace LittleFS_ext
      * and this will likely corrupt data to lead to undefined
      * behaviour
      */
-    FileResult load_from_file(const char* file_name, char *buff);
-    /** using this is safe */
+    //FileResult load_from_file(const char* file_name, char *buff);
+    /** using this is safe, note this file reader normalizes \r,\r\n to simple \n */
     FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize = nullptr);
     int getFileSize(const char* file_name);
     void listDir(Stream &printStream, const char *dirname, uint8_t level);

@@ -30,6 +30,19 @@
 
 namespace HAL_JSON {
     namespace ScriptEngine {
+        struct ScriptsToLoad {
+            char* scriptsListContents;
+            ZeroCopyString* scriptFileList;
+            int scriptFileCount;
+            ScriptsToLoad();
+            ~ScriptsToLoad();
+
+            void InitScriptList(int count);
+
+            // Delete copy constructor/assignment to prevent double-free
+            ScriptsToLoad(const ScriptsToLoad&) = delete;
+            ScriptsToLoad& operator=(const ScriptsToLoad&) = delete;
+        };
         /**
          * Global container for all loaded scripts in the engine.
          * This is the highest-level structure in the script engine hierarchy.
@@ -50,11 +63,11 @@ namespace HAL_JSON {
             static void ScriptFileParsed(Tokens& tokens);
             
             /** ValidateAllActiveScripts should be run before using this function */
-            static bool LoadAllActiveScripts();
+            static bool LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad);
             
         };
         /** should be run before using LoadAllActiveScripts */
-        bool ValidateAllActiveScripts();
+        bool ValidateAllActiveScripts(ScriptsToLoad& scriptsToLoad);
         /** begins with validating all scripts
          * and if all pass then it begins to load in the structures
          */
