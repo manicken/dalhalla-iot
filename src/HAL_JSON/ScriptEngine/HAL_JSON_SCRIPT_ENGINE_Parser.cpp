@@ -154,8 +154,9 @@ namespace HAL_JSON {
                 if (tokenIndex == tokenCount) {
                     return false; // something went terrible wrong
                 }
-                items[tokenIndex++].start = token_start;
-                items[tokenIndex++].end = p-1;
+                items[tokenIndex].start = token_start;
+                items[tokenIndex].end = p-1;
+                tokenIndex++;
             }
             
             return true;
