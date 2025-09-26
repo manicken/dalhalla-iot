@@ -148,6 +148,7 @@ namespace HAL_JSON {
                     useDefaultFile = true;
                 }
                 else {
+                    Parser::StripComments(scriptsToLoad.scriptsListContents);
                     int scriptCount = Parser::CountTokens(scriptsToLoad.scriptsListContents);
                     scriptsToLoad.InitScriptList(scriptCount);
                     if (false == Parser::Tokenize(scriptsToLoad.scriptsListContents, scriptsToLoad.scriptFileList, scriptsToLoad.scriptFileCount)) {

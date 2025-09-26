@@ -96,12 +96,7 @@ namespace HAL_JSON {
 //#endif
             //static inline bool IsType(const Token& t, const char* str) { return t.EqualsIC(str); }
 
-            /** special note,
-              *  this function do not remove additional \r characters in \r\n \n\r 
-              *  it just replaces them with spaces for easier parsing 
-              */
-            static void FixNewLines(char* buffer);
-            static void StripComments(char* buffer);
+            
 
             
             /** used only for scripts */
@@ -141,6 +136,12 @@ namespace HAL_JSON {
             static bool ValidateParseScript(Tokens& tokens, bool validateOnly);
             
         public:
+            /** special note,
+              *  this function do not remove additional \r characters in \r\n \n\r 
+              *  it just replaces them with spaces for easier parsing 
+              */
+            static void FixNewLines(char* buffer);
+            static void StripComments(char* buffer);
         /** 
          * if the callback is set this is considered a Load function
          * if the callback is not set (nullptr) then it's validate only
