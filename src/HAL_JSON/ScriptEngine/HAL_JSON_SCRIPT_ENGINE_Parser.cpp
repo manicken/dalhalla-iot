@@ -45,13 +45,13 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("Rule Set Parse:"), msg);
     #endif
         }
-//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         void Parser::ReportInfo(std::string msg) {
             printf("\n%s\n", msg.c_str());
         }
-//#else
-//#define ReportInfo(msg)        
-//#endif
+#else
+#define ReportInfo(msg)        
+#endif
         
         
 

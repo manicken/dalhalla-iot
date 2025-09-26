@@ -86,14 +86,20 @@ namespace HAL_JSON {
 
         ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) { }
         ScriptsToLoad::~ScriptsToLoad() {
-            delete[] scriptsListContents;
-            scriptsListContents = nullptr;
-            delete[] scriptFileList;
-            scriptFileList = nullptr;
+            if (scriptsListContents != nullptr) {
+                delete[] scriptsListContents;
+                scriptsListContents = nullptr;
+            }
+            if (scriptFileList != nullptr) {
+                delete[] scriptFileList;
+                scriptFileList = nullptr;
+            }
             scriptFileCount = 0;
         }
         void ScriptsToLoad::InitScriptList(int count) {
-            delete[] scriptFileList;
+            if (scriptFileList != nullptr) {
+                delete[] scriptFileList;
+            }
             scriptFileList = nullptr;
             if (count > 0) {
                 scriptFileList = new ZeroCopyString[count];
@@ -138,9 +144,9 @@ namespace HAL_JSON {
         bool ValidateAndLoadAllActiveScripts()
         {
             ScriptsToLoad scriptsToLoad;
-            bool useDefaultFile = false;
+            bool useDefaultFile = true;
 
-            if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
+            /*if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
                 
                 size_t fileSize = 0;
                 LittleFS_ext::FileResult res = LittleFS_ext::load_from_file(SCRIPTS_LIST_FILE_PATH, &scriptsToLoad.scriptsListContents, &fileSize);
@@ -148,16 +154,27 @@ namespace HAL_JSON {
                     useDefaultFile = true;
                 }
                 else {
+                    printf("\nusing scripts list file:\n");
+                    Parser::FixNewLines(scriptsToLoad.scriptsListContents);
                     Parser::StripComments(scriptsToLoad.scriptsListContents);
                     int scriptCount = Parser::CountTokens(scriptsToLoad.scriptsListContents);
+                    printf("\nscript count:%d\n", scriptCount);
                     scriptsToLoad.InitScriptList(scriptCount);
                     if (false == Parser::Tokenize(scriptsToLoad.scriptsListContents, scriptsToLoad.scriptFileList, scriptsToLoad.scriptFileCount)) {
                         useDefaultFile = true;
+                        printf("\ntokenize scripts list file fail!\n");
+                    } else {
+                        for (int i=0;i<scriptCount;i++) {
+                            std::string s = scriptsToLoad.scriptFileList[i].ToString();
+                            printf("\nScript file:%s\n", s.c_str());
+                        }
+                        useDefaultFile = true; // set for now until we figured out whats wrong
                     }
+                    
                 }
             } else {
                 useDefaultFile = true;
-            }
+            }*/
             if (useDefaultFile) {
                 printf("\nUsing default script file: script1.txt\n");
                 scriptsToLoad.InitScriptList(1);

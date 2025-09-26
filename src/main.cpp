@@ -120,7 +120,7 @@ void setup() {
     webserver.begin();
 
     // make sure that the following are allways at the end of this function
-    Info::PrintHeapInfo();
+    //Info::PrintHeapInfo();
     DEBUG_UART.println(F("\r\n!!!!!End of MAIN Setup!!!!!\r\n"));
 }
 

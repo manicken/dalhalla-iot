@@ -50,16 +50,16 @@ namespace HAL_JSON {
     void begin() {
         HAL_JSON::REST::setupRest();
         printf("\nBefore Manager::setupMgr()\n");
-        Info::PrintHeapInfo();
+        //Info::PrintHeapInfo();
         
         if (Manager::setupMgr() == false)
             return;
         printf("\nBefore ScriptEngine::ValidateAndLoadAllActiveScripts\n");
-        Info::PrintHeapInfo();
+        //Info::PrintHeapInfo();
         ScriptEngine::ValidateAndLoadAllActiveScripts(); 
         
         printf("\nAfter ScriptEngine::ValidateAndLoadAllActiveScripts\n");
-        Info::PrintHeapInfo();
+        //Info::PrintHeapInfo();
     }
 
 

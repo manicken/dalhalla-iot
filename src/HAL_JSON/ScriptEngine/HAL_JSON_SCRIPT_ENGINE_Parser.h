@@ -91,9 +91,9 @@ namespace HAL_JSON {
         private:
             
             static void ReportError(const char* msg);
-//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             static void ReportInfo(std::string msg);
-//#endif
+#endif
             //static inline bool IsType(const Token& t, const char* str) { return t.EqualsIC(str); }
 
             
