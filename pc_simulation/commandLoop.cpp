@@ -157,7 +157,8 @@ void parseCommand(const char* cmd, bool oneShot) {
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
         HAL_JSON::Manager::setupMgr();
-        HAL_JSON::ScriptEngine::ValidateAllActiveScripts();
+        HAL_JSON::ScriptEngine::ScriptsToLoad scriptsToLoad;
+        HAL_JSON::ScriptEngine::ValidateAllActiveScripts(scriptsToLoad);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
 

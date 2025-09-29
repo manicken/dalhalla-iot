@@ -23,6 +23,8 @@
 
 #include "HAL_JSON_ThingSpeak.h"
 
+#define DEBUG_UART Serial
+
 namespace HAL_JSON {
 
     const char ThingSpeak::TS_ROOT_URL[] = "http://api.thingspeak.com/update?api_key=";

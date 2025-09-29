@@ -88,16 +88,18 @@ namespace LittleFS_ext
 
         // Read contents
         size_t index = 0;
-        while (this_file.available() && index < size) {
-            int cInt = this_file.read();
-            if (cInt < 0) break;  // EOF safety
-            char c = static_cast<char>(cInt);
+        while (this_file.available()) {
+            if (index >= size) {
+                printf("\nERROR - load_from_file buffer overflow\n");
+                delete[] buffer;
+                return FileResult::BufferOverflowError;
+            }
+            char c = this_file.read();
 
             if (c == '\r') {
                 // if next is '\n', skip next \r and only use \n
                 if (this_file.peek() == '\n') {
                     this_file.read(); // remove \n from input
-                    buffer[index++] = ' '; // replace with whitespace for now as something later one requires it
                 }
                 c = '\n'; // normalize
             }

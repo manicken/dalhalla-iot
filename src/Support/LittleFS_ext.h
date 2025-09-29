@@ -32,7 +32,8 @@ namespace LittleFS_ext
         FileNotFound,
         FileEmpty,
         AllocFail,
-        FileReadError
+        FileReadError,
+        BufferOverflowError
     };
     /** note this file reader normalizes \r,\r\n to simple \n  */
     FileResult load_from_file(const char* file_name, String &contents);

@@ -30,7 +30,13 @@ INCLUDE_DIRS = \
 	./stubs/LittleFS \
 	./stubs/DHTesp \
 	./stubs/OneWire \
-	./stubs/DallasTemperature
+	./stubs/DallasTemperature \
+	./stubs/WS2812FX \
+	./stubs/WiFiClient \
+	./stubs/HTTPClient \
+	./stubs/Adafruit_GFX \
+	./stubs/Adafruit_SSD1306 \
+	./stubs/Wire
 else
 INCLUDE_DIRS = \
 	../.pio/libdeps/esp32dev/ArduinoJson/src \
@@ -40,7 +46,13 @@ INCLUDE_DIRS = \
 	./stubs/LittleFS \
 	./stubs/DHTesp \
 	./stubs/OneWire \
-	./stubs/DallasTemperature
+	./stubs/DallasTemperature \
+	./stubs/WS2812FX \
+	./stubs/WiFiClient \
+	./stubs/HTTPClient \
+	./stubs/Adafruit_GFX \
+	./stubs/Adafruit_SSD1306 \
+	./stubs/Wire
 endif
 INCLUDES = $(foreach dir,$(INCLUDE_DIRS),-I$(dir))
 #	
@@ -48,7 +60,6 @@ INCLUDES = $(foreach dir,$(INCLUDE_DIRS),-I$(dir))
 SRC = \
 	./stubs/HAL_JSON_REST/HAL_JSON_REST.cpp \
 	main.cpp \
-	RPN_tools.cpp \
 	commandLoop.cpp \
 	./stubs/Arduino/Arduino.cpp \
 	./stubs/Ticker/Ticker.cpp \
@@ -57,6 +68,10 @@ SRC = \
 	./stubs/DHTesp/DHTesp.cpp \
 	./stubs/OneWire/OneWire.cpp \
 	./stubs/DallasTemperature/DallasTemperature.cpp \
+	./stubs/Wire/Wire.cpp \
+	./stubs/WS2812FX/WS2812FX.cpp \
+	./stubs/WiFiClient/WiFiClient.cpp \
+	./stubs/HTTPClient/HTTPClient.cpp \
 	../src/Drivers/REGO600.cpp \
 	../src/Drivers/RF433.cpp \
 	$(wildcard ../src/HAL_JSON/*.cpp) \

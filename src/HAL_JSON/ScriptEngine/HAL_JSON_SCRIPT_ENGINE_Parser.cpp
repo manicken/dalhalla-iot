@@ -45,7 +45,7 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("Rule Set Parse:"), msg);
     #endif
         }
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
         void Parser::ReportInfo(std::string msg) {
             printf("\n%s\n", msg.c_str());
         }
@@ -133,7 +133,6 @@ namespace HAL_JSON {
             int tokenIndex = 0;
 
             while (*p) {
-                
                 // Skip whitespace
                 while (*p && isspace(static_cast<unsigned char>(*p))) {
                     p++;
@@ -142,21 +141,14 @@ namespace HAL_JSON {
                 if (!*p) break;
                 // Start of token
                 char* token_start = p;
-
+                // find end of token
                 while (*p && !isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                }
-                // Null-terminate token
-                if (*p) {
-                    *p = '\0';
                     p++;
                 }
                 if (tokenIndex == tokenCount) {
                     return false; // something went terrible wrong
                 }
-                items[tokenIndex].start = token_start;
-                items[tokenIndex].end = p-1;
-                tokenIndex++;
+                items[tokenIndex++].Set(token_start, p);
             }
             
             return true;
@@ -175,7 +167,7 @@ namespace HAL_JSON {
                 
                 // Skip whitespace
                 while (*p && isspace(static_cast<unsigned char>(*p))) {
-                    if (*p == '\n') {
+                    if (*p == 0x0A) {
                         line++;
                         column = 1;
                     } else {
@@ -188,27 +180,96 @@ namespace HAL_JSON {
                 // Start of token
                 char* token_start = p;
                 int token_column = column;
-
+                // find end of token
                 while (*p && !isspace(static_cast<unsigned char>(*p))) {
                     p++;
                     column++;
                 }
-                // Null-terminate token
-                if (*p) {
-                    *p = '\0';
+                if (tokenIndex == tokenCount) {
+                    return false; // something went terrible wrong, this means that the CountTokens is mismatching with the current function
+                }
+                tokens[tokenIndex++].Set(token_start, p, line, token_column);
+            }
+            return true;
+        }
+
+        int Parser::ParseTokens(char* buffer, Token* tokens, int maxCount) {
+            char* p = buffer;
+            int tokenIndex = 0;
+            int line = 1;
+            int column = 1;
+
+            while (*p) {
+                // --- Skip whitespace and comments ---
+                for (;;) {
+                    if (*p == '\0') break;
+
+                    // Whitespace
+                    if (isspace(static_cast<unsigned char>(*p))) {
+                        if (*p == '\n') { line++; column = 1; }
+                        else { column++; }
+                        p++;
+                        continue;
+                    }
+
+                    // // single-line comment
+                    if (p[0] == '/' && p[1] == '/') {
+                        p += 2;
+                        while (*p && *p != '\n') p++;
+                        if (*p == '\n') {
+                            line++;
+                            column = 1;
+                        }
+                        continue;
+                    }
+
+                    // /* block comment */
+                    if (p[0] == '/' && p[1] == '*') {
+                        p += 2;
+                        while (*p && !(p[0] == '*' && p[1] == '/')) {
+                            if (*p == '\n') { line++; column = 1; }
+                            else { column++; }
+                            p++;
+                        }
+                        if (*p) { p++; column++; } // skip '*'
+                        if (*p) { p++; column++; } // skip '/'
+                        continue;
+                    }
+
+                    // No more whitespace or comments
+                    break;
+                }
+
+                if (!*p) break;
+
+                // --- Start of token ---
+                char* token_start = p;
+                int token_column = column;
+
+                // Find end of token
+                while (*p) {
+                    // break on whitespace
+                    if (isspace(static_cast<unsigned char>(*p))) break;
+                    // break on comment start inside token
+                    if (p[0] == '/' && (p[1] == '/' || p[1] == '*')) {
+                        break;
+                    }
                     p++;
                     column++;
                 }
-                if (tokenIndex == tokenCount) {
-                    return false; // something went terrible wrong
+                if (tokens) {
+                    if (tokenIndex >= maxCount) {
+                        return -1; // error: mismatch
+                    }
+
+                    tokens[tokenIndex].Set(token_start, p, line, token_column);
                 }
-                 //if (token_start==nullptr)
-                 //   std::cout << "token_start is nullptr\n";
-                tokens[tokenIndex++].Set(token_start, line, token_column);
+                tokenIndex++;
             }
-            
-            return true;
+
+            return tokenIndex; // count of tokens found
         }
+
 
         int Parser::Count_IfTokens(Tokens& _tokens) {
             Token* tokens = _tokens.items;
@@ -841,15 +902,27 @@ namespace HAL_JSON {
             //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
-            StripComments(fileContents);
+            StripComments(fileContents); // not needed when integrated into ParseTokens
             );
 
+            /* just some debug print
+            char* ptr = fileContents;
+            printf("\n");
+            while (*ptr) {
+                printf("%02X ", *ptr++);
+            }
+            printf("\n");
+            */
+
             int tokenCount = CountTokens(fileContents);
+
+            //int tokenCount = ParseTokens(fileContents, nullptr, -1); // count in the same function
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             Tokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
+            /*if (Tokenize(fileContents, tokens.items, tokenCount) == -1)*/
             if (Tokenize(fileContents, tokens) == false) {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;

@@ -74,6 +74,7 @@ namespace HAL_JSON {
          */
         ZeroCopyString(const char* cstr);
         void Set(const char* cstr);
+        void Set(const char* _start, const char* _end);
         bool ContainsPtr(const char* ptr) const;
         /** Returns pointer to first occurrence of ch, or nullptr */
         const char* FindChar(char ch) const;

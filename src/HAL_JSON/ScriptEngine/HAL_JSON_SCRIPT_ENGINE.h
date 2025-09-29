@@ -34,6 +34,10 @@ namespace HAL_JSON {
             char* scriptsListContents;
             ZeroCopyString* scriptFileList;
             int scriptFileCount;
+            /** On creation, this tries to load the scripts list file from LittleFS.
+              * If the file exists and is valid, it tokenizes the contents and initializes the script list.
+              * Otherwise, it falls back to a default script file (script.txt).
+            */
             ScriptsToLoad();
             ~ScriptsToLoad();
 

@@ -31,11 +31,11 @@
 
 #if defined(_WIN32) || defined(__linux__)
 #define SCRIPTS_DIRECTORY   "scripts/"
-#define DEFAULT_SCRIPT_FILE "script1.txt"
+#define DEFAULT_SCRIPT_FILE "script.txt"
 #define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
 #else
 #define SCRIPTS_DIRECTORY     "/scripts/"
-#define DEFAULT_SCRIPT_FILE "script1.txt"
+#define DEFAULT_SCRIPT_FILE "script.txt"
 #define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
 #endif
 namespace HAL_JSON {
@@ -84,7 +84,44 @@ namespace HAL_JSON {
             Expressions::ReportInfo("**************************************************************************************\n");
         }
 
-        ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) { }
+        ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) {
+            bool useDefaultFile = false;
+
+            if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
+                
+                size_t fileSize = 0;
+                LittleFS_ext::FileResult res = LittleFS_ext::load_from_file(SCRIPTS_LIST_FILE_PATH, &scriptsListContents, &fileSize);
+                if (res != LittleFS_ext::FileResult::Success) {
+                    useDefaultFile = true;
+                }
+                else {
+                    printf("\nUsing scripts list file:\n");
+                    Parser::FixNewLines(scriptsListContents);
+                    Parser::StripComments(scriptsListContents);
+                    int scriptCount = Parser::CountTokens(scriptsListContents);
+                    printf("\nscript count:%d\n", scriptCount);
+                    InitScriptList(scriptCount);
+                    if (false == Parser::Tokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
+                        useDefaultFile = true;
+                        printf("\ntokenize scripts list file fail!\n");
+                    } else {
+                        //for (int i=0;i<scriptCount;i++) {
+                        //    std::string s = scriptsToLoad.scriptFileList[i].ToString();
+                        //    printf("\nScript file:%s\n", s.c_str());
+                        //}
+                       
+                    }
+                    
+                }
+            } else {
+                useDefaultFile = true;
+            }
+            if (useDefaultFile) {
+                printf("\nUsing default script file: script.txt\n");
+                InitScriptList(1);
+                scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
+            }
+        }
         ScriptsToLoad::~ScriptsToLoad() {
             if (scriptsListContents != nullptr) {
                 delete[] scriptsListContents;
@@ -113,7 +150,9 @@ namespace HAL_JSON {
             int count = scriptsToLoad.scriptFileCount;
             ZeroCopyString* files = scriptsToLoad.scriptFileList;
             for (int i = 0;i<count;i++) {
+                
                 std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
+                printf("\nValidating script:%s\n",path.c_str());
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
                 if (valid == false) return false;
             }
@@ -143,48 +182,12 @@ namespace HAL_JSON {
 
         bool ValidateAndLoadAllActiveScripts()
         {
-            ScriptsToLoad scriptsToLoad;
-            bool useDefaultFile = true;
-
-            /*if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
-                
-                size_t fileSize = 0;
-                LittleFS_ext::FileResult res = LittleFS_ext::load_from_file(SCRIPTS_LIST_FILE_PATH, &scriptsToLoad.scriptsListContents, &fileSize);
-                if (res != LittleFS_ext::FileResult::Success) {
-                    useDefaultFile = true;
-                }
-                else {
-                    printf("\nusing scripts list file:\n");
-                    Parser::FixNewLines(scriptsToLoad.scriptsListContents);
-                    Parser::StripComments(scriptsToLoad.scriptsListContents);
-                    int scriptCount = Parser::CountTokens(scriptsToLoad.scriptsListContents);
-                    printf("\nscript count:%d\n", scriptCount);
-                    scriptsToLoad.InitScriptList(scriptCount);
-                    if (false == Parser::Tokenize(scriptsToLoad.scriptsListContents, scriptsToLoad.scriptFileList, scriptsToLoad.scriptFileCount)) {
-                        useDefaultFile = true;
-                        printf("\ntokenize scripts list file fail!\n");
-                    } else {
-                        for (int i=0;i<scriptCount;i++) {
-                            std::string s = scriptsToLoad.scriptFileList[i].ToString();
-                            printf("\nScript file:%s\n", s.c_str());
-                        }
-                        useDefaultFile = true; // set for now until we figured out whats wrong
-                    }
-                    
-                }
-            } else {
-                useDefaultFile = true;
-            }*/
-            if (useDefaultFile) {
-                printf("\nUsing default script file: script1.txt\n");
-                scriptsToLoad.InitScriptList(1);
-                scriptsToLoad.scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
-            }
-
+            ScriptsToLoad scriptsToLoad; // Automatically loads the scripts list file (or defaults to script.txt) on construction
+            
             ScriptsBlock::running = false;
             ScriptEngine::Expressions::CalcStackSizesInit();
             if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
-                printf("\nValidateAllActiveScripts fail!\"n");
+                printf("\nValidateAllActiveScripts fail!\n");
                 GlobalLogger.printAllLogs(Serial, false);
                 return false;
             }

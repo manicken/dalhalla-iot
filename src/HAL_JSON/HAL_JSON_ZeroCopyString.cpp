@@ -33,9 +33,15 @@ namespace HAL_JSON {
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
     }
+    void ZeroCopyString::Set(const char* _start, const char* _end) {
+        start = _start;
+        end = _end;
+        if (this->end == nullptr) this->start = nullptr; 
+        else if (this->start == nullptr) this->end = nullptr;
+    }
     void ZeroCopyString::Set(const char* cstr) {
         start = cstr;
-        end = cstr ? cstr + strlen(cstr) : cstr;
+        end = cstr?(cstr+strlen(cstr)):nullptr;
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
     }
@@ -258,14 +264,17 @@ namespace HAL_JSON {
             a++;
             b++;
         }
-        return *a == *b; // Ensure both strings ended
+        return true; // lengths already checked, all characters matched
     }
     bool ZeroCopyString::EqualsIC(const char* cstr) const {
         if (!cstr) return false;
+
         int thisLen = Length();
         if (thisLen == 0) return false;
+
         int cstrLen = strlen(cstr);
         if (cstrLen == 0) return false;
+
         if (thisLen != cstrLen) return false;
         const char* a = start;
         const char* endA = end;
@@ -280,7 +289,7 @@ namespace HAL_JSON {
             a++;
             cstr++;
         }
-        return *a == *cstr; // Ensure both strings ended
+        return true; // lengths already checked, all characters matched
     }
     bool ZeroCopyString::EqualsICAny(const char* const* candidates) const {
         for (int i = 0; candidates[i] != nullptr; ++i) {

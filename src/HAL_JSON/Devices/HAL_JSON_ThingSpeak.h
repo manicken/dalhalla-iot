@@ -37,7 +37,11 @@
 #include <ESP8266HTTPClient.h>
 #elif defined(ESP32)
 #include <HTTPClient.h>
+#elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
+#include <WiFiClient.h>
+#include <HTTPClient.h>
 #endif
+
 
 namespace HAL_JSON {
 

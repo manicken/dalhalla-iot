@@ -76,7 +76,7 @@ namespace HAL_JSON {
 
         const char* TokenTypeToString(TokenType type);
         
-        TokenType GetFundamentalTokenType(const char* str);
+        TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType);
 
         struct Token : public ZeroCopyString {
             using ZeroCopyString::ZeroCopyString;
@@ -95,7 +95,7 @@ namespace HAL_JSON {
             //Token(Token&& other) = delete;           // no move constructor
             //Token& operator=(Token&& other) = delete; // no move assignment
 
-            void Set(const char* text, int line, int column);
+            void Set(const char* _start, const char* _end, int line, int column);
             /** 
              * used when 'grouping' tokens that actually belong to the same construct
              * note currently the valid types are only constructTypes:

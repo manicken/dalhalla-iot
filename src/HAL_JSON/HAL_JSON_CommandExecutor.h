@@ -27,6 +27,10 @@
 #include <stdlib.h>
 #include "HAL_JSON_ZeroCopyString.h"
 #include <queue>
+#include <functional>
+#if defined(_WIN32) || defined(__linux__) || defined(__MAC__)
+#include <mutex>
+#endif
 
 #define HAL_JSON_CMD_EXEC_WRITE_CMD               "write"
 #define HAL_JSON_CMD_EXEC_READ_CMD                "read"
@@ -57,19 +61,22 @@ namespace HAL_JSON {
         CommandCallback cb;
     };
 
-
-
     class CommandExecutor {
     public:
 
         static std::queue<PendingRequest> g_pending;
-        static portMUX_TYPE g_pendingMux;
+        
 
 #if defined(ESP32)
-  //portMUX_TYPE g_pendingMux = portMUX_INITIALIZER_UNLOCKED;
+  static portMUX_TYPE g_pendingMux;
   #define CommandExecutor_LOCK_QUEUE()   portENTER_CRITICAL(&CommandExecutor::g_pendingMux)
   #define CommandExecutor_UNLOCK_QUEUE() portEXIT_CRITICAL(&CommandExecutor::g_pendingMux)
-#else
+#elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
+  static std::mutex g_pendingMutex;
+  #define CommandExecutor_LOCK_QUEUE()   CommandExecutor::g_pendingMutex.lock()
+  #define CommandExecutor_UNLOCK_QUEUE() CommandExecutor::g_pendingMutex.unlock()
+#elif defined(ESP8266)
+  static portMUX_TYPE g_pendingMux;
   #define CommandExecutor_LOCK_QUEUE()   noInterrupts()
   #define CommandExecutor_UNLOCK_QUEUE() interrupts()
 #endif

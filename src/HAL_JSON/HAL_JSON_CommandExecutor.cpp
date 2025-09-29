@@ -38,7 +38,13 @@
 
 namespace HAL_JSON {
 
+#if defined(ESP32) || defined(ESP8266)
     portMUX_TYPE CommandExecutor::g_pendingMux = portMUX_INITIALIZER_UNLOCKED;
+#elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
+    std::mutex CommandExecutor::g_pendingMutex;
+#else
+
+#endif
     std::queue<PendingRequest> CommandExecutor::g_pending;
 
     CommandExecutor::ReadWriteCmdParameters::ReadWriteCmdParameters(ZeroCopyString& zcStr) {

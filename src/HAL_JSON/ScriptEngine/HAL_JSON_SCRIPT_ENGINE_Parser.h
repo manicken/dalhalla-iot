@@ -23,6 +23,8 @@
 
 #pragma once
 
+#define DEBUG_PRINT_SCRIPT_ENGINE
+
 #include <Arduino.h> // Needed for String class
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <iostream> // including this take 209512 bytes flash
@@ -91,7 +93,7 @@ namespace HAL_JSON {
         private:
             
             static void ReportError(const char* msg);
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             static void ReportInfo(std::string msg);
 #endif
             //static inline bool IsType(const Token& t, const char* str) { return t.EqualsIC(str); }
@@ -136,6 +138,25 @@ namespace HAL_JSON {
             static bool ValidateParseScript(Tokens& tokens, bool validateOnly);
             
         public:
+            /**
+             * @brief Parses a buffer into tokens while stripping comments and tracking line/column positions.
+             *
+             * This function performs a single pass over the input buffer:
+             * - Removes both `// line` and C-style block comments (replacing them with spaces).
+             * - Skips whitespace while tracking line and column numbers.
+             * - Splits the text into tokens separated by whitespace.
+             * - Optionally fills an array of Token objects with start/end pointers and source position info.
+             *
+             * @param buffer    The modifiable input buffer (null-terminated). Comments are replaced with spaces.
+             * @param tokens    Optional pointer to an array of Token objects. If `nullptr`, only token counting is performed.
+             * @param maxCount  Maximum number of tokens that can be written to `tokens`.
+             * @return          Number of tokens found, or -1 if `tokens` is not `nullptr` and more than `maxCount` tokens were detected.
+             *
+             * @note The function does not allocate memory; it works directly on the provided buffer.
+             * @note If `tokens` is provided, the caller must ensure it has at least `maxCount` capacity.
+             * @note If only the count is needed, call with `tokens = nullptr` and `maxCount = 0`.
+             */
+            static int ParseTokens(char* buffer, Token* tokens, int maxCount);
             /** special note,
               *  this function do not remove additional \r characters in \r\n \n\r 
               *  it just replaces them with spaces for easier parsing 
