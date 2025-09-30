@@ -72,10 +72,12 @@ SRC = \
 	./stubs/WS2812FX/WS2812FX.cpp \
 	./stubs/WiFiClient/WiFiClient.cpp \
 	./stubs/HTTPClient/HTTPClient.cpp \
+	./stubs/Adafruit_SSD1306/Adafruit_SSD1306.cpp \
 	../src/Drivers/REGO600.cpp \
 	../src/Drivers/RF433.cpp \
 	$(wildcard ../src/HAL_JSON/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/*.cpp) \
+	$(wildcard ../src/HAL_JSON/Devices/Display_SSD1306/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/OneWireTemp/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/REGO600/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/RF433/*.cpp) \

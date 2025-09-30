@@ -19,6 +19,12 @@ void Adafruit_SSD1306::setTextColor(uint16_t c) { (void)c; }
 void Adafruit_SSD1306::setCursor(int16_t x, int16_t y) { (void)x; (void)y; }
 void Adafruit_SSD1306::print(const char* text) { (void)text; }
 void Adafruit_SSD1306::println(const char* text) { (void)text; }
+void Adafruit_SSD1306::print(uint32_t value) { (void)value; }
+
+size_t Adafruit_SSD1306::write(const char *buffer, size_t size)
+{
+    return 0;
+}
 
 void Adafruit_SSD1306::drawPixel(int16_t x, int16_t y, uint16_t color) {
     (void)x; (void)y; (void)color;

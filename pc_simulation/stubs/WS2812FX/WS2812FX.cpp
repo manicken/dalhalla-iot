@@ -32,6 +32,21 @@ void WS2812FX::stop() {
     std::cout << "WS2812FX.stop()" << std::endl;
 #endif
 }
+void WS2812FX::pause() {
+#ifdef WS2812FX_DEBUG
+    std::cout << "WS2812FX.pause()" << std::endl;
+#endif
+}
+void WS2812FX::resume(){
+#ifdef WS2812FX_DEBUG
+    std::cout << "WS2812FX.resume()" << std::endl;
+#endif
+}
+void WS2812FX::execShow(){
+#ifdef WS2812FX_DEBUG
+    std::cout << "WS2812FX.execShow()" << std::endl;
+#endif
+}
 
 void WS2812FX::setBrightness(uint8_t b) {
     brightness = b;
@@ -65,3 +80,13 @@ uint8_t WS2812FX::getMode() { return mode; }
 uint32_t WS2812FX::getColor() { return color; }
 uint8_t WS2812FX::getBrightness() { return brightness; }
 uint8_t WS2812FX::getSpeed() { return speed; }
+
+void WS2812FX::setPixelColor(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
+
+}
+void WS2812FX::setPixelColor(uint16_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+
+}
+void WS2812FX::setPixelColor(uint16_t n, uint32_t c) {
+    
+}
