@@ -1,0 +1,51 @@
+
+this is using normalization when reading direct from the file 
+and is reading bytes one by one 'manually'
+
+
+Using scripts list file:
+
+script count:2
+
+Validating script:/scripts/script1.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  24607 us
+CountTokens time:  								  81 us
+Tokenize time:  								 369 us
+VerifyBlocks time:  							  96 us
+ValidateParseScript time:  						9578 us
+
+
+Validating script:/scripts/script2.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  36261 us
+CountTokens time:  								 113 us
+Tokenize time:  								 600 us
+VerifyBlocks time:  							  83 us
+ValidateParseScript time:  					   12800 us
+
+*************************************************** InitStacks ********************************
+
+rpnOutputStack NeededSize:19
+opStackSize NeededSize:13
+logicRPNNodeStack NeededSize:13
+
+
+Loading script:/scripts/script1.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  24804 us
+CountTokens time:  								  77 us
+Tokenize time:  							     348 us
+ValidateParseScript time:  						7627 us
+
+
+Loading script:/scripts/script2.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  36522 us
+CountTokens time:  								 124 us
+Tokenize time:  								 596 us
+ValidateParseScript time: 					   10769 us
+
+*******************************************************************
+
+ValidateAndLoadAllActiveScripts time:229 ms

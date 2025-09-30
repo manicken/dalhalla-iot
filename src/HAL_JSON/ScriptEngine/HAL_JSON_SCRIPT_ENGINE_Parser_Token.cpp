@@ -33,7 +33,48 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("Rule Set Parse:"), msg);
     #endif
         }
+        TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType) {
+            int zcStrLength = zcStrType.Length();
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+            //printf("\nGetFundamentalTokenType: >>>%s<<< (%d)\n", zcStrType.ToString().c_str(),zcStrLength);
+#endif
+            // using a length based lockup for faster compare/lockup
+            switch (zcStrLength) {
+                case 1:  // ";" or "\"
+                    if (zcStrType.EqualsIC(";")) return TokenType::ActionSeparator;
+                    if (zcStrType.EqualsIC("\\")) return TokenType::ActionJoiner;
+                    break;
 
+                case 2:  // "if", "do", "on", "or"
+                    if (zcStrType.EqualsIC("if")) return TokenType::If;
+                    if (zcStrType.EqualsIC("do")) return TokenType::Then;
+                    if (zcStrType.EqualsIC("on")) return TokenType::On;
+                    if (zcStrType.EqualsIC("or")) return TokenType::Or;
+                    break;
+
+                case 3:  // "and"
+                    if (zcStrType.EqualsIC("and")) return TokenType::And;
+                    break;
+
+                case 4:  // "else", "then"
+                    if (zcStrType.EqualsIC("else")) return TokenType::Else;
+                    if (zcStrType.EqualsIC("then")) return TokenType::Then;
+                    break;
+
+                case 5:  // "endif", "endon"
+                    if (zcStrType.EqualsIC("endif")) return TokenType::EndIf;
+                    if (zcStrType.EqualsIC("endon"))  return TokenType::EndOn;
+                    break;
+
+                case 6:  // "elseif"
+                    if (zcStrType.EqualsIC("elseif")) return TokenType::ElseIf;
+                    break;
+                default:
+                    return TokenType::NotSet;
+            }
+            return TokenType::NotSet;
+        }
+/*
         TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType) {
         #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             //std::cout << "GetFundamentalTokenType: >>>" << str << "<<<\n";
@@ -52,6 +93,7 @@ namespace HAL_JSON {
             else if (zcStrType.EqualsIC("endon")) return TokenType::EndOn;
             else return TokenType::NotSet;
         }
+*/
         const char* TokenTypeToString(TokenType type) {
             switch (type) {
                 case TokenType::NotSet: return "NotSet";

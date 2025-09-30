@@ -54,10 +54,9 @@ void ParseHelpCommand(HAL_JSON::ZeroCopyString& zcCmd) {
 void exprTestLoad(HAL_JSON::ZeroCopyString& zcStr) {
     HAL_JSON::ZeroCopyString zcFilePath = zcStr.SplitOffHead('/');
     std::string strFilePath = zcFilePath.ToString();
-    size_t fileSize = 0;
-    char* contents;// = HAL_JSON::ReadFileToMutableBuffer(filename.c_str(), fileSize);
+    char* contents = nullptr;
     const char* cFilePath = strFilePath.c_str();
-    LittleFS_ext::FileResult fileResult = LittleFS_ext::load_from_file(cFilePath, &contents, &fileSize);
+    LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(cFilePath, &contents);
     if (fileResult != LittleFS_ext::FileResult::Success) {
         if (fileResult == LittleFS_ext::FileResult::FileNotFound)
             std::cout << "Error: file could not be found: " << strFilePath << "\n";

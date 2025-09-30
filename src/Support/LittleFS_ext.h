@@ -29,23 +29,20 @@ namespace LittleFS_ext
 {
     enum class FileResult {
         Success,
+        FileNameEmpty,
+        OutsizePtrNull,
+        BufferPtrNull,
         FileNotFound,
         FileEmpty,
         AllocFail,
         FileReadError,
         BufferOverflowError
     };
-    /** note this file reader normalizes \r,\r\n to simple \n  */
-    FileResult load_from_file(const char* file_name, String &contents);
-    /** please note that using this function is not safe,
-     * and buff size must be bigger or equal to filesize + 1
-     * as otherwise it will overwrite data outside buff
-     * and this will likely corrupt data to lead to undefined
-     * behaviour
-     */
-    //FileResult load_from_file(const char* file_name, char *buff);
-    /** using this is safe, note this file reader normalizes \r,\r\n to simple \n */
-    FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize = nullptr);
+    /** --- Text loader (null-terminated, \n normalized) --- */
+    FileResult load_text_file(const char* file_name, char** outBuffer, size_t* outSize = nullptr);
+    /** --- Binary loader (exact size, no modifications, no null terminator) --- */
+    FileResult load_binary_file(const char* file_name, uint8_t** outBuffer, size_t* outSize);
+
     int getFileSize(const char* file_name);
     void listDir(Stream &printStream, const char *dirname, uint8_t level);
     void listDir(String &str, bool isHtml, const char *dirname, uint8_t level);

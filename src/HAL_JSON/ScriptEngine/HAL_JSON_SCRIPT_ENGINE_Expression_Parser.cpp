@@ -161,7 +161,8 @@ namespace HAL_JSON {
                 ReportError("IsDoubleOperator *c - was empty str");
                 return false;
             } else if (*(c+1) == '\n') {
-                ReportError("IsDoubleOperator *(c+1) - was empty str");
+                // not really a error
+                //ReportError("IsDoubleOperator *(c+1) - was empty str");
                 return false;
             }
             //if (c == nullptr /*|| *c != '\0' */|| *(c + 1) == '\0') return false; // safety

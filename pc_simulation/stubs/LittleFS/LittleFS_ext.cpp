@@ -22,12 +22,23 @@
 */
 
 #include "LittleFS_ext.h"
+#include <fstream>
 #include <iostream>
 #include <chrono>
+#include <cstring>   // for strlen
 
 namespace LittleFS_ext {
 
-    FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize) {
+    
+    // --- Text loader (null-terminated, \n normalized, final size returned) ---
+    FileResult load_text_file(const char* file_name, char** outBuffer, size_t* outSize) {
+        if (file_name == nullptr || strlen(file_name) == 0) {
+            return FileResult::FileNameEmpty;
+        }
+        if (outBuffer == nullptr) {
+            return FileResult::BufferPtrNull;
+        }
+
         auto start = std::chrono::high_resolution_clock::now();
 
         std::ifstream file(file_name, std::ios::binary | std::ios::ate);
@@ -43,27 +54,71 @@ namespace LittleFS_ext {
         }
         file.seekg(0);
 
-        // Allocate mutable buffer (+1 for null terminator)
-        char* buffer = new char[size + 1];
+        char* buffer = new (std::nothrow) char[size + 1];
+        if (!buffer) {
+            return FileResult::AllocFail;
+        }
+
         file.read(buffer, size);
         buffer[size] = '\0';
 
-        // --- Normalize newlines ---
+        // Normalize newlines in-place
         size_t writePos = 0;
-        for (size_t readPos = 0; readPos < size; ++readPos) {
+        for (size_t readPos = 0; readPos < static_cast<size_t>(size); ++readPos) {
             if (buffer[readPos] == '\r') {
                 buffer[writePos++] = '\n';
-                // Skip the next char if it is '\n' (handles Windows \r\n)
-                if (readPos + 1 < size && buffer[readPos + 1] == '\n') {
-                    ++readPos;
+                if (readPos + 1 < static_cast<size_t>(size) && buffer[readPos + 1] == '\n') {
+                    ++readPos; // skip '\n'
                 }
             } else {
                 buffer[writePos++] = buffer[readPos];
             }
         }
-        buffer[writePos] = '\0'; // null-terminate
-        *outSize = writePos;
+        buffer[writePos] = '\0';
+
         *outBuffer = buffer;
+        if (outSize) *outSize = writePos;  // final compacted size
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::micro> duration = end - start;
+        std::cout << " ***************** File read time: " << duration.count() << " us\n";
+
+        return FileResult::Success;
+    }
+
+    // --- Binary loader (exact size, no modifications, no null terminator) ---
+    FileResult load_binary_file(const char* file_name, uint8_t** outBuffer, size_t* outSize) {
+        if (file_name == nullptr || strlen(file_name) == 0) {
+            return FileResult::FileNameEmpty;
+        }
+        if (outBuffer == nullptr) {
+            return FileResult::BufferPtrNull;
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        std::ifstream file(file_name, std::ios::binary | std::ios::ate);
+        if (!file) {
+            std::cout << "file not found: " << file_name << "\n";
+            return FileResult::FileNotFound;
+        }
+
+        std::streamsize size = file.tellg();
+        if (size <= 0) {
+            std::cout << "file is empty: " << file_name << "\n";
+            return FileResult::FileEmpty;
+        }
+        file.seekg(0);
+
+        uint8_t* buffer = new (std::nothrow) uint8_t[size];
+        if (!buffer) {
+            return FileResult::AllocFail;
+        }
+
+        file.read(reinterpret_cast<char*>(buffer), size);
+
+        *outBuffer = buffer;
+        if (outSize) *outSize = static_cast<size_t>(size);
 
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;

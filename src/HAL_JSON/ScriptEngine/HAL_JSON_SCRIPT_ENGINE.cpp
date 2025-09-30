@@ -89,8 +89,7 @@ namespace HAL_JSON {
 
             if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
                 
-                size_t fileSize = 0;
-                LittleFS_ext::FileResult res = LittleFS_ext::load_from_file(SCRIPTS_LIST_FILE_PATH, &scriptsListContents, &fileSize);
+                LittleFS_ext::FileResult res = LittleFS_ext::load_text_file(SCRIPTS_LIST_FILE_PATH, &scriptsListContents);
                 if (res != LittleFS_ext::FileResult::Success) {
                     useDefaultFile = true;
                 }

@@ -26,48 +26,14 @@
 
 namespace LittleFS_ext
 {
-    
-    FileResult load_from_file(const char* file_name, String &contents) {
-        contents = "";
-        
-        
-        File this_file = LittleFS.open(file_name, "r");
-        if (!this_file) { // failed to open the file, retrn empty result
-            return FileResult::FileNotFound;
+    // --- Text loader (null-terminated, \n normalized) ---
+    FileResult load_text_file(const char* file_name, char** outBuffer, size_t* outSize) {
+        if (file_name == nullptr || strlen(file_name) == 0) {
+            return FileResult::FileNameEmpty;
         }
-        contents.reserve(this_file.size()); // to minimize heap fragmentation
-
-        while (this_file.available()) {
-            char c = this_file.read();
-            if (c == '\r') {
-                // if next is '\n', skip next \r and only use \n
-                if (this_file.peek() == '\n') {
-                    this_file.read(); // remove \n from input
-                }
-                c = '\n'; // normalize
-            }
-            contents += c;
-            //contents += (char)this_file.read();
+        if (outBuffer == nullptr) {
+            return FileResult::BufferPtrNull;
         }
-        
-        this_file.close();
-        return FileResult::Success;
-    }
-
-    /*FileResult load_from_file(const char* file_name, char *buff) {
-        File this_file = LittleFS.open(file_name, "r");
-        if (!this_file) { // failed to open the file, retrn empty result
-            return FileResult::FileNotFound;
-        }
-        while (this_file.available()) {
-            *buff = (char)this_file.read();
-            buff++;
-        }
-        *buff = 0x00;
-        this_file.close();
-        return FileResult::Success;
-    }*/
-    FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize) {
         File this_file = LittleFS.open(file_name, "r");
         if (!this_file) {
             return FileResult::FileNotFound;
@@ -79,39 +45,73 @@ namespace LittleFS_ext
             return FileResult::FileEmpty;
         }
 
-        // Allocate buffer (+1 for null terminator)
         char* buffer = new (std::nothrow) char[size + 1];
         if (!buffer) {
             this_file.close();
             return FileResult::AllocFail;
         }
 
-        // Read contents
-        size_t index = 0;
-        while (this_file.available()) {
-            if (index >= size) {
-                printf("\nERROR - load_from_file buffer overflow\n");
-                delete[] buffer;
-                return FileResult::BufferOverflowError;
-            }
-            char c = this_file.read();
+        size_t readCount = this_file.readBytes(buffer, size);
+        buffer[readCount] = '\0';
 
-            if (c == '\r') {
-                // if next is '\n', skip next \r and only use \n
-                if (this_file.peek() == '\n') {
-                    this_file.read(); // remove \n from input
+        // Normalize newlines in-place
+        char* src = buffer;
+        char* dst = buffer;
+        while (*src) {
+            if (*src == '\r') {
+                if (src[1] == '\n') {
+                    *dst++ = '\n';
+                    src += 2;
+                } else {
+                    *dst++ = '\n';
+                    src++;
                 }
-                c = '\n'; // normalize
+            } else {
+                *dst++ = *src++;
             }
-            buffer[index++] = c;
-           // buffer[index++] = this_file.read();
         }
-        buffer[index] = '\0'; // Null-terminate
+        *dst = '\0';
 
+        this_file.close();
+        *outBuffer = buffer;
+        if (outSize) *outSize = dst - buffer;
+        return FileResult::Success;
+    }
+
+    // --- Binary loader (exact size, no modifications, no null terminator) ---
+    FileResult load_binary_file(const char* file_name, uint8_t** outBuffer, size_t* outSize) {
+        if (file_name == nullptr || strlen(file_name) == 0) {
+            return FileResult::FileNameEmpty;
+        }
+        if (outBuffer == nullptr) {
+            return FileResult::BufferPtrNull;
+        }
+        if (outSize == nullptr) {
+            return FileResult::OutsizePtrNull;
+        }
+        File this_file = LittleFS.open(file_name, "r");
+        if (!this_file) {
+            return FileResult::FileNotFound;
+        }
+
+        size_t size = this_file.size();
+        if (size == 0) {
+            this_file.close();
+            return FileResult::FileEmpty;
+        }
+
+        uint8_t* buffer = new (std::nothrow) uint8_t[size];
+        if (!buffer) {
+            this_file.close();
+            return FileResult::AllocFail;
+        }
+
+        size_t readCount = this_file.readBytes(reinterpret_cast<char*>(buffer), size);
         this_file.close();
 
         *outBuffer = buffer;
-        if (outSize) *outSize = index;
+        *outSize = readCount;
+
         return FileResult::Success;
     }
 

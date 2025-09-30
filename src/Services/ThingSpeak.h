@@ -101,9 +101,9 @@ namespace ThingSpeak
             lastError = "cfg file did not exist";
             return false;
         }
-        int size = LittleFS_ext::getFileSize(TS_CONFIG_JSON_FILE);
-        char jsonBuffer[size + 1]; // +1 for null char
-        if (LittleFS_ext::load_from_file(TS_CONFIG_JSON_FILE, jsonBuffer) != LittleFS_ext::FileResult::Success)
+        
+        char* jsonBuffer = nullptr;
+        if (LittleFS_ext::load_text_file(TS_CONFIG_JSON_FILE, &jsonBuffer) != LittleFS_ext::FileResult::Success)
         {
             lastError = "could not load json file";
             return false;

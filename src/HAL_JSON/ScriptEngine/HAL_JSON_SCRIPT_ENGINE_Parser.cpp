@@ -28,15 +28,8 @@ namespace HAL_JSON {
 
         AssignmentParts g_assignmentParts;  // single reusable instance
 
-        //static const char* actionStartKeywords[] = {";", "then", "do", "and", "else", "endif", nullptr};
-        //static const char* actionEndKeywords[] = {";", "and", "if", "else", "elseif", "endon", "endif", nullptr};
-
         static const TokenType actionStartTypes[] = {TokenType::ActionSeparator, TokenType::And, TokenType::Else, TokenType::EndIf, TokenType::Then, TokenType::NotSet};
         static const TokenType actionEndTypes[] =   {TokenType::ActionSeparator, TokenType::And, TokenType::Else, TokenType::EndIf, TokenType::If, TokenType::ElseIf, TokenType::EndOn, TokenType::NotSet};
-        //static const char* actionUnsupportedAssignKeywords[] {"+=", "-=", "*=", "/=", "%=", "&=", "|=", nullptr};
-       // static const char* actionAssignKeywords[] {"=", nullptr};
-
-        
         
         void Parser::ReportError(const char* msg) {
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -53,9 +46,6 @@ namespace HAL_JSON {
 #define ReportInfo(msg)        
 #endif
         
-        
-
-
         void Parser::FixNewLines(char* buffer) {
             char* p = buffer;
             while (*p) {
@@ -154,7 +144,7 @@ namespace HAL_JSON {
             return true;
         }
 
-        bool Parser::Tokenize(char* buffer, Tokens& _tokens) {
+        bool Parser::TokenizeScript(char* buffer, Tokens& _tokens) {
             Token* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int line = 1;
@@ -193,7 +183,7 @@ namespace HAL_JSON {
             return true;
         }
 
-        int Parser::ParseTokens(char* buffer, Token* tokens, int maxCount) {
+        int Parser::TokenizeScript(char* buffer, Token* tokens, int maxCount) {
             char* p = buffer;
             int tokenIndex = 0;
             int line = 1;
@@ -215,11 +205,8 @@ namespace HAL_JSON {
                     // // single-line comment
                     if (p[0] == '/' && p[1] == '/') {
                         p += 2;
-                        while (*p && *p != '\n') p++;
-                        if (*p == '\n') {
-                            line++;
-                            column = 1;
-                        }
+                        // Skip all characters until either the end of the string or a newline
+                        while (*p && *p != '\n') { p++; }
                         continue;
                     }
 
@@ -261,15 +248,12 @@ namespace HAL_JSON {
                     if (tokenIndex >= maxCount) {
                         return -1; // error: mismatch
                     }
-
                     tokens[tokenIndex].Set(token_start, p, line, token_column);
                 }
                 tokenIndex++;
             }
-
             return tokenIndex; // count of tokens found
         }
-
 
         int Parser::Count_IfTokens(Tokens& _tokens) {
             Token* tokens = _tokens.items;
@@ -886,25 +870,29 @@ namespace HAL_JSON {
             }
             return true;
         }
+#define USE_COMBINED_PARSE_TOKENS_FUNC
 
         bool Parser::ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(Tokens& tokens)) {
-            size_t fileSize;
-            char* fileContents;// = ReadFileToMutableBuffer(filePath, fileSize);
-            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_from_file(filePath, &fileContents, &fileSize);
+            char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
+            MEASURE_TIME("ReadAndParseScriptFile - load_text_file time: ",
+            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
             if (fileResult != LittleFS_ext::FileResult::Success) {
                 ReportInfo("Error: file could not be read/or is empty\n");
                 return false;
             }
-
-            MEASURE_TIME("FixNewLines and StripComments time: ",
+        );
+        /*MEASURE_TIME("FixNewLines time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
+            FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
+        );*/
+#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
+            MEASURE_TIME("StripComments time: ",
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents); // not needed when integrated into ParseTokens
             );
-
+#endif
             /* just some debug print
             char* ptr = fileContents;
             printf("\n");
@@ -913,24 +901,33 @@ namespace HAL_JSON {
             }
             printf("\n");
             */
-
-            int tokenCount = CountTokens(fileContents);
-
-            //int tokenCount = ParseTokens(fileContents, nullptr, -1); // count in the same function
+            int tokenCount = 0;
+           MEASURE_TIME("CountTokens time: ",
+#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
+            tokenCount = CountTokens(fileContents);
+#else
+            tokenCount = TokenizeScript(fileContents, nullptr, -1); // count in the same function
+#endif
+           );
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             Tokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
-            /*if (Tokenize(fileContents, tokens.items, tokenCount) == -1)*/
-            if (Tokenize(fileContents, tokens) == false) {
+#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
+            if (TokenizeScript(fileContents, tokens) == false)
+#else
+            if (TokenizeScript(fileContents, tokens.items, tokenCount) == -1)
+#endif
+            {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;
             }
             );
-
             bool anyError = false;
+            MEASURE_TIME("ValidateParseScript time: ",
+            
             if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
                 ReportInfo("ParseScript [OK]\n");
 
@@ -941,6 +938,7 @@ namespace HAL_JSON {
                 ReportInfo("ParseScript [FAIL]\n");
                 anyError = true;
             }
+            );
             // dont forget to free/delete
             delete[] fileContents;
             return anyError == false;
@@ -1052,9 +1050,8 @@ namespace HAL_JSON {
 
         bool Parser::ParseExpressionTest(const char* filePath) {
             
-            size_t fileSize;
-            char* fileContents;// = ReadFileToMutableBuffer(filePath, fileSize);
-            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_from_file(filePath, &fileContents, &fileSize);
+            char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
+            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
             if (fileResult != LittleFS_ext::FileResult::Success) {
                 ReportInfo("Error: file could not be read/or is empty\n");
                 return false;
@@ -1063,7 +1060,7 @@ namespace HAL_JSON {
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            //FixNewLines(fileContents); // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
+            //FixNewLines(fileContents); // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents);
@@ -1075,7 +1072,7 @@ namespace HAL_JSON {
             
             MEASURE_TIME("Tokenize time: ",
 
-            if (Tokenize(fileContents, tokens) == false) {
+            if (TokenizeScript(fileContents, tokens) == false) {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;
@@ -1139,9 +1136,8 @@ namespace HAL_JSON {
 
         bool Parser::ParseActionExpressionTest(const char* filePath) {
             
-            size_t fileSize;
-            char* fileContents;// = ReadFileToMutableBuffer(filePath, fileSize);
-            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_from_file(filePath, &fileContents, &fileSize);
+            char* fileContents = nullptr;
+            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
             if (fileResult != LittleFS_ext::FileResult::Success) {
                 ReportInfo("Error: file could not be read/or is empty\n");
                 return false;
@@ -1150,7 +1146,7 @@ namespace HAL_JSON {
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
-            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_from_file automatically normalizes newlines to \n
+            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
             // replaces all comments with whitespace
             // make it much simpler to parse the contents 
             StripComments(fileContents);
@@ -1162,7 +1158,7 @@ namespace HAL_JSON {
             
             MEASURE_TIME("Tokenize time: ",
 
-            if (Tokenize(fileContents, tokens) == false) {
+            if (TokenizeScript(fileContents, tokens) == false) {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;

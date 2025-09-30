@@ -1,0 +1,53 @@
+
+Using scripts list file:
+
+script count:2
+
+
+Validating script:/scripts/script1.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  19477 us
+FixNewLines time:                                 20 us
+CountTokens time:                                 83 us
+Tokenize time:                                   366 us
+VerifyBlocks time:                                95 us
+ValidateParseScript time:                      11452 us
+
+
+Validating script:/scripts/script2.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  27185 us
+FixNewLines time:                                 42 us
+CountTokens time:                                111 us
+Tokenize time:                                   598 us
+VerifyBlocks time:                                76 us
+ValidateParseScript time:                      15033 us
+
+*************************************************** InitStacks ********************************
+
+rpnOutputStack NeededSize:19
+opStackSize NeededSize:13
+logicRPNNodeStack NeededSize:13
+
+
+Loading script:/scripts/script1.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  19712 us
+FixNewLines time:                                 25 us
+CountTokens time:                                 68 us
+Tokenize time:                                   351 us
+ValidateParseScript time:                       7725 us
+
+
+Loading script:/scripts/script2.txt
+---------------------------------------------------------
+ReadAndParseScriptFile - load_from_file time:  27224 us
+FixNewLines time:                                 40 us
+CountTokens time:                                122 us
+Tokenize time:                                   604 us
+ValidateParseScript time:                      11062 us
+
+*******************************************************************
+
+ValidateAndLoadAllActiveScripts time:             207 ms
+

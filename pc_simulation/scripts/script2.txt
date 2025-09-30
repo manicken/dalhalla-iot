@@ -1,13 +1,21 @@
-if ((hum#humidity>= 50) and (var1 ==0)) then
-    var0=0
+on dummyTrigger then
 
-elseif ((hum < 40) && (var1+(2*(0-1)) == 1)) then
-    var1= 1
-    if (var6 < 5) then
-        var8 = 8 + var8
-    endif
-else
-	var0 = 42
-	var1 = 24
-
-endif
+  // store in temp vars
+  rgb16 = ((i2c:pcf2 << 8) & 0xFF00) | i2c:pcf1
+  i2c:disp:rgb16 = rgb16
+  
+  red = (rgb16 >> 11) & 0x1F
+  green = (rgb16 >> 5) & 0x3F
+  blue = rgb16 & 0x1F
+  
+  red = (red << 3)// | (var7 >> 2)
+  green = (green << 2)// | (var8 >> 4)
+  blue = (blue << 3)// | (var9 >> 2)
+  
+  i2c:disp:red = red
+  i2c:disp:green = green
+  i2c:disp:blue = blue/*some comment*/
+  
+  neo#color = (red << 16) | (green << 8) | blue
+  
+endon

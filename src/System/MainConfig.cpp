@@ -43,10 +43,9 @@ namespace MainConfig {
             lastJSONread_Error = "cfg file did not exist";
             return false;
         }
-        //int size = LittleFS_ext::getFileSize(MAIN_CONFIG_CONFIG_JSON_FILE);
         size_t size = 0;
-        char* jsonBuffer = nullptr;//[size + 1]; // +1 for null char
-        if (LittleFS_ext::load_from_file(MAIN_CONFIG_CONFIG_JSON_FILE, &jsonBuffer, &size) != LittleFS_ext::FileResult::Success)
+        char* jsonBuffer = nullptr;
+        if (LittleFS_ext::load_text_file(MAIN_CONFIG_CONFIG_JSON_FILE, &jsonBuffer, &size) != LittleFS_ext::FileResult::Success)
         {
             lastJSONread_Error = "error could not load json file";
             return false;
@@ -56,10 +55,12 @@ namespace MainConfig {
         if (error)
         {
             lastJSONread_Error = "deserialization failed: " + std::string(error.c_str());
+            delete[] jsonBuffer;
             return false;
         }
         if (jsonDoc.is<JsonObject>() == false) {
             lastJSONread_Error = "root json is not a JsonObject";
+            delete[] jsonBuffer;
             return false;
         }
         if (jsonDoc.containsKey("mDNSname")) {
@@ -73,7 +74,7 @@ namespace MainConfig {
             }
         }
         else SetDefault_mDNS_name();
-
+        delete[] jsonBuffer;
         return true;
     }
 

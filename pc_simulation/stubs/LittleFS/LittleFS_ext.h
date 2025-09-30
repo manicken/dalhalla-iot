@@ -25,16 +25,24 @@
 
 //#include <Arduino.h>
 #include <fstream>
+#include <cstdint>
+#include <cstddef>
 namespace LittleFS_ext {
 
     enum class FileResult {
         Success,
+        FileNameEmpty,
+        OutsizePtrNull,
+        BufferPtrNull,
         FileNotFound,
         FileEmpty,
         AllocFail,
-        FileReadError
+        FileReadError,
+        BufferOverflowError
     };
-    /** using this is safe, note this file reader normalizes \r,\r\n to simple \n */
-    FileResult load_from_file(const char* file_name, char** outBuffer, size_t* outSize);
+    /** --- Text loader (null-terminated, \n normalized) --- */
+    FileResult load_text_file(const char* file_name, char** outBuffer, size_t* outSize = nullptr);
+    /** --- Binary loader (exact size, no modifications, no null terminator) --- */
+    FileResult load_binary_file(const char* file_name, uint8_t** outBuffer, size_t* outSize);
 
 }

@@ -23,7 +23,7 @@
 
 #pragma once
 
-#define DEBUG_PRINT_SCRIPT_ENGINE
+//#define DEBUG_PRINT_SCRIPT_ENGINE
 
 #include <Arduino.h> // Needed for String class
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -44,6 +44,7 @@
 #include "../../Support/CharArrayHelpers.h"
 #include "../HAL_JSON_ZeroCopyString.h"
 
+#define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <chrono>
@@ -57,7 +58,15 @@ do { \
     std::chrono::duration<double, std::milli> _mt_duration = _mt_end - _mt_start; \
     std::cout << message << _mt_duration.count() << " ms\n"; \
 } while (0)
-
+#elif defined(HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES)
+#define MEASURE_TIME(message, block) \
+do { \
+    auto _mt_start = micros(); \
+    block; \
+    auto _mt_end = micros(); \
+    auto _mt_duration = _mt_end - _mt_start; \
+    printf("\n%s %d us\n",message,_mt_duration); \
+} while (0)
 #else
 // On embedded builds: expands to nothing, zero overhead
 #define MEASURE_TIME(message, block) do { block; } while (0)
@@ -96,15 +105,6 @@ namespace HAL_JSON {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             static void ReportInfo(std::string msg);
 #endif
-            //static inline bool IsType(const Token& t, const char* str) { return t.EqualsIC(str); }
-
-            
-
-            
-            /** used only for scripts */
-            static bool Tokenize(char* buffer, Tokens& tokens);
-            
-
             /** used by VerifyBlocks */
             static int Count_IfTokens(Tokens& tokens);
 
@@ -142,7 +142,7 @@ namespace HAL_JSON {
              * @brief Parses a buffer into tokens while stripping comments and tracking line/column positions.
              *
              * This function performs a single pass over the input buffer:
-             * - Removes both `// line` and C-style block comments (replacing them with spaces).
+             * - Skips both `// line` and C-style block comments.
              * - Skips whitespace while tracking line and column numbers.
              * - Splits the text into tokens separated by whitespace.
              * - Optionally fills an array of Token objects with start/end pointers and source position info.
@@ -156,20 +156,22 @@ namespace HAL_JSON {
              * @note If `tokens` is provided, the caller must ensure it has at least `maxCount` capacity.
              * @note If only the count is needed, call with `tokens = nullptr` and `maxCount = 0`.
              */
-            static int ParseTokens(char* buffer, Token* tokens, int maxCount);
+            static int TokenizeScript(char* buffer, Token* tokens, int maxCount);
             /** special note,
               *  this function do not remove additional \r characters in \r\n \n\r 
               *  it just replaces them with spaces for easier parsing 
               */
             static void FixNewLines(char* buffer);
             static void StripComments(char* buffer);
-        /** 
-         * if the callback is set this is considered a Load function
-         * if the callback is not set (nullptr) then it's validate only
-         */
             static int CountTokens(char* buffer);
             /** can be used to tokenize a simple string, based on whitespace */
             static bool Tokenize(char* buffer, ZeroCopyString* items, int tokenCount);
+            /** used only for scripts */
+            static bool TokenizeScript(char* buffer, Tokens& tokens);
+            /** 
+             * if the callback is set this is considered a Load function
+             * if the callback is not set (nullptr) then it's validate only
+             */
             static bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(Tokens& tokens) = nullptr);
 
 
