@@ -79,6 +79,17 @@ namespace HAL_JSON {
         }
     }
 
+    void HALValue::appendToString(std::string& target) const {
+        char buf[20]; // allocated on the stack 
+        switch (type) {
+            case Type::INT:   snprintf(buf, sizeof(buf), "%d", ival); break;
+            case Type::UINT:  snprintf(buf, sizeof(buf), "%u", uval); break;
+            case Type::FLOAT: snprintf(buf, sizeof(buf), "%f", fval); break;
+            default:          buf[0] = '\0'; break;
+        }
+        target += buf;
+    }
+
     HALValue& HALValue::operator=(uint32_t v) {
         set(v);
         return *this;

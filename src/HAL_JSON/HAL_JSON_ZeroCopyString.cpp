@@ -39,6 +39,12 @@ namespace HAL_JSON {
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
     }
+    void ZeroCopyString::Set(const char* _start, const char* _end, int line, int col) { // line and col are just dummy parameters
+        start = _start;
+        end = _end;
+        if (this->end == nullptr) this->start = nullptr; 
+        else if (this->start == nullptr) this->end = nullptr;
+    }
     void ZeroCopyString::Set(const char* cstr) {
         start = cstr;
         end = cstr?(cstr+strlen(cstr)):nullptr;

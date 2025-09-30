@@ -32,7 +32,7 @@ namespace HAL_JSON {
         xPos = GetAsUINT8(jsonObj, "x");
         yPos = GetAsUINT8(jsonObj, "y");
         const char* labelStr = GetAsConstChar(jsonObj,"label");
-        label = labelStr;
+        label = labelStr; // just copy to std::string
 
         const char* sourceStr = GetAsConstChar(jsonObj,"source");
         if (sourceStr != nullptr) {

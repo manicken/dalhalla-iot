@@ -14,10 +14,10 @@ on dummyTrigger then
   
   i2c:disp:red = red;
   i2c:disp:green = green;
-  i2c:disp:blue = blue/*some comment*/
+  i2c:disp:blue = blue;
   
   neo#color = (red << 16) |\
               (green << 8) |\
  			   blue
-  
 endon
+

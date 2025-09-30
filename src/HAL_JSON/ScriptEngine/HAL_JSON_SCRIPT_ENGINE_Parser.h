@@ -156,18 +156,19 @@ namespace HAL_JSON {
              * @note If `tokens` is provided, the caller must ensure it has at least `maxCount` capacity.
              * @note If only the count is needed, call with `tokens = nullptr` and `maxCount = 0`.
              */
-            static int TokenizeScript(char* buffer, Token* tokens, int maxCount);
+            template <typename T>
+            static int ParseAndTokenize(char* buffer, T* tokens=nullptr, int maxCount=-1);
             /** special note,
               *  this function do not remove additional \r characters in \r\n \n\r 
               *  it just replaces them with spaces for easier parsing 
               */
-            static void FixNewLines(char* buffer);
-            static void StripComments(char* buffer);
-            static int CountTokens(char* buffer);
+            //static void FixNewLines(char* buffer);
+            //static void StripComments(char* buffer);
+            //static int CountTokens(char* buffer);
             /** can be used to tokenize a simple string, based on whitespace */
-            static bool Tokenize(char* buffer, ZeroCopyString* items, int tokenCount);
+            //static bool Tokenize(char* buffer, ZeroCopyString* items, int tokenCount);
             /** used only for scripts */
-            static bool TokenizeScript(char* buffer, Tokens& tokens);
+            //static bool TokenizeScript(char* buffer, Tokens& tokens);
             /** 
              * if the callback is set this is considered a Load function
              * if the callback is not set (nullptr) then it's validate only

@@ -95,12 +95,13 @@ namespace HAL_JSON {
                 }
                 else {
                     printf("\nUsing scripts list file:\n");
-                    Parser::FixNewLines(scriptsListContents);
-                    Parser::StripComments(scriptsListContents);
-                    int scriptCount = Parser::CountTokens(scriptsListContents);
+                    //Parser::FixNewLines(scriptsListContents);
+                    //Parser::StripComments(scriptsListContents);
+                    //int scriptCount = Parser::CountTokens(scriptsListContents);
+                    int scriptCount = Parser::ParseAndTokenize<ZeroCopyString>(scriptsListContents);
                     printf("\nscript count:%d\n", scriptCount);
                     InitScriptList(scriptCount);
-                    if (false == Parser::Tokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
+                    if (false == Parser::ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
                         useDefaultFile = true;
                         printf("\ntokenize scripts list file fail!\n");
                     } else {

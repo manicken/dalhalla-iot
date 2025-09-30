@@ -51,6 +51,7 @@ namespace HAL_JSON {
             ZeroCopyString zcPath = zcFuncName.SplitOffHead('#');
             field.cda = new CachedDeviceAccess(zcPath, zcFuncName);
         }
+        urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
     }
 
     ThingSpeak::~ThingSpeak() {
@@ -58,7 +59,8 @@ namespace HAL_JSON {
     }
 
     HALOperationResult ThingSpeak::exec() {
-        std::string urlApi;
+        //std::string urlApi;
+        urlApi.clear();
         urlApi += TS_ROOT_URL;
         urlApi += API_KEY;
         for (int i=0;i<fieldCount;i++) {
@@ -68,9 +70,9 @@ namespace HAL_JSON {
             if (hres != HALOperationResult::Success) continue;
             
             urlApi += "&field";
-            urlApi += std::to_string(field.index);
+            urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
             urlApi += '=';
-            urlApi += val.toString();
+            val.appendToString(urlApi);
         }
         http.begin(wifiClient, urlApi.c_str());
                 
@@ -124,7 +126,7 @@ namespace HAL_JSON {
             }
 
             int fieldIndex = atoi(indexStr);
-            if (fieldIndex < 1 || fieldIndex > 8) {
+            if (fieldIndex < 1 || fieldIndex > DALHALLA_THINGSPEAK_MAX_FIELDS) {
                 GlobalLogger.Error(F("Invalid field index: "), indexStr);
                 SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
                 return false;

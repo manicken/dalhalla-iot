@@ -45,7 +45,7 @@ namespace HAL_JSON {
 #else
 #define ReportInfo(msg)        
 #endif
-        
+/*        
         void Parser::FixNewLines(char* buffer) {
             char* p = buffer;
             while (*p) {
@@ -62,7 +62,8 @@ namespace HAL_JSON {
                 } else p++;
             }
         }
-
+*/
+/*
         void Parser::StripComments(char* buffer) {
             char* p = buffer;
             while (*p) {
@@ -74,7 +75,7 @@ namespace HAL_JSON {
                         *p++ = ' ';
                     }
                 }
-                // Handle /* ... */
+                // Handle / * ... * /
                 else if (p[0] == '/' && p[1] == '*') {
                     *p++ = ' ';
                     *p++ = ' ';
@@ -84,7 +85,7 @@ namespace HAL_JSON {
                         }
                         p++;
                     }
-                    if (*p) {  // Replace */
+                    if (*p) {  // Replace * /
                         *p++ = ' ';
                     }
                     if (*p) {
@@ -96,7 +97,8 @@ namespace HAL_JSON {
                 }
             }
         }
-
+*/
+/*
         int Parser::CountTokens(char* buffer) {
             int count = 0;
             char* p = buffer;
@@ -116,7 +118,8 @@ namespace HAL_JSON {
             }
             return count;
         }
-
+*/
+/*
         bool Parser::Tokenize(char* buffer, ZeroCopyString* items, int tokenCount) {
             char* p = buffer;
             
@@ -143,7 +146,8 @@ namespace HAL_JSON {
             
             return true;
         }
-
+*/
+        /*
         bool Parser::TokenizeScript(char* buffer, Tokens& _tokens) {
             Token* tokens = _tokens.items;
             int tokenCount = _tokens.count;
@@ -181,9 +185,24 @@ namespace HAL_JSON {
                 tokens[tokenIndex++].Set(token_start, p, line, token_column);
             }
             return true;
+        }*/
+
+        inline void advance(char*& p, int& column) {
+            p++;
+            column++;
         }
 
-        int Parser::TokenizeScript(char* buffer, Token* tokens, int maxCount) {
+        inline void advance(char*& p, int& line, int& column) {
+            if (*p == '\n') { 
+                line++;
+                column = 1;
+            } else {
+                column++;
+            }
+            p++;
+        }
+        template <typename T>
+        int Parser::ParseAndTokenize(char* buffer, T* tokens, int maxCount) {
             char* p = buffer;
             int tokenIndex = 0;
             int line = 1;
@@ -196,15 +215,13 @@ namespace HAL_JSON {
 
                     // Whitespace
                     if (isspace(static_cast<unsigned char>(*p))) {
-                        if (*p == '\n') { line++; column = 1; }
-                        else { column++; }
-                        p++;
+                        advance(p, line, column); // advance is newline-aware
                         continue;
                     }
 
                     // // single-line comment
                     if (p[0] == '/' && p[1] == '/') {
-                        p += 2;
+                        p+=2; // note here we don't touch column 
                         // Skip all characters until either the end of the string or a newline
                         while (*p && *p != '\n') { p++; }
                         continue;
@@ -213,21 +230,53 @@ namespace HAL_JSON {
                     // /* block comment */
                     if (p[0] == '/' && p[1] == '*') {
                         p += 2;
-                        while (*p && !(p[0] == '*' && p[1] == '/')) {
-                            if (*p == '\n') { line++; column = 1; }
-                            else { column++; }
-                            p++;
+                        column += 2; // need to be aware as block comment can escape anywhere
+                        while (*p) {
+                            if (p[0] == '*' && p[1] == '/') {
+                                p += 2;
+                                column += 2;
+                                break;
+                            }
+                            advance(p, line, column); // advance is newline-aware
                         }
-                        if (*p) { p++; column++; } // skip '*'
-                        if (*p) { p++; column++; } // skip '/'
                         continue;
                     }
-
                     // No more whitespace or comments
                     break;
                 }
 
                 if (!*p) break;
+
+                // check for string literal start and handle it
+                if (*p == '"') {
+                    char* token_start = p;      // include the starting quote
+                    int token_column = column;
+                    int extraNewlines = 0;
+                    // skip opening quote
+                    advance(p, column);
+                    
+                    while (*p && *p != '"') {
+                        if (*p == '\\' && *(p+1)) {
+                            // skip '\'
+                            advance(p, column);
+                        } // skip escaped char or next non "
+                        advance(p, extraNewlines, column); // advance is newline-aware
+                    }
+
+                    if (*p == '"') {
+                        // skip closing quote
+                        advance(p, column); 
+                    }
+
+                    // store string token
+                    if (tokens) {
+                        if (tokenIndex >= maxCount) return -1;
+                        tokens[tokenIndex].Set(token_start, p, line, token_column);
+                    }
+                    line += extraNewlines;
+                    tokenIndex++;
+                    continue; // move to next token
+                }
 
                 // --- Start of token ---
                 char* token_start = p;
@@ -243,8 +292,7 @@ namespace HAL_JSON {
                     // break if the character itself is a token separator (; or \)
                     if (c == ';' || c == '\\') break;
 
-                    p++;
-                    column++;
+                    advance(p, column);
                 }
                 // --- Handle single-character token separators separately ---
                 if (p[0] == ';' || p[0] == '\\') {
@@ -264,8 +312,7 @@ namespace HAL_JSON {
                     }
                     tokenIndex++;
 
-                    p++;
-                    column++;
+                    advance(p, column);
                     continue; // move to next token
                 }
 
@@ -278,6 +325,16 @@ namespace HAL_JSON {
             }
             return tokenIndex; // count of tokens found
         }
+        // Explicit instantiation for each type need to be after the template definition
+        template int Parser::ParseAndTokenize<Token>(char* buffer, Token* tokens, int maxCount);
+        template int Parser::ParseAndTokenize<ZeroCopyString>(char* buffer, ZeroCopyString* tokens, int maxCount);
+        // Explicit instantiation for future ScriptToken type
+        // ScriptToken (adds ScriptTokenType) inherits from Token (adds line, column),
+        // which in turn inherits from ZeroCopyString (contains start, end)
+        // Currently commented out as Token need to be renamed to ScriptToken
+        // which needs some refactoring
+        // Then a new Token type will be created
+        //template int ParseAndTokenize<ScriptToken>(char* buffer, ScriptToken* tokens, int maxCount); // future type that would explicit do what Token is now
 
         int Parser::Count_IfTokens(Tokens& _tokens) {
             Token* tokens = _tokens.items;
@@ -930,7 +987,7 @@ namespace HAL_JSON {
 #ifndef USE_COMBINED_PARSE_TOKENS_FUNC
             tokenCount = CountTokens(fileContents);
 #else
-            tokenCount = TokenizeScript(fileContents, nullptr, -1); // count in the same function
+            tokenCount = ParseAndTokenize<Token>(fileContents, nullptr, -1); // count in the same function
 #endif
            );
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
@@ -941,7 +998,7 @@ namespace HAL_JSON {
 #ifndef USE_COMBINED_PARSE_TOKENS_FUNC
             if (TokenizeScript(fileContents, tokens) == false)
 #else
-            if (TokenizeScript(fileContents, tokens.items, tokenCount) == -1)
+            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == -1)
 #endif
             {
                 ReportInfo("Error: could not Tokenize\n");
@@ -1081,7 +1138,7 @@ namespace HAL_JSON {
                 return false;
             }
 
-            MEASURE_TIME("FixNewLines and StripComments time: ",
+            /*MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
             //FixNewLines(fileContents); // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
@@ -1089,14 +1146,15 @@ namespace HAL_JSON {
             // make it much simpler to parse the contents 
             StripComments(fileContents);
             );
-
-            int tokenCount = CountTokens(fileContents);
+*/
+            //int tokenCount = CountTokens(fileContents);
+            int tokenCount = ParseAndTokenize<Token>(fileContents);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             Tokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
-            if (TokenizeScript(fileContents, tokens) == false) {
+            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;
@@ -1166,7 +1224,7 @@ namespace HAL_JSON {
                 ReportInfo("Error: file could not be read/or is empty\n");
                 return false;
             }
-
+/*
             MEASURE_TIME("FixNewLines and StripComments time: ",
             // fix newlines so that they only consists of \n 
             // for easier parsing
@@ -1175,14 +1233,15 @@ namespace HAL_JSON {
             // make it much simpler to parse the contents 
             StripComments(fileContents);
             );
-
-            int tokenCount = CountTokens(fileContents);
+*/
+            //int tokenCount = CountTokens(fileContents);
+            int tokenCount = ParseAndTokenize<Token>(fileContents);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             Tokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
-            if (TokenizeScript(fileContents, tokens) == false) {
+            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;

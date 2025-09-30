@@ -62,6 +62,7 @@ namespace HAL_JSON {
         float asFloat() const;
 
         std::string toString() const;
+        void appendToString(std::string& target) const;
 
         void set(int32_t v);
         void set(uint32_t v);

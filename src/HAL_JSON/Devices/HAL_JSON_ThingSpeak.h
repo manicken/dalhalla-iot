@@ -42,6 +42,7 @@
 #include <HTTPClient.h>
 #endif
 
+#define DALHALLA_THINGSPEAK_MAX_FIELDS 8
 
 namespace HAL_JSON {
 
@@ -56,6 +57,7 @@ namespace HAL_JSON {
         WiFiClient wifiClient;
         static const char TS_ROOT_URL[];
         char API_KEY[17];
+        std::string urlApi;
         ThingSpeakField* fields;
         int fieldCount;
     public:

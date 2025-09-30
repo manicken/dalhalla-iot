@@ -74,26 +74,7 @@ namespace HAL_JSON {
             }
             return TokenType::NotSet;
         }
-/*
-        TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType) {
-        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            //std::cout << "GetFundamentalTokenType: >>>" << str << "<<<\n";
-        #endif
-            if (zcStrType.EqualsIC("if")) return TokenType::If;
-            else if (zcStrType.EqualsIC("endif")) return TokenType::EndIf;
-            else if (zcStrType.EqualsIC("else")) return TokenType::Else;
-            else if (zcStrType.EqualsIC("elseif")) return TokenType::ElseIf;
-            else if (zcStrType.EqualsIC("then")) return TokenType::Then;
-            else if (zcStrType.EqualsIC("do")) return TokenType::Then;
-            else if (zcStrType.EqualsIC("on")) return TokenType::On;
-            else if (zcStrType.EqualsIC("and")) return TokenType::And;
-            else if (zcStrType.EqualsIC("or")) return TokenType::Or;
-            else if (zcStrType.EqualsIC(";")) return TokenType::ActionSeparator;
-            else if (zcStrType.EqualsIC("\\")) return TokenType::ActionJoiner;
-            else if (zcStrType.EqualsIC("endon")) return TokenType::EndOn;
-            else return TokenType::NotSet;
-        }
-*/
+
         const char* TokenTypeToString(TokenType type) {
             switch (type) {
                 case TokenType::NotSet: return "NotSet";
@@ -130,6 +111,14 @@ namespace HAL_JSON {
             if (start != nullptr && end != nullptr) { // start is only nullptr when the token array is first created
                 ZeroCopyString zcStrType(start, end);
                 type = GetFundamentalTokenType(zcStrType);
+                // the problem with the following is that
+                // the rest of the parser is setting it to merged/action 
+                // so the string literal type is lost
+                // so keeping the " is a good way to check if it's a string literal
+                /*if (type == TokenType::StringLiteral) { 
+                    start++; //  remove starting "
+                    end--; // remove ending "
+                }*/
                 //printf("\nFundamentalTokenType is set to: %s from %s (%d)\n", TokenTypeToString(type), zcStrType.ToString().c_str(), zcStrType.Length());
             }
         }
