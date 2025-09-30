@@ -12,10 +12,12 @@ on dummyTrigger then
   green = (green << 2)// | (var8 >> 4)
   blue = (blue << 3)// | (var9 >> 2)
   
-  i2c:disp:red = red
-  i2c:disp:green = green
+  i2c:disp:red = red;
+  i2c:disp:green = green;
   i2c:disp:blue = blue/*some comment*/
   
-  neo#color = (red << 16) | (green << 8) | blue
+  neo#color = (red << 16) |\
+              (green << 8) |\
+ 			   blue
   
 endon

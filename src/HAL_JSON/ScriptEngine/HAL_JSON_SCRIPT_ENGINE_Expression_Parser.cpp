@@ -197,6 +197,7 @@ namespace HAL_JSON {
 
             for (int cti=0;cti<tokens.count;cti++) { // cti = currTokenIndex
                 Token& token = tokens.items[cti];
+                if (token.type == TokenType::Ignore) continue;
                 const char* effectiveStart = nullptr;
                 if (cti == 0 && tokens.firstTokenStartOffset != nullptr) {
                     effectiveStart  = tokens.firstTokenStartOffset;
@@ -317,7 +318,7 @@ namespace HAL_JSON {
             ReportInfo("ValidateExpression tokens.count:" + std::to_string(tokens.count) + "\n");
             for (int cti = startIndex; cti < endIndex; ++cti) {
                 Token& token = tokens.items[cti];
-                
+                if (token.type == TokenType::Ignore) continue;
                 //int a=0;
                 //int b = 5/a; // will introduce a crash
 
@@ -565,6 +566,7 @@ namespace HAL_JSON {
             const int endIndex = tokens.currentEndIndex;
             for (int cti = startIndex; cti < endIndex; cti++) {
                 const Token& token = tokens.items[cti];
+                if (token.type == TokenType::Ignore) continue;
                 const char* tokenStart = nullptr;
                 if (cti == startIndex && tokens.firstTokenStartOffset != nullptr) {
                     tokenStart  = tokens.firstTokenStartOffset;
@@ -620,6 +622,7 @@ namespace HAL_JSON {
             const int endIndex = tokens.currentEndIndex;
             for (int cti = startIndex; cti < endIndex; cti++) {
                 const Token& token = tokens.items[cti];
+                if (token.type == TokenType::Ignore) continue;
                 const char* tokenStart = nullptr;
                 if (cti == startIndex && tokens.firstTokenStartOffset != nullptr) {
                     tokenStart  = tokens.firstTokenStartOffset;

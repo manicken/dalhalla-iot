@@ -235,19 +235,43 @@ namespace HAL_JSON {
 
                 // Find end of token
                 while (*p) {
+                    char c = *p;
                     // break on whitespace
-                    if (isspace(static_cast<unsigned char>(*p))) break;
+                    if (isspace(static_cast<unsigned char>(c))) { break; }
                     // break on comment start inside token
-                    if (p[0] == '/' && (p[1] == '/' || p[1] == '*')) {
-                        break;
-                    }
+                    if (c == '/' && (p[1] == '/' || p[1] == '*')) { break; }
+                    // break if the character itself is a token separator (; or \)
+                    if (c == ';' || c == '\\') break;
+
                     p++;
                     column++;
                 }
-                if (tokens) {
-                    if (tokenIndex >= maxCount) {
-                        return -1; // error: mismatch
+                // --- Handle single-character token separators separately ---
+                if (p[0] == ';' || p[0] == '\\') {
+                    // If the token we just scanned has length > 0, store it first
+                    if (token_start < p) {
+                        if (tokens) {
+                            if (tokenIndex >= maxCount) return -1;
+                            tokens[tokenIndex].Set(token_start, p, line, token_column);
+                        }
+                        tokenIndex++;
                     }
+
+                    // Then store the separator as its own token
+                    if (tokens) {
+                        if (tokenIndex >= maxCount) return -1;
+                        tokens[tokenIndex].Set(p, p + 1, line, column);
+                    }
+                    tokenIndex++;
+
+                    p++;
+                    column++;
+                    continue; // move to next token
+                }
+
+                // If the loop broke naturally (whitespace or comment), store the token
+                if (tokens) {
+                    if (tokenIndex >= maxCount) { return -1; } // error: mismatch, nearly impossible to happend
                     tokens[tokenIndex].Set(token_start, p, line, token_column);
                 }
                 tokenIndex++;
