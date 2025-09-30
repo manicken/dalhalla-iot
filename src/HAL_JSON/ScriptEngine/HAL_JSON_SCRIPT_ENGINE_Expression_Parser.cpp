@@ -289,7 +289,9 @@ namespace HAL_JSON {
                 ReportError("double operator(s) detected");
                 anyError = true;
             } else if (operatorCount != operandCount - 1) {
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
+#endif
                 ReportError("operator(s) missing before/after parenthesis");
                 anyError = true;
             }
@@ -313,9 +315,11 @@ namespace HAL_JSON {
 
             int startIndex = tokens.currIndex;
             int endIndex = tokens.currentEndIndex;
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             ReportInfo("\nValidateExpression startIndex:" + std::to_string(startIndex) + "\n");
             ReportInfo("ValidateExpression endIndex:" + std::to_string(endIndex) + "\n");
             ReportInfo("ValidateExpression tokens.count:" + std::to_string(tokens.count) + "\n");
+#endif
             for (int cti = startIndex; cti < endIndex; ++cti) {
                 Token& token = tokens.items[cti];
                 if (token.type == TokenType::Ignore) continue;
@@ -332,8 +336,9 @@ namespace HAL_JSON {
 
                 Token tokToPrint = token;
                 tokToPrint.start = effectiveStart;
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportTokenInfo(tokToPrint, "checking token:", tokToPrint.ToString().c_str());
-
+#endif
                 const char* tokenEnd = token.end;
                 for (p = effectiveStart ; p < tokenEnd; ++p) {
                     if (IsDoubleOperator(p) /*&& exprContext == ExpressionContext::IfCondition*/) {
@@ -380,7 +385,7 @@ namespace HAL_JSON {
 
         void Expressions::ValidateOperand(const Token& operandToken, bool& anyError, ValidateOperandMode mode) {
             //bool operandIsVariable = OperandIsVariable(operandToken);
-#ifdef HAL_JSON_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG
+#if defined(HAL_JSON_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             std::string msg;
             //if (OperandIsVariable(operandToken)) {
             if (operandToken.ValidNumber() == false) {

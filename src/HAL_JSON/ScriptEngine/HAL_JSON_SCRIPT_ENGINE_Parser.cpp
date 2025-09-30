@@ -42,8 +42,10 @@ namespace HAL_JSON {
         void Parser::ReportInfo(std::string msg) {
             printf("\n%s\n", msg.c_str());
         }
+   #define DBGSTR(x) x     
 #else
-#define ReportInfo(msg)        
+#define ReportInfo(msg) ((void)0)
+#define DBGSTR(x) ""
 #endif
 /*        
         void Parser::FixNewLines(char* buffer) {
@@ -719,7 +721,9 @@ namespace HAL_JSON {
                     conditions.count = 1;
                 }
                 ReportInfo("\n"); // newline
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo(conditions.ToString());
+#endif
                 ReportInfo("\n"); // newline
                 conditions.currentEndIndex = conditions.count;
                 if (Expressions::ValidateExpression(conditions, ExpressionContext::IfCondition) == false) anyError = true;
@@ -896,58 +900,64 @@ namespace HAL_JSON {
                 ReportInfo("**********************************************************************************\n");
                 ReportInfo("*                            RAW TOKEN LIST                                      *\n");
                 ReportInfo("**********************************************************************************\n");
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo(PrintTokens(_tokens,0) + "\n");
-
-                ReportInfo("\nVerifyBlocks (BetterError): ");
-                MEASURE_TIME("VerifyBlocks time: ",
+#endif
+                ReportInfo("\n VerifyBlocks (BetterError): ");
+                //MEASURE_TIME(" VerifyBlocks time: ",
                 if (validateOnly && VerifyBlocks(_tokens) == false) {
                     ReportInfo("[FAIL]\n");
                     return false;
                 }
-                );
+                //);
                 ReportInfo("[OK]\n");
             }
             // if here then we can safely parse all blocks
-
-            ReportInfo("\nMergeConditions: ");
+            //MEASURE_TIME("\n MergeConditions time: ",
+            ReportInfo("\n MergeConditions: ");
             MergeConditions(_tokens);
             ReportInfo("[OK]\n");
-            
-            ReportInfo("\nMergeActions: ");
+            //);
+            //MEASURE_TIME("\n MergeActions time: ",
+            ReportInfo("\n MergeActions: ");
             MergeActions2(_tokens);
             ReportInfo("[OK]\n");
-            
-            ReportInfo("\nCountBlockItems: ");
+            //);
+            //MEASURE_TIME("\n CountBlockItems time: ",
+            ReportInfo("\n CountBlockItems: ");
             CountBlockItems(_tokens); // sets the metadata itemsInBlock
             ReportInfo("[OK]\n");
-
+            //);
             ReportInfo("**********************************************************************************\n");
             ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
             ReportInfo("**********************************************************************************\n");
-
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             ReportInfo(PrintTokens(_tokens,0) + "\n");
-            
+#endif
             if (validateOnly) {
-                ReportInfo("\nEnsureActionBlocksContainItems: ");
+                //MEASURE_TIME("\n EnsureActionBlocksContainItems time: ",
+                ReportInfo("\n EnsureActionBlocksContainItems: ");
                 if (validateOnly && EnsureActionBlocksContainItems(_tokens) == false) { // uses the metadata itemsInBlock to determine if there are invalid
                     ReportInfo("[FAIL]\n");
                     return false;
                 }
                 ReportInfo("[OK]\n");
-
+            //);
                 
-
-                ReportInfo("\nVerifyConditionBlocks: \n");
+               // MEASURE_TIME("\n VerifyConditionBlocks time: ",
+                ReportInfo("\n VerifyConditionBlocks: \n");
                 if (VerifyConditionBlocks(_tokens) == false) {
                     ReportInfo("[FAIL @ VerifyConditionBlocks]\n");
                     return false;
                 }
-
-                ReportInfo("\nVerifyActionBlocks: \n");
+            //);
+            //MEASURE_TIME("\n VerifyActionBlocks time: ",
+                ReportInfo("\n VerifyActionBlocks: \n");
                 if (VerifyActionBlocks(_tokens) == false) {
                     ReportInfo("[FAIL @ VerifyActionBlocks]\n");
                     return false;
                 }
+            //);
             }
             return true;
         }
@@ -983,17 +993,17 @@ namespace HAL_JSON {
             printf("\n");
             */
             int tokenCount = 0;
-           MEASURE_TIME("CountTokens time: ",
+           //MEASURE_TIME("CountTokens time: ",
 #ifndef USE_COMBINED_PARSE_TOKENS_FUNC
             tokenCount = CountTokens(fileContents);
 #else
             tokenCount = ParseAndTokenize<Token>(fileContents, nullptr, -1); // count in the same function
 #endif
-           );
+           //);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             Tokens tokens(tokenCount);
             
-            MEASURE_TIME("Tokenize time: ",
+            //MEASURE_TIME("Tokenize time: ",
 
 #ifndef USE_COMBINED_PARSE_TOKENS_FUNC
             if (TokenizeScript(fileContents, tokens) == false)
@@ -1005,16 +1015,20 @@ namespace HAL_JSON {
                 delete[] fileContents;
                 return false;
             }
-            );
+            //);
             bool anyError = false;
             MEASURE_TIME("ValidateParseScript time: ",
             
             if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
                 ReportInfo("ParseScript [OK]\n");
-
-                if (parsedOKcallback)
+                
+                if (parsedOKcallback) {
+                    MEASURE_TIME("loadscript time: ",
                     parsedOKcallback(tokens);
-
+                    );
+                }
+                    
+                
             } else {
                 ReportInfo("ParseScript [FAIL]\n");
                 anyError = true;
@@ -1163,9 +1177,9 @@ namespace HAL_JSON {
             );
             
 
-            ReportInfo("**********************************************************************************\n");
-            ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
-            ReportInfo("**********************************************************************************\n");
+            ReportInfo(DBGSTR("**********************************************************************************\n"));
+            ReportInfo(DBGSTR("*                            PARSED TOKEN LIST                                   *\n"));
+            ReportInfo(DBGSTR("**********************************************************************************\n"));
 
             ReportInfo(PrintTokens(tokens,0) + "\n");
 
