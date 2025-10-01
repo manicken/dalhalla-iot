@@ -41,7 +41,7 @@ namespace HAL_JSON {
             return true;
         }
 
-        void TriggerBlock::Set(int _itemsCount, Tokens& tokens) {
+        void TriggerBlock::Set(int _itemsCount, ScriptTokens& tokens) {
             //printf("(%d) TriggerBlock::Set----------------- triggerblock statement item count:%d %s\n",tokens.currIndex, _itemsCount, tokens.Current().ToString().c_str());
             
             itemsCount = _itemsCount;
@@ -67,7 +67,7 @@ namespace HAL_JSON {
             delete[] triggerBlocks;
         }
 
-        void ScriptBlock::Set(Tokens& tokens) {
+        void ScriptBlock::Set(ScriptTokens& tokens) {
             
             triggerBlockCount = tokens.rootBlockCount;
             triggerBlocks = new TriggerBlock[tokens.rootBlockCount];
@@ -78,15 +78,15 @@ namespace HAL_JSON {
             // tokens.currIndex increments for every token we process or skip
             while (i < tokens.rootBlockCount && tokens.currIndex < tokens.count) { // tokens.currIndex is incremented elsewhere and is included here as a out of bounds failsafe
                 
-                Token& token = tokens.Current();
+                ScriptToken& token = tokens.Current();
                 
-                if (token.type == TokenType::On)
+                if (token.type == ScriptTokenType::On)
                 {
                     TriggerBlock& triggerBlock = triggerBlocks[i++]; // consume a trigger block
                     //printf("\n(%d) FOUND ON TOKEN\n", tokens.currIndex);
                     tokens.currIndex++; // consume the On token as it dont have any important data
                     
-                    Token& triggerSourceToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
+                    ScriptToken& triggerSourceToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
                     if (triggerSourceToken.EqualsIC("eachloop"))
                         triggerBlock.triggerSource = TriggerBlock::AllwaysRun;
                     else
@@ -103,7 +103,7 @@ namespace HAL_JSON {
                     tokens.currIndex++; // consume the then
                     triggerBlock.Set(itemCount, tokens); // get number of items and consume
                 }
-                else if (token.type == TokenType::If) 
+                else if (token.type == ScriptTokenType::If) 
                 {
                     TriggerBlock& triggerBlock = triggerBlocks[i++]; // consume a trigger block
                     //printf("\n(%d) FOUND IF TOKEN\n", tokens.currIndex);

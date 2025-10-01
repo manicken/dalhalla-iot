@@ -29,7 +29,7 @@
 #include "../HAL_JSON_CachedDeviceAccess.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Support.h"
 #include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Operators.h"
 

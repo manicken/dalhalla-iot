@@ -27,7 +27,7 @@
 //#include "HAL_JSON_SCRIPT_ENGINE_Support.h"
 #include "HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
 //#include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -53,7 +53,7 @@ namespace HAL_JSON {
 
             HALOperationResult Exec();
 
-            void Set(int statementBlockCount, Tokens& tokens);
+            void Set(int statementBlockCount, ScriptTokens& tokens);
         };
 
         /**
@@ -73,7 +73,7 @@ namespace HAL_JSON {
             ScriptBlock();
             ~ScriptBlock();
 
-            void Set(Tokens& tokens);
+            void Set(ScriptTokens& tokens);
 
             void Exec();
         };

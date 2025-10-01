@@ -28,7 +28,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Support.h"
 #include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
 #include "../HAL_JSON_CachedDeviceAccess.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
 
 namespace HAL_JSON {
@@ -43,7 +43,7 @@ namespace HAL_JSON {
             CachedDeviceAccess* target;
             CalcRPN* calcRpn;
 
-            ActionStatement(Tokens& tokens, ActionHandler& handlerOut);
+            ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut);
             ~ActionStatement();
 
             

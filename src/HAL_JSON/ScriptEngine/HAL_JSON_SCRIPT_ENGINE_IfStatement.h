@@ -29,7 +29,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
 
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -62,7 +62,7 @@ namespace HAL_JSON {
             Deleter deleter;
             HALOperationResult (*handler)(void* context);
 
-            void Set(Tokens& tokens);
+            void Set(ScriptTokens& tokens);
 
             ConditionalBranch();
             ~ConditionalBranch();
@@ -76,7 +76,7 @@ namespace HAL_JSON {
         {
             HAL_JSON_NOCOPY_NOMOVE(UnconditionalBranch);
 
-            UnconditionalBranch(Tokens& tokens);
+            UnconditionalBranch(ScriptTokens& tokens);
             ~UnconditionalBranch();
         };
 
@@ -103,7 +103,7 @@ namespace HAL_JSON {
             UnconditionalBranch* elseBranch; 
             bool elseBranchFound;
 
-            IfStatement(Tokens& tokens);
+            IfStatement(ScriptTokens& tokens);
             ~IfStatement();
 
             static HALOperationResult Handler(void* context);

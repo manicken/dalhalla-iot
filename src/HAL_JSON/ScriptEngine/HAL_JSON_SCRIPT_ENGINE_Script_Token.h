@@ -38,6 +38,7 @@
 #include "../../Support/ConvertHelper.h"
 #include "../../Support/CharArrayHelpers.h"
 #include "../HAL_JSON_ZeroCopyString.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Token.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -45,7 +46,7 @@ namespace HAL_JSON {
          * for the fundamentala types
          * this is set in the tokenize function.
          */
-        enum class TokenType : uint16_t {
+        enum class ScriptTokenType : uint16_t {
             /** used to make it easier to see unset tokens, is also used as terminator item when defining a list of token types */
             NotSet, 
             On,
@@ -74,20 +75,18 @@ namespace HAL_JSON {
         };
 
 
-        const char* TokenTypeToString(TokenType type);
+        const char* ScriptTokenTypeToString(ScriptTokenType type);
         
-        TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType);
+        ScriptTokenType GetFundamentalScriptTokenType(ZeroCopyString& zcStrType);
 
-        struct Token : public ZeroCopyString {
-            using ZeroCopyString::ZeroCopyString;
+        struct ScriptToken : public Token {
+            using Token::Token;
 
-            uint16_t line;
-            uint16_t column;
             uint16_t itemsInBlock;
             uint16_t hasElse;
-            TokenType type;
+            ScriptTokenType type;
 
-            Token();
+            ScriptToken();
             
             /* no copy/move constructors/assigments needed*/
             //Token(Token&) = delete;          // no copy constructor
@@ -102,17 +101,17 @@ namespace HAL_JSON {
              * TokenType::IfCondition
              * TokenType::Action
              */
-            void MarkTokenGroup(int size, TokenType constructType);
+            void MarkTokenGroup(int size, ScriptTokenType constructType);
 
-            bool AnyType(const TokenType* candidates);
-            ~Token();
+            bool AnyType(const ScriptTokenType* candidates);
+            ~ScriptToken();
         };
         /** Tokens are considered identical if their 'start' pointers are the same */
-        inline bool operator==(const Token& lhs, const Token& rhs) { return lhs.start == rhs.start; }
+        inline bool operator==(const ScriptToken& lhs, const ScriptToken& rhs) { return lhs.start == rhs.start; }
         /** Tokens are considered not identical if their 'start' pointers are not the same */
-        inline bool operator!=(const Token& lhs, const Token& rhs) { return lhs.start != rhs.start; }
+        inline bool operator!=(const ScriptToken& lhs, const ScriptToken& rhs) { return lhs.start != rhs.start; }
         
-        struct Tokens {
+        struct ScriptTokens {
         private:
             static void ReportError(const char* msg);
             bool zeroCopy;
@@ -126,7 +125,7 @@ namespace HAL_JSON {
              * someVar=5 or someVar+=5
              */
             const char* firstTokenStartOffset;
-            Token* items;
+            ScriptToken* items;
             int count;
             /** root blocks count i.e. all on/if that is at root level only */
             int rootBlockCount;
@@ -138,34 +137,30 @@ namespace HAL_JSON {
              */
             int currIndex;
             /** this will initialize this instance as a zeroCopyPointer storage */
-            Tokens();
+            ScriptTokens();
             /** this will initialize this instance owned Token storage */
-            Tokens(int count);
-            ~Tokens();
+            ScriptTokens(int count);
+            ~ScriptTokens();
 
             
-            Token& Current();
-            const Token& Current() const;
-            Token& GetNextAndConsume();
+            ScriptToken& Current();
+            const ScriptToken& Current() const;
+            ScriptToken& GetNextAndConsume();
             
             bool SkipIgnoresAndEndIf();
 
             // Optional: const version
             
 
-            Tokens(Tokens&) = delete;          // no copy constructor
-            Tokens& operator=(const Tokens&) = delete; // no copy assignment
-            Tokens(Tokens&& other) = delete;           // no move constructor
-            Tokens& operator=(Tokens&& other) = delete; // no move assignment
+            ScriptTokens(ScriptTokens&) = delete;          // no copy constructor
+            ScriptTokens& operator=(const ScriptTokens&) = delete; // no copy assignment
+            ScriptTokens(ScriptTokens&& other) = delete;           // no move constructor
+            ScriptTokens& operator=(ScriptTokens&& other) = delete; // no move assignment
             std::string ToString();
             std::string SliceToString();
         };
 
-        void ReportTokenInfo(const Token& t, const char* msg, const char* param = nullptr);
-        void ReportTokenError(const Token& t, const char* msg, const char* param = nullptr);
-        void ReportTokenWarning(const Token& t, const char* msg, const char* param = nullptr);
-        
-        std::string PrintTokens(Tokens& tokens, int subTokenIndexOffset = 0);
+        std::string PrintScriptTokens(ScriptTokens& tokens, int subTokenIndexOffset = 0);
         
     }
 }

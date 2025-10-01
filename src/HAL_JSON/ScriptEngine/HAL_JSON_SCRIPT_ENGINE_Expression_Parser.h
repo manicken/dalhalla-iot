@@ -28,7 +28,7 @@
 #include "../../../src/Support/Logger.h"
 #include "../HAL_JSON_UID_Path.h"
 #include "../HAL_JSON_Manager.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_LogicExecNode.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Support.h"
@@ -78,7 +78,7 @@ namespace HAL_JSON {
 
         public:
             static void CalcStackSizesInit();
-            static void CalcStackSizes(Tokens& tokens);
+            static void CalcStackSizes(ScriptTokens& tokens);
             static void PrintCalcedStackSizes();
             static void InitStacks();
             static void ClearStacks();
@@ -140,27 +140,27 @@ namespace HAL_JSON {
             /** returns nullptr if no invalid char is found, otherwise it will return the character */
             
         public:
-            static const char* ValidOperandVariableName(const Token& operand);
-            static void CountOperatorsAndOperands(Tokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount, ExpressionContext exprContext);
-            static void ValidateOperand(const Token& operand, bool& anyError, ValidateOperandMode mode = ValidateOperandMode::Read);
+            static const char* ValidOperandVariableName(const ScriptToken& operand);
+            static void CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount, ExpressionContext exprContext);
+            static void ValidateOperand(const ScriptToken& operand, bool& anyError, ValidateOperandMode mode = ValidateOperandMode::Read);
             //static bool OperandIsVariable(const Token& operand);
             static bool IsSingleOperator(char c);
             static bool IsDoubleOperator(const char* c);
             static bool IsValidOperandChar(char c);
-            static bool ValidateExpression(Tokens& tokens, ExpressionContext exprContext);
+            static bool ValidateExpression(ScriptTokens& tokens, ExpressionContext exprContext);
 
             static std::string CalcExpressionToString(const LogicRPNNode* node);
             static std::string CalcExpressionToString(int startIndex, int endIndex);
             static void printLogicRPNNodeTree(const LogicRPNNode* node, int indent = 0);
             static void PrintLogicRPNNodeAdvancedTree(const LogicRPNNode* node, int depth = 0);
 
-            static void GetGenerateRPNTokensCount_PreCalc(const Tokens& tokens, int& totalCount, int& operatorCount, int& finalOutputSize);
-            static int GetGenerateRPNTokensCount_DryRun(const Tokens& tokens, int initialSize);
+            static void GetGenerateRPNTokensCount_PreCalc(const ScriptTokens& tokens, int& totalCount, int& operatorCount, int& finalOutputSize);
+            static int GetGenerateRPNTokensCount_DryRun(const ScriptTokens& tokens, int initialSize);
            
             /** the returned pointer here is owned and need to be deleted by the caller */
             static LogicRPNNode* BuildLogicTree(ExpressionTokens* tokens);
             /** special note here the returned pointer is non-owned and belongs to the global stack of Expressions */
-            static ExpressionTokens* GenerateRPNTokens(Tokens& tokens);
+            static ExpressionTokens* GenerateRPNTokens(ScriptTokens& tokens);
         };
     }
 }

@@ -25,7 +25,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
 #include "../HAL_JSON_Device.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Support.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
 #include "HAL_JSON_SCRIPT_ENGINE_ActionStatement.h"
 
@@ -43,21 +43,21 @@ namespace HAL_JSON {
             return HALOperationResult::Success;
         } 
 
-        void StatementBlock::Set(Tokens& tokens)
+        void StatementBlock::Set(ScriptTokens& tokens)
         {
             //printf("(%d) StatementBlock::Set----------------- : %s\n",tokens.currIndex, tokens.Current().ToString().c_str());
             // note to myself, this is one statement consume only
 
-            Token& token = tokens.Current();
+            ScriptToken& token = tokens.Current();
  
-            if (token.type == TokenType::If) {
+            if (token.type == ScriptTokenType::If) {
                 //printf("---- StatementBlock::Set was if\n");
                 IfStatement* newItem = new IfStatement(tokens);
                 context = newItem;
                 handler = IfStatement::Handler;
                 deleter = DeleteAs<IfStatement>;
                 
-            } else if (token.type == TokenType::Action) {
+            } else if (token.type == ScriptTokenType::Action) {
                 tokens.currentEndIndex = tokens.currIndex + token.itemsInBlock;
                 //printf("--------------------- StatementBlock::Set was action: %s\n",tokens.SliceToString().c_str());
                 tokens.currentEndIndex = tokens.count;
@@ -69,7 +69,7 @@ namespace HAL_JSON {
                 //handler = dummyActionHandler;
             }
             else {
-                ReportTokenError(token, "StatementBlock::Set !!!! very big issue found unknown type:", TokenTypeToString(token.type));
+                token.ReportTokenError("StatementBlock::Set !!!! very big issue found unknown type:", ScriptTokenTypeToString(token.type));
             }
             
         }

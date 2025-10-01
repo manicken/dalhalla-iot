@@ -28,8 +28,8 @@ namespace HAL_JSON {
 
         AssignmentParts g_assignmentParts;  // single reusable instance
 
-        static const TokenType actionStartTypes[] = {TokenType::ActionSeparator, TokenType::And, TokenType::Else, TokenType::EndIf, TokenType::Then, TokenType::NotSet};
-        static const TokenType actionEndTypes[] =   {TokenType::ActionSeparator, TokenType::And, TokenType::Else, TokenType::EndIf, TokenType::If, TokenType::ElseIf, TokenType::EndOn, TokenType::NotSet};
+        static const ScriptTokenType actionStartTypes[] = {ScriptTokenType::ActionSeparator, ScriptTokenType::And, ScriptTokenType::Else, ScriptTokenType::EndIf, ScriptTokenType::Then, ScriptTokenType::NotSet};
+        static const ScriptTokenType actionEndTypes[] =   {ScriptTokenType::ActionSeparator, ScriptTokenType::And, ScriptTokenType::Else, ScriptTokenType::EndIf, ScriptTokenType::If, ScriptTokenType::ElseIf, ScriptTokenType::EndOn, ScriptTokenType::NotSet};
         
         void Parser::ReportError(const char* msg) {
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -47,147 +47,6 @@ namespace HAL_JSON {
 #define ReportInfo(msg) ((void)0)
 #define DBGSTR(x) ""
 #endif
-/*        
-        void Parser::FixNewLines(char* buffer) {
-            char* p = buffer;
-            while (*p) {
-                if (p[0] == '\r') {
-                    if (p[1] == '\n') {
-                        *p++ = ' ';
-                        p++;
-                    } else {
-                        *p++ = '\n';
-                    }
-                } else if (p[0] == '\n' && p[1] == '\r') {
-                    p++;
-                    *p++ = ' ';
-                } else p++;
-            }
-        }
-*/
-/*
-        void Parser::StripComments(char* buffer) {
-            char* p = buffer;
-            while (*p) {
-                // Handle //
-                if (p[0] == '/' && p[1] == '/') {
-                    *p++ = ' ';
-                    *p++ = ' ';
-                    while (*p && *p != '\n' && *p != '\r') {
-                        *p++ = ' ';
-                    }
-                }
-                // Handle / * ... * /
-                else if (p[0] == '/' && p[1] == '*') {
-                    *p++ = ' ';
-                    *p++ = ' ';
-                    while (*p && !(p[0] == '*' && p[1] == '/')) {
-                        if (*p != '\n' && *p != '\r') {
-                            *p = ' ';
-                        }
-                        p++;
-                    }
-                    if (*p) {  // Replace * /
-                        *p++ = ' ';
-                    }
-                    if (*p) {
-                        *p++ = ' ';
-                    }
-                }
-                else {
-                    p++;
-                }
-            }
-        }
-*/
-/*
-        int Parser::CountTokens(char* buffer) {
-            int count = 0;
-            char* p = buffer;
-
-            while (*p) {
-                // Skip whitespace
-                while (*p && isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                }
-                if (!*p) break;
-                // Start of token
-                count++;
-                // Advance to next whitespace
-                while (*p && !isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                }
-            }
-            return count;
-        }
-*/
-/*
-        bool Parser::Tokenize(char* buffer, ZeroCopyString* items, int tokenCount) {
-            char* p = buffer;
-            
-            int tokenIndex = 0;
-
-            while (*p) {
-                // Skip whitespace
-                while (*p && isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                }
-                // End of string
-                if (!*p) break;
-                // Start of token
-                char* token_start = p;
-                // find end of token
-                while (*p && !isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                }
-                if (tokenIndex == tokenCount) {
-                    return false; // something went terrible wrong
-                }
-                items[tokenIndex++].Set(token_start, p);
-            }
-            
-            return true;
-        }
-*/
-        /*
-        bool Parser::TokenizeScript(char* buffer, Tokens& _tokens) {
-            Token* tokens = _tokens.items;
-            int tokenCount = _tokens.count;
-            int line = 1;
-            int column = 1;
-            char* p = buffer;
-
-            int tokenIndex = 0;
-
-            while (*p) {
-                
-                // Skip whitespace
-                while (*p && isspace(static_cast<unsigned char>(*p))) {
-                    if (*p == 0x0A) {
-                        line++;
-                        column = 1;
-                    } else {
-                        column++;
-                    }
-                    p++;
-                }
-                // End of string
-                if (!*p) break;
-                // Start of token
-                char* token_start = p;
-                int token_column = column;
-                // find end of token
-                while (*p && !isspace(static_cast<unsigned char>(*p))) {
-                    p++;
-                    column++;
-                }
-                if (tokenIndex == tokenCount) {
-                    return false; // something went terrible wrong, this means that the CountTokens is mismatching with the current function
-                }
-                tokens[tokenIndex++].Set(token_start, p, line, token_column);
-            }
-            return true;
-        }*/
 
         inline void advance(char*& p, int& column) {
             p++;
@@ -328,83 +187,78 @@ namespace HAL_JSON {
             return tokenIndex; // count of tokens found
         }
         // Explicit instantiation for each type need to be after the template definition
-        template int Parser::ParseAndTokenize<Token>(char* buffer, Token* tokens, int maxCount);
         template int Parser::ParseAndTokenize<ZeroCopyString>(char* buffer, ZeroCopyString* tokens, int maxCount);
-        // Explicit instantiation for future ScriptToken type
-        // ScriptToken (adds ScriptTokenType) inherits from Token (adds line, column),
-        // which in turn inherits from ZeroCopyString (contains start, end)
-        // Currently commented out as Token need to be renamed to ScriptToken
-        // which needs some refactoring
-        // Then a new Token type will be created
-        //template int ParseAndTokenize<ScriptToken>(char* buffer, ScriptToken* tokens, int maxCount); // future type that would explicit do what Token is now
+        template int Parser::ParseAndTokenize<Token>(char* buffer, Token* tokens, int maxCount);
+        template int Parser::ParseAndTokenize<ScriptToken>(char* buffer, ScriptToken* tokens, int maxCount);
 
-        int Parser::Count_IfTokens(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        
+        int Parser::Count_IfTokens(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int currLevel = 0;
             int maxLevel = 0;
             for (int i = 0; i < tokenCount; i++) {
-                Token& token = tokens[i];
-                if (token.type == TokenType::If) {
+                ScriptToken& token = tokens[i];
+                if (token.type == ScriptTokenType::If) {
                     currLevel++;
                     if (currLevel > maxLevel) maxLevel = currLevel;
                 }
-                else if (token.type == TokenType::EndIf) {
+                else if (token.type == ScriptTokenType::EndIf) {
                     currLevel--;
                 }
             }
             return maxLevel;
         }
 
-        bool Parser::VerifyBlocks(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        bool Parser::VerifyBlocks(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int onLevel = 0;
             int ifLevel = 0;
             int ifTokenCount = Count_IfTokens(_tokens);
             if (ifTokenCount <= 0) ifTokenCount = 1;
-            Token** ifStack = new Token*[ifTokenCount]();
+            ScriptToken** ifStack = new ScriptToken*[ifTokenCount]();
             int ifStackIndex = 0;
-            Token* lastOn = nullptr;
+            ScriptToken* lastOn = nullptr;
             bool otherErrors = false;
 
             bool expecting_do_then = false;
             int last_If_or_On_Index = 0;
 
             for (int i = 0; i < tokenCount; i++) {
-                Token& token = tokens[i];
-                if (token.type == TokenType::If) {
+                ScriptToken& token = tokens[i];
+                if (token.type == ScriptTokenType::If) {
                     ifLevel++;
                     ifStack[ifStackIndex++] = &token;
                     expecting_do_then = true;
                     last_If_or_On_Index = i;
                 }
-                else if (token.type == TokenType::ElseIf) {
+                else if (token.type == ScriptTokenType::ElseIf) {
                     expecting_do_then = true;
                     last_If_or_On_Index = i;
 
-                    Token* currentIf = ifStack[ifStackIndex - 1]; // top of the stack
+                    ScriptToken* currentIf = ifStack[ifStackIndex - 1]; // top of the stack
 
                     // check that no Else has already been found
                     if (currentIf->hasElse) {
-                        ReportTokenError(token, "'elseif' cannot appear after 'else'");
+                        token.ReportTokenError("'elseif' cannot appear after 'else'");
                         otherErrors = true;
                     }
                 }
-                else if (token.type == TokenType::Then) {
+                else if (token.type == ScriptTokenType::Then) {
                     if (!expecting_do_then) {
-                        ReportTokenError(token, "'do/then' without preceding 'if' or 'on'");
+                        token.ReportTokenError("'do/then' without preceding 'if' or 'on'");
                         otherErrors = true;
                     }
                     else if (last_If_or_On_Index + 1 == i) {
-                        ReportTokenError(token, "Missing condition between 'if/on/elseif' and 'then/do'");
+                        token.ReportTokenError("Missing condition between 'if/on/elseif' and 'then/do'");
                         otherErrors = true;
                     }
                     expecting_do_then = false;
                 }
-                else if (token.type == TokenType::EndIf) {
+                else if (token.type == ScriptTokenType::EndIf) {
                     if (ifLevel == 0) {
-                        ReportTokenError(token, "'endif' without matching 'if'");
+                        token.ReportTokenError("'endif' without matching 'if'");
                         otherErrors = true;
                     }
                     else {
@@ -414,24 +268,24 @@ namespace HAL_JSON {
                     }
 
                     if (expecting_do_then) {
-                        ReportTokenError(token, "missing 'do/then' after last 'if'");
+                        token.ReportTokenError("missing 'do/then' after last 'if'");
                         otherErrors = true;
                     }
                 }
-                else if (token.type == TokenType::Else) {
-                    Token* currentIf = ifStack[ifStackIndex - 1]; // top of the stack
+                else if (token.type == ScriptTokenType::Else) {
+                    ScriptToken* currentIf = ifStack[ifStackIndex - 1]; // top of the stack
 
                     // check for multiple Else
                     if (currentIf->hasElse) {
-                        ReportTokenError(token, "Multiple 'else' blocks in the same 'if'");
+                        token.ReportTokenError("Multiple 'else' blocks in the same 'if'");
                         otherErrors = true;
                     } else {
                         currentIf->hasElse = 1;
                     }
                 } 
-                else if (token.type == TokenType::On) {
+                else if (token.type == ScriptTokenType::On) {
                     if (ifLevel != 0 || onLevel != 0) {
-                        ReportTokenError(token, "'on' block cannot be nested");
+                        token.ReportTokenError("'on' block cannot be nested");
                         otherErrors = true;
                     } else {
                         lastOn = &token;
@@ -440,45 +294,45 @@ namespace HAL_JSON {
                         last_If_or_On_Index = i;
                     }
                 }
-                else if (token.type == TokenType::EndOn) {
+                else if (token.type == ScriptTokenType::EndOn) {
                     if (onLevel == 0) {
-                        ReportTokenError(token, "'endon' without matching 'on'");
+                        token.ReportTokenError("'endon' without matching 'on'");
                         otherErrors = true;
                     } else
                         onLevel--;
 
                     if (expecting_do_then) {
-                        ReportTokenError(token, "missing 'do' after last 'on'");
+                        token.ReportTokenError("missing 'do' after last 'on'");
                         otherErrors = true;
                     }
                 }
                 else if (onLevel == 0 && ifLevel == 0) {
-                    ReportTokenError(token, "action/assigment expression tokens cannot be outside root blocks");
+                    token.ReportTokenError("action/assigment expression tokens cannot be outside root blocks");
                     otherErrors = true;
                 }
             }
 
             if (ifLevel != 0) {
                 for (int i=0;i<ifStackIndex;i++) { // only print last 'errors'
-                    ReportTokenError(*ifStack[i], "Unmatched 'if' block");
+                    ifStack[i]->ReportTokenError("Unmatched 'if' block");
                 }
                 
             }
             if (onLevel != 0) {
                 if (lastOn)
-                    ReportTokenError(*lastOn, "Unmatched 'on' block: ");
+                    lastOn->ReportTokenError("Unmatched 'on' block: ");
                 else
                     ReportError("Unmatched 'on' block: <null>");
             }
             delete[] ifStack;
             return (ifLevel == 0) && (onLevel == 0) && (otherErrors == false);
         }
-        int Parser::CountConditionTokens(Tokens& _tokens, int start) {
-            Token* tokens = _tokens.items;
+        int Parser::CountConditionTokens(ScriptTokens& _tokens, int start) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int count = 0;
             for (int i = start; i < tokenCount; i++) {
-                if (tokens[i].type == TokenType::Then) {
+                if (tokens[i].type == ScriptTokenType::Then) {
                     return count;
                 }
                 else
@@ -487,11 +341,11 @@ namespace HAL_JSON {
             return -1; // mean we did not find the do or then token
         }
         
-        bool Parser::MergeConditions(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        bool Parser::MergeConditions(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             for (int i = 0; i < tokenCount; i++) {
-                if (((tokens[i].type == TokenType::If) || (tokens[i].type == TokenType::ElseIf)) == false) continue;
+                if (((tokens[i].type == ScriptTokenType::If) || (tokens[i].type == ScriptTokenType::ElseIf)) == false) continue;
                 i++;
                 int conditionTokenCount = CountConditionTokens(_tokens, i);
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)   
@@ -505,13 +359,13 @@ namespace HAL_JSON {
                 if (conditionTokenCount > 1) {
                     
                     for (int j=i;j<i+conditionTokenCount;j++) {
-                        if (tokens[j].type == TokenType::And) {
+                        if (tokens[j].type == ScriptTokenType::And) {
                             char* str = (char*)tokens[j].start; // need to change this text
                             str[0] = '&';
                             str[1] = '&';
                             str[2] = '\0';
                             tokens[j].end--;
-                        } else if (tokens[j].type == TokenType::Or) {
+                        } else if (tokens[j].type == ScriptTokenType::Or) {
                             char* str = (char*)tokens[j].start; // need to change this text
                             str[0] = '|';
                             str[1] = '|';
@@ -520,30 +374,30 @@ namespace HAL_JSON {
                     
                 }
 
-                tokens[i].MarkTokenGroup(conditionTokenCount, TokenType::IfCondition);
+                tokens[i].MarkTokenGroup(conditionTokenCount, ScriptTokenType::IfCondition);
                 i += conditionTokenCount; // skip all
             }
             return true;
         }
 
-        bool Parser::MergeActions2(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        bool Parser::MergeActions2(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int level = 0;
             for (int i = 0; i < tokenCount; ++i) {
-                Token& token = tokens[i];
+                ScriptToken& token = tokens[i];
 
                 if (!token.AnyType(actionStartTypes)) {
-                    if (token.type == TokenType::If || token.type == TokenType::On)
+                    if (token.type == ScriptTokenType::If || token.type == ScriptTokenType::On)
                         level++;
                     continue;
                 }
-                if (token.type == TokenType::And) token.type = TokenType::Ignore;
-                else if (token.type == TokenType::ActionSeparator) token.type = TokenType::Ignore;
-                if (token.type == TokenType::EndIf || token.type == TokenType::EndOn) { 
+                if (token.type == ScriptTokenType::And) token.type = ScriptTokenType::Ignore;
+                else if (token.type == ScriptTokenType::ActionSeparator) token.type = ScriptTokenType::Ignore;
+                if (token.type == ScriptTokenType::EndIf || token.type == ScriptTokenType::EndOn) { 
                     level--;
                     if (level == 0) {
-                        ReportTokenInfo(token, "level is zero");
+                        token.ReportTokenInfo("level is zero");
                         continue; // skip start endif if at root level
                     }
                 }
@@ -552,7 +406,7 @@ namespace HAL_JSON {
                 int end = -1;
 
                 for (int j = start; j < tokenCount; ++j) {
-                    if (tokens[j].type == TokenType::On) break;
+                    if (tokens[j].type == ScriptTokenType::On) break;
                     if (tokens[j].AnyType(actionEndTypes))
                     {    
                         end = j;
@@ -576,7 +430,7 @@ namespace HAL_JSON {
                             lineTokenCount++;
                         }
                         // If last token on current line is HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD, include next line tokens
-                        else if (lineTokenCount > 0 && tokens[j + lineTokenCount - 1].type == TokenType::ActionJoiner) { // .Equals(HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD)) {
+                        else if (lineTokenCount > 0 && tokens[j + lineTokenCount - 1].type == ScriptTokenType::ActionJoiner) { // .Equals(HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD)) {
                             // extend currentLine to next line to continue merging
                             currentLine = tokens[j + lineTokenCount].line;
                             lineTokenCount++;
@@ -584,7 +438,7 @@ namespace HAL_JSON {
                             break;
                         }
                     }
-                    tokens[j].MarkTokenGroup(lineTokenCount, TokenType::Action);
+                    tokens[j].MarkTokenGroup(lineTokenCount, ScriptTokenType::Action);
                     j += lineTokenCount;
                 }
                 i = end - 1;
@@ -593,51 +447,51 @@ namespace HAL_JSON {
         }
 // this version do work but is ineffective as it basically scans
 // all tokens over and over again
-        void Parser::CountBlockItems(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        void Parser::CountBlockItems(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             int rootLevelBlockCount = 0;
             int blockLevel = 0;
 
             for (int i = 0; i < tokenCount; ++i) {
-                Token& token = tokens[i];
+                ScriptToken& token = tokens[i];
 
                 // Track root-level blocks
-                if (token.type == TokenType::If || token.type == TokenType::On) {
+                if (token.type == ScriptTokenType::If || token.type == ScriptTokenType::On) {
                     if (blockLevel == 0)
                         rootLevelBlockCount++;
                     blockLevel++;
                 }
-                else if (token.type == TokenType::EndIf || token.type == TokenType::EndOn) {
+                else if (token.type == ScriptTokenType::EndIf || token.type == ScriptTokenType::EndOn) {
                     blockLevel--;
                 }
 
                 // Count branches in an If block: Then + ElseIf + optional Else
-                if (token.type == TokenType::If) {
+                if (token.type == ScriptTokenType::If) {
                     int branchCount = 1;  // initial Then branch
                     token.hasElse = 0;
 
                     for (int j = i + 1; j < tokenCount; ++j) {
-                        Token& t = tokens[j];
+                        ScriptToken& t = tokens[j];
 
                         // Break at parent EndIf
-                        if (t.type == TokenType::EndIf) break;
+                        if (t.type == ScriptTokenType::EndIf) break;
 
                         // Count ElseIf or Else
-                        if (t.type == TokenType::ElseIf || t.type == TokenType::Else) {
+                        if (t.type == ScriptTokenType::ElseIf || t.type == ScriptTokenType::Else) {
                             branchCount++;
-                            if (t.type == TokenType::Else) {
+                            if (t.type == ScriptTokenType::Else) {
                                 token.hasElse = 1;
                             }
                         }
 
                         // Skip nested If blocks entirely
-                        if (t.type == TokenType::If) {
+                        if (t.type == ScriptTokenType::If) {
                             int nestedLevel = 1;
                             for (++j; j < tokenCount && nestedLevel > 0; ++j) {
-                                Token& nt = tokens[j];
-                                if (nt.type == TokenType::If) nestedLevel++;
-                                else if (nt.type == TokenType::EndIf) nestedLevel--;
+                                ScriptToken& nt = tokens[j];
+                                if (nt.type == ScriptTokenType::If) nestedLevel++;
+                                else if (nt.type == ScriptTokenType::EndIf) nestedLevel--;
                             }
                             --j; // adjust outer loop
                         }
@@ -646,27 +500,27 @@ namespace HAL_JSON {
                     token.itemsInBlock = branchCount;
                 }
                 // Count actions in Then, ElseIf, Else, or On blocks
-                else if (token.type == TokenType::Then || token.type == TokenType::Else || 
-                        token.type == TokenType::ElseIf || token.type == TokenType::On) { // just a remainder to myself here we do actually need to reqognize the 'on' type
+                else if (token.type == ScriptTokenType::Then || token.type == ScriptTokenType::Else || 
+                        token.type == ScriptTokenType::ElseIf || token.type == ScriptTokenType::On) { // just a remainder to myself here we do actually need to reqognize the 'on' type
 
                     int count = 0;
                     int nestedLevel = 0;
                     
                     for (int j = i + 1; j < tokenCount; ++j) {
-                        Token& t = tokens[j];
+                        ScriptToken& t = tokens[j];
 
-                        if (t.type == TokenType::Ignore || t.type == TokenType::Merged) continue;
-                        if (t.type == TokenType::And || t.type == TokenType::ActionSeparator) continue;
+                        if (t.type == ScriptTokenType::Ignore || t.type == ScriptTokenType::Merged) continue;
+                        if (t.type == ScriptTokenType::And || t.type == ScriptTokenType::ActionSeparator) continue;
 
                         // Nested If counts as single statement in parent branch
-                        if (t.type == TokenType::If) {
+                        if (t.type == ScriptTokenType::If) {
                             if (nestedLevel == 0) count++;
                             nestedLevel++;
                             continue;
                         }
 
                         // Track nested EndIf/EndOn
-                        if (t.type == TokenType::EndIf || t.type == TokenType::EndOn) {
+                        if (t.type == ScriptTokenType::EndIf || t.type == ScriptTokenType::EndOn) {
                             if (nestedLevel > 0) {
                                 nestedLevel--;
                                 continue;
@@ -676,11 +530,11 @@ namespace HAL_JSON {
                         }
 
                         // Stop at next sibling branch
-                        if (nestedLevel == 0 && (t.type == TokenType::ElseIf || t.type == TokenType::Else)) {
+                        if (nestedLevel == 0 && (t.type == ScriptTokenType::ElseIf || t.type == ScriptTokenType::Else)) {
                             break;
                         }
 
-                        if (t.type == TokenType::Action && nestedLevel == 0) count++;
+                        if (t.type == ScriptTokenType::Action && nestedLevel == 0) count++;
                     }
 
                     token.itemsInBlock = count;
@@ -690,30 +544,30 @@ namespace HAL_JSON {
             _tokens.rootBlockCount = rootLevelBlockCount;
         }
         
-        bool Parser::EnsureActionBlocksContainItems(Tokens& _tokens) {
-            const Token* tokens = _tokens.items;
+        bool Parser::EnsureActionBlocksContainItems(ScriptTokens& _tokens) {
+            const ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             bool anyError = false;
             for (int i = 0; i < tokenCount; ++i) {
-                const Token& token = tokens[i];
-                if (((token.type == TokenType::Then) || (token.type == TokenType::Else)) == false) continue;
+                const ScriptToken& token = tokens[i];
+                if (((token.type == ScriptTokenType::Then) || (token.type == ScriptTokenType::Else)) == false) continue;
                 if (token.itemsInBlock == 0) {
-                    ReportTokenError(token, "EnsureActionBlocksContainItems - empty action(s) block detected");
+                    token.ReportTokenError("EnsureActionBlocksContainItems - empty action(s) block detected");
                     anyError = true;
                 }
             }
             return anyError == false;
         }
 
-        bool Parser::VerifyConditionBlocks(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        bool Parser::VerifyConditionBlocks(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             bool anyError = false;
             for (int i = 0; i < tokenCount; ++i) {
-                const Token& token = tokens[i];
-                if (((token.type == TokenType::If) || (token.type == TokenType::ElseIf)) == false) continue;
+                const ScriptToken& token = tokens[i];
+                if (((token.type == ScriptTokenType::If) || (token.type == ScriptTokenType::ElseIf)) == false) continue;
                 //const char* conditions = tokens[i+1].text;
-                Tokens conditions;
+                ScriptTokens conditions;
                 conditions.items = &tokens[i+1];
                 if (tokens[i+1].itemsInBlock != 0) {
                     conditions.count = tokens[i+1].itemsInBlock;
@@ -732,17 +586,17 @@ namespace HAL_JSON {
             return anyError == false;
         }
 
-        bool Parser::VerifyActionBlocks(Tokens& _tokens) {
-            Token* tokens = _tokens.items;
+        bool Parser::VerifyActionBlocks(ScriptTokens& _tokens) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             bool anyError = false;
             for (int i = 0; i < tokenCount; ++i) {
-                Token& token = tokens[i];
+                ScriptToken& token = tokens[i];
                 // 'TokenType::Action' is set only on the root token of an action (whether single-token or merged multi-token).
                 // Subtokens inside merged tokens do not have the type TokenType::Action, instead they have the type TokenType::Merged
-                if (token.type != TokenType::Action) continue;
+                if (token.type != ScriptTokenType::Action) continue;
 
-                Tokens expressionTokens;
+                ScriptTokens expressionTokens;
                 expressionTokens.items = &token;
                 if (token.itemsInBlock != 0) {
                     expressionTokens.count = token.itemsInBlock;
@@ -753,13 +607,13 @@ namespace HAL_JSON {
                 const char* match = nullptr;
                 //const char* matchKeyword = nullptr;
                 //int firstAssignmentOperatorTokenIndex = -1;
-                Token* firstAssignmentOperatorToken = nullptr;
+                ScriptToken* firstAssignmentOperatorToken = nullptr;
                 const char* firstAssignmentOperator = nullptr;
                 const char* firstCompoundAssignmentOperator = nullptr;
                 bool foundAdditionalAssignmentOperators = false;
                 
                 for (int j = 0; j < expressionTokens.count; ++j) {
-                    Token& exprToken = expressionTokens.items[j];
+                    ScriptToken& exprToken = expressionTokens.items[j];
                     const char* searchStart = exprToken.start;
                     //std::cout << "searching:" << token.ToString() << "\n";
                     do {
@@ -771,7 +625,7 @@ namespace HAL_JSON {
                                 Token reportToken;
                                 reportToken.line = exprToken.line;
                                 reportToken.column = exprToken.column + (match - exprToken.start);
-                                ReportTokenError(reportToken, "Found additional assignment keyword");
+                                reportToken.ReportTokenError("Found additional assignment keyword");
                                 
                             } else {
                                 firstAssignmentOperator = match;
@@ -805,7 +659,7 @@ namespace HAL_JSON {
                 if (firstAssignmentOperator == nullptr) {
                     // invalid action line if no assigmend operator is found
                     // maybe in future i can support direct function calls like: somefunc(var2)
-                    ReportTokenError(token, "Did not find any assignment keyword");
+                    token.ReportTokenError("Did not find any assignment keyword");
                     anyError = true;
                     continue; 
                 }
@@ -824,7 +678,7 @@ namespace HAL_JSON {
                             firstAssigmentOperatorStart = prevChar; // valid <<= or >>=
                         } else {
                             anyError = true;
-                            ReportTokenError(token, "missing additional < or > in compound shift assignment keyword");
+                            token.ReportTokenError("missing additional < or > in compound shift assignment keyword");
                             firstAssigmentOperatorStart = firstCompoundAssignmentOperator;
                         }
                     } else {
@@ -834,8 +688,8 @@ namespace HAL_JSON {
                 } else {
                     firstAssigmentOperatorStart = firstAssignmentOperator;
                 }
-                Token zcLHS_AssignmentOperand;
-                Tokens zcRHS_AssignmentOperands;
+                ScriptToken zcLHS_AssignmentOperand;
+                ScriptTokens zcRHS_AssignmentOperands;
                 zcLHS_AssignmentOperand.start = token.start;
                 zcLHS_AssignmentOperand.line = token.line;
                 zcLHS_AssignmentOperand.column = token.column;
@@ -886,7 +740,7 @@ namespace HAL_JSON {
                 // use the following to validate the right side of the expression
                 zcRHS_AssignmentOperands.currentEndIndex = zcRHS_AssignmentOperands.count;
                 if (Expressions::ValidateExpression(zcRHS_AssignmentOperands, ExpressionContext::Assignment) == false) {
-                    ReportTokenError(token, "Expressions::ValidateExpression fail");
+                    token.ReportTokenError("Expressions::ValidateExpression fail");
                     anyError = true;
                 } 
 
@@ -894,14 +748,14 @@ namespace HAL_JSON {
             return anyError == false;
         }
 
-        bool Parser::ValidateParseScript(Tokens& _tokens, bool validateOnly) {
+        bool Parser::ValidateParseScript(ScriptTokens& _tokens, bool validateOnly) {
 
             if (validateOnly) {
                 ReportInfo("**********************************************************************************\n");
                 ReportInfo("*                            RAW TOKEN LIST                                      *\n");
                 ReportInfo("**********************************************************************************\n");
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                ReportInfo(PrintTokens(_tokens,0) + "\n");
+                ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
 #endif
                 ReportInfo("\n VerifyBlocks (BetterError): ");
                 //MEASURE_TIME(" VerifyBlocks time: ",
@@ -932,7 +786,7 @@ namespace HAL_JSON {
             ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
             ReportInfo("**********************************************************************************\n");
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-            ReportInfo(PrintTokens(_tokens,0) + "\n");
+            ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
 #endif
             if (validateOnly) {
                 //MEASURE_TIME("\n EnsureActionBlocksContainItems time: ",
@@ -963,7 +817,7 @@ namespace HAL_JSON {
         }
 #define USE_COMBINED_PARSE_TOKENS_FUNC
 
-        bool Parser::ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(Tokens& tokens)) {
+        bool Parser::ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
             char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
             MEASURE_TIME("ReadAndParseScriptFile - load_text_file time: ",
             LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
@@ -997,11 +851,11 @@ namespace HAL_JSON {
 #ifndef USE_COMBINED_PARSE_TOKENS_FUNC
             tokenCount = CountTokens(fileContents);
 #else
-            tokenCount = ParseAndTokenize<Token>(fileContents, nullptr, -1); // count in the same function
+            tokenCount = ParseAndTokenize<ScriptToken>(fileContents, nullptr, -1); // count in the same function
 #endif
            //);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
-            Tokens tokens(tokenCount);
+            ScriptTokens tokens(tokenCount);
             
             //MEASURE_TIME("Tokenize time: ",
 
@@ -1041,26 +895,26 @@ namespace HAL_JSON {
 
         
 
-        AssignmentParts* Parser::ExtractAssignmentParts(Tokens& tokens) {
+        AssignmentParts* Parser::ExtractAssignmentParts(ScriptTokens& tokens) {
             g_assignmentParts.Clear();
 
-            Token& currentStartToken = tokens.Current();
+            ScriptToken& currentStartToken = tokens.Current();
             int currentStartTokenIndex = tokens.currIndex;
-            Token* tokensItems = tokens.items;
+            ScriptToken* tokensItems = tokens.items;
             int startIndex = tokens.currIndex;
             int endIndex   = startIndex + currentStartToken.itemsInBlock;
             tokens.currIndex = endIndex; // consume tokens beforehand so we don't forget
 
             // Track assignment operator info
             const char* foundAssignmentOperator = nullptr;
-            Token* foundAssignmentOperatorToken = nullptr;
+            ScriptToken* foundAssignmentOperatorToken = nullptr;
             const char* foundCompoundAssignmentOperator = nullptr;
 
             // Scan tokens in the current block for the assigment operator
             // to get it's position
             for (int i = startIndex; i < endIndex; ++i) {
-                Token& exprToken = tokensItems[i];
-                if (exprToken.type == TokenType::Ignore) continue;
+                ScriptToken& exprToken = tokensItems[i];
+                if (exprToken.type == ScriptTokenType::Ignore) continue;
                 const char* match = exprToken.FindChar('=');
                 if (match == nullptr) continue; 
 
@@ -1085,7 +939,7 @@ namespace HAL_JSON {
 
             if (!foundAssignmentOperator) {
                 // no operator found: just return empty
-                ReportTokenError(currentStartToken, "!!!!!!!!!!!!!!!!!!!!!!!! firstAssignmentOperator not found");
+                currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!!!!!!!! firstAssignmentOperator not found");
                 return &g_assignmentParts;
             }
 
@@ -1162,9 +1016,9 @@ namespace HAL_JSON {
             );
 */
             //int tokenCount = CountTokens(fileContents);
-            int tokenCount = ParseAndTokenize<Token>(fileContents);
+            int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
-            Tokens tokens(tokenCount);
+            ScriptTokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
@@ -1181,7 +1035,7 @@ namespace HAL_JSON {
             ReportInfo(DBGSTR("*                            PARSED TOKEN LIST                                   *\n"));
             ReportInfo(DBGSTR("**********************************************************************************\n"));
 
-            ReportInfo(PrintTokens(tokens,0) + "\n");
+            ReportInfo(PrintScriptTokens(tokens,0) + "\n");
 
             ReportInfo("**********************************************************************************\n");
             ReportInfo("*                            VALIDATE PARSED TOKEN LIST                          *\n");
@@ -1249,9 +1103,9 @@ namespace HAL_JSON {
             );
 */
             //int tokenCount = CountTokens(fileContents);
-            int tokenCount = ParseAndTokenize<Token>(fileContents);
+            int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
-            Tokens tokens(tokenCount);
+            ScriptTokens tokens(tokenCount);
             
             MEASURE_TIME("Tokenize time: ",
 
@@ -1269,7 +1123,7 @@ namespace HAL_JSON {
             ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
             ReportInfo("**********************************************************************************\n");
 
-            ReportInfo(PrintTokens(tokens,0) + "\n");
+            ReportInfo(PrintScriptTokens(tokens,0) + "\n");
 
             ReportInfo("\nInput action expression: " + tokens.ToString() + "\n");
 

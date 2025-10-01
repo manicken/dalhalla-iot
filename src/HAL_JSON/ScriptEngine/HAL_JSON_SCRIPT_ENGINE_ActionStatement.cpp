@@ -28,7 +28,7 @@
 namespace HAL_JSON {
     namespace ScriptEngine {
 
-        ActionStatement::ActionStatement(Tokens& tokens, ActionHandler& handlerOut)
+        ActionStatement::ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut)
         {
             // ExtractAssignmentParts "consumes" the tokens until the next action or whatever coming after
             AssignmentParts* actionParts = Parser::ExtractAssignmentParts(tokens);

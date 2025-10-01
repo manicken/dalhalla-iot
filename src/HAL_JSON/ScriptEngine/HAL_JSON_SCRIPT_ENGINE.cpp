@@ -26,7 +26,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Support.h"
 #include "HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
 
 #if defined(_WIN32) || defined(__linux__)
@@ -61,7 +61,7 @@ namespace HAL_JSON {
 
         
 
-        void ScriptsBlock::ScriptFileParsed(Tokens& tokens) {
+        void ScriptsBlock::ScriptFileParsed(ScriptTokens& tokens) {
             Expressions::ReportInfo("\n");
             Expressions::ReportInfo("**************************************************************************************\n");
             Expressions::ReportInfo("**************************************************************************************\n");

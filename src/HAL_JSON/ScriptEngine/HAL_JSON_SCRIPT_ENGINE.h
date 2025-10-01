@@ -25,7 +25,7 @@
 
 #include <Arduino.h>
 
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
 
 namespace HAL_JSON {
@@ -64,7 +64,7 @@ namespace HAL_JSON {
             static int currentScriptIndex;
 
             /** just a callback wrapper to begin initializing the structures */
-            static void ScriptFileParsed(Tokens& tokens);
+            static void ScriptFileParsed(ScriptTokens& tokens);
             
             /** ValidateAllActiveScripts should be run before using this function */
             static bool LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad);

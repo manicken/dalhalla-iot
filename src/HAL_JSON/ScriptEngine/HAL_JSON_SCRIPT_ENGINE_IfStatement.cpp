@@ -68,7 +68,7 @@ namespace HAL_JSON {
             //delete[] items; is deleted by BranchBlock destructor
 
         }
-        void ConditionalBranch::Set(Tokens& tokens)
+        void ConditionalBranch::Set(ScriptTokens& tokens)
         {
 #if defined(ESP32) == false && defined(ESP8266) == false
             printf("(%d) ConditionalBranch::Set: %s\n", tokens.currIndex, tokens.Current().ToString().c_str());
@@ -104,9 +104,9 @@ namespace HAL_JSON {
             }
 
             //when consumed we are at the then
-            Token& thenToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
-            if (thenToken.type != TokenType::Then) {
-                ReportTokenError(thenToken, " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR: is not a then token: ");
+            ScriptToken& thenToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
+            if (thenToken.type != ScriptTokenType::Then) {
+                thenToken.ReportTokenError(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR: is not a then token: ");
                 return;
             }
             // here extract the itemsCount
@@ -125,12 +125,12 @@ namespace HAL_JSON {
             }
         }
 
-        UnconditionalBranch::UnconditionalBranch(Tokens& tokens)
+        UnconditionalBranch::UnconditionalBranch(ScriptTokens& tokens)
         {
 #if defined(ESP32) == false && defined(ESP8266) == false
             printf("(%d) UnconditionalBranch::UnconditionalBranch: %s\n", tokens.currIndex, tokens.Current().ToString().c_str());
 #endif
-            const Token& elseToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
+            const ScriptToken& elseToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
 
             itemsCount = elseToken.itemsInBlock;
             items = new StatementBlock[itemsCount];
@@ -148,11 +148,11 @@ namespace HAL_JSON {
             //delete[] items; is deleted by BranchBlock destructor
         }
 
-        IfStatement::IfStatement(Tokens& tokens)
+        IfStatement::IfStatement(ScriptTokens& tokens)
         {
             elseBranchFound = false;
-            Token& ifToken = tokens.Current(); // this now points to the if-type token
-            if (ifToken.type != TokenType::If) { printf("\nERROR ----- ifToken.type != TokenType::If\n");}
+            ScriptToken& ifToken = tokens.Current(); // this now points to the if-type token
+            if (ifToken.type != ScriptTokenType::If) { printf("\nERROR ----- ifToken.type != TokenType::If\n");}
             branchItemsCount = ifToken.itemsInBlock;
             if (ifToken.hasElse == 1) branchItemsCount--; // minus one as the else case is handled separately
             //printf("\n----------------------------------------------------------------- branchItemsCount:%d\n",branchItemsCount);
@@ -163,16 +163,16 @@ namespace HAL_JSON {
             // the following will ONLY go over ELSEIF ConditionalBranch:es
             for (int i=1;i<branchItemsCount;i++) {
                 //printf("\n---------------------------- loading brachitem:%d\n",i);
-                Token& token = tokens.Current();
-                if (token.type != TokenType::ElseIf) {
+                ScriptToken& token = tokens.Current();
+                if (token.type != ScriptTokenType::ElseIf) {
                     printf("\n ERROR ----  TOKEN IS NOT A ELSEIF\n");
                     break;
                 }
                 // this will consume all tokens that actually belongs to this block
                 branchItems[i].Set(tokens); 
             }
-            Token& token = tokens.Current();
-            if (token.type == TokenType::Else) {
+            ScriptToken& token = tokens.Current();
+            if (token.type == ScriptTokenType::Else) {
 #if defined(ESP32) == false && defined(ESP8266) == false
                 printf("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ found ELSE token @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 #endif

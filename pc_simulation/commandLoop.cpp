@@ -65,8 +65,8 @@ void exprTestLoad(HAL_JSON::ZeroCopyString& zcStr) {
         else
             std::cout << "Error: other file error: " << strFilePath << "\n";
     } 
-    HAL_JSON::ScriptEngine::Tokens tokens;
-    HAL_JSON::ScriptEngine::Token token(contents);
+    HAL_JSON::ScriptEngine::ScriptTokens tokens;
+    HAL_JSON::ScriptEngine::ScriptToken token(contents);
 
     tokens.count = 1;
     tokens.items = &token;

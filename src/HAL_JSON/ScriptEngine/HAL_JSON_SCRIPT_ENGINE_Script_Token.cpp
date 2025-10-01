@@ -21,19 +21,19 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Token.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
 
-        void Tokens::ReportError(const char* msg) {
+        void ScriptTokens::ReportError(const char* msg) {
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             std::cout << "Error: " << msg << std::endl;
     #else
             GlobalLogger.Error(F("Rule Set Parse:"), msg);
     #endif
         }
-        TokenType GetFundamentalTokenType(ZeroCopyString& zcStrType) {
+        ScriptTokenType GetFundamentalScriptTokenType(ZeroCopyString& zcStrType) {
             int zcStrLength = zcStrType.Length();
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             //printf("\nGetFundamentalTokenType: >>>%s<<< (%d)\n", zcStrType.ToString().c_str(),zcStrLength);
@@ -41,67 +41,67 @@ namespace HAL_JSON {
             // using a length based lockup for faster compare/lockup
             switch (zcStrLength) {
                 case 1:  // ";" or "\"
-                    if (zcStrType.EqualsIC(";")) return TokenType::ActionSeparator;
-                    if (zcStrType.EqualsIC("\\")) return TokenType::ActionJoiner;
+                    if (zcStrType.EqualsIC(";")) return ScriptTokenType::ActionSeparator;
+                    if (zcStrType.EqualsIC("\\")) return ScriptTokenType::ActionJoiner;
                     break;
 
                 case 2:  // "if", "do", "on", "or"
-                    if (zcStrType.EqualsIC("if")) return TokenType::If;
-                    if (zcStrType.EqualsIC("do")) return TokenType::Then;
-                    if (zcStrType.EqualsIC("on")) return TokenType::On;
-                    if (zcStrType.EqualsIC("or")) return TokenType::Or;
+                    if (zcStrType.EqualsIC("if")) return ScriptTokenType::If;
+                    if (zcStrType.EqualsIC("do")) return ScriptTokenType::Then;
+                    if (zcStrType.EqualsIC("on")) return ScriptTokenType::On;
+                    if (zcStrType.EqualsIC("or")) return ScriptTokenType::Or;
                     break;
 
                 case 3:  // "and"
-                    if (zcStrType.EqualsIC("and")) return TokenType::And;
+                    if (zcStrType.EqualsIC("and")) return ScriptTokenType::And;
                     break;
 
                 case 4:  // "else", "then"
-                    if (zcStrType.EqualsIC("else")) return TokenType::Else;
-                    if (zcStrType.EqualsIC("then")) return TokenType::Then;
+                    if (zcStrType.EqualsIC("else")) return ScriptTokenType::Else;
+                    if (zcStrType.EqualsIC("then")) return ScriptTokenType::Then;
                     break;
 
                 case 5:  // "endif", "endon"
-                    if (zcStrType.EqualsIC("endif")) return TokenType::EndIf;
-                    if (zcStrType.EqualsIC("endon"))  return TokenType::EndOn;
+                    if (zcStrType.EqualsIC("endif")) return ScriptTokenType::EndIf;
+                    if (zcStrType.EqualsIC("endon"))  return ScriptTokenType::EndOn;
                     break;
 
                 case 6:  // "elseif"
-                    if (zcStrType.EqualsIC("elseif")) return TokenType::ElseIf;
+                    if (zcStrType.EqualsIC("elseif")) return ScriptTokenType::ElseIf;
                     break;
                 default:
-                    return TokenType::NotSet;
+                    return ScriptTokenType::NotSet;
             }
-            return TokenType::NotSet;
+            return ScriptTokenType::NotSet;
         }
 
-        const char* TokenTypeToString(TokenType type) {
+        const char* ScriptTokenTypeToString(ScriptTokenType type) {
             switch (type) {
-                case TokenType::NotSet: return "NotSet";
-                case TokenType::On: return "On";
-                case TokenType::EndOn: return "EndOn";
-                case TokenType::If: return "If";
-                case TokenType::EndIf: return "EndIf";
-                case TokenType::IfCondition: return "IfCondition";
-                case TokenType::Else: return "Else";
-                case TokenType::ElseIf: return "ElseIf";
-                case TokenType::Then: return "Then";
-                case TokenType::And: return "And";
-                case TokenType::Or: return "Or";
-                case TokenType::ActionSeparator: return "ActionSeparator";
-                case TokenType::ActionJoiner: return "ActionJoiner";
-                case TokenType::Action: return "Action";
-                case TokenType::Merged: return "Merged";
-                case TokenType::Ignore: return "Ignore";
+                case ScriptTokenType::NotSet: return "NotSet";
+                case ScriptTokenType::On: return "On";
+                case ScriptTokenType::EndOn: return "EndOn";
+                case ScriptTokenType::If: return "If";
+                case ScriptTokenType::EndIf: return "EndIf";
+                case ScriptTokenType::IfCondition: return "IfCondition";
+                case ScriptTokenType::Else: return "Else";
+                case ScriptTokenType::ElseIf: return "ElseIf";
+                case ScriptTokenType::Then: return "Then";
+                case ScriptTokenType::And: return "And";
+                case ScriptTokenType::Or: return "Or";
+                case ScriptTokenType::ActionSeparator: return "ActionSeparator";
+                case ScriptTokenType::ActionJoiner: return "ActionJoiner";
+                case ScriptTokenType::Action: return "Action";
+                case ScriptTokenType::Merged: return "Merged";
+                case ScriptTokenType::Ignore: return "Ignore";
                 default: return "Unknown";
             }
         }
 
-        Token::Token(): type(TokenType::NotSet) {
+        ScriptToken::ScriptToken(): type(ScriptTokenType::NotSet) {
             Set(nullptr, nullptr, -1, -1);
         }
 
-        void Token::Set(const char* _start, const char* _end, int _line, int _column) {
+        void ScriptToken::Set(const char* _start, const char* _end, int _line, int _column) {
             start = _start;
             end = _end;
             line = _line;
@@ -110,7 +110,7 @@ namespace HAL_JSON {
             hasElse = 0;
             if (start != nullptr && end != nullptr) { // start is only nullptr when the token array is first created
                 ZeroCopyString zcStrType(start, end);
-                type = GetFundamentalTokenType(zcStrType);
+                type = GetFundamentalScriptTokenType(zcStrType);
                 // the problem with the following is that
                 // the rest of the parser is setting it to merged/action 
                 // so the string literal type is lost
@@ -122,11 +122,11 @@ namespace HAL_JSON {
                 //printf("\nFundamentalTokenType is set to: %s from %s (%d)\n", TokenTypeToString(type), zcStrType.ToString().c_str(), zcStrType.Length());
             }
         }
-        Token::~Token() {
+        ScriptToken::~ScriptToken() {
             // nothing to do here as no dynamic memory is allocated
         }
 
-        void Token::MarkTokenGroup(int size, TokenType constructType) {
+        void ScriptToken::MarkTokenGroup(int size, ScriptTokenType constructType) {
             if (size == 1) {
                 this->type = constructType;
                 itemsInBlock = 1; // was = 0 before
@@ -138,19 +138,19 @@ namespace HAL_JSON {
             this[0].type = constructType;
             for (int i = 1; i < size; i++) {
 
-                if (constructType == TokenType::Action) {
-                    if (this[i].type == TokenType::ActionJoiner) {
-                        this[i].type = TokenType::Ignore;
+                if (constructType == ScriptTokenType::Action) {
+                    if (this[i].type == ScriptTokenType::ActionJoiner) {
+                        this[i].type = ScriptTokenType::Ignore;
                         continue;
                     }
 
                 }
-                this[i].type = TokenType::Merged;
+                this[i].type = ScriptTokenType::Merged;
             }
         }
 
-        bool Token::AnyType(const TokenType* candidates) {
-            while(*candidates != TokenType::NotSet) {
+        bool ScriptToken::AnyType(const ScriptTokenType* candidates) {
+            while(*candidates != ScriptTokenType::NotSet) {
                 if (type == *candidates) return true;
                 candidates++;
             }
@@ -163,38 +163,38 @@ namespace HAL_JSON {
         //       ██    ██    ██ ██  ██  ██      ██  ██ ██      ██ 
         //       ██     ██████  ██   ██ ███████ ██   ████ ███████ 
 
-        Token& Tokens::GetNextAndConsume() {
+        ScriptToken& ScriptTokens::GetNextAndConsume() {
             if (currIndex >= count) {
                 printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token GetNextAndConsume() EXTREME ERROR out of bounds\n");
-                static Token EmptyToken;
+                static ScriptToken EmptyToken;
                 return EmptyToken;
             }
             return items[currIndex++];
         }
 
-        Token& Tokens::Current() {
+        ScriptToken& ScriptTokens::Current() {
             if (currIndex >= count) {
                 printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() EXTREME ERROR out of bounds\n");
-                static Token EmptyToken;
+                static ScriptToken EmptyToken;
                 return EmptyToken;
             }
             return items[currIndex];
         }
-        const Token& Tokens::Current() const {
+        const ScriptToken& ScriptTokens::Current() const {
             if (currIndex >= count) {
                 printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() const EXTREME ERROR out of bounds\n");
-                static Token EmptyToken;
+                static ScriptToken EmptyToken;
                 return EmptyToken;
             }
             return items[currIndex];
         }
 
-        bool Tokens::SkipIgnoresAndEndIf() {
+        bool ScriptTokens::SkipIgnoresAndEndIf() {
             while (currIndex < count) {
-                Token& token = Current();
-                if (token.type != TokenType::Ignore && token.type != TokenType::EndIf)
+                ScriptToken& token = Current();
+                if (token.type != ScriptTokenType::Ignore && token.type != ScriptTokenType::EndIf)
                     break;
-                ReportTokenInfo(token, "--------- skipping token:");
+                token.ReportTokenInfo("--------- skipping token:");
                 currIndex++;
             }
 
@@ -205,15 +205,15 @@ namespace HAL_JSON {
             return true;
         }
 
-        Tokens::Tokens() : zeroCopy(true), firstTokenStartOffset(nullptr), items(nullptr), count(0), rootBlockCount(0), currentEndIndex(0), currIndex(0) {}
+        ScriptTokens::ScriptTokens() : zeroCopy(true), firstTokenStartOffset(nullptr), items(nullptr), count(0), rootBlockCount(0), currentEndIndex(0), currIndex(0) {}
 
-        Tokens::Tokens(int count) : zeroCopy(false), firstTokenStartOffset(nullptr), items(new Token[count]), count(count), rootBlockCount(0), currentEndIndex(count), currIndex(0) { }
+        ScriptTokens::ScriptTokens(int count) : zeroCopy(false), firstTokenStartOffset(nullptr), items(new ScriptToken[count]), count(count), rootBlockCount(0), currentEndIndex(count), currIndex(0) { }
         
-        Tokens::~Tokens() {
+        ScriptTokens::~ScriptTokens() {
             if (zeroCopy == false)
                 delete[] items;
         }
-        std::string Tokens::ToString() {
+        std::string ScriptTokens::ToString() {
             std::string str;
             //str += "firstTokenStartOffset:"; str += (firstTokenStartOffset?"true ":"false ");
             for (int i=0;i<count;i++) {
@@ -223,7 +223,7 @@ namespace HAL_JSON {
             }
             return str;
         }
-        std::string Tokens::SliceToString() {
+        std::string ScriptTokens::SliceToString() {
             std::string str;
 
             if (!items) return str;
@@ -257,40 +257,8 @@ namespace HAL_JSON {
             return str;
         }
 
-
-        void ReportTokenInfo(const Token& t, const char* msg, const char* param) {
-            std::string message = " (line " + std::to_string(t.line) + ", col " + std::to_string(t.column) + "): " + msg;
-            if (param != nullptr)
-                message += param;
-    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << "Info " << message << std::endl;
-    #else
-            //GlobalLogger.Info(F("Token:"), message.c_str());
-    #endif
-        }
-        void ReportTokenError(const Token& t, const char* msg, const char* param) {
-            std::string message = " (line " + std::to_string(t.line) + ", col " + std::to_string(t.column) + "): " + msg;
-            if (param != nullptr)
-                message += param;
-    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cerr << "Error " << message << std::endl;
-    #else
-            GlobalLogger.Error(F("Token:"), message.c_str());
-    #endif
-        }
-        void ReportTokenWarning(const Token& t, const char* msg, const char* param) {
-            std::string message = " (line " + std::to_string(t.line) + ", col " + std::to_string(t.column) + "): " + msg;
-            if (param != nullptr)
-                message += param;
-    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << "Warning " << message << std::endl;
-    #else
-            GlobalLogger.Warn(F("Token:"), message.c_str());
-    #endif
-        }
-
-        std::string PrintTokens(Tokens& _tokens, int subTokenIndexOffset) {
-            Token* tokens = _tokens.items;
+        std::string PrintScriptTokens(ScriptTokens& _tokens, int subTokenIndexOffset) {
+            ScriptToken* tokens = _tokens.items;
             int tokenCount = _tokens.count;
             std::string msg;
             if (subTokenIndexOffset == 0)
@@ -301,27 +269,25 @@ namespace HAL_JSON {
             }
             bool lastWasBlock = false;
             for (int i=0;i<tokenCount;i++) {
-                Token& tok = tokens[i];
+                ScriptToken& tok = tokens[i];
                 std::string msgLine;
                 if (subTokenIndexOffset > 0) msgLine += "  ";
                 // skip duplicate prints as theese will be printed as the Tokens block
                 // ignore types are allways part of a token block 
-                if ((tok.type == TokenType::Merged) && subTokenIndexOffset == 0) {
+                if ((tok.type == ScriptTokenType::Merged) && subTokenIndexOffset == 0) {
                     //msgLine += " skipping: ";
                     continue; 
                 }
                 
-                
-                
                 // only print one level down and only if the type is Action or IfCondition
-                if (subTokenIndexOffset == 0 && tok.itemsInBlock > 1 && (tok.type == TokenType::Action || tok.type == TokenType::IfCondition)) {
+                if (subTokenIndexOffset == 0 && tok.itemsInBlock > 1 && (tok.type == ScriptTokenType::Action || tok.type == ScriptTokenType::IfCondition)) {
                     if (lastWasBlock == false)
                         msgLine += "\n";
                     msgLine += "Tokens block:\n";
-                    Tokens tokens;
+                    ScriptTokens tokens;
                     tokens.items = &tok;
                     tokens.count = tok.itemsInBlock;
-                    msgLine += PrintTokens(tokens, i);
+                    msgLine += PrintScriptTokens(tokens, i);
                     lastWasBlock = true;
                 } else {
                     msgLine +=
@@ -329,8 +295,8 @@ namespace HAL_JSON {
                     "(line:" + std::to_string(tok.line) + 
                     ", col:" + std::to_string(tok.column) + 
                     ", count:" + std::to_string(tok.itemsInBlock) + 
-                    ", type:" + TokenTypeToString(tok.type) +
-                    ((tok.type == TokenType::If)?((tok.hasElse==1)?", hasElse:true":", hasElse:false"):"")+
+                    ", type:" + ScriptTokenTypeToString(tok.type) +
+                    ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?", hasElse:true":", hasElse:false"):"")+
                     "): ";
 
                     lastWasBlock = false;
