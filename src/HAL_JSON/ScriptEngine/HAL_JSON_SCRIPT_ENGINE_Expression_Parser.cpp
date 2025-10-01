@@ -28,31 +28,6 @@
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        /*
-
-        void Expressions::ReportError(const char* msg, const char* param) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << "Error: " << msg << " " << ((param!=nullptr)?param:"") << std::endl;
-#else
-            GlobalLogger.Error(F("Expr Rule Parse:"), msg);
-#endif
-        }
-
-        void Expressions::ReportWarning(const char* msg, const char* param) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << "Warning: " << msg << " " << ((param!=nullptr)?param:"") << std::endl;
-#else
-            GlobalLogger.Warn(F("Expr Rule Parse:"), msg);
-#endif
-        }
-
-        void Expressions::ReportInfo(std::string msg) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << msg;
-#else
-            //GlobalLogger.Info(F("Expr Rule Parse:"), msg);
-#endif
-        }*/
 
         static const ExpTokenType compareOperators[] = {ExpTokenType::CompareEqualsTo, ExpTokenType::CompareNotEqualsTo,
                                                      ExpTokenType::CompareGreaterThanOrEqual, ExpTokenType::CompareLessThanOrEqual,
@@ -229,18 +204,7 @@ namespace HAL_JSON {
                 }
             }
         }
-    
-/* in favor of ZeroCopyString ValidNumber function
-        bool Expressions::OperandIsVariable(const Token& operandToken) {
-            const char* p = operandToken.start;
-            const char* const end = operandToken.end;
-            while (p < end) {
-                if (isdigit(*p) == false) return true;
-                p++;
-            }
-            return false;
-        }
-*/
+
         const char* Expressions::ValidOperandVariableName(const ScriptToken& operandToken) {
             const char* p = operandToken.start;
             const char* const end = operandToken.end;
@@ -306,7 +270,6 @@ namespace HAL_JSON {
                     ", leftParenthesisCount:" + std::to_string(leftParenthesisCount));
 */
             if (anyError) return false;
-
 
             //int operandIndex = 0;
             bool inOperand = false;
@@ -859,14 +822,6 @@ namespace HAL_JSON {
             return rpnOutputStack;
         }
 
-        
-        
-        
-        
-        /** 
-         * Development test functions
-         * TODO. make a copy of this that produce the exec format
-         */
         LogicRPNNode* Expressions::BuildLogicTree(ExpressionTokens* tokens)
         {
             int tokensCount = tokens->currentCount;
@@ -909,7 +864,6 @@ namespace HAL_JSON {
                 else {
                     if (currentCalcStartIndex == -1) currentCalcStartIndex = i;
                     
-
                     // detect end of a comparison (= leaf boundary)
                     if (tok.AnyType(compareOperators)) {
                         LogicRPNNode& newNode = logicRPNNodeStackPool[stackPoolIndex++]; //  get next item from the pool
@@ -934,7 +888,6 @@ namespace HAL_JSON {
                 std::string msg = PrintExpressionTokensOneRow(*tokens, 0, tokens->currentCount);
                 throw std::runtime_error("LogicRPN - unbalanced tree: " + std::to_string(stackIndex) + msg);
             }
-                
 
             // note. logicRPNNodeStackPool is not owned and cannot be deleted here
             // note. logicRPNNodeStack is not owned and cannot be deleted here

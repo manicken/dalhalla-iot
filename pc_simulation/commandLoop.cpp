@@ -22,7 +22,7 @@
 */
 
 #include "commandLoop.h"
-#include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Parser_Tests.h"
+#include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Parser_Tests.h"
 
 std::atomic<bool> running{true};
 

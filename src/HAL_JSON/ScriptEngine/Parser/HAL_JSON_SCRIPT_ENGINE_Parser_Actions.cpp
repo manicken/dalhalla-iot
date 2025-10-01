@@ -22,8 +22,8 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

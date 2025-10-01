@@ -83,10 +83,6 @@ namespace HAL_JSON {
             static void InitStacks();
             static void ClearStacks();
 
-            //static void ReportError(const char* msg, const char* param = nullptr);
-            //static void ReportWarning(const char* msg, const char* param = nullptr);
-            //static void ReportInfo(std::string msg);
-
             // Helper: returns true if c is a single-character operator
             static inline ExpTokenType IsSingleOp(char c) {
                 if (c == '+') return ExpTokenType::CalcPlus;

@@ -22,9 +22,9 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_ActionStatement.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
+#include "Parser/HAL_JSON_SCRIPT_ENGINE_Parser.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Operators.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
+#include "Parser/HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
 
 namespace HAL_JSON {

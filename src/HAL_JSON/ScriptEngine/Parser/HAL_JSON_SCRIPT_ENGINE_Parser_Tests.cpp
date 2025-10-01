@@ -23,8 +23,8 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Tests.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
 
 namespace HAL_JSON {

@@ -30,7 +30,7 @@
 #include <chrono>
 #include "../src/HAL_JSON/HAL_JSON_ZeroCopyString.h"
 #include "../src/HAL_JSON/HAL_JSON_CommandExecutor.h"
-#include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Parser.h"
+#include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Parser.h"
 #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
 #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
