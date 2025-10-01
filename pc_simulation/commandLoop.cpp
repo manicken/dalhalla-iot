@@ -122,7 +122,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         HAL_JSON::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
         std::cout << "using expression to RPN conv file:" << zcFilePath.ToString() << "\n";
         std::string filePath = zcFilePath.ToString();
-        HAL_JSON::ScriptEngine::ParserTests::ParseExpressionTest(filePath.c_str());
+        HAL_JSON::ScriptEngine::Parser::Tests::ParseExpressionTest(filePath.c_str());
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
 
@@ -135,7 +135,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         HAL_JSON::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
         std::cout << "using action expression to RPN conv file:" << zcFilePath.ToString() << "\n";
         std::string filePath = zcFilePath.ToString();
-        HAL_JSON::ScriptEngine::ParserTests::ParseActionExpressionTest(filePath.c_str());
+        HAL_JSON::ScriptEngine::Parser::Tests::ParseActionExpressionTest(filePath.c_str());
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
 

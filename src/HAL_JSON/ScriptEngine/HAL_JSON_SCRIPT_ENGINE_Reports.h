@@ -20,19 +20,21 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include <Arduino.h>
+
+#pragma once
+
 #include <string>
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        namespace Parser {
-            namespace Tests {
-            
-                /** for development test only */
-                bool ParseExpressionTest(const char* filePath);
-                /** for development test only */
-                bool ParseActionExpressionTest(const char* filePath);
-            }
-        }
+        void ReportError(const char* msg);
+        void ReportWarning(const char* msg, const char* param = nullptr);
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+        void ReportInfo(std::string msg);
+#define DBGSTR(x) x 
+#else
+#define ReportInfo(msg) 
+#define DBGSTR(x) ""
+#endif
     }
 }

@@ -22,12 +22,13 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        
+        /*
 
         void Expressions::ReportError(const char* msg, const char* param) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -51,7 +52,7 @@ namespace HAL_JSON {
 #else
             //GlobalLogger.Info(F("Expr Rule Parse:"), msg);
 #endif
-        }
+        }*/
 
         static const ExpTokenType compareOperators[] = {ExpTokenType::CompareEqualsTo, ExpTokenType::CompareNotEqualsTo,
                                                      ExpTokenType::CompareGreaterThanOrEqual, ExpTokenType::CompareLessThanOrEqual,

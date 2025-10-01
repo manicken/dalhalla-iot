@@ -29,6 +29,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
 
 #if defined(_WIN32) || defined(__linux__)
 #define SCRIPTS_DIRECTORY   "scripts/"
@@ -63,26 +64,28 @@ namespace HAL_JSON {
         
 
         void ScriptsBlock::ScriptFileParsed(ScriptTokens& tokens) {
-            Expressions::ReportInfo("\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
-            Expressions::ReportInfo("**                                                                                  **\n");
-            Expressions::ReportInfo("** ██       ██████   █████  ██████      ███████  ██████ ██████  ██ ██████  ████████ **\n");
-            Expressions::ReportInfo("** ██      ██    ██ ██   ██ ██   ██     ██      ██      ██   ██ ██ ██   ██    ██    **\n");
-            Expressions::ReportInfo("** ██      ██    ██ ███████ ██   ██     ███████ ██      ██████  ██ ██████     ██    **\n");
-            Expressions::ReportInfo("** ██      ██    ██ ██   ██ ██   ██          ██ ██      ██   ██ ██ ██         ██    **\n");
-            Expressions::ReportInfo("** ███████  ██████  ██   ██ ██████      ███████  ██████ ██   ██ ██ ██         ██    **\n");
-            Expressions::ReportInfo("**                                                                                  **\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
+            ReportInfo("\n");
+            ReportInfo("**************************************************************************************\n");
+            ReportInfo("**************************************************************************************\n");
+            ReportInfo("**                                                                                  **\n");
+            ReportInfo("** ██       ██████   █████  ██████      ███████  ██████ ██████  ██ ██████  ████████ **\n");
+            ReportInfo("** ██      ██    ██ ██   ██ ██   ██     ██      ██      ██   ██ ██ ██   ██    ██    **\n");
+            ReportInfo("** ██      ██    ██ ███████ ██   ██     ███████ ██      ██████  ██ ██████     ██    **\n");
+            ReportInfo("** ██      ██    ██ ██   ██ ██   ██          ██ ██      ██   ██ ██ ██         ██    **\n");
+            ReportInfo("** ███████  ██████  ██   ██ ██████      ███████  ██████ ██   ██ ██ ██         ██    **\n");
+            ReportInfo("**                                                                                  **\n");
+            ReportInfo("**************************************************************************************\n");
+            ReportInfo("**************************************************************************************\n");
 
             scriptBlocks[currentScriptIndex].Set(tokens);
 
-            Expressions::ReportInfo("**************************************************************************************\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
+            ReportInfo("**************************************************************************************\n");
+            ReportInfo("**************************************************************************************\n");
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             printf("\n\ntokens.currIndex(%d) of tokens.count(%d) reached end of 'script'\n\n", tokens.currIndex, tokens.count);
-            Expressions::ReportInfo("**************************************************************************************\n");
-            Expressions::ReportInfo("**************************************************************************************\n");
+#endif
+            ReportInfo("**************************************************************************************\n");
+            ReportInfo("**************************************************************************************\n");
         }
 
         ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) {

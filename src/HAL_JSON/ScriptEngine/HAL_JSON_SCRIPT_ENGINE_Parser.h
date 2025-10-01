@@ -46,6 +46,8 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
 
 
+
+
 #define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -78,75 +80,15 @@ do { \
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        
-        enum class ParserError {
-            FileNotFound,
-            FileEmpty,
-            FileContentsAllocFail
-        };
+        namespace Parser {
 
-        struct AssignmentParts {
-            ScriptToken lhs;
-            char op;      // assignment operators first char is enough (e.g. "=", "+=", "<<=")
-            ScriptTokens rhs;
-
-            inline void Clear() {
-                lhs = {};
-                rhs.count = 0;
-                rhs.items = nullptr;
-                rhs.currIndex = 0;
-                rhs.firstTokenStartOffset = nullptr;
-                rhs.rootBlockCount = 0;
-            }
-        };
-
-        class Parser {
-        private:
-            
-            static void ReportError(const char* msg);
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-            static void ReportInfo(std::string msg);
-#endif
-            /** used by VerifyBlocks */
-            static int Count_IfTokens(ScriptTokens& tokens);
-
-            /** verify if/on blocks so that they follow the structure
-             * on/if <trigger>/<condition> do/then <action(s)> endon/endif
-             * it also verify that on blocks do only contain if blocks
-             */
-            static bool VerifyBlocks(ScriptTokens& tokens);
-
-            static int CountConditionTokens(ScriptTokens& tokens, int start);
-            /** 
-             * merge Conditions into one token for easier parse,
-             * if a AND/OR token is found they are 
-             * replaced by && and || respective 
-             */
-            static bool MergeConditions(ScriptTokens& tokens);
-
-            /** merge actions so that each action 'line'
-             *  is in one token for easier parse 
-             *  this is a variant to MergeActions but
-             *  allows the use of \ to make multiline spanning actions
-             */
-            static bool MergeActions2(ScriptTokens& tokens);
-
-            /** this is used together with EnsureActionBlocksContainItems */
-            static void CountBlockItems(ScriptTokens& tokens);
-            static bool EnsureActionBlocksContainItems(ScriptTokens& tokens);
-
-            static bool VerifyConditionBlocks(ScriptTokens& tokens);
-            static bool VerifyActionBlocks(ScriptTokens& tokens);
-            static bool ValidateParseScript(ScriptTokens& tokens, bool validateOnly);
-            
-        public:
-            /** used by ActionStatement so need to be public */
-            static AssignmentParts* ExtractAssignmentParts(ScriptTokens& _tokens);
+            bool ValidateParseScript(ScriptTokens& tokens, bool validateOnly);
             /** 
              * if the callback is set this is considered a Load function
              * if the callback is not set (nullptr) then it's validate only
              */
-            static bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
-        };
+            bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
+            
+        }
     }
 }

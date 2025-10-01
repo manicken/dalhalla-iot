@@ -20,19 +20,32 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include <Arduino.h>
-#include <string>
+
+#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
+#include "../../Support/Logger.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        namespace Parser {
-            namespace Tests {
-            
-                /** for development test only */
-                bool ParseExpressionTest(const char* filePath);
-                /** for development test only */
-                bool ParseActionExpressionTest(const char* filePath);
-            }
+        void ReportError(const char* msg) {
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+            std::cout << "Error: " << msg << std::endl;
+#else
+            GlobalLogger.Error(F("Report:"), msg);
+#endif
         }
+
+        void ReportWarning(const char* msg, const char* param) {
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+            std::cout << "Warning: " << msg << " " << ((param!=nullptr)?param:"") << std::endl;
+#else
+            GlobalLogger.Warn(F("Report:"), msg);
+#endif
+        }
+
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+        void ReportInfo(std::string msg) {
+            printf("%s", msg.c_str());
+        }
+#endif
     }
 }

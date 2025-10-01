@@ -24,6 +24,8 @@
 #include "HAL_JSON_SCRIPT_ENGINE_ActionStatement.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Operators.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -31,9 +33,9 @@ namespace HAL_JSON {
         ActionStatement::ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut)
         {
             // ExtractAssignmentParts "consumes" the tokens until the next action or whatever coming after
-            AssignmentParts* actionParts = Parser::ExtractAssignmentParts(tokens);
-            Expressions::ReportInfo("\n**************** Action ************* lefthand side:" + actionParts->lhs.ToString() + "\n");
-            Expressions::ReportInfo("**************** Action ******** assigment operator:" + std::string(1, actionParts->op) + "\n");
+            Parser::Actions::AssignmentParts* actionParts = Parser::Actions::ExtractAssignmentParts(tokens);
+            ReportInfo("\n**************** Action ************* lefthand side:" + actionParts->lhs.ToString() + "\n");
+            ReportInfo("**************** Action ******** assigment operator:" + std::string(1, actionParts->op) + "\n");
             
             ZeroCopyString varOperand = actionParts->lhs;
             ZeroCopyString funcName = actionParts->lhs;
@@ -46,15 +48,15 @@ namespace HAL_JSON {
             //    return;
             //}
 
-            Expressions::ReportInfo("\n***************** Action *********** rhs calc RPN: [");
+            ReportInfo("\n***************** Action *********** rhs calc RPN: [");
             for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
                 ExpressionToken& tok = expTokens->items[i];
                 //if (tok->type == TokenType::Operand)
-                    Expressions::ReportInfo(tok.ToString() + " ");
+                    ReportInfo(tok.ToString() + " ");
                 //else
                 //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
             }
-            Expressions::ReportInfo("]\n\n");
+            ReportInfo("]\n\n");
 
             calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
 
