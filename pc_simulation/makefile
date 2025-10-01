@@ -83,6 +83,7 @@ SRC = \
 	$(wildcard ../src/HAL_JSON/Devices/RF433/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/Parser/*.cpp) \
+	$(wildcard ../src/HAL_JSON/ScriptEngine/Runtime/*.cpp) \
 	../src/Support/CharArrayHelpers.cpp \
 	../src/Support/Logger.cpp \
 	../src/Support/ConvertHelper.cpp

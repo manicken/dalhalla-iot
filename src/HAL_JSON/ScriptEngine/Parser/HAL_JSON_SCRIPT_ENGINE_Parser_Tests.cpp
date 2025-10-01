@@ -22,10 +22,19 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Tests.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "../HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
-#include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
+
+//#include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"
+
+#include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#include <LittleFS_ext.h>
+#else
+#include "../../../Support/LittleFS_ext.h"
+#endif
+#include "../../../Support/MeasureTime.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

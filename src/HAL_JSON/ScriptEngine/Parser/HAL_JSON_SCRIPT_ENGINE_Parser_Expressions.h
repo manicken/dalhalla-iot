@@ -24,14 +24,14 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../HAL_JSON_ZeroCopyString.h"
-#include "../../../src/Support/Logger.h"
-#include "../HAL_JSON_UID_Path.h"
-#include "../HAL_JSON_Manager.h"
+#include "../../HAL_JSON_ZeroCopyString.h"
+#include "../../../../src/Support/Logger.h"
+#include "../../HAL_JSON_UID_Path.h"
+#include "../../HAL_JSON_Manager.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
-#include "HAL_JSON_SCRIPT_ENGINE_LogicExecNode.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Support.h"
+#include "../Runtime/HAL_JSON_SCRIPT_ENGINE_LogicExecNode.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
 
 #include <string>
 

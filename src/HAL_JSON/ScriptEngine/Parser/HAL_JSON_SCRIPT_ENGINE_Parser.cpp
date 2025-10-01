@@ -21,12 +21,26 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <Arduino.h> // Needed for String class
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#include <iostream> // including this take 209512 bytes flash
+
+#endif
+#include <string>
+
 #include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
 
-#include "../HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
 #include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Conditions.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
+
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#include <LittleFS_ext.h>
+#else
+#include "../../../Support/LittleFS_ext.h"
+#endif
+#include "../../../Support/MeasureTime.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

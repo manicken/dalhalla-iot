@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../HAL_JSON_Value.h"
+#include "../../HAL_JSON_Value.h"
 namespace HAL_JSON {
 
     struct OpAdd { inline static HALValue apply(const HALValue& a, const HALValue& b) { return a + b; } };

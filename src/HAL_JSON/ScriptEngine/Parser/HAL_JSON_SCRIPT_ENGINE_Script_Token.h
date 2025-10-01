@@ -34,10 +34,10 @@
 #include <vector>
 #include <stack>
 
-#include "../../Support/Logger.h"
-#include "../../Support/ConvertHelper.h"
-#include "../../Support/CharArrayHelpers.h"
-#include "../HAL_JSON_ZeroCopyString.h"
+#include "../../../Support/Logger.h"
+#include "../../../Support/ConvertHelper.h"
+#include "../../../Support/CharArrayHelpers.h"
+#include "../../HAL_JSON_ZeroCopyString.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Token.h"
 
 namespace HAL_JSON {

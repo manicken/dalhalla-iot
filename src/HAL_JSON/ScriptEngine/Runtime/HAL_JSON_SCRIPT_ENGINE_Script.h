@@ -24,10 +24,10 @@
 #pragma once
 
 #include <Arduino.h>
-//#include "HAL_JSON_SCRIPT_ENGINE_Support.h"
+
 #include "HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
-//#include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
+
+#include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

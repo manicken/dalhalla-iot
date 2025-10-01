@@ -20,8 +20,8 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include <Arduino.h>
-#include <string>
+
+#pragma once
 
 namespace HAL_JSON {
     namespace ScriptEngine {

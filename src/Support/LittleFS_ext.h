@@ -21,10 +21,10 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LITTLEFS_EXT_H
-#define LITTLEFS_EXT_H
+#pragma once
 
-#include <LittleFS.h>
+#include <Arduino.h>
+
 namespace LittleFS_ext
 {
     enum class FileResult {
@@ -47,5 +47,3 @@ namespace LittleFS_ext
     void listDir(Stream &printStream, const char *dirname, uint8_t level);
     void listDir(String &str, bool isHtml, const char *dirname, uint8_t level);
 }
-
-#endif

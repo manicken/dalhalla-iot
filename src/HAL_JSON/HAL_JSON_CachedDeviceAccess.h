@@ -28,7 +28,7 @@
 
 #include <ArduinoJson.h>
 #include <stdlib.h>
-#include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
+#include "ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 
 #include "../Support/Logger.h"
 #include "HAL_JSON_UID_Path.h"

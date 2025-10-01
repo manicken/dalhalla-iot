@@ -25,8 +25,8 @@
 
 #include <Arduino.h>
 
-#include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Script.h"
+#include "Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h" // ScriptTokens
+#include "Runtime/HAL_JSON_SCRIPT_ENGINE_Script.h" // ScriptBlock
 
 namespace HAL_JSON {
     namespace ScriptEngine {

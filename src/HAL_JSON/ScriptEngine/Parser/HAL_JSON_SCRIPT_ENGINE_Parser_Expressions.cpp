@@ -21,8 +21,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"
+#include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 

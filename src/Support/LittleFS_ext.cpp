@@ -21,8 +21,9 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LittleFS.h>
 #include "LittleFS_ext.h"
+#include <LittleFS.h>
+#include <Arduino.h>
 
 namespace LittleFS_ext
 {
