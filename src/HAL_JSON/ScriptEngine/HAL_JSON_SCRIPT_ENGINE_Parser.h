@@ -36,13 +36,15 @@
 
 #include <vector>
 #include <stack>
+#include "../../Support/ConvertHelper.h"
+#include "../../Support/CharArrayHelpers.h"
+
+#include "../HAL_JSON_ZeroCopyString.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Expression_Parser.h"
 
-#include "../../Support/ConvertHelper.h"
-#include "../../Support/CharArrayHelpers.h"
-#include "../HAL_JSON_ZeroCopyString.h"
 
 #define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
 
@@ -113,8 +115,8 @@ namespace HAL_JSON {
              * it also verify that on blocks do only contain if blocks
              */
             static bool VerifyBlocks(ScriptTokens& tokens);
-            static int CountConditionTokens(ScriptTokens& tokens, int start);
 
+            static int CountConditionTokens(ScriptTokens& tokens, int start);
             /** 
              * merge Conditions into one token for easier parse,
              * if a AND/OR token is found they are 
@@ -138,48 +140,18 @@ namespace HAL_JSON {
             static bool ValidateParseScript(ScriptTokens& tokens, bool validateOnly);
             
         public:
-            /**
-             * @brief Parses a buffer into tokens while stripping comments and tracking line/column positions.
-             *
-             * This function performs a single pass over the input buffer:
-             * - Skips both `// line` and C-style block comments.
-             * - Skips whitespace while tracking line and column numbers.
-             * - Splits the text into tokens separated by whitespace.
-             * - Optionally fills an array of Token objects with start/end pointers and source position info.
-             *
-             * @param buffer    The modifiable input buffer (null-terminated). Comments are replaced with spaces.
-             * @param tokens    Optional pointer to an array of Token objects. If `nullptr`, only token counting is performed.
-             * @param maxCount  Maximum number of tokens that can be written to `tokens`.
-             * @return          Number of tokens found, or -1 if `tokens` is not `nullptr` and more than `maxCount` tokens were detected.
-             *
-             * @note The function does not allocate memory; it works directly on the provided buffer.
-             * @note If `tokens` is provided, the caller must ensure it has at least `maxCount` capacity.
-             * @note If only the count is needed, call with `tokens = nullptr` and `maxCount = 0`.
-             */
-            template <typename T>
-            static int ParseAndTokenize(char* buffer, T* tokens=nullptr, int maxCount=-1);
-            /** special note,
-              *  this function do not remove additional \r characters in \r\n \n\r 
-              *  it just replaces them with spaces for easier parsing 
-              */
-            //static void FixNewLines(char* buffer);
-            //static void StripComments(char* buffer);
-            //static int CountTokens(char* buffer);
-            /** can be used to tokenize a simple string, based on whitespace */
-            //static bool Tokenize(char* buffer, ZeroCopyString* items, int tokenCount);
-            /** used only for scripts */
-            //static bool TokenizeScript(char* buffer, Tokens& tokens);
+            /** used by ActionStatement so need to be public */
+            static AssignmentParts* ExtractAssignmentParts(ScriptTokens& _tokens);
             /** 
              * if the callback is set this is considered a Load function
              * if the callback is not set (nullptr) then it's validate only
              */
             static bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
-
-
+            /** for development test only */
             static bool ParseExpressionTest(const char* filePath);
+            /** for development test only */
             static bool ParseActionExpressionTest(const char* filePath);
-
-            static AssignmentParts* ExtractAssignmentParts(ScriptTokens& _tokens);
+            
         };
     }
 }

@@ -28,6 +28,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Parser.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
+#include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
 
 #if defined(_WIN32) || defined(__linux__)
 #define SCRIPTS_DIRECTORY   "scripts/"
@@ -95,13 +96,11 @@ namespace HAL_JSON {
                 }
                 else {
                     printf("\nUsing scripts list file:\n");
-                    //Parser::FixNewLines(scriptsListContents);
-                    //Parser::StripComments(scriptsListContents);
-                    //int scriptCount = Parser::CountTokens(scriptsListContents);
-                    int scriptCount = Parser::ParseAndTokenize<ZeroCopyString>(scriptsListContents);
+
+                    int scriptCount = ParseAndTokenize<ZeroCopyString>(scriptsListContents);
                     printf("\nscript count:%d\n", scriptCount);
                     InitScriptList(scriptCount);
-                    if (false == Parser::ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
+                    if (false == ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
                         useDefaultFile = true;
                         printf("\ntokenize scripts list file fail!\n");
                     } else {
