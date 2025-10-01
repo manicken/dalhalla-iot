@@ -673,85 +673,6 @@ namespace HAL_JSON {
             }
             return true;
         }
-#define USE_COMBINED_PARSE_TOKENS_FUNC
-
-        bool Parser::ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
-            char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
-            MEASURE_TIME("ReadAndParseScriptFile - load_text_file time: ",
-            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
-            if (fileResult != LittleFS_ext::FileResult::Success) {
-                ReportInfo("Error: file could not be read/or is empty\n");
-                return false;
-            }
-        );
-        /*MEASURE_TIME("FixNewLines time: ",
-            // fix newlines so that they only consists of \n 
-            // for easier parsing
-            FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
-        );*/
-#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
-            MEASURE_TIME("StripComments time: ",
-            // replaces all comments with whitespace
-            // make it much simpler to parse the contents 
-            StripComments(fileContents); // not needed when integrated into ParseTokens
-            );
-#endif
-            /* just some debug print
-            char* ptr = fileContents;
-            printf("\n");
-            while (*ptr) {
-                printf("%02X ", *ptr++);
-            }
-            printf("\n");
-            */
-            int tokenCount = 0;
-           //MEASURE_TIME("CountTokens time: ",
-#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
-            tokenCount = CountTokens(fileContents);
-#else
-            tokenCount = ParseAndTokenize<ScriptToken>(fileContents, nullptr, -1); // count in the same function
-#endif
-           //);
-            ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
-            ScriptTokens tokens(tokenCount);
-            
-            //MEASURE_TIME("Tokenize time: ",
-
-#ifndef USE_COMBINED_PARSE_TOKENS_FUNC
-            if (TokenizeScript(fileContents, tokens) == false)
-#else
-            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == -1)
-#endif
-            {
-                ReportInfo("Error: could not Tokenize\n");
-                delete[] fileContents;
-                return false;
-            }
-            //);
-            bool anyError = false;
-            MEASURE_TIME("ValidateParseScript time: ",
-            
-            if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
-                ReportInfo("ParseScript [OK]\n");
-                
-                if (parsedOKcallback) {
-                    MEASURE_TIME("loadscript time: ",
-                    parsedOKcallback(tokens);
-                    );
-                }
-                    
-                
-            } else {
-                ReportInfo("ParseScript [FAIL]\n");
-                anyError = true;
-            }
-            );
-            // dont forget to free/delete
-            delete[] fileContents;
-            return anyError == false;
-        }
-
-        
 
         AssignmentParts* Parser::ExtractAssignmentParts(ScriptTokens& tokens) {
             g_assignmentParts.Clear();
@@ -854,183 +775,49 @@ namespace HAL_JSON {
         }
 
 
-
-        bool Parser::ParseExpressionTest(const char* filePath) {
-            
+        bool Parser::ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
             char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
+            MEASURE_TIME("ReadAndParseScriptFile - load_text_file time: ",
             LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
             if (fileResult != LittleFS_ext::FileResult::Success) {
                 ReportInfo("Error: file could not be read/or is empty\n");
                 return false;
             }
-
-            /*MEASURE_TIME("FixNewLines and StripComments time: ",
-            // fix newlines so that they only consists of \n 
-            // for easier parsing
-            //FixNewLines(fileContents); // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
-            // replaces all comments with whitespace
-            // make it much simpler to parse the contents 
-            StripComments(fileContents);
             );
-*/
-            //int tokenCount = CountTokens(fileContents);
-            int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
+
+            int tokenCount = 0;
+           //MEASURE_TIME("CountTokens time: ",
+            tokenCount = ParseAndTokenize<ScriptToken>(fileContents, nullptr, -1); // count in the same function
+           //);
             ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
             ScriptTokens tokens(tokenCount);
             
-            MEASURE_TIME("Tokenize time: ",
-
-            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
+            //MEASURE_TIME("Tokenize time: ",
+            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == -1)
+            {
                 ReportInfo("Error: could not Tokenize\n");
                 delete[] fileContents;
                 return false;
             }
-            
+            //);
+            bool anyError = false;
+            MEASURE_TIME("ValidateParseScript time: ",
+            if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
+                ReportInfo("ParseScript [OK]\n");
+                
+                if (parsedOKcallback) {
+                    MEASURE_TIME("loadscript time: ",
+                    parsedOKcallback(tokens);
+                    );
+                }
+            } else {
+                ReportInfo("ParseScript [FAIL]\n");
+                anyError = true;
+            }
             );
-            
-
-            ReportInfo(DBGSTR("**********************************************************************************\n"));
-            ReportInfo(DBGSTR("*                            PARSED TOKEN LIST                                   *\n"));
-            ReportInfo(DBGSTR("**********************************************************************************\n"));
-
-            ReportInfo(PrintScriptTokens(tokens,0) + "\n");
-
-            ReportInfo("**********************************************************************************\n");
-            ReportInfo("*                            VALIDATE PARSED TOKEN LIST                          *\n");
-            ReportInfo("**********************************************************************************\n");
-            // need to be done before any ValidateExpression
-            // and that normally mean before any validation first occur
-            // i.e if many script files are to be validated this need to happen before any of that happens
-            Expressions::CalcStackSizesInit();
-            tokens.currentEndIndex = tokens.count;
-            tokens.firstTokenStartOffset = nullptr;
-            tokens.currIndex = 0;
-            if (Expressions::ValidateExpression(tokens, ExpressionContext::IfCondition) == false)
-            {
-                ReportInfo("Error: validate tokens fail\n");
-                delete[] fileContents;
-                return false;
-            }
-            Expressions::PrintCalcedStackSizes();
-            Expressions::InitStacks();
-
-            ReportInfo("\nInput expression: " + tokens.ToString());
-
-            ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(tokens);
-            LogicRPNNode* lrpnNode = Expressions::BuildLogicTree(newDirect);
-            ReportInfo("\n\nnew complete RPN:");
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                ExpressionToken& tok = newDirect->items[i];
-                //if (tok->type == TokenType::Operand)
-                    ReportInfo(tok.ToString() + " ");
-                //else
-                //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
-            }
-#endif
-            ReportInfo("\n");
-            ReportInfo("\n\ntree view:\n");
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            Expressions::printLogicRPNNodeTree(lrpnNode, 0);
-            //ReportInfo("\n\nadvanced tree view:\n");
-            //Expressions::PrintLogicRPNNodeAdvancedTree(lrpnNode, 0);
-#endif
-            Expressions::ClearStacks();
+            // dont forget to free/delete
             delete[] fileContents;
-
-            ReportInfo("\nAll done!!!\n");
-            return true;
-        }
-
-        bool Parser::ParseActionExpressionTest(const char* filePath) {
-            
-            char* fileContents = nullptr;
-            LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
-            if (fileResult != LittleFS_ext::FileResult::Success) {
-                ReportInfo("Error: file could not be read/or is empty\n");
-                return false;
-            }
-/*
-            MEASURE_TIME("FixNewLines and StripComments time: ",
-            // fix newlines so that they only consists of \n 
-            // for easier parsing
-            //FixNewLines(fileContents);  // now obsolete as LittleFS_ext::load_text_file automatically normalizes newlines to \n
-            // replaces all comments with whitespace
-            // make it much simpler to parse the contents 
-            StripComments(fileContents);
-            );
-*/
-            //int tokenCount = CountTokens(fileContents);
-            int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
-            ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
-            ScriptTokens tokens(tokenCount);
-            
-            MEASURE_TIME("Tokenize time: ",
-
-            if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
-                ReportInfo("Error: could not Tokenize\n");
-                delete[] fileContents;
-                return false;
-            }
-            
-            );
-            
-            
-
-            ReportInfo("**********************************************************************************\n");
-            ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
-            ReportInfo("**********************************************************************************\n");
-
-            ReportInfo(PrintScriptTokens(tokens,0) + "\n");
-
-            ReportInfo("\nInput action expression: " + tokens.ToString() + "\n");
-
-            tokens.currIndex = 0;
-            tokens.items[0].itemsInBlock = tokens.count; // set as a block so that ExtractAssignmentParts can work as expected
-            AssignmentParts* action = ExtractAssignmentParts(tokens);
-
-            ReportInfo("**********************************************************************************\n");
-            ReportInfo("*                            VALIDATE PARSED TOKEN LIST                          *\n");
-            ReportInfo("**********************************************************************************\n");
-            // need to be done before any ValidateExpression
-            // and that normally mean before any validation first occur
-            // i.e if many script files are to be validated this need to happen before any of that happens
-            Expressions::CalcStackSizesInit();
-            if (Expressions::ValidateExpression(action->rhs, ExpressionContext::Assignment) == false)
-            {
-                ReportInfo("Error: validate tokens fail\n");
-                delete[] fileContents;
-                return false;
-            }
-            Expressions::PrintCalcedStackSizes();
-            Expressions::InitStacks();
-
-            ReportInfo("\nAction lhs:" + action->lhs.ToString() + "\n");
-            ReportInfo("Action assigment operator:" + std::string(1, action->op) + "\n\n");
-
-            ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(action->rhs);
-            if (newDirect == nullptr) {
-                printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!! ParseActionExpressionTest - newDirect was nullptr\n");
-                Expressions::ClearStacks();
-                delete[] fileContents;
-                return false;
-            }
-            
-            ReportInfo("\n\nAction rhs calc RPN:");
-            for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                ExpressionToken& tok = newDirect->items[i];
-                //if (tok->type == TokenType::Operand)
-                    ReportInfo(tok.ToString() + " ");
-                //else
-                //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
-            }
-            ReportInfo("\n");
-            
-            Expressions::ClearStacks();
-            delete[] fileContents;
-
-            ReportInfo("\nAll done!!!\n");
-            return true;
+            return anyError == false;
         }
     }
 }

@@ -147,11 +147,6 @@ namespace HAL_JSON {
              * if the callback is not set (nullptr) then it's validate only
              */
             static bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
-            /** for development test only */
-            static bool ParseExpressionTest(const char* filePath);
-            /** for development test only */
-            static bool ParseActionExpressionTest(const char* filePath);
-            
         };
     }
 }
