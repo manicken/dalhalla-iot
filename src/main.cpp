@@ -152,8 +152,8 @@ void loop() {
             zcStr.start+=5; // remove wifi/
             HAL_JSON::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
             if (zcCmd.EqualsIC("scan")) {
+                Serial.println("wifi/scanstart");
                 int n = WiFi.scanNetworks();
-                Serial.println("wifi/ssidstart");
                 for (int i = 0; i < n; i++) {
                     String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
                     int freq = WiFi.channel(i) <= 14 ? 2400 : 5000; // crude 2.4/5 GHz
@@ -170,27 +170,35 @@ void loop() {
                     }
                     Serial.println("wifi/ssid/" + ssidB64 + ":" + WiFi.channel(i)+ ":" + String(freq) + ":" + String(rssi) + ":" + enc);
                 }
-                Serial.println("wifi/ssidend");
+                Serial.println("wifi/scanend");
             } else if (zcCmd.EqualsIC("set")) {
                 if (zcStr.CountChar(':') >= 1) {
                     HAL_JSON::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
                     char ssid[33] = {0};
                     char pass[65] = {0};
                     int ssidLen = b64urlDecode((uint8_t*)ssid, zcSSID.ToString().c_str());
-                    ssid[ssidLen] = '\0';
                     int passLen = b64urlDecode((uint8_t*)pass, zcStr.ToString().c_str());
-                    pass[passLen] = '\0';
-                    WiFi.begin(ssid, pass);
+                    WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
+                    WiFi.begin(ssid, pass);     // Connects to the AP.
+                    WiFi.setAutoConnect(true);  // ESP32: ensures reconnect on boot. ESP8266: also works.
+                    WiFi.setAutoReconnect(true);// ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
+                    // Optionally wait a few milliseconds to ensure settings are written
+                    delay(1000); 
                     Serial.println("wifi/set/OK");
+                    // Restart the device so it boots with the saved credentials
+                    ESP.restart();
                 } else {
                     Serial.println("wifi/set/error/missingparams");
                 }
             }
-        } else {
+        } else if (strncasecmp(cmd.c_str(), "hal/", 4) == 0) {
             HAL_JSON::ZeroCopyString zcStr(cmd.c_str());
+            zcStr.start+=4; // remove hal/
             std::string msg;
             HAL_JSON::CommandExecutor::execute(zcStr, msg);
-            Serial.print(msg.c_str());
+            Serial.println(msg.c_str());
+        } else {
+            Serial.println("error/cmd/unknown");
         }
     }
 }

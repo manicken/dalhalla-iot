@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ESP WiFi Setup</title>
+<title>ESP WiFi Setup / Simple Debug Log </title>
 <style>
   body { font-family: sans-serif; margin: 1em; }
   select, input, button { margin: 0.5em 0; display: block; width: 300px; padding: 0.5em; }
@@ -12,16 +12,20 @@
 <body style="margin:0; height:100vh; display:flex; flex-direction:column;">
   <div style="flex:0 0 auto;">
     <!-- Your buttons, inputs, selects -->
-    <h1>ESP WiFi Setup</h1>
+    <h1>ESP WiFi Setup / Simple Debug Log</h1>
     <button id="connect">Connect</button>
     <button id="scan">Scan</button>
     <select id="ssid"></select>
     <input type="password" id="password">
-    <button id="send">Send Wi-Fi Config</button>
+    <button id="send">Send Wi-Fi Config (and restart device)</button>
   </div>
 
   <pre id="log" style="flex:1 1 auto; overflow-y:auto; background:#f0f0f0; padding:1em; margin:0;"></pre>
-
+	<hr>
+<div style="margin-top:1em;">
+    <input type="text" id="rawCommand" placeholder="Enter raw command" style="width:70%;" />
+    <button id="sendCommand">Send</button>
+</div>
 
 <script>
 let port, reader, writer;
@@ -96,11 +100,11 @@ async function readLoop() {
             if (!line) continue;
             log("<< " + line);
 
-            if (line === "wifi/ssidstart") {
+            if (line === "wifi/scanstart") {
                 inScan = true;
                 ssidSelect.innerHTML = "";
             }
-			else if (line === "wifi/ssidend") {
+			else if (line === "wifi/scanend") {
                 inScan = false;
             } 
 			else if (inScan && line.startsWith("wifi/ssid/")) {
@@ -141,6 +145,32 @@ async function sendWifi() {
 document.getElementById("connect").onclick = connect;
 document.getElementById("scan").onclick = scan;
 document.getElementById("send").onclick = sendWifi;
+</script>
+
+<script>
+    const rawCommandInput = document.getElementById('rawCommand');
+    const sendCommandButton = document.getElementById('sendCommand');
+
+    sendCommandButton.addEventListener('click', () => {
+        const cmd = rawCommandInput.value.trim();
+        if (!cmd) return;
+
+        if (writer) {
+            // Append newline if your ESP expects \n as line ending
+            writer.write(cmd + "\n");
+            log(">> " + cmd); // optional log
+            rawCommandInput.value = ""; // clear input
+        } else {
+            alert("Serial port not connected!");
+        }
+    });
+
+    // Optional: allow pressing Enter key to send
+    rawCommandInput.addEventListener('keydown', (e) => {
+        if (e.key === "Enter") {
+            sendCommandButton.click();
+        }
+    });
 </script>
 
 </body>

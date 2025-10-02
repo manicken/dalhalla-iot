@@ -42,40 +42,54 @@ namespace WiFiManagerWrapper {
 #else
     bool Setup() {
 #endif
+        Serial.println(F("wifi/status/connecting"));
 
-        Serial.println(F("trying to connect to saved wifi"));
 #if defined(USE_DISPLAY)
         display.setCursor(0, 0);
         display.println(F("WiFi connecting..."));
         display.display();
 #endif
 
-        // Try connect to saved WiFi, portal starts if it fails
-        wifiManager.setConfigPortalBlocking(true); // default
-        wifiManager.setConfigPortalTimeout(180); // 3 min to run the portal otherwise it will continue
-        // autoConnect is using ESP.getChipId() internally
-        wifiManager.autoConnect(wifiManager.getDefaultAPName().c_str(), WIFI_MANAGER_AP_PASSWORD);
-        bool wifiConnected = (WiFi.status() == WL_CONNECTED);
+        // Try connecting to saved Wi-Fi with a short timeout (5 seconds)
+        WiFi.persistent(true);
+        WiFi.begin(); // Use saved credentials
 
-        if (wifiConnected) {
+        bool wifiConnected = false;
+        unsigned long start = millis();
+        const unsigned long connectTimeout = 5000; // ms
+
+        while (WiFi.status() != WL_CONNECTED && millis() - start < connectTimeout) {
+            delay(50); // short delay to avoid blocking too long
+        }
+
+        wifiConnected = (WiFi.status() == WL_CONNECTED);
+
+        // If not connected, start non-blocking portal immediately
+        if (!wifiConnected) {
+            Serial.println(F("wifi/status/error/connect")); // send structured error for easy parse
+            wifiManager.setConfigPortalBlocking(false);
+            wifiManager.startConfigPortal();
+            portalRunning = true;
+        } else {
+            Serial.println(F("wifi/status/ok")); // send structured error for easy parse
+        }
+
 #if defined(USE_DISPLAY)
-            display.setCursor(0, 9);
-            display.println("OK");
+        display.setCursor(0, 9);
+        if (wifiConnected) {
+            display.println(F("OK"));
             display.setCursor(0, 17);
             display.println(WiFi.localIP());
-            display.display();
-            delay(2000); // to make time for the user to see
-#endif
         } else {
-#if defined(USE_DISPLAY)
-            display.setCursor(0, 9);
-            display.println("FAIL");
-            display.display();
-            delay(2000); // to make time for the user to see
-#endif
+            display.println(F("FAIL"));
         }
+        display.display();
+        delay(2000); // allow user to see result
+#endif
+
         return wifiConnected;
     }
+
 
     void startPortalNonBlocking() {
         wifiManager.setConfigPortalBlocking(false);
@@ -86,7 +100,6 @@ namespace WiFiManagerWrapper {
     void Task() {
         // Automatic reconnect
         static unsigned long lastReconnectAttempt = 0;
-
         if (WiFi.status() != WL_CONNECTED) {
             if (millis() - lastReconnectAttempt > 10000) { // every 10 seconds
                 // request reconnect (non-blocking, connection happens in background)
