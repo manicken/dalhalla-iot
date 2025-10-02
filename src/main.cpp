@@ -23,6 +23,9 @@
 
 #include "main.h"
 
+#include "HAL_JSON/HAL_JSON_ZeroCopyString.h"
+#include "Support/base64.h"
+
 void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
     NTP::NTPConnect();
@@ -139,6 +142,57 @@ void loop() {
 #ifdef WIFI_MANAGER_WRAPPER_H_
     WiFiManagerWrapper::Task();
 #endif
+
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim();
+        
+        if (strncasecmp(cmd.c_str(), "wifi/", 5) == 0) {
+            HAL_JSON::ZeroCopyString zcStr(cmd.c_str());
+            zcStr.start+=5; // remove wifi/
+            HAL_JSON::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+            if (zcCmd.EqualsIC("scan")) {
+                int n = WiFi.scanNetworks();
+                Serial.println("wifi/ssidstart");
+                for (int i = 0; i < n; i++) {
+                    String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
+                    int freq = WiFi.channel(i) <= 14 ? 2400 : 5000; // crude 2.4/5 GHz
+                    int rssi = WiFi.RSSI(i);
+                    String enc;
+                    switch(WiFi.encryptionType(i)) {
+                        case WIFI_AUTH_OPEN: enc = "OPEN"; break;
+                        case WIFI_AUTH_WEP: enc = "WEP"; break;
+                        case WIFI_AUTH_WPA_PSK: enc = "WPA"; break;
+                        case WIFI_AUTH_WPA2_PSK: enc = "WPA2"; break;
+                        case WIFI_AUTH_WPA_WPA2_PSK: enc = "WPA/WPA2"; break;
+                        case WIFI_AUTH_WPA2_ENTERPRISE: enc = "WPA2-E"; break;
+                        default: enc = "UNK"; break;
+                    }
+                    Serial.println("wifi/ssid/" + ssidB64 + ":" + WiFi.channel(i)+ ":" + String(freq) + ":" + String(rssi) + ":" + enc);
+                }
+                Serial.println("wifi/ssidend");
+            } else if (zcCmd.EqualsIC("set")) {
+                if (zcStr.CountChar(':') >= 1) {
+                    HAL_JSON::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
+                    char ssid[33] = {0};
+                    char pass[65] = {0};
+                    int ssidLen = b64urlDecode((uint8_t*)ssid, zcSSID.ToString().c_str());
+                    ssid[ssidLen] = '\0';
+                    int passLen = b64urlDecode((uint8_t*)pass, zcStr.ToString().c_str());
+                    pass[passLen] = '\0';
+                    WiFi.begin(ssid, pass);
+                    Serial.println("wifi/set/OK");
+                } else {
+                    Serial.println("wifi/set/error/missingparams");
+                }
+            }
+        } else {
+            HAL_JSON::ZeroCopyString zcStr(cmd.c_str());
+            std::string msg;
+            HAL_JSON::CommandExecutor::execute(zcStr, msg);
+            Serial.print(msg.c_str());
+        }
+    }
 }
 
 #if defined(USE_DISPLAY)

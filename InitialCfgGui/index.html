@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ESP WiFi Setup</title>
+<style>
+  body { font-family: sans-serif; margin: 1em; }
+  select, input, button { margin: 0.5em 0; display: block; width: 300px; padding: 0.5em; }
+  pre { background: #f0f0f0; padding: 1em; margin-top: 1em; flex: 1; overflow-y: auto; }
+</style>
+</head>
+<body style="margin:0; height:100vh; display:flex; flex-direction:column;">
+  <div style="flex:0 0 auto;">
+    <!-- Your buttons, inputs, selects -->
+    <h1>ESP WiFi Setup</h1>
+    <button id="connect">Connect</button>
+    <button id="scan">Scan</button>
+    <select id="ssid"></select>
+    <input type="password" id="password">
+    <button id="send">Send Wi-Fi Config</button>
+  </div>
+
+  <pre id="log" style="flex:1 1 auto; overflow-y:auto; background:#f0f0f0; padding:1em; margin:0;"></pre>
+
+
+<script>
+let port, reader, writer;
+const logEl = document.getElementById("log");
+const ssidSelect = document.getElementById("ssid");
+
+function log(msg) {
+    logEl.textContent += msg + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Base64URL encode
+function b64urlEncode(str) {
+    return btoa(unescape(encodeURIComponent(str)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}
+
+// Base64URL decode
+function b64urlDecode(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    // Pad to multiple of 4
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(escape(atob(str)));
+}
+
+async function connect() {
+    port = await navigator.serial.requestPort();
+    await port.open({
+		baudRate: 115200,
+		dataBits: 8,
+		parity: "none",
+		stopBits: 1,
+		flowControl: "none",
+		bufferSize: 255,
+		// prevent auto-reset
+		rts: false,
+		dtr: false
+	});
+    log("Connected to ESP");
+
+    const textEncoder = new TextEncoderStream();
+    const textDecoder = new TextDecoderStream();
+    textEncoder.readable.pipeTo(port.writable);
+    port.readable.pipeTo(textDecoder.writable);
+    writer = textEncoder.writable.getWriter();
+    reader = textDecoder.readable.getReader();
+
+    document.getElementById("scan").disabled = false;
+    document.getElementById("send").disabled = false;
+
+    readLoop();
+}
+
+async function readLoop() {
+    let inScan = false;
+    let buffer = ""; // holds incomplete line chunks
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (!value) continue;
+
+        buffer += value; // append new chunk
+
+        let index;
+        while ((index = buffer.indexOf('\n')) >= 0) {
+            let line = buffer.slice(0, index).trim();
+            buffer = buffer.slice(index + 1); // remove processed line
+
+            if (!line) continue;
+            log("<< " + line);
+
+            if (line === "wifi/ssidstart") {
+                inScan = true;
+                ssidSelect.innerHTML = "";
+            }
+			else if (line === "wifi/ssidend") {
+                inScan = false;
+            } 
+			else if (inScan && line.startsWith("wifi/ssid/")) {
+				const payload = line.substring("wifi/ssid/".length);
+				const parts = payload.split(':'); 
+				const ssidDecoded = b64urlDecode(parts[0]);
+				const ch = parts[1];
+				const freq = parts[2];
+				const rssi = parts[3];
+				const enc = parts[4];
+
+				const option = document.createElement("option");
+				option.value = parts[0]; // keep base64 value for sending back
+				option.textContent = `${ssidDecoded} (${ch}, ${freq}MHz, ${rssi}dBm, ${enc})`;
+				ssidSelect.appendChild(option);
+			}
+        }
+    }
+}
+
+
+async function scan() {
+    ssidSelect.innerHTML = "";
+    await writer.write("wifi/scan\n");
+    log(">> wifi/scan");
+}
+
+async function sendWifi() {
+    const ssidB64 = ssidSelect.value;
+    const pass = document.getElementById("password").value;
+    const passB64 = b64urlEncode(pass);
+
+    const cmd = `wifi/set/${ssidB64}:${passB64}\n`;
+    await writer.write(cmd);
+    log(">> " + cmd.trim());
+}
+
+document.getElementById("connect").onclick = connect;
+document.getElementById("scan").onclick = scan;
+document.getElementById("send").onclick = sendWifi;
+</script>
+
+</body>
+</html>
