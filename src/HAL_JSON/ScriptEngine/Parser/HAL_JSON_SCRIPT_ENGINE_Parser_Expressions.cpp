@@ -33,7 +33,7 @@ namespace HAL_JSON {
                                                      ExpTokenType::CompareGreaterThanOrEqual, ExpTokenType::CompareLessThanOrEqual,
                                                      ExpTokenType::CompareGreaterThan, ExpTokenType::CompareLessThan, 
                                                      ExpTokenType::NotSet};
-
+        
         ExpressionTokens* Expressions::rpnOutputStack = nullptr;
         int Expressions::rpnOutputStackNeededSize = 0;
         ExpressionToken* Expressions::opStack = nullptr;
@@ -163,7 +163,7 @@ namespace HAL_JSON {
                 c == '#';
         }
 
-        void Expressions::CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount, ExpressionContext exprContext) {
+        void Expressions::CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount) {
             operatorCount = 0;
             operandCount = 0;
             leftParenthesisCount  = 0;
@@ -171,11 +171,11 @@ namespace HAL_JSON {
   
             bool inOperand = false;
 
-            for (int cti=0;cti<tokens.count;cti++) { // cti = currTokenIndex
+            for (int cti=tokens.currIndex;cti<tokens.currentEndIndex;cti++) { // cti = currTokenIndex
                 ScriptToken& token = tokens.items[cti];
                 if (token.type == ScriptTokenType::Ignore) continue;
                 const char* effectiveStart = nullptr;
-                if (cti == 0 && tokens.firstTokenStartOffset != nullptr) {
+                if (cti == tokens.currIndex && tokens.firstTokenStartOffset != nullptr) {
                     effectiveStart  = tokens.firstTokenStartOffset;
                     //std::cout << "firstTokenStartOffset was true\n"; 
                 } else {
@@ -183,7 +183,7 @@ namespace HAL_JSON {
                 }
                 const char* tokenEnd = token.end;
                 for (const char* p = effectiveStart; p < tokenEnd; p++) {
-                    if (IsDoubleOperator(p)/* && exprContext == ExpressionContext::IfCondition*/) {
+                    if (IsDoubleOperator(p)) {
                         p++;
                         operatorCount++;
                         inOperand = false;
@@ -217,7 +217,7 @@ namespace HAL_JSON {
             return nullptr;
         }
 
-        bool Expressions::ValidateExpression(ScriptTokens& tokens, ExpressionContext exprContext) {
+        bool Expressions::ValidateExpression(ScriptTokens& tokens) {
             
             bool anyError = false;
 
@@ -238,7 +238,7 @@ namespace HAL_JSON {
             else
                 firstTokenStart = tokens.items[0].start;
 
-            if(IsDoubleOperator(firstTokenStart)/* && exprContext == ExpressionContext::IfCondition*/) { // this only checks the two first characters in the Expression
+            if(IsDoubleOperator(firstTokenStart)) { // this only checks the two first characters in the Expression
                 ReportError("expr. cannot start with a operator");
                 anyError = true;
             }
@@ -248,7 +248,11 @@ namespace HAL_JSON {
             }
 
             int operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount;
-            CountOperatorsAndOperands(tokens, operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount, exprContext);
+            /*for (int i=tokens.currIndex;i<tokens.currentEndIndex;i++) {
+                printf("%s\n",tokens.items[i].ToString().c_str());
+            }*/
+            CountOperatorsAndOperands(tokens, operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount);
+            
 
             if (operatorCount >= operandCount) {
                 ReportError("double operator(s) detected");
@@ -305,7 +309,7 @@ namespace HAL_JSON {
 #endif
                 const char* tokenEnd = token.end;
                 for (p = effectiveStart ; p < tokenEnd; ++p) {
-                    if (IsDoubleOperator(p) /*&& exprContext == ExpressionContext::IfCondition*/) {
+                    if (IsDoubleOperator(p)) {
                         if (inOperand) {
                             operandEnd = p;
                             ScriptToken operand(operandStart, operandEnd);

@@ -36,34 +36,27 @@ namespace HAL_JSON {
         ActionStatement::ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut)
         {
             // ExtractAssignmentParts "consumes" the tokens until the next action or whatever coming after
-            Parser::Actions::AssignmentParts* actionParts = Parser::Actions::ExtractAssignmentParts(tokens);
-            ReportInfo("\n**************** Action ************* lefthand side:" + actionParts->lhs.ToString() + "\n");
-            ReportInfo("**************** Action ******** assigment operator:" + std::string(1, actionParts->op) + "\n");
+            // just run this no checking here as at this stage the script is valid
+            Parser::Actions::ExtractAssignmentParts(tokens); 
+            ReportInfo("\n**************** Action ************* lefthand side:" + Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
+            ReportInfo("**************** Action ******** assigment operator:" + std::string(1, Parser::Actions::AssignmentParts::op) + "\n");
             
-            ZeroCopyString varOperand = actionParts->lhs;
-            ZeroCopyString funcName = actionParts->lhs;
+            ZeroCopyString varOperand = Parser::Actions::AssignmentParts::lhs;
+            ZeroCopyString funcName = Parser::Actions::AssignmentParts::lhs;
             varOperand = funcName.SplitOffHead('#');
             target = new CachedDeviceAccess(varOperand, funcName);
 
-            ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(actionParts->rhs); // note here. expTokens is non owned
-
-            //if (expTokens == nullptr) {
-            //    return;
-            //}
+            ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(Parser::Actions::AssignmentParts::rhs); // note here. expTokens is non owned
 
             ReportInfo("\n***************** Action *********** rhs calc RPN: [");
             for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                ExpressionToken& tok = expTokens->items[i];
-                //if (tok->type == TokenType::Operand)
-                    ReportInfo(tok.ToString() + " ");
-                //else
-                //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
+                ReportInfo(expTokens->items[i].ToString() + " ");
             }
             ReportInfo("]\n\n");
 
             calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
 
-            handlerOut = GetFunctionHandler(actionParts->op);
+            handlerOut = GetFunctionHandler(Parser::Actions::AssignmentParts::op);
         }
         ActionStatement::~ActionStatement()
         {
