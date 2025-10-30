@@ -64,7 +64,8 @@ namespace HAL_JSON {
     HALOperationResult Template::exec() { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Template::exec(ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
     Device::ReadToHALValue_FuncType Template::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::ReadToHALValue_FuncType Template::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::WriteHALValue_FuncType Template::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::Exec_FuncType Template::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
     
     HALValue* Template::GetValueDirectAccessPtr() { return nullptr; }
 }

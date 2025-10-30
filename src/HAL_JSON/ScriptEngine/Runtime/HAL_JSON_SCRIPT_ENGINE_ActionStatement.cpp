@@ -46,16 +46,20 @@ namespace HAL_JSON {
             varOperand = funcName.SplitOffHead('#');
             target = new CachedDeviceAccess(varOperand, funcName);
 
-            ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(Parser::Actions::AssignmentParts::rhs); // note here. expTokens is non owned
+            if (Expressions::IsExpressionEmpty(Parser::Actions::AssignmentParts::rhs)) {
+                calcRpn = nullptr; // not used here
+            } else {
+                ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(Parser::Actions::AssignmentParts::rhs); // note here. expTokens is non owned
 
-            ReportInfo("\n***************** Action *********** rhs calc RPN: [");
-            for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                ReportInfo(expTokens->items[i].ToString() + " ");
+                ReportInfo("\n***************** Action *********** rhs calc RPN: [");
+                for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
+                    ReportInfo(expTokens->items[i].ToString() + " ");
+                }
+                ReportInfo("]\n\n");
+
+                calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
             }
-            ReportInfo("]\n\n");
-
-            calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
-
+            
             handlerOut = GetFunctionHandler(Parser::Actions::AssignmentParts::op);
         }
         ActionStatement::~ActionStatement()
@@ -71,6 +75,10 @@ namespace HAL_JSON {
             HALValue val2write;
             if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
             return actionItem->target->WriteSimple(val2write);
+        }
+        HALOperationResult ActionStatement::Exec_Handler(void* context) {
+            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
+            return actionItem->target->Exec();
         }
         /*
         HALOperationResult ActionStatement::AddAndAssign_Handler(void* context) {
@@ -221,6 +229,7 @@ namespace HAL_JSON {
             else if (c == '^') return &CompoundAssign_Handler<OpBitExOr>;
             else if (c == '<') return &CompoundAssign_Handler<OpBitLshift>;
             else if (c == '>') return &CompoundAssign_Handler<OpBitRshift>;
+            else if (c == '(') return &Exec_Handler;
             else return nullptr; // should never happend
         }
     }

@@ -107,6 +107,8 @@ namespace HAL_JSON {
         HALOperationResult read(HALValue &val) override;
         HALOperationResult write(const HALValue &val) override;
         HALOperationResult exec() override;
+        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        static HALOperationResult exec(Device* device);
         String ToString() override;
     };
 

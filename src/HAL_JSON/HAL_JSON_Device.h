@@ -53,7 +53,9 @@ namespace HAL_JSON {
         const char* type;
         bool loopTaskDone = false;
     public:
+        using Exec_FuncType = HALOperationResult (*)(Device*);
         using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue&);
+        using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue&);
         Device(UIDPathMaxLength uidMaxLength, const char* type);
         virtual ~Device();
 
@@ -67,7 +69,8 @@ namespace HAL_JSON {
         virtual HALOperationResult read(const HALReadValueByCmd& val);
         virtual HALOperationResult write(const HALWriteValueByCmd& val);
         virtual ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName);
-        virtual ReadToHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
+        virtual WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
         virtual HALValue* GetValueDirectAccessPtr();
         /** called regulary from the main loop */
         virtual void loop();

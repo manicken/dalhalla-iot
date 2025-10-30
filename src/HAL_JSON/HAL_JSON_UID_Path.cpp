@@ -25,44 +25,29 @@
 
 namespace HAL_JSON {
     
-
-    UIDPath::UIDPath() = default;
-
-    UIDPath::~UIDPath() {
-        if (items != nullptr)
-            delete[] items;
-    }
-
-    UIDPath::UIDPath(const char* uidStr) {
-        currentItemIndex = 0;
-        if (uidStr == nullptr || strlen(uidStr) == 0) {
-            itemCount = 0; // allways used at reads so setting it to zero would make reads impossible
-            GlobalLogger.Error(F("new UIDPath - input uidStr invalid"));
-            return;
+    // static function
+    bool UIDPath::Validate(const ZeroCopyString& zcStrUid) {
+        if (zcStrUid.Length() == 0) {
+            GlobalLogger.Error(F("UIDPath - is empty"));
+            return false;
         }
-        uint32_t indiciesCount = 0;
-        const uint32_t* indicies = CharArray::getIndicies(uidStr, ':', indiciesCount);
-        itemCount = indiciesCount + 1;
-        items = new (std::nothrow) HAL_UID[itemCount];
-        if (items == nullptr) {
-            delete[] indicies;
-            GlobalLogger.Error(F("new UIDPath - Allocation for items failed, count: "), std::to_string(itemCount).c_str());
-            itemCount = 0; // allways used at reads so setting it to zero would make reads impossible
-            return;
-        }
-        //items2 = new HAL_UID[itemCount];
-        int currStrIndex = 0;
-        for (uint32_t i=0;i<itemCount;i++) {
-            if (i<indiciesCount) {
-                items[i] = encodeUID(&uidStr[currStrIndex], indicies[i]-currStrIndex);
-                currStrIndex = indicies[i]+1;
-            } else {
-                items[i] = encodeUID(&uidStr[currStrIndex]);
+        bool anyError = false;
+        ZeroCopyString zcStrUidCpy = zcStrUid; // create copy
+        while (zcStrUidCpy.Length())
+        {
+            ZeroCopyString zcTmp = zcStrUidCpy.SplitOffHead(':');
+            if (zcTmp.Length() > HAL_UID::Size) {
+                GlobalLogger.Error(F("UIDPath - uid too long"), zcTmp.ToString().c_str());
+                anyError = true;
             }
         }
-        
-        delete[] indicies;
+        return anyError == false;
     }
+
+    UIDPath::UIDPath() = default;
+    UIDPath::UIDPath(const char* cstr) : UIDPath(ZeroCopyString(cstr)) { }
+    UIDPath::UIDPath(const std::string& uidStr) : UIDPath(ZeroCopyString(uidStr.c_str())) { }
+
     UIDPath::UIDPath(const ZeroCopyString& uidzcStr) {
         currentItemIndex = 0;
         if (uidzcStr.Length() == 0) {
@@ -70,33 +55,26 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("new UIDPath - input uidStr invalid"));
             return;
         }
-        uint32_t pointerCount = 0;
-        const char** pointers = uidzcStr.GetPointers(':', pointerCount);
-        itemCount = pointerCount + 1;
+        itemCount = uidzcStr.CountChar(':') + 1;
         items = new (std::nothrow) HAL_UID[itemCount];
         if (items == nullptr) {
-            delete[] pointers;
             GlobalLogger.Error(F("new UIDPath - Allocation for items failed, count: "), std::to_string(itemCount).c_str());
             itemCount = 0; // allways used at reads so setting it to zero would make reads impossible
             return;
         }
-        int currPtrIndex = 0;
+        int index = 0;
         ZeroCopyString currZcStr = uidzcStr; // create copy
-        for (uint32_t i=0;i<itemCount;i++) {
-            if (i<pointerCount) {
-                currZcStr.end = pointers[currPtrIndex++];
-            } else {
-                currZcStr.end = uidzcStr.end;
-            }
-            items[i] = encodeUID(currZcStr);
-            currZcStr.start = currZcStr.end + 1; // +1 skip the ':' character
-            
+        while (currZcStr.Length())
+        {
+            items[index++] = encodeUID(currZcStr.SplitOffHead(':'));
         }
-        delete[] pointers;
     }
 
-    UIDPath::UIDPath(const std::string& uidStr) : UIDPath(uidStr.c_str()) { }
-    
+    UIDPath::~UIDPath() {
+        if (items != nullptr)
+            delete[] items;
+    }
+
     bool UIDPath::empty() const {
         return (!items || itemCount == 0);
     }

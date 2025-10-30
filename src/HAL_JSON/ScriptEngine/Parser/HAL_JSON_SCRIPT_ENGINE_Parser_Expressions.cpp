@@ -217,6 +217,36 @@ namespace HAL_JSON {
             return nullptr;
         }
 
+        bool Expressions::IsExpressionEmpty(const ScriptTokens& tokens) {
+            // Check for null pointer or invalid structure
+            if (tokens.items == nullptr || tokens.count <= 0) {
+                ReportError("ExpressionEmpty: tokens are null or count == 0");
+                return true; // Consider null/zero count as empty
+            }
+
+            // Range sanity check
+            if (tokens.currIndex >= tokens.count ||
+                tokens.currentEndIndex > tokens.count ||
+                tokens.currIndex >= tokens.currentEndIndex) {
+                ReportError("ExpressionEmpty: invalid range");
+                return true;
+            }
+            int startIndex = tokens.currIndex;
+
+            // Check if effective range has any non-ignore tokens
+            for (int i = startIndex; i < tokens.currentEndIndex; ++i) {
+                const ScriptToken& tok = tokens.items[i];
+                if (tok.type == ScriptTokenType::Ignore) continue;
+                ZeroCopyString zcStr = tok;
+                if (i == startIndex && tokens.firstTokenStartOffset != nullptr) {
+                    zcStr.start = tokens.firstTokenStartOffset;
+                }
+                if (zcStr.Length() != 0) return false;
+            }
+
+            return true; // No valid tokens found — expression is empty
+        }
+
         bool Expressions::ValidateExpression(ScriptTokens& tokens) {
             
             bool anyError = false;
@@ -351,16 +381,41 @@ namespace HAL_JSON {
             return !anyError;
         }
 
-        void Expressions::ValidateOperand(const ScriptToken& operandToken, bool& anyError, ValidateOperandMode mode) {
-            //bool operandIsVariable = OperandIsVariable(operandToken);
+        /**
+         * Parses an operand token into device/function information.
+         * Returns false on serious parsing errors.
+         */
+        OperandTargetInfoResult Expressions::ParseOperandTarget(const ScriptToken& operandToken, bool& anyError, OperandTargetInfo& outInfo) {
+
+
+            if (operandToken.ValidNumber()) {
+                return OperandTargetInfoResult::OperandIsConst;
+            }
+
+            const char* invalidChar = ValidOperandVariableName(operandToken);
+            if (invalidChar) {
+                std::string msg = "Invalid character <" + std::to_string(*invalidChar) + "> in operand: " + operandToken.ToString();
+                operandToken.ReportTokenWarning(msg.c_str());
+                anyError = true;
+                // this will actually result in a device not found error
+                // best to report both to notify the user some extra info
+            }
+
+            ZeroCopyString varOperand = operandToken;
+            ZeroCopyString funcName = varOperand;
+            varOperand = funcName.SplitOffHead('#');
+            outInfo.funcName = funcName;
+            //varOperand = outInfo.funcName
+
 #if defined(HAL_JSON_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             std::string msg;
             //if (OperandIsVariable(operandToken)) {
             if (operandToken.ValidNumber() == false) {
+                //ZeroCopyString funcName = operandToken;
+                //ZeroCopyString base = funcName.SplitOffHead('#');
+                
                 msg = "Variable: Name= ";
-                ZeroCopyString funcName = operandToken;
-                ZeroCopyString base = funcName.SplitOffHead('#');
-                msg += base.ToString();
+                msg += varOperand.ToString();
                 if (funcName.Length() != 0) {
                     msg += ", funcName= ";
                     msg += funcName.ToString();
@@ -371,54 +426,69 @@ namespace HAL_JSON {
             }
             operandToken.ReportTokenInfo(msg.c_str());
 #endif
-            // return early if not a operand variable
-            //if (OperandIsVariable(operandToken) == false)
-            if (operandToken.ValidNumber()) return;
-                return;
 
-            const char* currChar = ValidOperandVariableName(operandToken);
-            if (currChar /*&& *currChar != '\0'*/) {
-                std::string msg = "found invalid character <" + std::to_string(*currChar) +
-                                "> in operand: " + operandToken.ToString();
-                operandToken.ReportTokenWarning(msg.c_str());
-                // continue validation but note the error
-            }
-
-            ZeroCopyString varOperand = operandToken;
-            ZeroCopyString funcName = varOperand;
-            varOperand = funcName.SplitOffHead('#');
-
-            if (varOperand.Length() > HAL_UID::Size) {
-                std::string msg = varOperand.ToString() + " length > " + std::to_string(HAL_UID::Size);
-                
-                operandToken.ReportTokenError("Operand name too long: ", msg.c_str());
+            if (UIDPath::Validate(varOperand) == false) {
+                operandToken.ReportTokenError("Operand name invalid");
                 anyError = true;
             }
 
             UIDPath path(varOperand);
-            Device* device = Manager::findDevice(path);
-            if (!device) {
-                std::string deviceName = varOperand.ToString();
-                operandToken.ReportTokenError("could not find the device: ", deviceName.c_str());
+            outInfo.device = Manager::findDevice(path);
+            if (!outInfo.device) {
+                operandToken.ReportTokenError("Could not find device: ", varOperand.ToString().c_str());
                 anyError = true;
+                return OperandTargetInfoResult::DeviceNotFound;
+            }
+            return OperandTargetInfoResult::Success;
+        }
+
+        void Expressions::ValidateOperand(const ScriptToken& operandToken, bool& anyError, ValidateOperandMode mode) {
+            
+            OperandTargetInfo opti;
+            OperandTargetInfoResult res = ParseOperandTarget(operandToken, anyError, opti);
+            if (res != OperandTargetInfoResult::Success) return;
+            Device* device = opti.device;
+            ZeroCopyString funcName = opti.funcName;
+
+            if (mode == ValidateOperandMode::Exec) {
+                HALOperationResult readResult = HALOperationResult::NotSet;
+                if (funcName.Length() == 0) {
+                    readResult = device->exec();
+                } else {
+                    readResult = device->exec(funcName);
+                }
+                if (readResult != HALOperationResult::Success) {
+                    anyError = true;
+                    if (readResult == HALOperationResult::UnsupportedCommand) {
+                        std::string funcNameStr = ": " + funcName.ToString();
+                        operandToken.ReportTokenError(HALOperationResultToString(readResult), funcNameStr.c_str());
+                    } else {
+                        operandToken.ReportTokenError(HALOperationResultToString(readResult), ": exec");
+                    }
+                    
+                }
                 return;
             }
+
             if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.Length() != 0) {
-                    HALValue halValue;
+                    if (device->GetReadToHALValue_Function(funcName) == nullptr) {
+                        operandToken.ReportTokenError("GetReadToHALValue_Function not found: ", funcName.ToString().c_str());
+                    }
+                    /*HALValue halValue;
                     HALReadValueByCmd readValueByCmd(halValue, funcName);
                     readResult = device->read(readValueByCmd);
                     if (readResult != HALOperationResult::Success) {
                         anyError = true;
                         if (readResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": " + funcName.ToString();
+                            std::string funcNameStr = ": read " + funcName.ToString();
                             operandToken.ReportTokenError(HALOperationResultToString(readResult), funcNameStr.c_str());
                         } else {
                             operandToken.ReportTokenError(HALOperationResultToString(readResult), ": read");
                         }
                         
-                    }
+                    }*/
                 } else {
                     HALValue halValue;
                     readResult = device->read(halValue);
@@ -431,19 +501,23 @@ namespace HAL_JSON {
             if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.Length() != 0) {
-                    HALValue halValue;
+                     if (device->GetWriteFromHALValue_Function(funcName) == nullptr) {
+                        operandToken.ReportTokenError("GetWriteFromHALValue_Function not found: ", funcName.ToString().c_str());
+                     }
+
+                    /*HALValue halValue;
                     HALWriteValueByCmd writeValueByCmd(halValue, funcName);
                     writeResult = device->write(writeValueByCmd);
                     if (writeResult != HALOperationResult::Success) {
                         anyError = true;
                         if (writeResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": " + funcName.ToString();
+                            std::string funcNameStr = ": write " + funcName.ToString();
                             operandToken.ReportTokenError(HALOperationResultToString(writeResult), funcNameStr.c_str());
                         } else {
                             operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");
                         }
                         
-                    }
+                    }*/
                 } else {
                     HALValue halValue;
                     writeResult = device->write(halValue);

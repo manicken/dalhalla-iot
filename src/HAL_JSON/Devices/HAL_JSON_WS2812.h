@@ -48,10 +48,10 @@ namespace HAL_JSON {
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
-        Device::ReadToHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
+        Device::WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
 
-        static HALOperationResult writeBrightness(Device* context, HALValue& val);
-        static HALOperationResult writeColor(Device* context, HALValue& val);
+        static HALOperationResult writeBrightness(Device* context, const HALValue& val);
+        static HALOperationResult writeColor(Device* context, const HALValue& val);
 
         void loop() override;
 

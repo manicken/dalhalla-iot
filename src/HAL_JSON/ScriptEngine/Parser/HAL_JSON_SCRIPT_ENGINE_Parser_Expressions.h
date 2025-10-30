@@ -52,9 +52,24 @@ namespace HAL_JSON {
             Assignment
         };
         enum class ValidateOperandMode {
+            UnSet,
             Read,
             Write,
-            ReadWrite
+            ReadWrite,
+            Exec
+        };
+
+        enum class OperandTargetInfoResult {
+            Success,
+            OperandIsConst,
+           // OperandInvalidCharacter,
+            DeviceNotFound
+            
+        };
+
+        struct OperandTargetInfo {
+            ZeroCopyString funcName;
+            Device* device = nullptr;
         };
 
         class Expressions {
@@ -142,11 +157,13 @@ namespace HAL_JSON {
         public:
             static const char* ValidOperandVariableName(const ScriptToken& operand);
             static void CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount);
+            static OperandTargetInfoResult ParseOperandTarget(const ScriptToken& operandToken, bool& anyError, OperandTargetInfo& outInfo);
             static void ValidateOperand(const ScriptToken& operand, bool& anyError, ValidateOperandMode mode = ValidateOperandMode::Read);
             //static bool OperandIsVariable(const Token& operand);
             static bool IsSingleOperator(char c);
             static bool IsDoubleOperator(const char* c);
             static bool IsValidOperandChar(char c);
+            static bool IsExpressionEmpty(const ScriptTokens& tokens);
             static bool ValidateExpression(ScriptTokens& tokens);
 
             static std::string CalcExpressionToString(const LogicRPNNode* node);

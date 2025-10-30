@@ -203,6 +203,13 @@ namespace HAL_JSON {
 
         return exec();
     }
+    Device::Exec_FuncType SinglePulseOutput::GetExec_Function(ZeroCopyString& zcFuncName) {
+        return SinglePulseOutput::exec;
+    } 
+
+    HALOperationResult SinglePulseOutput::exec(Device* device) {
+        return static_cast<SinglePulseOutput*>(device)->exec();
+    }
 
     HALOperationResult SinglePulseOutput::exec() {
         digitalWrite(pin, !inactiveState);

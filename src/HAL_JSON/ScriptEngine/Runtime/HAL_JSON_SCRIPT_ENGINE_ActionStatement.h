@@ -63,6 +63,7 @@ namespace HAL_JSON {
             
 
             static HALOperationResult Assign_Handler(void* context);
+            static HALOperationResult Exec_Handler(void* context);
 /*            static HALOperationResult AddAndAssign_Handler(void* context);
             static HALOperationResult SubtractAndAssign_Handler(void* context);
             static HALOperationResult MultiplyAndAssign_Handler(void* context);

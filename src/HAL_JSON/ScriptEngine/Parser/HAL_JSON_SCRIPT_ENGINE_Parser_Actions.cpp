@@ -118,16 +118,41 @@ namespace HAL_JSON {
                             anyError = true;
                             continue;
                         }
+                        printf("AssignmentParts::rhs %s (%d)\n",AssignmentParts::rhs.SliceToString().c_str(), AssignmentParts::rhs.SliceTokenCount());
                         // Validate LHS
                         // here set opMode to ReadWrite on compound operators otherwise write only
-                        ValidateOperandMode opMode = (AssignmentParts::op!='=') ? ValidateOperandMode::ReadWrite : ValidateOperandMode::Write;
+                        ValidateOperandMode opMode = ValidateOperandMode::UnSet;
+
+                        if (AssignmentParts::op == '(') {
+                            opMode = ValidateOperandMode::Exec;
+                        } else if (AssignmentParts::op == '=') {
+                            opMode = ValidateOperandMode::Write;
+                        } else { // compound operators
+                            opMode = ValidateOperandMode::ReadWrite;
+                        }
+                        
+                        // validate LHS even if rhs could fail
                         Expressions::ValidateOperand(AssignmentParts::lhs, anyError, opMode);
+                        
+                        if (opMode == ValidateOperandMode::Exec) {
+                            // Exec currently do not support parameters
+                            // and probably will never do either as there is currently no use
+                            // also if there is parameters given then we can safely just ignore them
+                            continue;
+                        }
+                        if (Expressions::IsExpressionEmpty(AssignmentParts::rhs)) {
+                            token.ReportTokenError("RHS expression cannot be empty");
+                            anyError = true;
+                            continue;
+                        }
                         // Validate RHS
                         if (false == Expressions::ValidateExpression(AssignmentParts::rhs)) {
                             token.ReportTokenError("RHS expression validation failed");
                             anyError = true;
                         }
-                    }
+
+                    } // for loop
+
                     return !anyError;
                 }
 
@@ -202,23 +227,27 @@ namespace HAL_JSON {
                     // here we have have:
                     // const char* firstAssignmentOperator // is set when a assigment operator is found
                     // const char* foundCompoundAssignmentOperator // is set when a compound assigment operator is found
-                   
 
                     // Decide operator start
                     const char* foundAssigmentOperatorStart = foundCompoundAssignmentOperator
                                         ? foundCompoundAssignmentOperator
                                         : foundAssignmentOperator;
-
-                    AssignmentParts::lhs.start = currentStartToken.start;
-                    AssignmentParts::lhs.line = currentStartToken.line;
-                    AssignmentParts::lhs.column = currentStartToken.column;
+                    AssignmentParts::lhs = currentStartToken;
+                    //AssignmentParts::lhs.start = currentStartToken.start;
+                    //AssignmentParts::lhs.line = currentStartToken.line;
+                    //AssignmentParts::lhs.column = currentStartToken.column;
                     AssignmentParts::op = *foundAssigmentOperatorStart;
 
                     AssignmentParts::rhs.items = tokens.items;
                     AssignmentParts::rhs.count = tokens.count;
                     AssignmentParts::rhs.currentEndIndex = startIndex + currentStartToken.itemsInBlock;
-
-                    if (currentStartToken == *foundAssignmentOperatorToken) {
+                    
+                    if (*foundAssigmentOperatorStart == '(') {
+                        AssignmentParts::lhs.end = foundAssigmentOperatorStart;
+                        AssignmentParts::rhs.currIndex = startIndex;
+                        AssignmentParts::rhs.firstTokenStartOffset = foundAssigmentOperatorStart + 1;
+                    }
+                    else if (currentStartToken == *foundAssignmentOperatorToken) {
                         // this mean that the assigmentOperator is in the first token
                         // finalize the lhs first
                         AssignmentParts::lhs.end = foundAssigmentOperatorStart;
@@ -238,8 +267,8 @@ namespace HAL_JSON {
                     else // currentStartToken != *foundAssignmentOperatorToken
                     {
                         // this mean that the assigmentOperator is separated from the first operand
-                        // finalize the lhs first
-                        AssignmentParts::lhs.end = currentStartToken.end;
+                        // finalize the lhs first, 
+                        //AssignmentParts::lhs.end = currentStartToken.end;
 
                         // someVar =5 or someVar +=5
                         if (foundAssignmentOperatorToken->ContainsPtr(foundAssignmentOperator+1)) {

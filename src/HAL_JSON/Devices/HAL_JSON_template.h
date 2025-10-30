@@ -39,26 +39,27 @@ namespace HAL_JSON {
         uint8_t pin = 0; // if pin would be used
     public:
 
-        HALOperationResult read(HALValue& val);
-        HALOperationResult write(const HALValue& val);
-        HALOperationResult read(const HALReadStringRequestValue& val);
-        HALOperationResult write(const HALWriteStringRequestValue& val);
-        HALOperationResult read(const HALReadValueByCmd& val);
-        HALOperationResult write(const HALWriteValueByCmd& val);
-        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName);
-        ReadToHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
-        HALValue* GetValueDirectAccessPtr();
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
+        HALOperationResult read(const HALReadStringRequestValue& val) override;
+        HALOperationResult write(const HALWriteStringRequestValue& val) override;
+        HALOperationResult read(const HALReadValueByCmd& val) override;
+        HALOperationResult write(const HALWriteValueByCmd& val) override;
+        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
+        WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
+        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        HALValue* GetValueDirectAccessPtr() override;
         /** called regulary from the main loop */
-        void loop();
+        void loop() override;
         /** called when all hal devices has been loaded */
-        void begin();
+        void begin() override;
         /** used to find sub/leaf devices @ "group devices" */
-        Device* findDevice(UIDPath& path);
+        Device* findDevice(UIDPath& path) override;
 
         /** Executes a device action that requires no parameters. */
-        HALOperationResult exec();
+        HALOperationResult exec() override ;
         /** Executes a device action with a provided command string. */
-        HALOperationResult exec(ZeroCopyString& cmd);
+        HALOperationResult exec(ZeroCopyString& cmd) override ;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);

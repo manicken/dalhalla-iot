@@ -29,20 +29,22 @@ namespace HAL_JSON {
         device = Manager::findDevice(path);
         currentVersion = Manager::ReloadVersionPtr();
         cachedVersion = *currentVersion;
+        // allways set all to nullptr
+        readToHalValueFunc = nullptr;
+        valueDirectAccessPtr = nullptr;
+        execFunc = nullptr;
+
         if (device == nullptr) {
-            readToHalValueFunc = nullptr;
-            valueDirectAccessPtr = nullptr;
+            
             std::string uidStr = uidPath.ToString();
             printf("@CachedDeviceAccess const - device not found:>>%s<<\n", uidStr.c_str());
             return;
         }
         if (funcName != nullptr && device != nullptr) {
+            printf("create cached device access: %s\n", funcName.ToString().c_str());
             readToHalValueFunc = device->GetReadToHALValue_Function(funcName);
             writeFromHalValueFunc = device->GetWriteFromHALValue_Function(funcName);
-        }
-        else {
-            readToHalValueFunc = nullptr;
-            writeFromHalValueFunc = nullptr;
+            execFunc = device->GetExec_Function(funcName);
         }
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
@@ -55,6 +57,14 @@ namespace HAL_JSON {
             cachedVersion = *currentVersion; 
         }
         return device;
+    }
+    HALOperationResult CachedDeviceAccess::Exec() {
+        if (execFunc != nullptr) {
+            Device* device = GetDevice();
+            if (device == nullptr) return HALOperationResult::DeviceNotFound;
+            return execFunc(device);
+        }
+        return HALOperationResult::UnsupportedOperation;
     }
 
     HALOperationResult CachedDeviceAccess::WriteSimple(const HALValue& val) {

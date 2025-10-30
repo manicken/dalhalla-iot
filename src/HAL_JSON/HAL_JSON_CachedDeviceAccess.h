@@ -56,11 +56,13 @@ namespace HAL_JSON {
          * or actually sub values defined by using # in uidPath#subItem
          */
         Device::ReadToHALValue_FuncType readToHalValueFunc;
-        Device::ReadToHALValue_FuncType writeFromHalValueFunc;
+        Device::WriteHALValue_FuncType writeFromHalValueFunc;
+        Device::Exec_FuncType execFunc;
         
         CachedDeviceAccess(ZeroCopyString& uidPath, ZeroCopyString& funcName);
         Device* GetDevice();
 
+        HALOperationResult Exec();
         HALOperationResult WriteSimple(const HALValue& val);
         HALOperationResult ReadSimple(HALValue& val);
     };

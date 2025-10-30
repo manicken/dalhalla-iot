@@ -223,6 +223,9 @@ namespace HAL_JSON {
             }
             return str;
         }
+        int ScriptTokens::SliceTokenCount() {
+            return currentEndIndex - currIndex;
+        }
         std::string ScriptTokens::SliceToString() {
             std::string str;
 
