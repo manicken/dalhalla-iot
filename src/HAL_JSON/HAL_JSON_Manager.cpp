@@ -27,16 +27,16 @@ namespace HAL_JSON {
 
     Device** Manager::devices = nullptr;
     int Manager::deviceCount = 0;
-    int Manager::reloadVersion = 0;
+    //int Manager::reloadVersion = 0;
     bool Manager::reloadQueued = false;
     
     int Manager::DeviceCount() {
         return deviceCount;
     }
 
-    int* Manager::ReloadVersionPtr() {
+   /* int* Manager::ReloadVersionPtr() {
         return &reloadVersion;
-    }
+    }*/
 
     bool Manager::setupMgr() {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -316,7 +316,7 @@ namespace HAL_JSON {
             //GlobalLogger.Error(F("ParseJSON(jsonItems) fail"));
             //Serial.println("");
         }
-        if (parseOk == true) reloadVersion++;
+        //if (parseOk == true) reloadVersion++;
 
         return parseOk;
     }

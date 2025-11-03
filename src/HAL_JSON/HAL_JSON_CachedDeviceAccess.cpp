@@ -25,10 +25,26 @@
 
 namespace HAL_JSON {
 
-    CachedDeviceAccess::CachedDeviceAccess(ZeroCopyString& uidPath, ZeroCopyString& funcName) : path(uidPath) {
-        device = Manager::findDevice(path);
-        currentVersion = Manager::ReloadVersionPtr();
-        cachedVersion = *currentVersion;
+    CachedDeviceAccess::CachedDeviceAccess(const char* uidPathAndFuncName) {
+        ZeroCopyString funcName(uidPathAndFuncName);
+        ZeroCopyString zcStrUidPath = funcName.SplitOffHead('#');
+        Init(zcStrUidPath, funcName);
+    }
+
+    CachedDeviceAccess::CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName) {
+        //ZeroCopyString funcName = zcStrUidPathAndFuncName; // copy
+        ZeroCopyString zcStrUidPath = zcStrUidPathAndFuncName.SplitOffHead('#');
+        Init(zcStrUidPath, zcStrUidPathAndFuncName);
+    }
+
+    CachedDeviceAccess::CachedDeviceAccess(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName) {
+        Init(zcStrUidPath, zcStrFuncName);
+    }
+
+    void CachedDeviceAccess::Init(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName) {
+        UIDPath uidPath(zcStrUidPath);
+        device = Manager::findDevice(uidPath);
+
         // allways set all to nullptr
         readToHalValueFunc = nullptr;
         valueDirectAccessPtr = nullptr;
@@ -40,28 +56,19 @@ namespace HAL_JSON {
             printf("@CachedDeviceAccess const - device not found:>>%s<<\n", uidStr.c_str());
             return;
         }
-        if (funcName != nullptr && device != nullptr) {
-            printf("create cached device access: %s\n", funcName.ToString().c_str());
-            readToHalValueFunc = device->GetReadToHALValue_Function(funcName);
-            writeFromHalValueFunc = device->GetWriteFromHALValue_Function(funcName);
-            execFunc = device->GetExec_Function(funcName);
+        if (zcStrFuncName != nullptr) {
+            //printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
+            readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
+            writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName);
+            execFunc = device->GetExec_Function(zcStrFuncName);
         }
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
-        
     }
 
-    Device* CachedDeviceAccess::GetDevice() {
-        if (cachedVersion != *currentVersion) {
-            device = Manager::findDevice(path);
-            cachedVersion = *currentVersion; 
-        }
-        return device;
-    }
     HALOperationResult CachedDeviceAccess::Exec() {
         if (execFunc != nullptr) {
-            Device* device = GetDevice();
-            if (device == nullptr) return HALOperationResult::DeviceNotFound;
+            //printf("\CDA Exec - no params\n");
             return execFunc(device);
         }
         return HALOperationResult::UnsupportedOperation;
@@ -69,34 +76,29 @@ namespace HAL_JSON {
 
     HALOperationResult CachedDeviceAccess::WriteSimple(const HALValue& val) {
         if (writeFromHalValueFunc != nullptr) {
-            Device* device = GetDevice();
-            if (device == nullptr) return HALOperationResult::DeviceNotFound;
-            HALValue valToWrite = val;
-            //printf("\nWriteSimple - writeFromHalValueFunc\n");
-            return writeFromHalValueFunc(device, valToWrite);
+            //printf("\nCDA WriteSimple - writeFromHalValueFunc\n");
+            return writeFromHalValueFunc(device, val);
         }
         if (valueDirectAccessPtr != nullptr) {
+            //printf("\nCDA ReadSimple - valueDirectAccessPtr\n");
             *valueDirectAccessPtr = val;
             return HALOperationResult::Success;
         }
-        //printf("\nWriteSimple - device->write(val)\n");
-        Device* device = GetDevice();
-        if (device == nullptr) return HALOperationResult::DeviceNotFound;
+        //printf("\nCDA WriteSimple - device->write(val)\n");
         return device->write(val);
     }
 
     HALOperationResult CachedDeviceAccess::ReadSimple(HALValue& val) {
         if (readToHalValueFunc != nullptr) {
-            Device* device = GetDevice();
-            if (device == nullptr) return HALOperationResult::DeviceNotFound;
+            //printf("\nCDA ReadSimple - readToHalValueFunc\n");
             return readToHalValueFunc(device, val);
         }
         if (valueDirectAccessPtr != nullptr) {
+            //printf("\nCDA ReadSimple - valueDirectAccessPtr\n");
             val = *valueDirectAccessPtr;
             return HALOperationResult::Success;
         }
-        Device* device = GetDevice();
-        if (device == nullptr) return HALOperationResult::DeviceNotFound;
+        //printf("\nCDA ReadSimple - device->read(val)\n");
         return device->read(val);
     }
 }

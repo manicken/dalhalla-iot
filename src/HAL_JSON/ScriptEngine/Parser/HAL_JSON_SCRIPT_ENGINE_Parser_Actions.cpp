@@ -245,7 +245,7 @@ namespace HAL_JSON {
                     if (*foundAssigmentOperatorStart == '(') {
                         AssignmentParts::lhs.end = foundAssigmentOperatorStart;
                         AssignmentParts::rhs.currIndex = startIndex;
-                        AssignmentParts::rhs.firstTokenStartOffset = foundAssigmentOperatorStart + 1;
+                        AssignmentParts::rhs.firstTokenStartOffset = foundAssigmentOperatorStart;
                     }
                     else if (currentStartToken == *foundAssignmentOperatorToken) {
                         // this mean that the assigmentOperator is in the first token

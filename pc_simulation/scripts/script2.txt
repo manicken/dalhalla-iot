@@ -15,10 +15,9 @@ on dummyTrigger then
   i2c:disp:red = red;
   i2c:disp:green = green;
   i2c:disp:blue = blue;
-  
-  //BIRELSET()
-  //red
-  //red =
+
+  //red // this will generate error: cannot find assignment operator/exec func postfix (
+  //red = // now generates RHS cannot be empty error
   
   neo#color = (red << 16) |\
               (green << 8) |\

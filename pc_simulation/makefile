@@ -6,7 +6,7 @@
 ifeq ($(OS),Windows_NT)
 	CXX = g++
     CXXFLAGS = -std=c++17 -Wall -g -O0 -D_WIN32 -D_WIN32_WINNT=0x0A00
-    LDFLAGS =
+    LDFLAGS = -lwinhttp
 else
     CXX = clang++
     CXXFLAGS = -std=c++17 -Wall -g -O0 -fsanitize=address -fno-omit-frame-pointer

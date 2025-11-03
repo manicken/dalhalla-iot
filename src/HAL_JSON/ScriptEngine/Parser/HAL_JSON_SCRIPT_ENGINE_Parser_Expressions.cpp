@@ -284,10 +284,13 @@ namespace HAL_JSON {
             CountOperatorsAndOperands(tokens, operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount);
             
 
-            if (operatorCount >= operandCount) {
+            if (operandCount && operatorCount >= operandCount) {
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+                ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
+#endif
                 ReportError("double operator(s) detected");
                 anyError = true;
-            } else if (operatorCount != operandCount - 1) {
+            } else if (operandCount && operatorCount != operandCount - 1) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
 #endif

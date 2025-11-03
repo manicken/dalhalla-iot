@@ -36,10 +36,7 @@ namespace HAL_JSON {
 
         const char* sourceStr = GetAsConstChar(jsonObj,"source");
         if (sourceStr != nullptr) {
-            ZeroCopyString zcFuncName(sourceStr);
-            ZeroCopyString zcSource = zcFuncName.SplitOffHead('#');
-             
-            cdaSource = new CachedDeviceAccess(zcSource, zcFuncName);
+            cdaSource = new CachedDeviceAccess(sourceStr);
         }
         else
             cdaSource = nullptr;

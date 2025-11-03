@@ -54,10 +54,7 @@ namespace HAL_JSON {
                 CalcRPNToken& calcRPNtoken = items[calcRPNindex];
                 if (expToken.type == ExpTokenType::VarOperand)
                 {
-                    ZeroCopyString varOperand;
-                    ZeroCopyString funcName = expToken;
-                    varOperand = funcName.SplitOffHead('#');
-                    CachedDeviceAccess* cda = new CachedDeviceAccess(varOperand, funcName);
+                    CachedDeviceAccess* cda = new CachedDeviceAccess(expToken);
 
                     calcRPNtoken.context = cda;
                     calcRPNtoken.handler = &CalcRPNToken::GetAndPushVariableValue_Handler;
@@ -127,18 +124,8 @@ namespace HAL_JSON {
         HALOperationResult CalcRPNToken::GetAndPushVariableValue_Handler(void* context) {
             CachedDeviceAccess* item = static_cast<CachedDeviceAccess*>(context);
             HALValue value;
-            if (item->valueDirectAccessPtr != nullptr) {
-                value = *(item->valueDirectAccessPtr);
-            }
-            else if (item->readToHalValueFunc != nullptr) {
-                Device* device = item->GetDevice();
-                HALOperationResult result = item->readToHalValueFunc(device, value);
-                if (result != HALOperationResult::Success) return result;
-            } else {
-                Device* device = item->GetDevice();
-                HALOperationResult result = device->read(value);
-                if (result != HALOperationResult::Success) return result;
-            }
+            HALOperationResult result = item->ReadSimple(value);
+            if (result != HALOperationResult::Success) return result;
                 
 #ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
             if (halValueStack.sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push

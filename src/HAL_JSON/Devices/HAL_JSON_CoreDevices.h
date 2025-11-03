@@ -97,15 +97,15 @@ namespace HAL_JSON {
         void endPulse();
         static void pulseTicker_Callback(SinglePulseOutput* context);
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        SinglePulseOutput(const JsonVariant &jsonObj, const char* type);
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(const JsonVariant& jsonObj, const char* type);
+        SinglePulseOutput(const JsonVariant& jsonObj, const char* type);
         ~SinglePulseOutput();
 #ifndef HAL_JSON_USE_EFFICIENT_FIND
         Device* findDevice(UIDPath& path) override;
 #endif
-        HALOperationResult read(HALValue &val) override;
-        HALOperationResult write(const HALValue &val) override;
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
         HALOperationResult exec() override;
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
         static HALOperationResult exec(Device* device);

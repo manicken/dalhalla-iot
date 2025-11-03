@@ -40,11 +40,8 @@ namespace HAL_JSON {
 
     class CachedDeviceAccess {
     private:
-        const int* currentVersion;
-        int cachedVersion;
-        UIDPath path;
         Device* device;
-        
+        void Init(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName);
     public:
         /** 
          * some devices can give direct access to the internal value
@@ -59,8 +56,10 @@ namespace HAL_JSON {
         Device::WriteHALValue_FuncType writeFromHalValueFunc;
         Device::Exec_FuncType execFunc;
         
-        CachedDeviceAccess(ZeroCopyString& uidPath, ZeroCopyString& funcName);
-        Device* GetDevice();
+        CachedDeviceAccess(const char* uidPathAndFuncName);
+        CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
+        CachedDeviceAccess(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName);
+
 
         HALOperationResult Exec();
         HALOperationResult WriteSimple(const HALValue& val);

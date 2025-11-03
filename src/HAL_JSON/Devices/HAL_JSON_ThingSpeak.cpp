@@ -47,9 +47,7 @@ namespace HAL_JSON {
             ThingSpeakField& field = fields[index++];
             field.index = atoi(indexStr);
 
-            ZeroCopyString zcFuncName(valueStr);
-            ZeroCopyString zcPath = zcFuncName.SplitOffHead('#');
-            field.cda = new CachedDeviceAccess(zcPath, zcFuncName);
+            field.cda = new CachedDeviceAccess(valueStr);
         }
         urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
     }

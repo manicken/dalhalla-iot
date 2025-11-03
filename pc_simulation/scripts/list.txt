@@ -1,2 +1,2 @@
-//script1.txt
+script1.txt
 script2.txt
