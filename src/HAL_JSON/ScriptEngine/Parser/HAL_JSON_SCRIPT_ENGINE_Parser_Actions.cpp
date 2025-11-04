@@ -169,7 +169,7 @@ namespace HAL_JSON {
                     const char* foundAssignmentOperator = nullptr;
                     ScriptToken* foundAssignmentOperatorToken = nullptr;
                     const char* foundCompoundAssignmentOperator = nullptr;
-    
+                    int assignmentTokenIndex = startIndex;
                     // Scan tokens in the current block for the assigment operator
                     // to get it's position
                     for (int i = startIndex; i < endIndex; ++i) {
@@ -180,6 +180,7 @@ namespace HAL_JSON {
 
                         foundAssignmentOperator = match;
                         foundAssignmentOperatorToken = &exprToken;
+                        assignmentTokenIndex = i;
                         break;
                     }
                     if (!foundAssignmentOperator) {
@@ -191,6 +192,7 @@ namespace HAL_JSON {
                             currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! (assignment operator)/(func call)  not found");
                             return false;
                         }
+                       
                         // found function call statement
                         foundAssignmentOperator = match;
                         foundAssignmentOperatorToken = &tokensItems[startIndex];
@@ -272,12 +274,20 @@ namespace HAL_JSON {
 
                         // someVar =5 or someVar +=5
                         if (foundAssignmentOperatorToken->ContainsPtr(foundAssignmentOperator+1)) {
+                            if (assignmentTokenIndex != startIndex) {
+                                currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch");
+                                return false;
+                            }
                             // this mean that there are characters after the assignment operator
                             AssignmentParts::rhs.firstTokenStartOffset = foundAssignmentOperator + 1;
                             AssignmentParts::rhs.currIndex = startIndex+1;
                         }
                         // someVar = 6 or someVar += 5 
                         else {
+                            if (assignmentTokenIndex != startIndex+1) {
+                                currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch");
+                                return false;
+                            }
                             AssignmentParts::rhs.currIndex = startIndex+2;
                         }
                     }
