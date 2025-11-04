@@ -41,6 +41,9 @@
 #include "Devices/HAL_JSON_I2C_BUS.h"
 #include "Devices/HAL_JSON_ThingSpeak.h"
 #include "Devices/HAL_JSON_WS2812.h"
+#include "Devices/HAL_JSON_REST_Value.h"
+#include "Devices/HAL_JSON_REST_Cmd.h"
+#include "Devices/HAL_JSON_DeviceContainer.h"
 
 namespace HAL_JSON {
 
@@ -72,6 +75,9 @@ namespace HAL_JSON {
         {UseRootUID::Mandatory, "WS2812", WS2812::Create, WS2812::VerifyJSON},
         {UseRootUID::Mandatory, "CONSTVAR", ScriptVariableReadOnly::Create, ScriptVariableReadOnly::VerifyJSON},
         {UseRootUID::Mandatory, "WRITEVAR", ScriptVariableWriteOnlyTest::Create, ScriptVariableWriteOnlyTest::VerifyJSON},
+        {UseRootUID::Mandatory, "REST_VAR", REST_Value::Create, REST_Value::VerifyJSON},
+        {UseRootUID::Mandatory, "REST_CMD", REST_Cmd::Create, REST_Cmd::VerifyJSON},
+        {UseRootUID::Mandatory, "CONTAINER", DeviceContainer::Create, DeviceContainer::VerifyJSON},
 
         /** mandatory null terminator */
         {UseRootUID::Void, nullptr, nullptr, nullptr} // terminator

@@ -23,6 +23,8 @@ void HTTPClient::addHeader(const std::string& name, const std::string& value) {}
 #endif
 #include <iostream>
 
+
+
 #pragma comment(lib, "winhttp.lib")
 
 static std::wstring to_wide(const std::string& str) {
@@ -49,24 +51,33 @@ bool HTTPClient::begin(const std::string& url) {
     uc.lpszUrlPath = urlPath;
     uc.dwUrlPathLength = _countof(urlPath);
 
-    if (!WinHttpCrackUrl(wurl.c_str(), 0, 0, &uc)) return false;
+    if (!WinHttpCrackUrl(wurl.c_str(), 0, 0, &uc)) {
+        printf("\nWinHttpCrackUrl fail\n");
+        return false;
+    } 
 
     hSession = WinHttpOpen(L"WinSimHTTPClient/1.0",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
         WINHTTP_NO_PROXY_NAME,
         WINHTTP_NO_PROXY_BYPASS, 0);
-    if (!hSession) return false;
+    if (!hSession) {
+        printf("\nWinHttpOpen fail\n");
+        return false;
+    }
 
     hConnect = WinHttpConnect(hSession, hostName, uc.nPort, 0);
-    if (!hConnect) return false;
+    if (!hConnect) {
+        printf("\nWinHttpConnect fail\n");
+        return false;
+    } 
 
     currentHost = hostName;
     currentPath = urlPath;
     return true;
 }
 
-bool HTTPClient::begin(WiFiClient&, const char* url) {
-    return begin(std::string(url));
+bool HTTPClient::begin(WiFiClient&, std::string url) {
+    return begin(url);
 }
 
 void HTTPClient::end() {

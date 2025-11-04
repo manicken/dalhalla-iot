@@ -55,12 +55,14 @@ namespace HAL_JSON {
         static Device** devices;
         static int deviceCount;
         
-        static Device* CreateDeviceFromJSON(const JsonVariant& json);
-        static bool VerifyDeviceJson(const JsonVariant& jsonObj);
+        
         
         static int reloadVersion;
 
     public:
+        static Device* CreateDeviceFromJSON(const JsonVariant& json);
+        static bool VerifyDeviceJson(const JsonVariant& jsonObj);
+        
         static bool reloadQueued;// = false;
         // getters
         static int DeviceCount();

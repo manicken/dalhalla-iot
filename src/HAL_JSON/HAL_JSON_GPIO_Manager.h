@@ -24,7 +24,6 @@
 #pragma once
 
 
-#include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
 #include <stdlib.h>
@@ -46,6 +45,11 @@
     I2C,UART,SPI,SD-card, etc.
     do not collide 
 */
+
+#include <Arduino.h> // Needed for String class
+
+#undef OUT
+#undef IN
 
 #define HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_STRING   "string"
 #define HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_HEX      "hex"

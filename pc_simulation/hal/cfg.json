@@ -92,5 +92,12 @@
       "8":"var6"
     }
   },
-  {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000}
+  {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
+  {"uid":"rest","type":"CONTAINER","items":[
+    {"uid":"val","type":"REST_VAR","refreshtimesec":2,"url":"http://192.168.50.29:82/read/float/temps:a:a"},
+	{"uid":"birel","type":"CONTAINER","items":[
+      {"uid":"set","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELSET"},
+	  {"uid":"rst","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELRST"}
+	]}
+  ]}
 ]

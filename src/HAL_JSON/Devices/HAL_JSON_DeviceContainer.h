@@ -20,37 +20,38 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
+
 #pragma once
 
-#include "HAL_JSON_RemoteFetch_REST.h"
 #include <Arduino.h> // Needed for String class
 
-#include <ArduinoJson.h>
-
-#include <HTTPClient.h>
 #include <string>
-
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-
+#include <ArduinoJson.h>
+#include "../../Support/Logger.h"
+#include "../HAL_JSON_Device.h"
+#include "../HAL_JSON_Device_GlobalDefines.h"
+#include "../HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
-    class RemoteFetch_REST : public HAL_JSON::Device {
-    public:
-        RemoteFetch_REST(const char* type, const std::string& url, uint32_t refreshMs = 1000);
-
-        HAL_JSON::HALOperationResult read(HAL_JSON::HALValue& val) override;
-        void loop() override;
-
+    class DeviceContainer : public Device {
     private:
-        HAL_JSON::HALValue cachedValue;
-        std::string remoteUrl;
-        uint32_t refreshTimeMs;
-        uint32_t lastRefresh;
+        Device** devices;
+        int deviceCount;
+    public:
 
-        HAL_JSON::HALValue fetchRemoteValue();
+        
+        /** called regulary from the main loop */
+        void loop() override;
+        /** called when all hal devices has been loaded */
+        void begin() override;
+        /** used to find sub/leaf devices @ "group devices" */
+        Device* findDevice(UIDPath& path) override;
+
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        DeviceContainer(const JsonVariant &jsonObj, const char* type);
+        ~DeviceContainer();
+        String ToString() override;
     };
 }
