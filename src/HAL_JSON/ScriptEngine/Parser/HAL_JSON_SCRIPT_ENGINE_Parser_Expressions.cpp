@@ -163,45 +163,92 @@ namespace HAL_JSON {
                 c == '#';
         }
 
-        void Expressions::CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount) {
-            operatorCount = 0;
-            operandCount = 0;
-            leftParenthesisCount  = 0;
-            rightParenthesisCount = 0;
-  
-            bool inOperand = false;
+        void Expressions::ValidateStructure(ScriptTokens& tokens, bool& anyError)
+        {
+            int leftParen = 0;
+            int rightParen = 0;
+            int leftBracket = 0;
+            int rightBracket = 0;
+            bool prevWasOperator = false; // expression can’t start with an operator
 
-            for (int cti=tokens.currIndex;cti<tokens.currentEndIndex;cti++) { // cti = currTokenIndex
-                ScriptToken& token = tokens.items[cti];
-                if (token.type == ScriptTokenType::Ignore) continue;
-                const char* effectiveStart = nullptr;
-                if (cti == tokens.currIndex && tokens.firstTokenStartOffset != nullptr) {
-                    effectiveStart  = tokens.firstTokenStartOffset;
-                    //std::cout << "firstTokenStartOffset was true\n"; 
-                } else {
-                    effectiveStart  = token.start;
-                }
-                const char* tokenEnd = token.end;
-                for (const char* p = effectiveStart; p < tokenEnd; p++) {
-                    if (IsDoubleOperator(p)) {
-                        p++;
-                        operatorCount++;
-                        inOperand = false;
+            for (int i = tokens.currIndex; i < tokens.currentEndIndex; i++) {
+                ScriptToken& token = tokens.items[i];
+                if (token.type == ScriptTokenType::Ignore)
+                    continue;
+
+                const char* s = token.start;
+                const char* e = token.end;
+
+                for (const char* p = s; p < e; p++) {
+                    char ch = *p;
+
+                    // --- Parentheses ---
+                    if (ch == '(') {
+                        leftParen++;
+                        prevWasOperator = true;
                     }
-                    else if (IsSingleOperator(*p)) {
-                        operatorCount++;
-                        inOperand = false;
-                    } else if (*p == '(') {
-                        leftParenthesisCount++;
-                        inOperand = false;
-                    } else if (*p == ')') {
-                        rightParenthesisCount++;
-                        inOperand = false;
-                    } else if (!inOperand) {
-                        operandCount++;
-                        inOperand = true;
+                    else if (ch == ')') {
+                        rightParen++;
+                        if (rightParen > leftParen) {
+                            ReportError("unexpected ')' without matching '('");
+                            anyError = true;
+                        }
+                        prevWasOperator = false;
+                    }
+
+                    // --- Brackets for [] accessor ---
+                    else if (ch == '[') {
+                        if (p == token.start) {
+                            ReportError("'[' cannot start an expression");
+                            anyError = true;
+                        } else if (!token.ContainsPtr(p - 1)) {
+                            ReportError("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)");
+                            anyError = true;
+                        }
+                        leftBracket++;
+                        prevWasOperator = true; // new subexpression starts here
+                    }
+                    else if (ch == ']') {
+                        rightBracket++;
+                        if (rightBracket > leftBracket) {
+                            ReportError("unexpected ']' without matching '['");
+                            anyError = true;
+                        }
+                        prevWasOperator = false;
+                    }
+
+                    // --- Operators ---
+                    else if (IsDoubleOperator(p)) {
+                        if (prevWasOperator) {
+                            ReportError("double operator detected");
+                            anyError = true;
+                        }
+                        p++; // skip next char since it's part of a double op
+                        prevWasOperator = true;
+                    }
+                    else if (IsSingleOperator(ch)) {
+                        if (prevWasOperator) {
+                            ReportError("double operator detected");
+                            anyError = true;
+                        }
+                        prevWasOperator = true;
+                    }
+
+                    // --- Operands, variable names, numbers, etc. ---
+                    else {
+                        prevWasOperator = false;
                     }
                 }
+            }
+
+            // --- Final structural checks ---
+            if (leftParen != rightParen) {
+                ReportError("mismatched parentheses detected");
+                anyError = true;
+            }
+            if (leftBracket != rightBracket) {
+                ReportError("mismatched brackets detected");
+                anyError = true;
             }
         }
 
@@ -266,49 +313,21 @@ namespace HAL_JSON {
             if (tokens.firstTokenStartOffset != nullptr)
                 firstTokenStart = tokens.firstTokenStartOffset;
             else
-                firstTokenStart = tokens.items[0].start;
+                firstTokenStart = tokens.Current().start;
 
-            if(IsDoubleOperator(firstTokenStart)) { // this only checks the two first characters in the Expression
+            if(IsDoubleOperator(firstTokenStart) || IsSingleOperator(*firstTokenStart)) { // this only checks the two first characters in the Expression
                 ReportError("expr. cannot start with a operator");
                 anyError = true;
             }
-            if(IsSingleOperator(*firstTokenStart)) {
-                ReportError("expr. cannot start with a operator");
-                anyError = true;
-            }
-
-            int operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount;
+            printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
             /*for (int i=tokens.currIndex;i<tokens.currentEndIndex;i++) {
                 printf("%s\n",tokens.items[i].ToString().c_str());
             }*/
-            CountOperatorsAndOperands(tokens, operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount);
             
-
-            if (operandCount && operatorCount >= operandCount) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
-#endif
-                ReportError("double operator(s) detected");
-                anyError = true;
-            } else if (operandCount && operatorCount != operandCount - 1) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
-#endif
-                ReportError("operator(s) missing before/after parenthesis");
-                anyError = true;
-            }
-            if (leftParenthesisCount != rightParenthesisCount) {
-                ReportError("mismatch parenthesis detected");
-                anyError = true;
-            }
-
-            /*ReportInfo("operatorCount:" + std::to_string(operatorCount) +
-                    ", operandCount:" + std::to_string(operandCount) +
-                    ", leftParenthesisCount:" + std::to_string(leftParenthesisCount));
-*/
+            ValidateStructure(tokens, anyError);
+            
             if (anyError) return false;
 
-            //int operandIndex = 0;
             bool inOperand = false;
             const char* p = nullptr;
             const char* operandStart = nullptr;
@@ -324,8 +343,6 @@ namespace HAL_JSON {
             for (int cti = startIndex; cti < endIndex; ++cti) {
                 ScriptToken& token = tokens.items[cti];
                 if (token.type == ScriptTokenType::Ignore) continue;
-                //int a=0;
-                //int b = 5/a; // will introduce a crash
 
                 const char* effectiveStart  = nullptr;
                 if (cti == startIndex && tokens.firstTokenStartOffset != nullptr) {
@@ -353,7 +370,7 @@ namespace HAL_JSON {
                             inOperand = false;
                         }
                         ++p; // Skip second char of double op
-                    } else if (IsSingleOperator(*p) || *p == '(' || *p == ')' || *p == HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD[0]) {
+                    } else if (IsSingleOperator(*p) || *p == '(' || *p == ')' || *p == '[' || *p == ']' || *p == HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD[0]) {
                         if (inOperand) {
                             operandEnd = p;
                             ScriptToken operand(operandStart, operandEnd);
@@ -397,7 +414,12 @@ namespace HAL_JSON {
 
             const char* invalidChar = ValidOperandVariableName(operandToken);
             if (invalidChar) {
-                std::string msg = "Invalid character <" + std::to_string(*invalidChar) + "> in operand: " + operandToken.ToString();
+                std::string msg = "Invalid character <";
+                msg += (*invalidChar);
+                msg += "> (";
+                msg += std::to_string(*invalidChar);
+                msg += ") in operand: ";
+                msg += operandToken.ToString();
                 operandToken.ReportTokenWarning(msg.c_str());
                 anyError = true;
                 // this will actually result in a device not found error

@@ -52,6 +52,9 @@ namespace HAL_JSON {
     Device::ReadToHALValue_FuncType Device::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::WriteHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::Exec_FuncType Device::GetExec_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+
+    Device::ArrayAccess_FuncType Device::GetArrayRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::ArrayAccess_FuncType Device::GetArrayWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 

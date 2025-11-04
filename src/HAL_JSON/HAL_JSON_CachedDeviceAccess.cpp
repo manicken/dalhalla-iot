@@ -49,6 +49,8 @@ namespace HAL_JSON {
         readToHalValueFunc = nullptr;
         valueDirectAccessPtr = nullptr;
         execFunc = nullptr;
+        readArrayFunc = nullptr;
+        writeArrayFunc = nullptr;
 
         if (device == nullptr) {
             

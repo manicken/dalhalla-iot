@@ -22,5 +22,7 @@ on dummyTrigger then
   neo#color = (red << 16) |\
               (green << 8) |\
  			   blue
+  //+var1 = var2
+  var1[var2] = var3
 endon
 

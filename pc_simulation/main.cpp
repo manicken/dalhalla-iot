@@ -70,7 +70,7 @@
         
         std::cout << "\n****** Starting REST api server:\n";
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-        //HAL_JSON::REST::setup(halJsonRestCallback); // this will start the server
+        HAL_JSON::REST::setup(halJsonRestCallback); // this will start the server
 #endif
         std::cout << "\n****** Init HAL_JSON Manager\n";
         HAL_JSON::Manager::setupMgr();
