@@ -44,6 +44,7 @@
 #include "Devices/HAL_JSON_REST_Value.h"
 #include "Devices/HAL_JSON_REST_Cmd.h"
 #include "Devices/HAL_JSON_DeviceContainer.h"
+#include "Devices/HAL_JSON_ScriptArray.h"
 
 namespace HAL_JSON {
 
@@ -78,7 +79,7 @@ namespace HAL_JSON {
         {UseRootUID::Mandatory, "REST_VAR", REST_Value::Create, REST_Value::VerifyJSON},
         {UseRootUID::Mandatory, "REST_CMD", REST_Cmd::Create, REST_Cmd::VerifyJSON},
         {UseRootUID::Mandatory, "CONTAINER", DeviceContainer::Create, DeviceContainer::VerifyJSON},
-
+        {UseRootUID::Mandatory, "ARRAY", ScriptArray::Create, ScriptArray::VerifyJSON},
         /** mandatory null terminator */
         {UseRootUID::Void, nullptr, nullptr, nullptr} // terminator
     };

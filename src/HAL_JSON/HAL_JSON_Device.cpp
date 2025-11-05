@@ -43,6 +43,8 @@ namespace HAL_JSON {
 
     HALOperationResult Device::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::write(const HALValue& val) { return HALOperationResult::UnsupportedOperation; };
+    HALOperationResult Device::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Device::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
@@ -53,8 +55,8 @@ namespace HAL_JSON {
     Device::WriteHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::Exec_FuncType Device::GetExec_Function(ZeroCopyString& zcFuncName) { return nullptr; }
 
-    Device::ArrayAccess_FuncType Device::GetArrayRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::ArrayAccess_FuncType Device::GetArrayWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 

@@ -160,7 +160,8 @@ namespace HAL_JSON {
                 c == ':' || 
                 c == '.' || 
                 c == ',' || 
-                c == '#';
+                c == '#' ||
+                c == '[' || c == ']';
         }
 
         void Expressions::ValidateStructure(ScriptTokens& tokens, bool& anyError)
@@ -288,7 +289,7 @@ namespace HAL_JSON {
                 if (i == startIndex && tokens.firstTokenStartOffset != nullptr) {
                     zcStr.start = tokens.firstTokenStartOffset;
                 }
-                if (zcStr.Length() != 0) return false;
+                if (zcStr.NotEmpty()) return false;
             }
 
             return true; // No valid tokens found — expression is empty
@@ -370,7 +371,7 @@ namespace HAL_JSON {
                             inOperand = false;
                         }
                         ++p; // Skip second char of double op
-                    } else if (IsSingleOperator(*p) || *p == '(' || *p == ')' || *p == '[' || *p == ']' || *p == HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD[0]) {
+                    } else if (IsSingleOperator(*p) || *p == '(' || *p == ')' || *p == HAL_JSON_SCRIPTS_EXPRESSIONS_MULTILINE_KEYWORD[0]) {
                         if (inOperand) {
                             operandEnd = p;
                             ScriptToken operand(operandStart, operandEnd);
@@ -432,6 +433,19 @@ namespace HAL_JSON {
             outInfo.funcName = funcName;
             //varOperand = outInfo.funcName
 
+            const char* bracketPos = varOperand.FindChar('[');
+            if (bracketPos) {
+                // Only support one token inside brackets for now
+                if (*(varOperand.end-1) != ']' ) { // actually not needed as ValidateStructure do it beforehand
+                    anyError = true;
+                    operandToken.ReportTokenError("bracket operator missing closing ]");
+                }
+                ScriptToken bracketVarOperand(bracketPos+1, varOperand.end-1);
+                ValidateOperand(bracketVarOperand, anyError, ValidateOperandMode::Read);
+                outInfo.isBracketAccess = true;
+                varOperand.end = bracketPos;
+            }
+
 #if defined(HAL_JSON_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             std::string msg;
             //if (OperandIsVariable(operandToken)) {
@@ -441,7 +455,7 @@ namespace HAL_JSON {
                 
                 msg = "Variable: Name= ";
                 msg += varOperand.ToString();
-                if (funcName.Length() != 0) {
+                if (funcName.NotEmpty()) {
                     msg += ", funcName= ";
                     msg += funcName.ToString();
                 }
@@ -475,6 +489,44 @@ namespace HAL_JSON {
             Device* device = opti.device;
             ZeroCopyString funcName = opti.funcName;
 
+            if (opti.isBracketAccess) {
+                if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
+                    HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
+                    if (funcName.NotEmpty()) {
+                        if (device->GetBracketOpRead_Function(funcName) == nullptr) {
+                            operandToken.ReportTokenError("GetBracketOpRead_Function not found: ", funcName.ToString().c_str());
+                            anyError = true;
+                        }
+                    } else {
+                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halValue;
+                        readResult = device->read(halBracketSubscriptValue, halValue);
+                        if (readResult != HALOperationResult::Success) {
+                            operandToken.ReportTokenError(HALOperationResultToString(readResult), ": bracket op read");
+                            anyError = true;
+                        }
+                    }
+                }
+                if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
+                    HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
+                    if (funcName.NotEmpty()) {
+                        if (device->GetBracketOpWrite_Function(funcName) == nullptr) {
+                            operandToken.ReportTokenError("GetBracketOpWrite_Function not found: ", funcName.ToString().c_str());
+                            anyError = true;
+                        }
+                    } else {
+                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halValue;
+                        writeResult = device->write(halBracketSubscriptValue, halValue);
+                        if (writeResult != HALOperationResult::Success) {
+                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": bracket op write");
+                            anyError = true;
+                        }
+                    }
+                }
+                return;
+            }
+
             if (mode == ValidateOperandMode::Exec) {
                 HALOperationResult readResult = HALOperationResult::NotSet;
                 if (funcName.Length() == 0) {
@@ -497,23 +549,11 @@ namespace HAL_JSON {
 
             if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
-                if (funcName.Length() != 0) {
+                if (funcName.NotEmpty()) {
                     if (device->GetReadToHALValue_Function(funcName) == nullptr) {
                         operandToken.ReportTokenError("GetReadToHALValue_Function not found: ", funcName.ToString().c_str());
-                    }
-                    /*HALValue halValue;
-                    HALReadValueByCmd readValueByCmd(halValue, funcName);
-                    readResult = device->read(readValueByCmd);
-                    if (readResult != HALOperationResult::Success) {
                         anyError = true;
-                        if (readResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": read " + funcName.ToString();
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), funcNameStr.c_str());
-                        } else {
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), ": read");
-                        }
-                        
-                    }*/
+                    }
                 } else {
                     HALValue halValue;
                     readResult = device->read(halValue);
@@ -525,24 +565,11 @@ namespace HAL_JSON {
             }
             if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
-                if (funcName.Length() != 0) {
-                     if (device->GetWriteFromHALValue_Function(funcName) == nullptr) {
+                if (funcName.NotEmpty()) {
+                    if (device->GetWriteFromHALValue_Function(funcName) == nullptr) {
                         operandToken.ReportTokenError("GetWriteFromHALValue_Function not found: ", funcName.ToString().c_str());
-                     }
-
-                    /*HALValue halValue;
-                    HALWriteValueByCmd writeValueByCmd(halValue, funcName);
-                    writeResult = device->write(writeValueByCmd);
-                    if (writeResult != HALOperationResult::Success) {
                         anyError = true;
-                        if (writeResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": write " + funcName.ToString();
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), funcNameStr.c_str());
-                        } else {
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");
-                        }
-                        
-                    }*/
+                    }
                 } else {
                     HALValue halValue;
                     writeResult = device->write(halValue);

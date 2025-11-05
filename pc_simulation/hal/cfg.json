@@ -3,7 +3,7 @@
   {"uid":"false","val":0,"type":"CONSTVAR"},
   {"uid":"var1","type":"VAR"},
   {"uid":"var2","type":"VAR"},
-  {"uid":"var3","type":"VAR"},
+  {"uid":"var3","val":0,"type":"VAR"},
   {"uid":"var4","type":"VAR"},
   {"uid":"var5","type":"VAR"},
   {"uid":"var6","type":"VAR"},
@@ -94,10 +94,12 @@
   },
   {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
   {"uid":"rest","type":"CONTAINER","items":[
-    {"uid":"val","type":"REST_VAR","refreshtimesec":2,"url":"http://192.168.50.29:82/read/float/temps:a:a"},
+    {"disabled":true, "uid":"val","type":"REST_VAR","refreshtimesec":2,"url":"http://192.168.50.29:82/read/float/temps:a:a"},
 	{"uid":"birel","type":"CONTAINER","items":[
       {"uid":"set","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELSET"},
 	  {"uid":"rst","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELRST"}
 	]}
-  ]}
+  ]},
+  {"uid":"arr1","type":"ARRAY"},
+  {"uid":"arr2","type":"ARRAY"}
 ]

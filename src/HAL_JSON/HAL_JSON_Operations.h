@@ -69,6 +69,8 @@ namespace HAL_JSON {
          * within a handler function 
          * if it's required to be set */
         ContextWasNullPtr = 24,
+        /** script engine specific error */
+        BracketOpSubscriptOutOffRange = 25,
 
         NotSet = 99,
     };

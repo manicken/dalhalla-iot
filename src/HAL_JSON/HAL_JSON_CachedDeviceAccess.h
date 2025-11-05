@@ -41,7 +41,6 @@ namespace HAL_JSON {
     class CachedDeviceAccess {
     private:
         Device* device;
-        void Init(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName);
         /** 
          * some devices can give direct access to the internal value
          * so in those cases this will allow that
@@ -55,16 +54,15 @@ namespace HAL_JSON {
         Device::WriteHALValue_FuncType writeFromHalValueFunc;
         Device::Exec_FuncType execFunc;
         
-        Device::ArrayAccess_FuncType readArrayFunc;
-        Device::ArrayAccess_FuncType writeArrayFunc;
+        Device::BracketOpRead_FuncType bracketReadFunc;
+        Device::BracketOpWrite_FuncType bracketWriteFunc;
+        CachedDeviceAccess* bracketAccessSubscriptOperand;
         
     public:
         
         
         CachedDeviceAccess(const char* uidPathAndFuncName);
         CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
-        CachedDeviceAccess(ZeroCopyString& zcStrUidPath, ZeroCopyString& zcStrFuncName);
-
 
         HALOperationResult Exec();
         HALOperationResult WriteSimple(const HALValue& val);

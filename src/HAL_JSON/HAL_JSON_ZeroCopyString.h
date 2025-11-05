@@ -58,6 +58,9 @@ namespace HAL_JSON {
         inline bool IsEmpty() const {
             return !start || !end || start == end;
         }
+        inline bool NotEmpty() const {
+            return !IsEmpty();
+        }
         /** 
          * Returns a std::string copy of the string, 
          * note this is mostly intended for debug or when the string is needed somewhere else 

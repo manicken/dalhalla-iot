@@ -54,9 +54,10 @@ namespace HAL_JSON {
         bool loopTaskDone = false;
     public:
         using Exec_FuncType = HALOperationResult (*)(Device*);
-        using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue&);
-        using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue&);
-        using ArrayAccess_FuncType = HALOperationResult (*)(Device*, const HALValue& index, HALValue& outValue);
+        using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue& outValue);
+        using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue& value);
+        using BracketOpRead_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, HALValue& outValue);
+        using BracketOpWrite_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, const HALValue& value);
 
         Device(UIDPathMaxLength uidMaxLength, const char* type);
         virtual ~Device();
@@ -66,6 +67,8 @@ namespace HAL_JSON {
         bool LoopTaskDone();
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);
+        virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
+        virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
         virtual HALOperationResult read(const HALReadStringRequestValue& val);
         virtual HALOperationResult write(const HALWriteStringRequestValue& val);
         virtual HALOperationResult read(const HALReadValueByCmd& val);
@@ -75,8 +78,8 @@ namespace HAL_JSON {
         virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
         virtual HALValue* GetValueDirectAccessPtr();
 
-        virtual ArrayAccess_FuncType GetArrayRead_Function(ZeroCopyString& zcFuncName);
-        virtual ArrayAccess_FuncType GetArrayWrite_Function(ZeroCopyString& zcFuncName);
+        virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
+        virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
         
         /** called regulary from the main loop */
         virtual void loop();

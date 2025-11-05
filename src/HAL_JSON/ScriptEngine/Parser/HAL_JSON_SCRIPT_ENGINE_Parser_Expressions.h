@@ -69,6 +69,8 @@ namespace HAL_JSON {
 
         struct OperandTargetInfo {
             ZeroCopyString funcName;
+            /** used only on bracket [] operation statements */
+            bool isBracketAccess = false;
             Device* device = nullptr;
         };
 

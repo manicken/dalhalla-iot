@@ -41,6 +41,8 @@ namespace HAL_JSON {
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
+        HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
+        HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
         HALOperationResult read(const HALReadStringRequestValue& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
         HALOperationResult read(const HALReadValueByCmd& val) override;
@@ -48,6 +50,10 @@ namespace HAL_JSON {
         ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
         WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+
+        BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
+        BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
+
         HALValue* GetValueDirectAccessPtr() override;
         /** called regulary from the main loop */
         void loop() override;

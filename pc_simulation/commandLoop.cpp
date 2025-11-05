@@ -45,7 +45,7 @@ void ParseHelpCommand(HAL_JSON::ZeroCopyString& zcCmd) {
         std::cout << "show program status\n";
     } else if (zcCmdHelp == "help") {
         std::cout << "shows this help\n";
-    } else if (zcCmdHelp.Length() != 0) {
+    } else if (zcCmdHelp.NotEmpty()) {
         std::cout << "Unknown help chapter: " << zcCmdHelp.ToString() << "\n";
         std::cout << "Available chapters: exit, status, help, hal\n";
     } else {
@@ -102,7 +102,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         HAL_JSON::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
         std::cout << "using rule set file:" << zcFilePath.ToString() << "\n";
         std::string filePath;
-        if (zcFilePath.Length() != 0)
+        if (zcFilePath.NotEmpty())
             filePath = zcFilePath.ToString();
         else
             filePath = "ruleset.txt";
