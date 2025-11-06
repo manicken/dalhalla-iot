@@ -21,12 +21,29 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"
-#include "../../HAL_JSON_Value.h"
+#pragma once
+
+
+#include <Arduino.h> // Needed for String class
+
+#include <string>
+#include <ArduinoJson.h>
+#include "../../../Support/Logger.h"
+#include "../../HAL_JSON_Device.h"
+#include "../../HAL_JSON_Device_GlobalDefines.h"
+#include "../../HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
-    namespace ScriptEngine {
-      // create one instance
-       RPNStack<HALValue> halValueStack;
-    }
+
+    class ScriptVariableWriteOnlyTest : public Device {
+    private:
+        HALValue value;
+    public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type);
+        HALOperationResult write(const HALValue& val) override;
+
+        String ToString() override;
+    };
 }

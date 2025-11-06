@@ -49,6 +49,7 @@ namespace HAL_JSON {
         UnsupportedCommand = 3,   // was InvalidCommand
         ExecutionFailed = 4,       // was OperationFail
         StringRequestParameterError = 5,
+        WriteValueNaN = 6,
 
         /** script engine specific status */
         IfConditionTrue = 10,
@@ -64,13 +65,15 @@ namespace HAL_JSON {
         ResultGetFail = 22,
         /** script engine specific error */
         HandlerWasNullPtr = 23,
+        /** script engine specific error */
+        HandlerWasDummy = 24,
         /** script engine specific error, 
          * this should only be fired from 
          * within a handler function 
          * if it's required to be set */
-        ContextWasNullPtr = 24,
+        ContextWasNullPtr = 25,
         /** script engine specific error */
-        BracketOpSubscriptOutOffRange = 25,
+        BracketOpSubscriptOutOffRange = 26,
 
         NotSet = 99,
     };

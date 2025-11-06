@@ -41,6 +41,7 @@ namespace HAL_JSON {
             case HALOperationResult::ContextWasNullPtr: return "ContextWasNullPtr";
             case HALOperationResult::BracketOpSubscriptOutOffRange: return "BracketOpSubscriptOutOffRange";
             case HALOperationResult::StringRequestParameterError: return "StringRequestParameterError";
+            case HALOperationResult::WriteValueNaN: return "WriteValueNaN";
             case HALOperationResult::NotSet: return "NotSet";
             
             default:

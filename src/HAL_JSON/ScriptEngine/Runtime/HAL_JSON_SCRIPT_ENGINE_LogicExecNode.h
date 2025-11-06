@@ -26,7 +26,6 @@
 #include "../../HAL_JSON_Device.h" // HALOperationResult
 #include "../HAL_JSON_SCRIPT_ENGINE_Support.h" // Deleter
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h" // ExpressionTokens, ExpressionToken
-#include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

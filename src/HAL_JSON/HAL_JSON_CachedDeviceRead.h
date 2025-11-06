@@ -39,34 +39,32 @@
 
 namespace HAL_JSON {
 
-    class CachedDeviceAccess {
-    private:
-        Device* device;
-        /** 
-         * some devices can give direct access to the internal value
-         * so in those cases this will allow that
-         */
-        HALValue* valueDirectAccessPtr;
-        /** 
-         * allows direct access to functions by name, 
-         * or actually sub values defined by using # in uidPath#subItem
-         */
-        Device::ReadToHALValue_FuncType readToHalValueFunc;
-        Device::WriteHALValue_FuncType writeFromHalValueFunc;
-        Device::Exec_FuncType execFunc;
-        
-        Device::BracketOpRead_FuncType bracketReadFunc;
-        Device::BracketOpWrite_FuncType bracketWriteFunc;
-        CachedDeviceAccess* bracketAccessSubscriptOperand;
-        
+    class CachedDeviceRead {
     public:
+        using ReadHandler = HALOperationResult(*)(void* context, HALValue& val);
 
-        CachedDeviceAccess(const char* uidPathAndFuncName);
-        CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
+    private:
+        void* context;                  // context for handler (device, HALValue*, or subread)
+        ReadHandler handler;            // function to call for reading
+        void (*deleter)(void* context); // optional deleter for owned context
 
-        HALOperationResult Exec();
-        HALOperationResult WriteSimple(const HALValue& val);
+    public:
+        // Construct from UID/path string
+        CachedDeviceRead(const char* uidPathAndFuncName);
+        CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName);
+
+        // Execute the read
         HALOperationResult ReadSimple(HALValue& val);
+
+        ~CachedDeviceRead() { if (deleter) deleter(context); }
+
+    private:
+        // Handlers
+        static HALOperationResult Handler_Direct(void* context, HALValue& val);
+        static HALOperationResult Handler_Device(void* context, HALValue& val);
+        static HALOperationResult Handler_Func(void* context, HALValue& val);
+        static HALOperationResult Handler_Bracket(void* context, HALValue& val);
     };
 
+    
 }

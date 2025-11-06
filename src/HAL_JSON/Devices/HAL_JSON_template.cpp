@@ -56,7 +56,11 @@ namespace HAL_JSON {
     Device* Template::findDevice(UIDPath& path) { return nullptr; }
 
     HALOperationResult Template::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::write(const HALValue& val) { return HALOperationResult::UnsupportedOperation; };
+    HALOperationResult Template::write(const HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        return HALOperationResult::UnsupportedOperation;
+    };
     HALOperationResult Template::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Template::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Template::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }

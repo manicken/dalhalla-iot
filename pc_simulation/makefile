@@ -77,10 +77,12 @@ SRC = \
 	../src/Drivers/RF433.cpp \
 	$(wildcard ../src/HAL_JSON/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/*.cpp) \
+	$(wildcard ../src/HAL_JSON/Devices/CoreDevices/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/Display_SSD1306/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/OneWireTemp/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/REGO600/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/RF433/*.cpp) \
+	$(wildcard ../src/HAL_JSON/Devices/Script/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/Parser/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/Runtime/*.cpp) \

@@ -40,7 +40,7 @@
 #include "HAL_JSON_Device.h"
 
 #include "HAL_JSON_Device_GlobalDefines.h"
-#include "HAL_JSON_DeviceTypesRegistry.h"
+#include "Devices/HAL_JSON_DeviceTypesRegistry.h"
 
 #include "../Support/Logger.h"
 #include "HAL_JSON_ArduinoJSON_ext.h"

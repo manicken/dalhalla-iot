@@ -21,27 +21,27 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_CachedDeviceAccess.h"
+#include "HAL_JSON_CachedDeviceRead2.h"
 #include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE_Support.h"
 
 namespace HAL_JSON {
 
-    CachedDeviceAccess::CachedDeviceAccess(const char* uidPathAndFuncName) : CachedDeviceAccess(ZeroCopyString(uidPathAndFuncName)) { }
+    
 
-    CachedDeviceAccess::CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName) {
+    CachedDeviceRead2::CachedDeviceRead2(const char* uidPathAndFuncName) : CachedDeviceRead2(ZeroCopyString(uidPathAndFuncName)) { }
+
+    CachedDeviceRead2::CachedDeviceRead2(ZeroCopyString zcStrUidPathAndFuncName) {
         // allways set all to nullptr
         readToHalValueFunc = nullptr;
         valueDirectAccessPtr = nullptr;
-        execFunc = nullptr;
         bracketReadFunc = nullptr;
-        bracketWriteFunc = nullptr;
         bracketAccessSubscriptOperand = nullptr;
 
         // TODO take care of [] operator
         const char* bracketPos = zcStrUidPathAndFuncName.FindChar('[');
         if (bracketPos) {
             ZeroCopyString bracketVarOperand(bracketPos+1, zcStrUidPathAndFuncName.end-1);
-            bracketAccessSubscriptOperand = new CachedDeviceAccess(bracketVarOperand);
+            bracketAccessSubscriptOperand = new CachedDeviceRead2(bracketVarOperand);
             zcStrUidPathAndFuncName.end = bracketPos;
         }
 
@@ -54,53 +54,17 @@ namespace HAL_JSON {
         if (device == nullptr) {
             
             std::string uidStr = uidPath.ToString();
-            printf("@CachedDeviceAccess const - device not found:>>%s<<\n", uidStr.c_str());
+            printf("@CachedDeviceRead - device not found:>>%s<<\n", uidStr.c_str());
             return;
         }
         
-        printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
+        printf("create cached device read: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
         readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
-        writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName);
-        execFunc = device->GetExec_Function(zcStrFuncName);
         bracketReadFunc = device->GetBracketOpRead_Function(zcStrFuncName);
-        bracketWriteFunc = device->GetBracketOpWrite_Function(zcStrFuncName);
-        
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
     }
 
-    HALOperationResult CachedDeviceAccess::Exec() {
-        if (execFunc != nullptr) {
-            //printf("\CDA Exec - no params\n");
-            return execFunc(device);
-        }
-        return HALOperationResult::UnsupportedOperation;
-    }
-
-    HALOperationResult CachedDeviceAccess::WriteSimple(const HALValue& val) {
-        if (bracketAccessSubscriptOperand != nullptr) {
-            HALValue subscriptValue;
-            HALOperationResult readRes = bracketAccessSubscriptOperand->ReadSimple(subscriptValue);
-            if (readRes != HALOperationResult::Success)
-                return readRes;
-            if (bracketWriteFunc == nullptr)
-                return device->write(subscriptValue, val);
-            else
-                return bracketWriteFunc(device, subscriptValue, val);
-        }
-        if (writeFromHalValueFunc != nullptr) {
-            //printf("\nCDA WriteSimple - writeFromHalValueFunc\n");
-            return writeFromHalValueFunc(device, val);
-        }
-        if (valueDirectAccessPtr != nullptr) {
-            //printf("\nCDA ReadSimple - valueDirectAccessPtr\n");
-            *valueDirectAccessPtr = val;
-            return HALOperationResult::Success;
-        }
-        //printf("\nCDA WriteSimple - device->write(val)\n");
-        return device->write(val);
-    }
-
-    HALOperationResult CachedDeviceAccess::ReadSimple(HALValue& val) {
+    HALOperationResult CachedDeviceRead2::ReadSimple(HALValue& val) {
         if (bracketAccessSubscriptOperand != nullptr) {
             HALValue subscriptValue;
             HALOperationResult readRes = bracketAccessSubscriptOperand->ReadSimple(subscriptValue);

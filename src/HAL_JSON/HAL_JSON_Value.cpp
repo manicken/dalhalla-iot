@@ -24,6 +24,7 @@
 #include "HAL_JSON_Value.h"
 namespace HAL_JSON {
     HALValue::HALValue() : type(Type::UNSET) {}
+    HALValue::HALValue(Type type) : type(type) {}
 
     /*HALValue::HALValue(const HALValue& other) {
         type = other.type;
@@ -48,7 +49,10 @@ namespace HAL_JSON {
     }
 
     bool HALValue::isNumber() const {
-        return type == Type::UINT || type == Type::FLOAT;
+        return type == Type::UINT || type == Type::FLOAT || type == Type::INT;
+    }
+    bool HALValue::isNaN() const {
+        return !isNumber();
     }
 
     uint32_t HALValue::asUInt() const {

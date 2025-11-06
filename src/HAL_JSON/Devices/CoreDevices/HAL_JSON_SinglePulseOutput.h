@@ -23,29 +23,40 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
+#include <Ticker.h>
+#include "../../../Support/Logger.h"
+#include "../../HAL_JSON_Device.h"
+#include "../../HAL_JSON_Device_GlobalDefines.h"
+#include "../../HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
-    class ScriptVariable : public Device {
+    class SinglePulseOutput : public Device {
     private:
-        HALValue value;
+        uint8_t pin = 0;
+        uint32_t pulseLength = 0;
+        uint8_t inactiveState = 0;
+        Ticker pulseTicker;
+        void endPulse();
+        static void pulseTicker_Callback(SinglePulseOutput* context);
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        ScriptVariable(const JsonVariant &jsonObj, const char* type);
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(const JsonVariant& jsonObj, const char* type);
+        SinglePulseOutput(const JsonVariant& jsonObj, const char* type);
+        ~SinglePulseOutput();
+#ifndef HAL_JSON_USE_EFFICIENT_FIND
+        Device* findDevice(UIDPath& path) override;
+#endif
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
-        HALValue* GetValueDirectAccessPtr() override;
-
+        HALOperationResult exec() override;
+        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        static HALOperationResult exec(Device* device);
         String ToString() override;
     };
+
 }

@@ -84,6 +84,7 @@ namespace HAL_JSON {
         const char* FindChar(char ch) const;
         /** Returns pointer to first occurrence of ch, or nullptr from the start pointer given*/
         const char* FindChar(char ch, const char* start) const;
+        bool ContainsChar(char ch) const;
         /** Returns pointer to first occurrence of str, or nullptr from the start pointer given*/
         const char* FindString(const char* str, const char* start = nullptr) const;
         /**

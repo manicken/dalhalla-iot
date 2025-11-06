@@ -30,8 +30,8 @@
 #include "HAL_JSON_I2C_BUS_DeviceTypeReg.h"
 
 // Available I2C device types here
-#include "Display_SSD1306/HAL_JSON_Display_SSD1306.h"
-#include "HAL_JSON_PCF8574x.h"
+#include "../Display_SSD1306/HAL_JSON_Display_SSD1306.h"
+#include "../HAL_JSON_PCF8574x.h"
 
 namespace HAL_JSON {
 

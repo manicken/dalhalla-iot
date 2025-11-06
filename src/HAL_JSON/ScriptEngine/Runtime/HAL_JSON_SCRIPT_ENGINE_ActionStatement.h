@@ -26,7 +26,7 @@
 #include <Arduino.h>
 #include "../../HAL_JSON_Device.h" // HALOperationResult
 #include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
-#include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
+#include "HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
 #include "../../HAL_JSON_CachedDeviceAccess.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 

@@ -26,17 +26,22 @@
 #include <Arduino.h>
 #include "../../HAL_JSON_Value.h"
 #include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_CachedDeviceAccess.h"
+
 #include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
-#include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"
+#include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"  //contains the instance of halValueStack
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Operators.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        /** used for all value calculations */ 
-        extern RPNStack<HALValue> halValueStack;
+
+        struct ReadToHALValue_Function_Context
+        {
+            Device* device;
+            Device::ReadToHALValue_FuncType handler;
+        };
+        
         using RPNHandler = HALOperationResult(*)(void*);
         
         
@@ -77,54 +82,36 @@ namespace HAL_JSON {
         struct CalcRPNToken {
             HAL_JSON_NOCOPY_NOMOVE(CalcRPNToken);
             /** 
-             * in this case this will either be:
-             * CachedDeviceAccess
-             * HALValue
+             * this will either be:
+             * CachedDeviceRead
+             * ReadToHALValue_Function_Context
+             * HALValue ptr
+             * Device ptr
              */
             void* context;
             RPNHandler handler;
             Deleter deleter;
 
-            
-
-            static HALOperationResult GetAndPushVariableValue_Handler(void* context);
-            static HALOperationResult GetAndPushConstValue_Handler(void* context);
-
-           /* static HALOperationResult Calc_Addition_Operation_Handler(void* context);
-            static HALOperationResult Calc_Subtract_Operation_Handler(void* context);
-            static HALOperationResult Calc_Multiply_Operation_Handler(void* context);
-            static HALOperationResult Calc_Divide_Operation_Handler(void* context);
-            static HALOperationResult Calc_Modulus_Operation_Handler(void* context);
-
-            static HALOperationResult Calc_BitwiseAnd_Operation_Handler(void* context);
-            static HALOperationResult Calc_BitwiseOr_Operation_Handler(void* context);
-            static HALOperationResult Calc_BitwiseExOr_Operation_Handler(void* context);
-            static HALOperationResult Calc_BitwiseLeftShift_Operation_Handler(void* context);
-            static HALOperationResult Calc_BitwiseRightShift_Operation_Handler(void* context);
-
-            static HALOperationResult Compare_NotEqualsTo_Operation_Handler(void* context);
-            static HALOperationResult Compare_EqualsTo_Operation_Handler(void* context);
-            static HALOperationResult Compare_LessThan_Operation_Handler(void* context);
-            static HALOperationResult Compare_GreaterThan_Operation_Handler(void* context);
-            static HALOperationResult Compare_LessThanOrEqual_Operation_Handler(void* context);
-            static HALOperationResult Compare_GreaterThanOrEqual_Operation_Handler(void* context);*/
-
-            static RPNHandler GetRPN_OperatorFunction(ExpTokenType type);
-
             CalcRPNToken();
             ~CalcRPNToken();
+
+            void Set(ExpressionToken& expToken);
+            void SetAsCachedDeviceAccess(ExpressionToken& expToken);
+            void SetAsConstValue(ExpressionToken& expToken);
+
+            static HALOperationResult DummyHandler(void* context);
+            static HALOperationResult GetAndPushVariableValue_Handler(void* context);
+            static HALOperationResult GetAndPushDeviceReadVariableValue_Handler(void* context);
+            static HALOperationResult GetAndPushReadToHALValue_Function_Context_Handler(void* context);
+            /** 
+             * Handler used for both script constant values and direct HALValue pointer access.
+             * Pushes the value pointed to by context onto the evaluation stack.
+             */
+            static HALOperationResult GetAndPushValuePtr_Handler(void* context);
+
+            static RPNHandler GetRPN_OperatorFunction(ExpTokenType type);
         };
 
-        struct CalcRPN {
-            std::string calcRPNstr;
-            
-            CalcRPNToken* items;
-            int count;
-
-            CalcRPN(CalcRPN&) = delete;
-            CalcRPN(ExpressionTokens* tokens, int startIndex, int endIndex);
-            ~CalcRPN();
-            HALOperationResult DoCalc();
-        };
+        
     }
 }

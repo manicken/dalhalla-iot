@@ -54,6 +54,24 @@ namespace HAL_JSON {
 
     }
 
+    HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
+
+        if (val.cmd == "valuelist") {
+            std::string ret;
+            ret += '[';
+            for (int i=0;i<valueCount;i++) {
+                ret += values[i].toString();
+                if (i<valueCount-1) ret += ',';
+            }
+            ret += ']';
+            val.out_value = ret;
+        } else {
+            val.out_value = "unknown command";
+            return HALOperationResult::UnsupportedCommand;
+        }
+        return HALOperationResult::Success;
+    }
+
     HALOperationResult ScriptArray::read(const HALValue& bracketSubscriptVal, HALValue& val) {
         int index = bracketSubscriptVal.asInt();
         if (index < 0 || index >= valueCount) {

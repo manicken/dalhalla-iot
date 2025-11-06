@@ -27,35 +27,29 @@
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
+#include "../../../Support/Logger.h"
+#include "../../HAL_JSON_Device.h"
+#include "../../HAL_JSON_Device_GlobalDefines.h"
+#include "../../HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
-    class ScriptArray : public Device {
+#if defined(ESP32) || defined(_WIN32)
+    class AnalogInput : public Device {
     private:
-        HALValue values[16]; // set static for test only
-        int valueCount = 16; // set static for test only
+        uint8_t pin = 0;
     public:
-
-        /** called when all hal devices has been loaded */
-        void begin() override;
-
-        HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
-        HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
-
-        //static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);
-        //static HALOperationResult BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val);
-
-        //BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
-        //BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        ScriptArray(const JsonVariant &jsonObj, const char* type);
-
+        AnalogInput(const JsonVariant &jsonObj, const char* type);
+        ~AnalogInput();
+#ifndef HAL_JSON_USE_EFFICIENT_FIND
+        Device* findDevice(UIDPath& path) override;
+#endif
+        HALOperationResult read(HALValue &val) override;
         String ToString() override;
     };
+#endif
+    // TODO implement Analog Input Config to set resolution, but resolution could be individual as it can be set before each read
+
 }

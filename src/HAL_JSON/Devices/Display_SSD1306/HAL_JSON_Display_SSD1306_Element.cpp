@@ -61,6 +61,8 @@ namespace HAL_JSON {
     }
 
     HALOperationResult Display_SSD1306_Element::write(const HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         this->val = val;
         return HALOperationResult::Success;
     }

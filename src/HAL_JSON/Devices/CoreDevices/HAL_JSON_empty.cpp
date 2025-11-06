@@ -21,12 +21,10 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"
-#include "../../HAL_JSON_Value.h"
+#include "HAL_JSON_empty.h"
 
 namespace HAL_JSON {
-    namespace ScriptEngine {
-      // create one instance
-       RPNStack<HALValue> halValueStack;
-    }
+    
+    
+	
 }

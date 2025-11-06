@@ -39,7 +39,7 @@
 
 namespace HAL_JSON {
 
-    class CachedDeviceAccess {
+    class CachedDeviceRead2 {
     private:
         Device* device;
         /** 
@@ -52,21 +52,15 @@ namespace HAL_JSON {
          * or actually sub values defined by using # in uidPath#subItem
          */
         Device::ReadToHALValue_FuncType readToHalValueFunc;
-        Device::WriteHALValue_FuncType writeFromHalValueFunc;
-        Device::Exec_FuncType execFunc;
-        
         Device::BracketOpRead_FuncType bracketReadFunc;
-        Device::BracketOpWrite_FuncType bracketWriteFunc;
-        CachedDeviceAccess* bracketAccessSubscriptOperand;
+        CachedDeviceRead2* bracketAccessSubscriptOperand;
         
     public:
+        CachedDeviceRead2(const char* uidPathAndFuncName);
+        CachedDeviceRead2(ZeroCopyString zcStrUidPathAndFuncName);
 
-        CachedDeviceAccess(const char* uidPathAndFuncName);
-        CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
-
-        HALOperationResult Exec();
-        HALOperationResult WriteSimple(const HALValue& val);
         HALOperationResult ReadSimple(HALValue& val);
     };
 
+    
 }

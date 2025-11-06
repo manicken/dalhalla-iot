@@ -23,6 +23,8 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"
 #include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
+//#include "../Runtime/HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
+#include "../Runtime/HAL_JSON_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
@@ -516,7 +518,7 @@ namespace HAL_JSON {
                         }
                     } else {
                         HALValue halBracketSubscriptValue(0); // just need a dummy value
-                        HALValue halValue;
+                        HALValue halValue(HALValue::Type::TEST); // unset type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {
                             operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": bracket op write");
@@ -528,21 +530,9 @@ namespace HAL_JSON {
             }
 
             if (mode == ValidateOperandMode::Exec) {
-                HALOperationResult readResult = HALOperationResult::NotSet;
-                if (funcName.Length() == 0) {
-                    readResult = device->exec();
-                } else {
-                    readResult = device->exec(funcName);
-                }
-                if (readResult != HALOperationResult::Success) {
+                if (device->GetExec_Function(funcName) == nullptr) {
+                    operandToken.ReportTokenError("GetExec_Function not found: ", funcName.ToString().c_str());
                     anyError = true;
-                    if (readResult == HALOperationResult::UnsupportedCommand) {
-                        std::string funcNameStr = ": " + funcName.ToString();
-                        operandToken.ReportTokenError(HALOperationResultToString(readResult), funcNameStr.c_str());
-                    } else {
-                        operandToken.ReportTokenError(HALOperationResultToString(readResult), ": exec");
-                    }
-                    
                 }
                 return;
             }
@@ -571,7 +561,8 @@ namespace HAL_JSON {
                         anyError = true;
                     }
                 } else {
-                    HALValue halValue;
+                    HALValue halValue(HALValue::Type::TEST);
+                    printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {
                         operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");
