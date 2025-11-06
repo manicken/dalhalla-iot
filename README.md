@@ -182,3 +182,9 @@ Open for discussion whether the entire project should remain GPLv3 or switch ful
 > The main goal is to provide a **flexible architecture for IoT devices**,  
 > where configuration and logic can be changed **without recompilation**.
 
+**dependencies**<br>
+special version of TimeAlarms<br>
+that can have any amount of alarms (up to 255)<br>
+and also can use parameters when calling handler functions<br>
+note. this dependency is included in platformio.ini and is automatically installed<br>
+https://github.com/manicken/TimeAlarms <br>
