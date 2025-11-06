@@ -16,7 +16,14 @@
     <button id="connect">Connect</button>
     <button id="scan">Scan</button>
     <select id="ssid"></select>
-    <input type="password" id="password">
+    <div style="display: flex; align-items: center; max-width: 300px; margin-bottom: 10px;">
+      <input type="password" placeholder="Enter password" id="password" style="flex: 1; padding-right: 10px; height: 30px;">
+      <button type="button" id="togglePassword" 
+        style="border: none; background: none; cursor: pointer; font-size: 18px; margin-left: -30px;">
+      👁️
+      </button>
+    </div>
+  </div>
     <button id="send">Send Wi-Fi Config (and restart device)</button>
   </div>
 
@@ -26,7 +33,16 @@
     <input type="text" id="rawCommand" placeholder="Enter raw command" style="width:70%;" />
     <button id="sendCommand">Send</button>
 </div>
+<script>
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
 
+  togglePassword.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    togglePassword.textContent = isPassword ? '🙈' : '👁️'; // Switch icon
+  });
+</script>
 <script>
 let port, reader, writer;
 const logEl = document.getElementById("log");
