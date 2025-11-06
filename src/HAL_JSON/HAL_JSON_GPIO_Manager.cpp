@@ -202,7 +202,7 @@ namespace HAL_JSON {
             GPIO_manager::PrintListMode listMode = GPIO_manager::PrintListMode::Hex; // set the default here
 
             ZeroCopyString zcPrintMode = zcMode.SplitOffHead('/');
-            if (zcPrintMode.Length() != 0) {
+            if (zcPrintMode.NotEmpty()) {
                 if (zcPrintMode == HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_STRING)
                     listMode = GPIO_manager::PrintListMode::String;
                 else if (zcPrintMode == HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_BINARY)

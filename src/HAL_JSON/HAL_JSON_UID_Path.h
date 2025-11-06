@@ -52,6 +52,8 @@ namespace HAL_JSON {
             String,
             Raw
         };
+        /** used to validate a uid path before create it */
+        static bool Validate(const ZeroCopyString& uidzcStr);
 
         UIDPath();
         ~UIDPath();

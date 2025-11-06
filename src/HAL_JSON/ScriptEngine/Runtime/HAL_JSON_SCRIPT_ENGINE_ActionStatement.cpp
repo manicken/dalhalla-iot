@@ -36,34 +36,28 @@ namespace HAL_JSON {
         ActionStatement::ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut)
         {
             // ExtractAssignmentParts "consumes" the tokens until the next action or whatever coming after
-            Parser::Actions::AssignmentParts* actionParts = Parser::Actions::ExtractAssignmentParts(tokens);
-            ReportInfo("\n**************** Action ************* lefthand side:" + actionParts->lhs.ToString() + "\n");
-            ReportInfo("**************** Action ******** assigment operator:" + std::string(1, actionParts->op) + "\n");
+            // just run this no checking here as at this stage the script is valid
+            Parser::Actions::ExtractAssignmentParts(tokens); 
+            ReportInfo("\n**************** Action ************* lefthand side:" + Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
+            ReportInfo("**************** Action ******** assigment operator:" + std::string(1, Parser::Actions::AssignmentParts::op) + "\n");
             
-            ZeroCopyString varOperand = actionParts->lhs;
-            ZeroCopyString funcName = actionParts->lhs;
-            varOperand = funcName.SplitOffHead('#');
-            target = new CachedDeviceAccess(varOperand, funcName);
+            target = new CachedDeviceAccess(Parser::Actions::AssignmentParts::lhs);
 
-            ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(actionParts->rhs); // note here. expTokens is non owned
+            if (Expressions::IsExpressionEmpty(Parser::Actions::AssignmentParts::rhs)) {
+                calcRpn = nullptr; // not used here
+            } else {
+                ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(Parser::Actions::AssignmentParts::rhs); // note here. expTokens is non owned
 
-            //if (expTokens == nullptr) {
-            //    return;
-            //}
+                ReportInfo("\n***************** Action *********** rhs calc RPN: [");
+                for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
+                    ReportInfo(expTokens->items[i].ToString() + " ");
+                }
+                ReportInfo("]\n\n");
 
-            ReportInfo("\n***************** Action *********** rhs calc RPN: [");
-            for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                ExpressionToken& tok = expTokens->items[i];
-                //if (tok->type == TokenType::Operand)
-                    ReportInfo(tok.ToString() + " ");
-                //else
-                //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
+                calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
             }
-            ReportInfo("]\n\n");
-
-            calcRpn = new CalcRPN(expTokens, 0, expTokens->currentCount);
-
-            handlerOut = GetFunctionHandler(actionParts->op);
+            
+            handlerOut = GetFunctionHandler(Parser::Actions::AssignmentParts::op);
         }
         ActionStatement::~ActionStatement()
         {
@@ -79,143 +73,11 @@ namespace HAL_JSON {
             if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
             return actionItem->target->WriteSimple(val2write);
         }
-        /*
-        HALOperationResult ActionStatement::AddAndAssign_Handler(void* context) {
+        HALOperationResult ActionStatement::Exec_Handler(void* context) {
             ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = val2write + readVal;
-            return actionItem->target->WriteSimple(val2write);
+            return actionItem->target->Exec();
         }
-        HALOperationResult ActionStatement::SubtractAndAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal - val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::MultiplyAndAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal * val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::DivideAndAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal / val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::ModulusAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal & val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::BitwiseOrAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal | val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::BitwiseAndAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal & val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::BitwiseExOrAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal ^ val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::BitwiseShiftRightAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal >> val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-        HALOperationResult ActionStatement::BitwiseShiftLeftAssign_Handler(void* context) {
-            ActionStatement* actionItem = static_cast<ActionStatement*>(context);
-            HALOperationResult res = actionItem->calcRpn->DoCalc();
-            if (res != HALOperationResult::Success) return res;
-            HALValue val2write;
-            if (halValueStack.GetFinalResult(val2write) == false) return HALOperationResult::ResultGetFail;
-            HALValue readVal;
-            res = actionItem->target->ReadSimple(readVal);
-            if (res != HALOperationResult::Success) return res;
-            val2write = readVal << val2write;
-            return actionItem->target->WriteSimple(val2write);
-        }
-
-        ActionHandler ActionStatement::GetFunctionHandler(const char c) {
-            if (c == '=') return &Assign_Handler;
-            else if (c == '+') return &AddAndAssign_Handler;
-            else if (c == '-') return &SubtractAndAssign_Handler;
-            else if (c == '*') return &MultiplyAndAssign_Handler;
-            else if (c == '/') return &DivideAndAssign_Handler;
-            else if (c == '%') return &ModulusAssign_Handler;
-            else if (c == '|') return &BitwiseOrAssign_Handler;
-            else if (c == '&') return &BitwiseAndAssign_Handler;
-            else if (c == '^') return &BitwiseExOrAssign_Handler;
-            else if (c == '<') return &BitwiseShiftLeftAssign_Handler;
-            else if (c == '>') return &BitwiseShiftRightAssign_Handler;
-            else return nullptr; // should never happend
-        }*/
-
+        
         ActionHandler ActionStatement::GetFunctionHandler(const char c) {
             if (c == '=') return &Assign_Handler;
             else if (c == '+') return &CompoundAssign_Handler<OpAdd>;
@@ -228,6 +90,7 @@ namespace HAL_JSON {
             else if (c == '^') return &CompoundAssign_Handler<OpBitExOr>;
             else if (c == '<') return &CompoundAssign_Handler<OpBitLshift>;
             else if (c == '>') return &CompoundAssign_Handler<OpBitRshift>;
+            else if (c == '(') return &Exec_Handler;
             else return nullptr; // should never happend
         }
     }

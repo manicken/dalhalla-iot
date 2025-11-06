@@ -22,6 +22,7 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_LogicExecNode.h"
+#include "HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
 
 //#define DEBUG_LOGIC_EXEC
 

@@ -21,38 +21,33 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_ScriptVariable.h"
+#include "HAL_JSON_ScriptVariableWriteOnlyTest.h"
 
 namespace HAL_JSON {
     
-    ScriptVariable::ScriptVariable(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
     }
 
-    bool ScriptVariable::VerifyJSON(const JsonVariant &jsonObj) {
+    bool ScriptVariableWriteOnlyTest::VerifyJSON(const JsonVariant &jsonObj) {
         // could add type def later if wanted
         // also nonvolatile storage could be a mode
         return true;
     }
 
-    Device* ScriptVariable::Create(const JsonVariant &jsonObj, const char* type) {
-        return new ScriptVariable(jsonObj, type);
-    }
-    HALValue* ScriptVariable::GetValueDirectAccessPtr() {
-        return &value;
+    Device* ScriptVariableWriteOnlyTest::Create(const JsonVariant &jsonObj, const char* type) {
+        return new ScriptVariableWriteOnlyTest(jsonObj, type);
     }
 
-    HALOperationResult ScriptVariable::read(HALValue& val) {
-        val = value;
-        return HALOperationResult::Success;
-    }
-    HALOperationResult ScriptVariable::write(const HALValue& val) {
+    HALOperationResult ScriptVariableWriteOnlyTest::write(const HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         value = val;
         return HALOperationResult::Success;
     }
 
-    String ScriptVariable::ToString() {
+    String ScriptVariableWriteOnlyTest::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();

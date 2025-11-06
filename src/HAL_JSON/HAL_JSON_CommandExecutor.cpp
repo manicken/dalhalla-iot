@@ -150,7 +150,7 @@ namespace HAL_JSON {
     bool CommandExecutor::reloadJSON(ZeroCopyString& zcStr, std::string& message) {
         ZeroCopyString zcOptionalFileName = zcStr.SplitOffHead('/');
 #ifdef HAL_JSON_CommandExecutor_DEBUG_CMD
-        message += "\"filename\":\"" + (zcOptionalFileName.Length() != 0?zcOptionalFileName.ToString():"default") + "\"}";
+        message += "\"filename\":\"" + (zcOptionalFileName.NotEmpty()?zcOptionalFileName.ToString():"default") + "\"}";
 #endif
         std::string filePath;
 #if defined(ESP32) || defined(ESP8266)

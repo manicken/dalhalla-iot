@@ -32,7 +32,7 @@ namespace HAL_JSON {
 
     class HALValue {
     public:
-        enum class Type { UNSET, UINT, INT, FLOAT/*, STRING*/ };
+        enum class Type {TEST, UNSET, UINT, INT, FLOAT/*, STRING*/ };
 
     private:
         Type type;
@@ -46,7 +46,9 @@ namespace HAL_JSON {
 
 
     public:
+        /** inilializes a HALValue with type set to Unset */
         HALValue();
+        HALValue(Type type);
         //HALValue(const HALValue& other);  // future use?? only used for string
         HALValue(uint32_t v);
         HALValue(int32_t v);
@@ -56,6 +58,7 @@ namespace HAL_JSON {
 
         Type getType() const;
         bool isNumber() const;
+        bool isNaN() const;
 
         int32_t asInt() const;
         uint32_t asUInt() const;

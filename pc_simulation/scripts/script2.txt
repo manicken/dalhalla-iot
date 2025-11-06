@@ -15,9 +15,16 @@ on dummyTrigger then
   i2c:disp:red = red;
   i2c:disp:green = green;
   i2c:disp:blue = blue;
+
+  //red // this will generate error: cannot find assignment operator/exec func postfix (
+  //red = // now generates RHS cannot be empty error
   
   neo#color = (red << 16) |\
               (green << 8) |\
  			   blue
+  //+var1 = var2
+  var3 = 5
+  arr1[var3] = 42
+  var2 = arr1[var3]
 endon
 

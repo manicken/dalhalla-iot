@@ -34,18 +34,14 @@
 #include "HAL_JSON_UID_Path.h"
 #include "HAL_JSON_Device.h"
 #include "HAL_JSON_Manager.h"
-
+#include "ScriptEngine/Runtime/HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
+#include "ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 
 namespace HAL_JSON {
 
     class CachedDeviceAccess {
     private:
-        const int* currentVersion;
-        int cachedVersion;
-        UIDPath path;
         Device* device;
-        
-    public:
         /** 
          * some devices can give direct access to the internal value
          * so in those cases this will allow that
@@ -56,13 +52,21 @@ namespace HAL_JSON {
          * or actually sub values defined by using # in uidPath#subItem
          */
         Device::ReadToHALValue_FuncType readToHalValueFunc;
-        Device::ReadToHALValue_FuncType writeFromHalValueFunc;
+        Device::WriteHALValue_FuncType writeFromHalValueFunc;
+        Device::Exec_FuncType execFunc;
         
-        CachedDeviceAccess(ZeroCopyString& uidPath, ZeroCopyString& funcName);
-        Device* GetDevice();
+        Device::BracketOpRead_FuncType bracketReadFunc;
+        Device::BracketOpWrite_FuncType bracketWriteFunc;
+        CachedDeviceAccess* bracketAccessSubscriptOperand;
+        
+    public:
 
+        CachedDeviceAccess(const char* uidPathAndFuncName);
+        CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
+
+        HALOperationResult Exec();
         HALOperationResult WriteSimple(const HALValue& val);
         HALOperationResult ReadSimple(HALValue& val);
     };
-    
+
 }

@@ -80,7 +80,7 @@ namespace HAL_JSON {
                     tokens.currentEndIndex = tokens.count;
                     tokens.firstTokenStartOffset = nullptr;
                     tokens.currIndex = 0;
-                    if (Expressions::ValidateExpression(tokens, ExpressionContext::IfCondition) == false)
+                    if (false == Expressions::ValidateExpression(tokens))
                     {
                         ReportInfo("Error: validate tokens fail\n");
                         delete[] fileContents;
@@ -150,7 +150,12 @@ namespace HAL_JSON {
 
                     tokens.currIndex = 0;
                     tokens.items[0].itemsInBlock = tokens.count; // set as a block so that ExtractAssignmentParts can work as expected
-                    HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts* action = HAL_JSON::ScriptEngine::Parser::Actions::ExtractAssignmentParts(tokens);
+                    if (false == HAL_JSON::ScriptEngine::Parser::Actions::ExtractAssignmentParts(tokens))
+                    {
+                        ReportInfo("Error: ExtractAssignmentParts fail\n");
+                        delete[] fileContents;
+                        return false;
+                    }
 
                     ReportInfo("**********************************************************************************\n");
                     ReportInfo("*                            VALIDATE PARSED TOKEN LIST                          *\n");
@@ -159,7 +164,7 @@ namespace HAL_JSON {
                     // and that normally mean before any validation first occur
                     // i.e if many script files are to be validated this need to happen before any of that happens
                     Expressions::CalcStackSizesInit();
-                    if (Expressions::ValidateExpression(action->rhs, ExpressionContext::Assignment) == false)
+                    if (Expressions::ValidateExpression(HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts::rhs) == false)
                     {
                         ReportInfo("Error: validate tokens fail\n");
                         delete[] fileContents;
@@ -168,10 +173,10 @@ namespace HAL_JSON {
                     Expressions::PrintCalcedStackSizes();
                     Expressions::InitStacks();
 
-                    ReportInfo("\nAction lhs:" + action->lhs.ToString() + "\n");
-                    ReportInfo("Action assigment operator:" + std::string(1, action->op) + "\n\n");
+                    ReportInfo("\nAction lhs:" + HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
+                    ReportInfo("Action assigment operator:" + std::string(1, HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts::op) + "\n\n");
 
-                    ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(action->rhs);
+                    ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts::rhs);
                     if (newDirect == nullptr) {
                         printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!! ParseActionExpressionTest - newDirect was nullptr\n");
                         Expressions::ClearStacks();

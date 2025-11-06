@@ -29,7 +29,10 @@ namespace HAL_JSON {
     namespace ScriptEngine {
         namespace Parser {
             namespace Actions {
-                AssignmentParts g_assignmentParts;  // single reusable instance
+                //AssignmentParts g_assignmentParts;  // single reusable instance
+                ScriptToken AssignmentParts::lhs = {};
+                char AssignmentParts::op = 0;
+                ScriptTokens AssignmentParts::rhs = {};
 
                 const ScriptTokenType actionStartTypes[] = {ScriptTokenType::ActionSeparator, ScriptTokenType::And, ScriptTokenType::Else, ScriptTokenType::EndIf, ScriptTokenType::Then, ScriptTokenType::NotSet};
                 const ScriptTokenType actionEndTypes[] =   {ScriptTokenType::ActionSeparator, ScriptTokenType::And, ScriptTokenType::Else, ScriptTokenType::EndIf, ScriptTokenType::If, ScriptTokenType::ElseIf, ScriptTokenType::EndOn, ScriptTokenType::NotSet};
@@ -104,168 +107,59 @@ namespace HAL_JSON {
                     ScriptToken* tokens = _tokens.items;
                     int tokenCount = _tokens.count;
                     bool anyError = false;
+
                     for (int i = 0; i < tokenCount; ++i) {
                         ScriptToken& token = tokens[i];
-                        // 'TokenType::Action' is set only on the root token of an action (whether single-token or merged multi-token).
-                        // Subtokens inside merged tokens do not have the type TokenType::Action, instead they have the type TokenType::Merged
                         if (token.type != ScriptTokenType::Action) continue;
-
-                        ScriptTokens expressionTokens;
-                        expressionTokens.items = &token;
-                        if (token.itemsInBlock != 0) {
-                            expressionTokens.count = token.itemsInBlock;
-                        } else {
-                            expressionTokens.count = 1;
-                        }
-                        // first check if there is any currently unsupported AssignKeywords
-                        const char* match = nullptr;
-                        //const char* matchKeyword = nullptr;
-                        //int firstAssignmentOperatorTokenIndex = -1;
-                        ScriptToken* firstAssignmentOperatorToken = nullptr;
-                        const char* firstAssignmentOperator = nullptr;
-                        const char* firstCompoundAssignmentOperator = nullptr;
-                        bool foundAdditionalAssignmentOperators = false;
-                        
-                        for (int j = 0; j < expressionTokens.count; ++j) {
-                            ScriptToken& exprToken = expressionTokens.items[j];
-                            const char* searchStart = exprToken.start;
-                            //std::cout << "searching:" << token.ToString() << "\n";
-                            do {
-                                match = exprToken.FindChar('=', searchStart);
-                                if (match) {
-                                    if (firstAssignmentOperator) {
-                                        foundAdditionalAssignmentOperators = true;
-                                        anyError = true;
-                                        Token reportToken;
-                                        reportToken.line = exprToken.line;
-                                        reportToken.column = exprToken.column + (match - exprToken.start);
-                                        reportToken.ReportTokenError("Found additional assignment keyword");
-                                        
-                                    } else {
-                                        firstAssignmentOperator = match;
-                                        firstAssignmentOperatorToken = &exprToken;
-                                        //firstAssignmentOperatorTokenIndex = j;
-                                        const char* prevChar = match-1;
-                                        if (exprToken.ContainsPtr(prevChar) && Expressions::IsSingleOperator(*prevChar)) {
-                                            // this mean that we found a Compound Assignment Operator
-                                            firstCompoundAssignmentOperator = prevChar;
-                                        }
-                                    }
-                                
-                                    
-                                    // Advance search start
-                                    searchStart = match + 1;
-
-                                    if (searchStart >= exprToken.end) break;
-                                }
-                            
-                            } while (match);
-                        }
-                        // have:
-                        // const char* firstAssigmentOperator // is set when a assigment operator is found
-                        // const char* firstCompundAssignmentOperator // is set when a compund assigment operator is found
-                        // bool foundAdditionalAssigmentOperators
-                        
-                        if (foundAdditionalAssignmentOperators) {
-                            // error reporting  is taken care of above
-                            continue; // skip for now as it would be hard to extract anything from such string
-                        }
-                        if (firstAssignmentOperator == nullptr) {
-                            // invalid action line if no assigmend operator is found
-                            // maybe in future i can support direct function calls like: somefunc(var2)
-                            token.ReportTokenError("Did not find any assignment keyword");
+                        // set current Token
+                        _tokens.currIndex = i;
+                        if (false == ExtractAssignmentParts(_tokens)) {
+                            token.ReportTokenError("Invalid assignment in action block");
                             anyError = true;
-                            continue; 
+                            continue;
                         }
-                        const char* firstAssigmentOperatorStart = nullptr;
+                        printf("AssignmentParts::rhs= %s (%d)\n",AssignmentParts::rhs.SliceToString().c_str(), AssignmentParts::rhs.SliceTokenCount());
+                        // Validate LHS
+                        // here set opMode to ReadWrite on compound operators otherwise write only
+                        ValidateOperandMode opMode = ValidateOperandMode::UnSet;
 
-                        if (firstCompoundAssignmentOperator) {
-                            char ch = *firstCompoundAssignmentOperator;
-                            
-                            if (ch == '<' || ch == '>') {
-                                const char* prevChar = firstCompoundAssignmentOperator - 1;
-                                // Handle shift compound assignment (<<= or >>=)
-                                bool prevIsValid = firstAssignmentOperatorToken->ContainsPtr(prevChar) &&
-                                                (*prevChar == '<' || *prevChar == '>');
-                                
-                                if (prevIsValid) {
-                                    firstAssigmentOperatorStart = prevChar; // valid <<= or >>=
-                                } else {
-                                    anyError = true;
-                                    token.ReportTokenError("missing additional < or > in compound shift assignment keyword");
-                                    firstAssigmentOperatorStart = firstCompoundAssignmentOperator;
-                                }
-                            } else {
-                                // Not a shift op, treat as normal compound assignment like +=, -=
-                                firstAssigmentOperatorStart = firstCompoundAssignmentOperator;
-                            }
-                        } else {
-                            firstAssigmentOperatorStart = firstAssignmentOperator;
+                        if (AssignmentParts::op == '(') {
+                            opMode = ValidateOperandMode::Exec;
+                        } else if (AssignmentParts::op == '=') {
+                            opMode = ValidateOperandMode::Write;
+                        } else { // compound operators
+                            opMode = ValidateOperandMode::ReadWrite;
                         }
-                        ScriptToken zcLHS_AssignmentOperand;
-                        ScriptTokens zcRHS_AssignmentOperands;
-                        zcLHS_AssignmentOperand.start = token.start;
-                        zcLHS_AssignmentOperand.line = token.line;
-                        zcLHS_AssignmentOperand.column = token.column;
-
-                        if (token == *firstAssignmentOperatorToken) { 
-        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                            std::cout << "(token.start == firstAssignmentOperatorToken->start):" << token.ToString() << "\n";
-        #endif
-                            // this mean that the assigmentOperator is in the first token
-                            // someVar= 5 or someVar=5(if this then token.itemsInBlock == 0)
-                            if (token.itemsInBlock < 2) {
-                                zcRHS_AssignmentOperands.items = expressionTokens.items;
-                                zcRHS_AssignmentOperands.count = 1;
-                                zcRHS_AssignmentOperands.firstTokenStartOffset = firstAssignmentOperator + 1;
-                            } else {
-                                zcRHS_AssignmentOperands.items = expressionTokens.items+1;
-                                zcRHS_AssignmentOperands.count = expressionTokens.count-1;
-                            }
-                            zcLHS_AssignmentOperand.end = firstAssigmentOperatorStart;
-                        } else {
-                            // this mean that the assigmentOperator is
-                            // separated from the first operand
-
-                            // someVar =5 or someVar +=5
-                            if (firstAssignmentOperatorToken->ContainsPtr(firstAssignmentOperator+1)) {
-                                //std::cout << firstAssignmentOperatorToken->ToString() << " -> ContainsPtr("<<firstAssignmentOperator+1<<"): " << "\n";
-                                zcRHS_AssignmentOperands.items = firstAssignmentOperatorToken;
-                                zcRHS_AssignmentOperands.count = expressionTokens.count-1;
-                                zcRHS_AssignmentOperands.firstTokenStartOffset = firstAssignmentOperator + 1;
-                                ZeroCopyString zcTemp(firstAssignmentOperator + 1, firstAssignmentOperator + 2);
-                            }
-                            // someVar = 6 or someVar += 5 
-                            else {
-                                zcRHS_AssignmentOperands.items = firstAssignmentOperatorToken+1;
-                                zcRHS_AssignmentOperands.count = expressionTokens.count-2;
-                            }
-                            zcLHS_AssignmentOperand.end = token.end;
+                        
+                        // validate LHS even if rhs could fail
+                        Expressions::ValidateOperand(AssignmentParts::lhs, anyError, opMode);
+                        
+                        if (opMode == ValidateOperandMode::Exec) {
+                            // Exec currently do not support parameters
+                            // and probably will never do either as there is currently no use
+                            // also if there is parameters given then we can safely just ignore them
+                            continue;
                         }
-        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                        std::cout << "zcLHS_AssignmentOperand: " << zcLHS_AssignmentOperand.ToString() << "\n";
-        #endif
-                        if (firstCompoundAssignmentOperator) {
-                            Expressions::ValidateOperand(zcLHS_AssignmentOperand, anyError, ValidateOperandMode::ReadWrite);
-                        }
-                        else {
-                            Expressions::ValidateOperand(zcLHS_AssignmentOperand, anyError, ValidateOperandMode::Write);
-                        }
-                        // use the following to validate the right side of the expression
-                        zcRHS_AssignmentOperands.currentEndIndex = zcRHS_AssignmentOperands.count;
-                        if (Expressions::ValidateExpression(zcRHS_AssignmentOperands, ExpressionContext::Assignment) == false) {
-                            token.ReportTokenError("Expressions::ValidateExpression fail");
+                        if (Expressions::IsExpressionEmpty(AssignmentParts::rhs)) {
+                            token.ReportTokenError("RHS expression cannot be empty");
                             anyError = true;
-                        } 
+                            continue;
+                        }
+                        // Validate RHS
+                        if (false == Expressions::ValidateExpression(AssignmentParts::rhs)) {
+                            token.ReportTokenError("RHS expression validation failed");
+                            anyError = true;
+                        }
 
-                    }
-                    return anyError == false;
+                    } // for loop
+
+                    return !anyError;
                 }
-                AssignmentParts* ExtractAssignmentParts(ScriptTokens& tokens) {
-                    g_assignmentParts.Clear();
+
+                bool ExtractAssignmentParts(ScriptTokens& tokens) {
+                    AssignmentParts::Clear();
 
                     ScriptToken& currentStartToken = tokens.Current();
-                    int currentStartTokenIndex = tokens.currIndex;
                     ScriptToken* tokensItems = tokens.items;
                     int startIndex = tokens.currIndex;
                     int endIndex   = startIndex + currentStartToken.itemsInBlock;
@@ -275,7 +169,7 @@ namespace HAL_JSON {
                     const char* foundAssignmentOperator = nullptr;
                     ScriptToken* foundAssignmentOperatorToken = nullptr;
                     const char* foundCompoundAssignmentOperator = nullptr;
-
+                    int assignmentTokenIndex = startIndex;
                     // Scan tokens in the current block for the assigment operator
                     // to get it's position
                     for (int i = startIndex; i < endIndex; ++i) {
@@ -286,79 +180,119 @@ namespace HAL_JSON {
 
                         foundAssignmentOperator = match;
                         foundAssignmentOperatorToken = &exprToken;
-
-                        // check for compound assignment
-                        const char* prevChar = match - 1;
-                        if (exprToken.ContainsPtr(prevChar) &&
-                            Expressions::IsSingleOperator(*prevChar)) {
-                            // as this is validated beforehand we can safely assume that 
-                            // a additional < or > exists
-                            if (*prevChar == '<' || *prevChar == '>') 
-                                prevChar--; // if it's leftwhift or rightshift decrease the pointer
-                            foundCompoundAssignmentOperator = prevChar;
-                        }
-                        break; // break here as we found the =
+                        assignmentTokenIndex = i;
+                        break;
                     }
-                    // have:
-                    // const char* firstAssignmentOperator // is set when a assigment operator is found
-                    // const char* firstCompoundAssignmentOperator // is set when a compound assigment operator is found
-
                     if (!foundAssignmentOperator) {
-                        // no operator found: just return empty
-                        currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!!!!!!!! firstAssignmentOperator not found");
-                        return &g_assignmentParts;
+                        // TODO make this check for left parenthesis
+                        // but only in the first token where it should be as: duid () is invalid
+                        const char* match = tokensItems[startIndex].FindChar('(');
+                        if (match == nullptr) {
+                            // no operator found, no function call found
+                            currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! (assignment operator)/(func call)  not found");
+                            return false;
+                        }
+                       
+                        // found function call statement
+                        foundAssignmentOperator = match;
+                        foundAssignmentOperatorToken = &tokensItems[startIndex];
+                        
                     }
+                    else {
+                        // check for compound assignment
+                        const char* prevChar = foundAssignmentOperator - 1;
+                        if (foundAssignmentOperatorToken->ContainsPtr(prevChar) && Expressions::IsSingleOperator(*prevChar)) {
+
+                            // Handle <<=
+                            if (*prevChar == '<' && foundAssignmentOperatorToken->ContainsPtr(prevChar - 1) && *(prevChar - 1) == '<') {
+                                foundCompoundAssignmentOperator = prevChar - 1; // start of '<<='
+                            }
+                            // Handle >>=
+                            else if (*prevChar == '>' && foundAssignmentOperatorToken->ContainsPtr(prevChar - 1) && *(prevChar - 1) == '>') {
+                                foundCompoundAssignmentOperator = prevChar - 1; // start of '>>='
+                            }
+                            // Handle all other compound ops like +=, -=, *=, etc.
+                            else {
+                                foundCompoundAssignmentOperator = prevChar; // start of the two-character op
+                            }
+
+                            // Optional: validate that we’re not missing something like "a<="
+                            if (*prevChar == '<' || *prevChar == '>') {
+                                // Ensure previous char is also same operator, otherwise invalid
+                                if (!foundAssignmentOperatorToken->ContainsPtr(prevChar - 1) || *(prevChar - 1) != *prevChar) {
+                                    foundAssignmentOperatorToken->ReportTokenError("Invalid compound shift assignment (expected <<= or >>=)");
+                                    return false;
+                                }
+                            }
+                        }
+                    }                  
+                    // here we have have:
+                    // const char* firstAssignmentOperator // is set when a assigment operator is found
+                    // const char* foundCompoundAssignmentOperator // is set when a compound assigment operator is found
 
                     // Decide operator start
                     const char* foundAssigmentOperatorStart = foundCompoundAssignmentOperator
                                         ? foundCompoundAssignmentOperator
                                         : foundAssignmentOperator;
+                    AssignmentParts::lhs = currentStartToken;
+                    //AssignmentParts::lhs.start = currentStartToken.start;
+                    //AssignmentParts::lhs.line = currentStartToken.line;
+                    //AssignmentParts::lhs.column = currentStartToken.column;
+                    AssignmentParts::op = *foundAssigmentOperatorStart;
 
-                    g_assignmentParts.lhs.start = currentStartToken.start;
-                    g_assignmentParts.lhs.line = currentStartToken.line;
-                    g_assignmentParts.lhs.column = currentStartToken.column;
-                    g_assignmentParts.op = *foundAssigmentOperatorStart;
-
-                    g_assignmentParts.rhs.items = tokens.items;
-                    g_assignmentParts.rhs.count = tokens.count;
-                    g_assignmentParts.rhs.currentEndIndex = currentStartTokenIndex + currentStartToken.itemsInBlock;
-
-                    if (currentStartToken == *foundAssignmentOperatorToken) {
+                    AssignmentParts::rhs.items = tokens.items;
+                    AssignmentParts::rhs.count = tokens.count;
+                    AssignmentParts::rhs.currentEndIndex = startIndex + currentStartToken.itemsInBlock;
+                    
+                    if (*foundAssigmentOperatorStart == '(') {
+                        AssignmentParts::lhs.end = foundAssigmentOperatorStart;
+                        AssignmentParts::rhs.currIndex = startIndex;
+                        AssignmentParts::rhs.firstTokenStartOffset = foundAssigmentOperatorStart;
+                    }
+                    else if (currentStartToken == *foundAssignmentOperatorToken) {
                         // this mean that the assigmentOperator is in the first token
                         // finalize the lhs first
-                        g_assignmentParts.lhs.end = foundAssigmentOperatorStart;
+                        AssignmentParts::lhs.end = foundAssigmentOperatorStart;
         #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                         std::cout << "(currentStartToken.start == foundAssignmentOperatorToken->start):" << currentStartToken.ToString() << "\n";
         #endif
                         // someVar=5 cases
                         if (currentStartToken.itemsInBlock < 2) { 
-                            g_assignmentParts.rhs.currIndex = currentStartTokenIndex;
-                            g_assignmentParts.rhs.firstTokenStartOffset = foundAssignmentOperator + 1;
+                            AssignmentParts::rhs.currIndex = startIndex;
+                            AssignmentParts::rhs.firstTokenStartOffset = foundAssignmentOperator + 1;
                         }
                         // someVar= 5 cases
                         else { 
-                            g_assignmentParts.rhs.currIndex = currentStartTokenIndex + 1;
+                            AssignmentParts::rhs.currIndex = startIndex + 1;
                         }
                     }
                     else // currentStartToken != *foundAssignmentOperatorToken
                     {
                         // this mean that the assigmentOperator is separated from the first operand
-                        // finalize the lhs first
-                        g_assignmentParts.lhs.end = currentStartToken.end;
+                        // finalize the lhs first, 
+                        //AssignmentParts::lhs.end = currentStartToken.end;
 
                         // someVar =5 or someVar +=5
                         if (foundAssignmentOperatorToken->ContainsPtr(foundAssignmentOperator+1)) {
+                            if (assignmentTokenIndex != startIndex) {
+                                currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch");
+                                return false;
+                            }
                             // this mean that there are characters after the assignment operator
-                            g_assignmentParts.rhs.firstTokenStartOffset = foundAssignmentOperator + 1;
-                            g_assignmentParts.rhs.currIndex = currentStartTokenIndex+1;
+                            AssignmentParts::rhs.firstTokenStartOffset = foundAssignmentOperator + 1;
+                            AssignmentParts::rhs.currIndex = startIndex+1;
                         }
                         // someVar = 6 or someVar += 5 
                         else {
-                            g_assignmentParts.rhs.currIndex = currentStartTokenIndex+2;
+                            if (assignmentTokenIndex != startIndex+1) {
+                                currentStartToken.ReportTokenError("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch");
+                                return false;
+                            }
+                            AssignmentParts::rhs.currIndex = startIndex+2;
                         }
                     }
 
-                    return &g_assignmentParts;
+                    return true;
                 }
             }
         }

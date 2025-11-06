@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
@@ -35,15 +34,24 @@
 
 namespace HAL_JSON {
 
-    class ScriptVariableWriteOnlyTest : public Device {
+    class DeviceContainer : public Device {
     private:
-        HALValue value;
+        Device** devices;
+        int deviceCount;
     public:
+
+        
+        /** called regulary from the main loop */
+        void loop() override;
+        /** called when all hal devices has been loaded */
+        void begin() override;
+        /** used to find sub/leaf devices @ "group devices" */
+        Device* findDevice(UIDPath& path) override;
+
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type);
-        HALOperationResult write(const HALValue& val) override;
-
+        DeviceContainer(const JsonVariant &jsonObj, const char* type);
+        ~DeviceContainer();
         String ToString() override;
     };
 }

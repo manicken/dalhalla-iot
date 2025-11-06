@@ -58,6 +58,9 @@ namespace HAL_JSON {
         inline bool IsEmpty() const {
             return !start || !end || start == end;
         }
+        inline bool NotEmpty() const {
+            return !IsEmpty();
+        }
         /** 
          * Returns a std::string copy of the string, 
          * note this is mostly intended for debug or when the string is needed somewhere else 
@@ -81,6 +84,7 @@ namespace HAL_JSON {
         const char* FindChar(char ch) const;
         /** Returns pointer to first occurrence of ch, or nullptr from the start pointer given*/
         const char* FindChar(char ch, const char* start) const;
+        bool ContainsChar(char ch) const;
         /** Returns pointer to first occurrence of str, or nullptr from the start pointer given*/
         const char* FindString(const char* str, const char* start = nullptr) const;
         /**

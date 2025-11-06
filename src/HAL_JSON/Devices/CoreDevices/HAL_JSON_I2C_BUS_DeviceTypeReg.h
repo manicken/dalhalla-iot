@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../HAL_JSON_Device.h"
+#include "../../HAL_JSON_Device.h"
 #include <Wire.h>
 
 namespace HAL_JSON {

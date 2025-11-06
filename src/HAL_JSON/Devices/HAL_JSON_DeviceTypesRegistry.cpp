@@ -30,17 +30,30 @@
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
 // all HAL devices to use here
-#include "Devices/HAL_JSON_ScriptVariable.h"
-#include "Devices/HAL_JSON_ScriptVariableReadOnly.h"
-#include "Devices/HAL_JSON_ScriptVariableWriteOnlyTest.h"
-#include "Devices/HAL_JSON_CoreDevices.h"
-#include "Devices/OneWireTemp/HAL_JSON_OneWireTemp.h"
-#include "Devices/HAL_JSON_DHT.h"
-#include "Devices/RF433/HAL_JSON_TX433.h"
-#include "Devices/REGO600/HAL_JSON_REGO600.h"
-#include "Devices/HAL_JSON_I2C_BUS.h"
-#include "Devices/HAL_JSON_ThingSpeak.h"
-#include "Devices/HAL_JSON_WS2812.h"
+#include "Script/HAL_JSON_ScriptVariable.h"
+#include "Script/HAL_JSON_ScriptVariableReadOnly.h"
+#include "Script/HAL_JSON_ScriptVariableWriteOnlyTest.h"
+#include "Script/HAL_JSON_ScriptArray.h"
+
+#include "CoreDevices/HAL_JSON_AnalogInput.h"
+#include "CoreDevices/HAL_JSON_DigitalInput.h"
+#include "CoreDevices/HAL_JSON_DigitalOutput.h"
+#include "CoreDevices/HAL_JSON_PWMAnalogWrite.h"
+#include "CoreDevices/HAL_JSON_SinglePulseOutput.h"
+
+#include "CoreDevices/HAL_JSON_I2C_BUS.h"
+
+#include "OneWireTemp/HAL_JSON_OneWireTemp.h"
+#include "HAL_JSON_DHT.h"
+#include "RF433/HAL_JSON_TX433.h"
+#include "REGO600/HAL_JSON_REGO600.h"
+
+#include "HAL_JSON_ThingSpeak.h"
+#include "HAL_JSON_WS2812.h"
+#include "HAL_JSON_REST_Value.h"
+#include "HAL_JSON_REST_Cmd.h"
+#include "HAL_JSON_DeviceContainer.h"
+
 
 namespace HAL_JSON {
 
@@ -72,7 +85,10 @@ namespace HAL_JSON {
         {UseRootUID::Mandatory, "WS2812", WS2812::Create, WS2812::VerifyJSON},
         {UseRootUID::Mandatory, "CONSTVAR", ScriptVariableReadOnly::Create, ScriptVariableReadOnly::VerifyJSON},
         {UseRootUID::Mandatory, "WRITEVAR", ScriptVariableWriteOnlyTest::Create, ScriptVariableWriteOnlyTest::VerifyJSON},
-
+        {UseRootUID::Mandatory, "REST_VAR", REST_Value::Create, REST_Value::VerifyJSON},
+        {UseRootUID::Mandatory, "REST_CMD", REST_Cmd::Create, REST_Cmd::VerifyJSON},
+        {UseRootUID::Mandatory, "CONTAINER", DeviceContainer::Create, DeviceContainer::VerifyJSON},
+        {UseRootUID::Mandatory, "ARRAY", ScriptArray::Create, ScriptArray::VerifyJSON},
         /** mandatory null terminator */
         {UseRootUID::Void, nullptr, nullptr, nullptr} // terminator
     };

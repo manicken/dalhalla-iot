@@ -40,7 +40,7 @@
 #include "HAL_JSON_Device.h"
 
 #include "HAL_JSON_Device_GlobalDefines.h"
-#include "HAL_JSON_DeviceTypesRegistry.h"
+#include "Devices/HAL_JSON_DeviceTypesRegistry.h"
 
 #include "../Support/Logger.h"
 #include "HAL_JSON_ArduinoJSON_ext.h"
@@ -55,12 +55,14 @@ namespace HAL_JSON {
         static Device** devices;
         static int deviceCount;
         
-        static Device* CreateDeviceFromJSON(const JsonVariant& json);
-        static bool VerifyDeviceJson(const JsonVariant& jsonObj);
+        
         
         static int reloadVersion;
 
     public:
+        static Device* CreateDeviceFromJSON(const JsonVariant& json);
+        static bool VerifyDeviceJson(const JsonVariant& jsonObj);
+        
         static bool reloadQueued;// = false;
         // getters
         static int DeviceCount();

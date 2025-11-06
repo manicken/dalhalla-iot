@@ -61,6 +61,8 @@ namespace HAL_JSON {
         return HALOperationResult::Success;
     }
     HALOperationResult PCF8574x::write(const HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         wire->beginTransmission(addr);
         wire->write(val.asUInt());
         uint8_t res = wire->endTransmission(true);

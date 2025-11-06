@@ -23,6 +23,7 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
 #include "HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
+#include "HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
 
 #include <csignal>
 

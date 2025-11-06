@@ -216,30 +216,35 @@ namespace HAL_JSON {
                     }
                     return true;
                 }
+                
                 bool VerifyConditionBlocks(ScriptTokens& _tokens) {
                     ScriptToken* tokens = _tokens.items;
                     int tokenCount = _tokens.count;
                     bool anyError = false;
+                    _tokens.currIndex = 0;
                     for (int i = 0; i < tokenCount; ++i) {
                         const ScriptToken& token = tokens[i];
                         if (((token.type == ScriptTokenType::If) || (token.type == ScriptTokenType::ElseIf)) == false) continue;
-                        //const char* conditions = tokens[i+1].text;
-                        ScriptTokens conditions;
-                        conditions.items = &tokens[i+1];
-                        if (tokens[i+1].itemsInBlock != 0) {
-                            conditions.count = tokens[i+1].itemsInBlock;
+                        _tokens.currIndex = i+1;
+                        const ScriptToken& currToken = _tokens.Current();
+                        if (currToken.itemsInBlock != 0) {
+                            _tokens.currentEndIndex = currToken.itemsInBlock;
                         } else {
-                            conditions.count = 1;
+                            _tokens.currentEndIndex = 1;
                         }
+                        
                         ReportInfo("\n"); // newline
         #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                        ReportInfo(conditions.ToString());
+                        ReportInfo(_tokens.SliceToString());
+                        
         #endif
                         ReportInfo("\n"); // newline
-                        conditions.currentEndIndex = conditions.count;
-                        if (Expressions::ValidateExpression(conditions, ExpressionContext::IfCondition) == false) anyError = true;
+                        //conditions.currentEndIndex = conditions.count;
+                        if (false == Expressions::ValidateExpression(_tokens)) anyError = true;
 
                     }
+                    _tokens.currentEndIndex = _tokens.count;
+                    _tokens.currIndex = 0;
                     return anyError == false;
                 }
                 bool EnsureBlocksContainItems(ScriptTokens& _tokens) {

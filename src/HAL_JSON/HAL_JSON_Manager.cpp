@@ -27,16 +27,16 @@ namespace HAL_JSON {
 
     Device** Manager::devices = nullptr;
     int Manager::deviceCount = 0;
-    int Manager::reloadVersion = 0;
+    //int Manager::reloadVersion = 0;
     bool Manager::reloadQueued = false;
     
     int Manager::DeviceCount() {
         return deviceCount;
     }
 
-    int* Manager::ReloadVersionPtr() {
+   /* int* Manager::ReloadVersionPtr() {
         return &reloadVersion;
-    }
+    }*/
 
     bool Manager::setupMgr() {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -175,49 +175,6 @@ namespace HAL_JSON {
     Device* Manager::findDevice(UIDPath& path) {
         path.reset(); // ensure to be at root level
         return Device::findInArray(devices, deviceCount, path, nullptr);
-
-        /*
-        if (path.empty()) {
-            GlobalLogger.Error(F("findDevice failed: empty path"));
-            return nullptr;
-        }
-        if (!devices || deviceCount == 0) {
-            GlobalLogger.Error(F("findDevice failed: no devices"));
-            return nullptr;
-        }
-
-        HAL_UID rootUID = path.resetAndGetFirst();
-
-        Device* indirectMatch = nullptr;
-
-        for (int i=0;i<deviceCount;i++) {
-            Device* device = devices[i];
-            if (device == nullptr) continue;
-
-            if (device->uid == rootUID) {
-                //Serial.println(F("device->uid == rootUID"));
-				if ((device->uidMaxLength == 1) || (path.count() == 1))
-					return device; // direct match allways return valid device
-				else
-				{
-					// If a device matched the rootUID but couldn't directly resolve the full path,
-                    // attempt an indirect lookup via the matched device.
-                    indirectMatch = device->findDevice(path); // indirect match can return nullptr
-                    break; // No need to continue — rootUID match is unique
-				}
-			}
-            else if (device->uid == 0) { // this will only happen on devices where uidMaxLenght>1
-                //Serial.println(F("device->uid == 0"));
-				Device* dev = device->findDevice(path);
-				if (dev != nullptr) return dev; // match allways return valid device
-                rootUID = path.resetAndGetFirst();
-			}
-        }
-        if (indirectMatch != nullptr) {
-            return indirectMatch;
-        }
-        GlobalLogger.Error(F("could not find device: "),path.ToString().c_str());
-        return nullptr;*/
     }
 
     HALOperationResult Manager::read(const HALReadRequest &req) {
@@ -316,7 +273,7 @@ namespace HAL_JSON {
             //GlobalLogger.Error(F("ParseJSON(jsonItems) fail"));
             //Serial.println("");
         }
-        if (parseOk == true) reloadVersion++;
+        //if (parseOk == true) reloadVersion++;
 
         return parseOk;
     }

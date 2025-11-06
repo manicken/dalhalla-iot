@@ -26,7 +26,7 @@
 #include <Arduino.h>
 #include "../../HAL_JSON_Device.h" // HALOperationResult
 #include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
-#include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
+#include "HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
 #include "../../HAL_JSON_CachedDeviceAccess.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
@@ -63,6 +63,7 @@ namespace HAL_JSON {
             
 
             static HALOperationResult Assign_Handler(void* context);
+            static HALOperationResult Exec_Handler(void* context);
 /*            static HALOperationResult AddAndAssign_Handler(void* context);
             static HALOperationResult SubtractAndAssign_Handler(void* context);
             static HALOperationResult MultiplyAndAssign_Handler(void* context);

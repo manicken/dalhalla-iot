@@ -23,6 +23,8 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"
 #include "../HAL_JSON_SCRIPT_ENGINE_Reports.h"
+//#include "../Runtime/HAL_JSON_SCRIPT_ENGINE_CalcRPN.h"
+#include "../Runtime/HAL_JSON_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
@@ -33,7 +35,7 @@ namespace HAL_JSON {
                                                      ExpTokenType::CompareGreaterThanOrEqual, ExpTokenType::CompareLessThanOrEqual,
                                                      ExpTokenType::CompareGreaterThan, ExpTokenType::CompareLessThan, 
                                                      ExpTokenType::NotSet};
-
+        
         ExpressionTokens* Expressions::rpnOutputStack = nullptr;
         int Expressions::rpnOutputStackNeededSize = 0;
         ExpressionToken* Expressions::opStack = nullptr;
@@ -160,48 +162,96 @@ namespace HAL_JSON {
                 c == ':' || 
                 c == '.' || 
                 c == ',' || 
-                c == '#';
+                c == '#' ||
+                c == '[' || c == ']';
         }
 
-        void Expressions::CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount, ExpressionContext exprContext) {
-            operatorCount = 0;
-            operandCount = 0;
-            leftParenthesisCount  = 0;
-            rightParenthesisCount = 0;
-  
-            bool inOperand = false;
+        void Expressions::ValidateStructure(ScriptTokens& tokens, bool& anyError)
+        {
+            int leftParen = 0;
+            int rightParen = 0;
+            int leftBracket = 0;
+            int rightBracket = 0;
+            bool prevWasOperator = false; // expression can’t start with an operator
 
-            for (int cti=0;cti<tokens.count;cti++) { // cti = currTokenIndex
-                ScriptToken& token = tokens.items[cti];
-                if (token.type == ScriptTokenType::Ignore) continue;
-                const char* effectiveStart = nullptr;
-                if (cti == 0 && tokens.firstTokenStartOffset != nullptr) {
-                    effectiveStart  = tokens.firstTokenStartOffset;
-                    //std::cout << "firstTokenStartOffset was true\n"; 
-                } else {
-                    effectiveStart  = token.start;
-                }
-                const char* tokenEnd = token.end;
-                for (const char* p = effectiveStart; p < tokenEnd; p++) {
-                    if (IsDoubleOperator(p)/* && exprContext == ExpressionContext::IfCondition*/) {
-                        p++;
-                        operatorCount++;
-                        inOperand = false;
+            for (int i = tokens.currIndex; i < tokens.currentEndIndex; i++) {
+                ScriptToken& token = tokens.items[i];
+                if (token.type == ScriptTokenType::Ignore)
+                    continue;
+
+                const char* s = token.start;
+                const char* e = token.end;
+
+                for (const char* p = s; p < e; p++) {
+                    char ch = *p;
+
+                    // --- Parentheses ---
+                    if (ch == '(') {
+                        leftParen++;
+                        prevWasOperator = true;
                     }
-                    else if (IsSingleOperator(*p)) {
-                        operatorCount++;
-                        inOperand = false;
-                    } else if (*p == '(') {
-                        leftParenthesisCount++;
-                        inOperand = false;
-                    } else if (*p == ')') {
-                        rightParenthesisCount++;
-                        inOperand = false;
-                    } else if (!inOperand) {
-                        operandCount++;
-                        inOperand = true;
+                    else if (ch == ')') {
+                        rightParen++;
+                        if (rightParen > leftParen) {
+                            ReportError("unexpected ')' without matching '('");
+                            anyError = true;
+                        }
+                        prevWasOperator = false;
+                    }
+
+                    // --- Brackets for [] accessor ---
+                    else if (ch == '[') {
+                        if (p == token.start) {
+                            ReportError("'[' cannot start an expression");
+                            anyError = true;
+                        } else if (!token.ContainsPtr(p - 1)) {
+                            ReportError("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)");
+                            anyError = true;
+                        }
+                        leftBracket++;
+                        prevWasOperator = true; // new subexpression starts here
+                    }
+                    else if (ch == ']') {
+                        rightBracket++;
+                        if (rightBracket > leftBracket) {
+                            ReportError("unexpected ']' without matching '['");
+                            anyError = true;
+                        }
+                        prevWasOperator = false;
+                    }
+
+                    // --- Operators ---
+                    else if (IsDoubleOperator(p)) {
+                        if (prevWasOperator) {
+                            ReportError("double operator detected");
+                            anyError = true;
+                        }
+                        p++; // skip next char since it's part of a double op
+                        prevWasOperator = true;
+                    }
+                    else if (IsSingleOperator(ch)) {
+                        if (prevWasOperator) {
+                            ReportError("double operator detected");
+                            anyError = true;
+                        }
+                        prevWasOperator = true;
+                    }
+
+                    // --- Operands, variable names, numbers, etc. ---
+                    else {
+                        prevWasOperator = false;
                     }
                 }
+            }
+
+            // --- Final structural checks ---
+            if (leftParen != rightParen) {
+                ReportError("mismatched parentheses detected");
+                anyError = true;
+            }
+            if (leftBracket != rightBracket) {
+                ReportError("mismatched brackets detected");
+                anyError = true;
             }
         }
 
@@ -217,7 +267,37 @@ namespace HAL_JSON {
             return nullptr;
         }
 
-        bool Expressions::ValidateExpression(ScriptTokens& tokens, ExpressionContext exprContext) {
+        bool Expressions::IsExpressionEmpty(const ScriptTokens& tokens) {
+            // Check for null pointer or invalid structure
+            if (tokens.items == nullptr || tokens.count <= 0) {
+                ReportError("ExpressionEmpty: tokens are null or count == 0");
+                return true; // Consider null/zero count as empty
+            }
+
+            // Range sanity check
+            if (tokens.currIndex >= tokens.count ||
+                tokens.currentEndIndex > tokens.count ||
+                tokens.currIndex >= tokens.currentEndIndex) {
+                ReportError("ExpressionEmpty: invalid range");
+                return true;
+            }
+            int startIndex = tokens.currIndex;
+
+            // Check if effective range has any non-ignore tokens
+            for (int i = startIndex; i < tokens.currentEndIndex; ++i) {
+                const ScriptToken& tok = tokens.items[i];
+                if (tok.type == ScriptTokenType::Ignore) continue;
+                ZeroCopyString zcStr = tok;
+                if (i == startIndex && tokens.firstTokenStartOffset != nullptr) {
+                    zcStr.start = tokens.firstTokenStartOffset;
+                }
+                if (zcStr.NotEmpty()) return false;
+            }
+
+            return true; // No valid tokens found — expression is empty
+        }
+
+        bool Expressions::ValidateExpression(ScriptTokens& tokens) {
             
             bool anyError = false;
 
@@ -236,42 +316,21 @@ namespace HAL_JSON {
             if (tokens.firstTokenStartOffset != nullptr)
                 firstTokenStart = tokens.firstTokenStartOffset;
             else
-                firstTokenStart = tokens.items[0].start;
+                firstTokenStart = tokens.Current().start;
 
-            if(IsDoubleOperator(firstTokenStart)/* && exprContext == ExpressionContext::IfCondition*/) { // this only checks the two first characters in the Expression
+            if(IsDoubleOperator(firstTokenStart) || IsSingleOperator(*firstTokenStart)) { // this only checks the two first characters in the Expression
                 ReportError("expr. cannot start with a operator");
                 anyError = true;
             }
-            if(IsSingleOperator(*firstTokenStart)) {
-                ReportError("expr. cannot start with a operator");
-                anyError = true;
-            }
-
-            int operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount;
-            CountOperatorsAndOperands(tokens, operatorCount, operandCount, leftParenthesisCount, rightParenthesisCount, exprContext);
-
-            if (operatorCount >= operandCount) {
-                ReportError("double operator(s) detected");
-                anyError = true;
-            } else if (operatorCount != operandCount - 1) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                ReportInfo("operatorCount:" + std::to_string(operatorCount) + ", operandCount:" + std::to_string(operandCount) + "\n");
-#endif
-                ReportError("operator(s) missing before/after parenthesis");
-                anyError = true;
-            }
-            if (leftParenthesisCount != rightParenthesisCount) {
-                ReportError("mismatch parenthesis detected");
-                anyError = true;
-            }
-
-            /*ReportInfo("operatorCount:" + std::to_string(operatorCount) +
-                    ", operandCount:" + std::to_string(operandCount) +
-                    ", leftParenthesisCount:" + std::to_string(leftParenthesisCount));
-*/
+            printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
+            /*for (int i=tokens.currIndex;i<tokens.currentEndIndex;i++) {
+                printf("%s\n",tokens.items[i].ToString().c_str());
+            }*/
+            
+            ValidateStructure(tokens, anyError);
+            
             if (anyError) return false;
 
-            //int operandIndex = 0;
             bool inOperand = false;
             const char* p = nullptr;
             const char* operandStart = nullptr;
@@ -287,8 +346,6 @@ namespace HAL_JSON {
             for (int cti = startIndex; cti < endIndex; ++cti) {
                 ScriptToken& token = tokens.items[cti];
                 if (token.type == ScriptTokenType::Ignore) continue;
-                //int a=0;
-                //int b = 5/a; // will introduce a crash
 
                 const char* effectiveStart  = nullptr;
                 if (cti == startIndex && tokens.firstTokenStartOffset != nullptr) {
@@ -305,7 +362,7 @@ namespace HAL_JSON {
 #endif
                 const char* tokenEnd = token.end;
                 for (p = effectiveStart ; p < tokenEnd; ++p) {
-                    if (IsDoubleOperator(p) /*&& exprContext == ExpressionContext::IfCondition*/) {
+                    if (IsDoubleOperator(p)) {
                         if (inOperand) {
                             operandEnd = p;
                             ScriptToken operand(operandStart, operandEnd);
@@ -347,17 +404,60 @@ namespace HAL_JSON {
             return !anyError;
         }
 
-        void Expressions::ValidateOperand(const ScriptToken& operandToken, bool& anyError, ValidateOperandMode mode) {
-            //bool operandIsVariable = OperandIsVariable(operandToken);
+        /**
+         * Parses an operand token into device/function information.
+         * Returns false on serious parsing errors.
+         */
+        OperandTargetInfoResult Expressions::ParseOperandTarget(const ScriptToken& operandToken, bool& anyError, OperandTargetInfo& outInfo) {
+
+
+            if (operandToken.ValidNumber()) {
+                return OperandTargetInfoResult::OperandIsConst;
+            }
+
+            const char* invalidChar = ValidOperandVariableName(operandToken);
+            if (invalidChar) {
+                std::string msg = "Invalid character <";
+                msg += (*invalidChar);
+                msg += "> (";
+                msg += std::to_string(*invalidChar);
+                msg += ") in operand: ";
+                msg += operandToken.ToString();
+                operandToken.ReportTokenWarning(msg.c_str());
+                anyError = true;
+                // this will actually result in a device not found error
+                // best to report both to notify the user some extra info
+            }
+
+            ZeroCopyString varOperand = operandToken;
+            ZeroCopyString funcName = varOperand;
+            varOperand = funcName.SplitOffHead('#');
+            outInfo.funcName = funcName;
+            //varOperand = outInfo.funcName
+
+            const char* bracketPos = varOperand.FindChar('[');
+            if (bracketPos) {
+                // Only support one token inside brackets for now
+                if (*(varOperand.end-1) != ']' ) { // actually not needed as ValidateStructure do it beforehand
+                    anyError = true;
+                    operandToken.ReportTokenError("bracket operator missing closing ]");
+                }
+                ScriptToken bracketVarOperand(bracketPos+1, varOperand.end-1);
+                ValidateOperand(bracketVarOperand, anyError, ValidateOperandMode::Read);
+                outInfo.isBracketAccess = true;
+                varOperand.end = bracketPos;
+            }
+
 #if defined(HAL_JSON_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
             std::string msg;
             //if (OperandIsVariable(operandToken)) {
             if (operandToken.ValidNumber() == false) {
+                //ZeroCopyString funcName = operandToken;
+                //ZeroCopyString base = funcName.SplitOffHead('#');
+                
                 msg = "Variable: Name= ";
-                ZeroCopyString funcName = operandToken;
-                ZeroCopyString base = funcName.SplitOffHead('#');
-                msg += base.ToString();
-                if (funcName.Length() != 0) {
+                msg += varOperand.ToString();
+                if (funcName.NotEmpty()) {
                     msg += ", funcName= ";
                     msg += funcName.ToString();
                 }
@@ -367,53 +467,82 @@ namespace HAL_JSON {
             }
             operandToken.ReportTokenInfo(msg.c_str());
 #endif
-            // return early if not a operand variable
-            //if (OperandIsVariable(operandToken) == false)
-            if (operandToken.ValidNumber()) return;
-                return;
 
-            const char* currChar = ValidOperandVariableName(operandToken);
-            if (currChar /*&& *currChar != '\0'*/) {
-                std::string msg = "found invalid character <" + std::to_string(*currChar) +
-                                "> in operand: " + operandToken.ToString();
-                operandToken.ReportTokenWarning(msg.c_str());
-                // continue validation but note the error
-            }
-
-            ZeroCopyString varOperand = operandToken;
-            ZeroCopyString funcName = varOperand;
-            varOperand = funcName.SplitOffHead('#');
-
-            if (varOperand.Length() > HAL_UID::Size) {
-                std::string msg = varOperand.ToString() + " length > " + std::to_string(HAL_UID::Size);
-                
-                operandToken.ReportTokenError("Operand name too long: ", msg.c_str());
+            if (UIDPath::Validate(varOperand) == false) {
+                operandToken.ReportTokenError("Operand name invalid");
                 anyError = true;
             }
 
             UIDPath path(varOperand);
-            Device* device = Manager::findDevice(path);
-            if (!device) {
-                std::string deviceName = varOperand.ToString();
-                operandToken.ReportTokenError("could not find the device: ", deviceName.c_str());
+            outInfo.device = Manager::findDevice(path);
+            if (!outInfo.device) {
+                operandToken.ReportTokenError("Could not find device: ", varOperand.ToString().c_str());
                 anyError = true;
+                return OperandTargetInfoResult::DeviceNotFound;
+            }
+            return OperandTargetInfoResult::Success;
+        }
+
+        void Expressions::ValidateOperand(const ScriptToken& operandToken, bool& anyError, ValidateOperandMode mode) {
+            
+            OperandTargetInfo opti;
+            OperandTargetInfoResult res = ParseOperandTarget(operandToken, anyError, opti);
+            if (res != OperandTargetInfoResult::Success) return;
+            Device* device = opti.device;
+            ZeroCopyString funcName = opti.funcName;
+
+            if (opti.isBracketAccess) {
+                if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
+                    HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
+                    if (funcName.NotEmpty()) {
+                        if (device->GetBracketOpRead_Function(funcName) == nullptr) {
+                            operandToken.ReportTokenError("GetBracketOpRead_Function not found: ", funcName.ToString().c_str());
+                            anyError = true;
+                        }
+                    } else {
+                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halValue;
+                        readResult = device->read(halBracketSubscriptValue, halValue);
+                        if (readResult != HALOperationResult::Success) {
+                            operandToken.ReportTokenError(HALOperationResultToString(readResult), ": bracket op read");
+                            anyError = true;
+                        }
+                    }
+                }
+                if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
+                    HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
+                    if (funcName.NotEmpty()) {
+                        if (device->GetBracketOpWrite_Function(funcName) == nullptr) {
+                            operandToken.ReportTokenError("GetBracketOpWrite_Function not found: ", funcName.ToString().c_str());
+                            anyError = true;
+                        }
+                    } else {
+                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halValue(HALValue::Type::TEST); // unset type
+                        writeResult = device->write(halBracketSubscriptValue, halValue);
+                        if (writeResult != HALOperationResult::Success) {
+                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": bracket op write");
+                            anyError = true;
+                        }
+                    }
+                }
                 return;
             }
+
+            if (mode == ValidateOperandMode::Exec) {
+                if (device->GetExec_Function(funcName) == nullptr) {
+                    operandToken.ReportTokenError("GetExec_Function not found: ", funcName.ToString().c_str());
+                    anyError = true;
+                }
+                return;
+            }
+
             if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
-                if (funcName.Length() != 0) {
-                    HALValue halValue;
-                    HALReadValueByCmd readValueByCmd(halValue, funcName);
-                    readResult = device->read(readValueByCmd);
-                    if (readResult != HALOperationResult::Success) {
+                if (funcName.NotEmpty()) {
+                    if (device->GetReadToHALValue_Function(funcName) == nullptr) {
+                        operandToken.ReportTokenError("GetReadToHALValue_Function not found: ", funcName.ToString().c_str());
                         anyError = true;
-                        if (readResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": " + funcName.ToString();
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), funcNameStr.c_str());
-                        } else {
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), ": read");
-                        }
-                        
                     }
                 } else {
                     HALValue halValue;
@@ -426,22 +555,14 @@ namespace HAL_JSON {
             }
             if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
-                if (funcName.Length() != 0) {
-                    HALValue halValue;
-                    HALWriteValueByCmd writeValueByCmd(halValue, funcName);
-                    writeResult = device->write(writeValueByCmd);
-                    if (writeResult != HALOperationResult::Success) {
+                if (funcName.NotEmpty()) {
+                    if (device->GetWriteFromHALValue_Function(funcName) == nullptr) {
+                        operandToken.ReportTokenError("GetWriteFromHALValue_Function not found: ", funcName.ToString().c_str());
                         anyError = true;
-                        if (writeResult == HALOperationResult::UnsupportedCommand) {
-                            std::string funcNameStr = ": " + funcName.ToString();
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), funcNameStr.c_str());
-                        } else {
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");
-                        }
-                        
                     }
                 } else {
-                    HALValue halValue;
+                    HALValue halValue(HALValue::Type::TEST);
+                    printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {
                         operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");

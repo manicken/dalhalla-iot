@@ -43,14 +43,20 @@ namespace HAL_JSON {
 
     HALOperationResult Device::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::write(const HALValue& val) { return HALOperationResult::UnsupportedOperation; };
+    HALOperationResult Device::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Device::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Device::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::exec(ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Device::exec(ZeroCopyString& zcStr) { return HALOperationResult::UnsupportedOperation; }
     Device::ReadToHALValue_FuncType Device::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::ReadToHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::WriteHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::Exec_FuncType Device::GetExec_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+
+    Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 

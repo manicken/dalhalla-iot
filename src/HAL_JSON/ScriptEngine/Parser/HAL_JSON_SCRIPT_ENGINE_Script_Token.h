@@ -158,6 +158,7 @@ namespace HAL_JSON {
             ScriptTokens& operator=(ScriptTokens&& other) = delete; // no move assignment
             std::string ToString();
             std::string SliceToString();
+            int SliceTokenCount();
         };
 
         std::string PrintScriptTokens(ScriptTokens& tokens, int subTokenIndexOffset = 0);

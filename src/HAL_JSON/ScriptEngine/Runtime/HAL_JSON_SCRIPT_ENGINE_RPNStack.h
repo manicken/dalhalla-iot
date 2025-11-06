@@ -26,6 +26,7 @@
 #include <Arduino.h>
 #include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
+#include "../../HAL_JSON_Value.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {
@@ -58,6 +59,9 @@ namespace HAL_JSON {
 
         };
         
+
+        /** used for all value calculations */ 
+        extern RPNStack<HALValue> halValueStack;
         
     }
 }

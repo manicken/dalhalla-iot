@@ -36,10 +36,7 @@ namespace HAL_JSON {
 
         const char* sourceStr = GetAsConstChar(jsonObj,"source");
         if (sourceStr != nullptr) {
-            ZeroCopyString zcFuncName(sourceStr);
-            ZeroCopyString zcSource = zcFuncName.SplitOffHead('#');
-             
-            cdaSource = new CachedDeviceAccess(zcSource, zcFuncName);
+            cdaSource = new CachedDeviceAccess(sourceStr);
         }
         else
             cdaSource = nullptr;
@@ -64,6 +61,8 @@ namespace HAL_JSON {
     }
 
     HALOperationResult Display_SSD1306_Element::write(const HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         this->val = val;
         return HALOperationResult::Success;
     }

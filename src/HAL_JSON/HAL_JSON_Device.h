@@ -53,7 +53,12 @@ namespace HAL_JSON {
         const char* type;
         bool loopTaskDone = false;
     public:
-        using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue&);
+        using Exec_FuncType = HALOperationResult (*)(Device*);
+        using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue& outValue);
+        using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue& value);
+        using BracketOpRead_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, HALValue& outValue);
+        using BracketOpWrite_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, const HALValue& value);
+
         Device(UIDPathMaxLength uidMaxLength, const char* type);
         virtual ~Device();
 
@@ -62,13 +67,20 @@ namespace HAL_JSON {
         bool LoopTaskDone();
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);
+        virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
+        virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
         virtual HALOperationResult read(const HALReadStringRequestValue& val);
         virtual HALOperationResult write(const HALWriteStringRequestValue& val);
         virtual HALOperationResult read(const HALReadValueByCmd& val);
         virtual HALOperationResult write(const HALWriteValueByCmd& val);
         virtual ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName);
-        virtual ReadToHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
+        virtual WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
         virtual HALValue* GetValueDirectAccessPtr();
+
+        virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
+        virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
+        
         /** called regulary from the main loop */
         virtual void loop();
         /** called when all hal devices has been loaded */
@@ -78,7 +90,7 @@ namespace HAL_JSON {
 
         /** Executes a device action that requires no parameters. */
         virtual HALOperationResult exec();
-        /** Executes a device action with a provided command string. */
+        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
         virtual HALOperationResult exec(ZeroCopyString& cmd);
 
         virtual String ToString();

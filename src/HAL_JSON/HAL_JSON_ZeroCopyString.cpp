@@ -68,6 +68,9 @@ namespace HAL_JSON {
     const char* ZeroCopyString::FindChar(char ch) const {
         return static_cast<const char*>(memchr(start, ch, Length()));
     }
+    bool ZeroCopyString::ContainsChar(char ch) const {
+        return static_cast<const char*>(memchr(start, ch, Length())) != nullptr;
+    }
     const char* ZeroCopyString::FindChar(char ch, const char* _start) const {
         // Make sure _start is inside [start, end)
         if (( _start == nullptr ) || ( _start < start ) || ( _start >= end )) return nullptr;

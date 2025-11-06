@@ -89,7 +89,7 @@ namespace HAL_JSON {
         ws2812fx->setSpeed(fxSpeed);
         ws2812fx->start();
     }
-    HALOperationResult WS2812::writeBrightness(Device* context, HALValue& val) {
+    HALOperationResult WS2812::writeBrightness(Device* context, const HALValue& val) {
         //printf("\nWS2812::writeBrightness\n");
         WS2812* ws2812fx = static_cast<WS2812*>(context);
         
@@ -97,7 +97,7 @@ namespace HAL_JSON {
         
         return HALOperationResult::Success;
     }
-    HALOperationResult WS2812::writeColor(Device* context, HALValue& val) {
+    HALOperationResult WS2812::writeColor(Device* context, const HALValue& val) {
         //printf("\nWS2812::writeColor\n");
         WS2812* ws2812fx = static_cast<WS2812*>(context);
         ws2812fx->ws2812fx->pause();
@@ -106,7 +106,7 @@ namespace HAL_JSON {
         return HALOperationResult::Success;
     }
 
-    Device::ReadToHALValue_FuncType WS2812::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) {
+    Device::WriteHALValue_FuncType WS2812::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) {
         if (zcFuncName == "brightness")
             return WS2812::writeBrightness;
         else if (zcFuncName == "color")
@@ -122,6 +122,8 @@ namespace HAL_JSON {
             ws2812fx->setMode(val.value.asUInt());
         else if (val.cmd == "fxspeed")
             ws2812fx->setSpeed(val.value.asUInt());
+        else if (val.cmd == "color")
+            WS2812::writeColor(this, val.value);
         else
             return HALOperationResult::UnsupportedCommand;
 
@@ -171,6 +173,12 @@ namespace HAL_JSON {
                 //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d, w=%d\n",index,r,g,b,w);
             }
             ws2812fx->execShow();
+        }
+        else if (cmd == "color") {
+            uint32_t halval = 0;
+            zcStr.ConvertTo_uint32(halval);
+            const HALValue cVal = halval;
+            WS2812::writeColor(this, cVal);
         }
         else if (cmd == "pause") {
             ws2812fx->pause();

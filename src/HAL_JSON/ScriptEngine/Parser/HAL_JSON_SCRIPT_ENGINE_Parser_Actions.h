@@ -29,12 +29,14 @@ namespace HAL_JSON {
     namespace ScriptEngine {
         namespace Parser {
             namespace Actions {
+                // TODO make the fields/function static to comply better with MISRA
                 struct AssignmentParts {
-                    ScriptToken lhs;
-                    char op;      // assignment operators first char is enough (e.g. "=", "+=", "<<=")
-                    ScriptTokens rhs;
+                    static ScriptToken lhs;
+                    /** assignment operators first char is enough (e.g. "=", "+=", "<<=") */
+                    static char op;
+                    static ScriptTokens rhs;
 
-                    inline void Clear() {
+                    static inline void Clear() {
                         lhs = {};
                         rhs.count = 0;
                         rhs.items = nullptr;
@@ -52,8 +54,10 @@ namespace HAL_JSON {
                 
                 bool VerifyActionBlocks(ScriptTokens& tokens);
 
-                /** used by ActionStatement and Parser_Tests */
-                AssignmentParts* ExtractAssignmentParts(ScriptTokens& _tokens);
+                /** 
+                 * used by VerifyActionBlocks, ActionStatement and Parser_Tests
+                 * result is in HAL_JSON::ScriptEngine::Parser::Actions::AssignmentParts */
+                bool ExtractAssignmentParts(ScriptTokens& _tokens);
             }
         }
     }

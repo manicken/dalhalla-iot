@@ -52,25 +52,46 @@ namespace HAL_JSON {
             Assignment
         };
         enum class ValidateOperandMode {
+            UnSet,
             Read,
             Write,
-            ReadWrite
+            ReadWrite,
+            Exec
+        };
+
+        enum class OperandTargetInfoResult {
+            Success,
+            OperandIsConst,
+           // OperandInvalidCharacter,
+            DeviceNotFound
+            
+        };
+
+        struct OperandTargetInfo {
+            ZeroCopyString funcName;
+            /** used only on bracket [] operation statements */
+            bool isBracketAccess = false;
+            Device* device = nullptr;
         };
 
         class Expressions {
         private:
             static const char* SingleOperatorList;
             static const char* DoubleOperatorList;
-
+            /** used when reading script */
             static ExpressionTokens* rpnOutputStack;
+            /** used when reading script */
             static int rpnOutputStackNeededSize;
 
+            /** used when reading script */
             static ExpressionToken* opStack;
+            /** used when reading script */
             static int opStackSizeNeededSize;
+            /** used when reading script */
             static int opStackSize;
 
             /** used both for development test and as temporary structure for the final exec output */
-            static LogicRPNNode* logicRPNNodeStackPool; // the fixed array o
+            static LogicRPNNode* logicRPNNodeStackPool; // using a array to minimize heap fragmentation
             static LogicRPNNode** logicRPNNodeStack;// = new LogicRPNNode*[stackMaxSize]();
             
             /** development/release */
@@ -137,13 +158,15 @@ namespace HAL_JSON {
             
         public:
             static const char* ValidOperandVariableName(const ScriptToken& operand);
-            static void CountOperatorsAndOperands(ScriptTokens& tokens, int& operatorCount, int& operandCount, int& leftParenthesisCount, int& rightParenthesisCount, ExpressionContext exprContext);
+            static void ValidateStructure(ScriptTokens& tokens, bool& anyError);
+            static OperandTargetInfoResult ParseOperandTarget(const ScriptToken& operandToken, bool& anyError, OperandTargetInfo& outInfo);
             static void ValidateOperand(const ScriptToken& operand, bool& anyError, ValidateOperandMode mode = ValidateOperandMode::Read);
             //static bool OperandIsVariable(const Token& operand);
             static bool IsSingleOperator(char c);
             static bool IsDoubleOperator(const char* c);
             static bool IsValidOperandChar(char c);
-            static bool ValidateExpression(ScriptTokens& tokens, ExpressionContext exprContext);
+            static bool IsExpressionEmpty(const ScriptTokens& tokens);
+            static bool ValidateExpression(ScriptTokens& tokens);
 
             static std::string CalcExpressionToString(const LogicRPNNode* node);
             static std::string CalcExpressionToString(int startIndex, int endIndex);

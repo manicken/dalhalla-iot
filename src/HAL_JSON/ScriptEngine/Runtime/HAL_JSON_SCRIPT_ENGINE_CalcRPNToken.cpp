@@ -22,6 +22,9 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
+#include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
+#include "../../HAL_JSON_CachedDeviceRead.h"
+#include "../../HAL_JSON_Device.h"
 
 #define HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 
@@ -29,116 +32,111 @@
 
 namespace HAL_JSON {
     namespace ScriptEngine {
-        RPNStack<HALValue> halValueStack;
 
-        CalcRPNToken::CalcRPNToken() { }
+        void CalcRPNToken::Set(ExpressionToken& expToken) {
+            if (expToken.type == ExpTokenType::VarOperand) {
+                SetAsCachedDeviceAccess(expToken);
+            } else if (expToken.type == ExpTokenType::ConstValOperand) {
+                SetAsConstValue(expToken);
+            } else {
+                handler = CalcRPNToken::GetRPN_OperatorFunction(expToken.type);
+                deleter = nullptr; // not used here
+            }
+        }
+
+        void CalcRPNToken::SetAsCachedDeviceAccess(ExpressionToken& expToken)
+        {
+            if (expToken.ContainsChar('[')) {
+                CachedDeviceRead* cdr = new CachedDeviceRead(expToken);
+
+                // Assign context, handler, and deleter
+                context = cdr;
+                handler = &CalcRPNToken::GetAndPushVariableValue_Handler;
+                deleter = DeleteAs<CachedDeviceRead>;
+                
+            } else if (expToken.ContainsChar('#')) {
+                ZeroCopyString funcName = expToken;
+                ZeroCopyString varOperand = funcName.SplitOffHead('#');
+                UIDPath uidPath(varOperand);
+                Device* device = Manager::findDevice(uidPath);
+
+                if (device == nullptr) { // failsafe
+                    printf("@CalcRPNToken - CachedDeviceAccess - device not found:>>%s<<\n", uidPath.ToString().c_str());
+                    handler = &DummyHandler;
+                    return;
+                }
+                // only a funcname call
+                ReadToHALValue_Function_Context* ctx = new ReadToHALValue_Function_Context();
+                ctx->device = device;
+                ctx->handler = device->GetReadToHALValue_Function(funcName);
+                // Assign context, handler, and deleter
+                context = ctx;
+                deleter = DeleteAs<ReadToHALValue_Function_Context>;
+                handler = &CalcRPNToken::GetAndPushReadToHALValue_Function_Context_Handler;
+            } else {
+                deleter = nullptr; // the context is allways non owning
+                printf("\nCalcRPNToken - non bracket non funcname accessor\n");
+                UIDPath uidPath(expToken);
+                Device* device = Manager::findDevice(uidPath);
+
+                if (device == nullptr) {  // failsafe
+                    printf("\nCalcRPNToken - @non bracket non funcname accessor - device not found:>>%s<<\n", uidPath.ToString().c_str());
+                    handler = &DummyHandler;
+                    return;
+                }
+                HALValue* directPtr = device->GetValueDirectAccessPtr();
+                if (directPtr != nullptr) {
+                    printf("\nCalcRPNToken - Did use direct access ptr%s\n", expToken.ToString().c_str());
+                    context = directPtr;
+                    handler = &CalcRPNToken::GetAndPushValuePtr_Handler;
+                } else {
+                    context = device;
+                    handler = &CalcRPNToken::GetAndPushDeviceReadVariableValue_Handler;
+                }
+            }
+        }
+
+        void CalcRPNToken::SetAsConstValue(ExpressionToken& expToken)
+        {
+            NumberResult constNumber = expToken.ConvertStringToNumber();
+            HALValue* value = new HALValue();
+            if (constNumber.type == NumberType::FLOAT)
+                value->set(constNumber.f32);
+            else if (constNumber.type == NumberType::INT32)
+                value->set(constNumber.i32);
+            else if (constNumber.type == NumberType::UINT32)
+                value->set(constNumber.u32);
+            else { // should never happend
+                std::string msg = expToken.ToString();
+                GlobalLogger.Error(F("fail of converting constant default is set to one"), msg.c_str()); // remainder the string is copied internally here
+                value->set(1); // default one so any divide by zero would not happend
+            }
+
+            context = value;
+            handler = &CalcRPNToken::GetAndPushValuePtr_Handler;
+            deleter = DeleteAs<HALValue>;
+        }
+
+        HALOperationResult CalcRPNToken::DummyHandler(void* context) {
+            
+            return HALOperationResult::HandlerWasDummy;
+        }
+
+        CalcRPNToken::CalcRPNToken(): context(nullptr), handler(&DummyHandler), deleter(nullptr) { }
         CalcRPNToken::~CalcRPNToken()
         {
-            
             if (deleter) deleter(context);
-        }
-        CalcRPN::CalcRPN(ExpressionTokens* tokens, int startIndex, int endIndex) {
-            calcRPNstr = PrintExpressionTokensOneRow(*tokens, startIndex, endIndex);
-            count = endIndex - startIndex;
-            int tokensCurrCount = tokens->currentCount;
-            //if (count != tokensCurrCount) // this is not really a error here
-            //    printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR count != tokensCurrCount ****************\n");
-#ifdef DEBUG_CALCRPN_EXEC
-            printf("CalcRPN::CalcRPN constr - count:%d, tokensCurrCount:%d, rpn:%s\n", count, tokensCurrCount, PrintExpressionTokensOneRow(*tokens,startIndex, endIndex).c_str());
-#endif
-            items = new CalcRPNToken[count];
-            int calcRPNindex = 0;
-            ExpressionToken* tokenItems = tokens->items;
-            for (int i=startIndex;i<endIndex;i++, calcRPNindex++) {
-                ExpressionToken& expToken = tokenItems[i];
-                CalcRPNToken& calcRPNtoken = items[calcRPNindex];
-                if (expToken.type == ExpTokenType::VarOperand)
-                {
-                    ZeroCopyString varOperand;
-                    ZeroCopyString funcName = expToken;
-                    varOperand = funcName.SplitOffHead('#');
-                    CachedDeviceAccess* cda = new CachedDeviceAccess(varOperand, funcName);
-
-                    calcRPNtoken.context = cda;
-                    calcRPNtoken.handler = &CalcRPNToken::GetAndPushVariableValue_Handler;
-                    calcRPNtoken.deleter = DeleteAs<CachedDeviceAccess>;
-                }
-                else if (expToken.type == ExpTokenType::ConstValOperand)
-                {
-                    NumberResult constNumber = expToken.ConvertStringToNumber();
-                    HALValue* value = new HALValue();
-                    if (constNumber.type == NumberType::FLOAT)
-                        value->set(constNumber.f32);
-                    else if (constNumber.type == NumberType::INT32)
-                        value->set(constNumber.i32);
-                    else if (constNumber.type == NumberType::UINT32)
-                        value->set(constNumber.u32);
-                    else { // should never happend
-                        std::string msg = expToken.ToString();
-                        GlobalLogger.Error(F("fail of converting constant default is set to one"), msg.c_str()); // remainder the string is copied internally here
-                        value->set(1); // default one so any divide by zero would not happend
-                    }
-
-                    calcRPNtoken.context = value;
-                    calcRPNtoken.handler = &CalcRPNToken::GetAndPushConstValue_Handler;
-                    calcRPNtoken.deleter = DeleteAs<HALValue>;
-                }
-                else
-                {
-                    calcRPNtoken.context = nullptr; // not used here
-                    calcRPNtoken.handler = CalcRPNToken::GetRPN_OperatorFunction(expToken.type);
-                    calcRPNtoken.deleter = nullptr; // not used here
-                }
-            }
-        }
-        CalcRPN::~CalcRPN() {
-            //printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!CalcRPN destructor was run\n");
-            delete[] items;
-        }
-        HALOperationResult CalcRPN::DoCalc() {
-#ifdef DEBUG_CALCRPN_EXEC
-            printf("CalcRPN::DoCalc - rpn is:%s", calcRPNstr.c_str());
-#endif
-            int calcRPNcount = count; // deref here for faster access
-            CalcRPNToken* calcItems = items; // deref here for faster access
-            halValueStack.sp = 0; // 'clear' stack before use
-            for (int i=0;i<calcRPNcount;i++) {
-                if (calcItems[i].handler == nullptr) {
-                    printf("CalcRPN::DoCalc - handler was nullptr at index:%d of total:%d, rpn is:%s\n", i, calcRPNcount, calcRPNstr.c_str());
-                    return HALOperationResult::HandlerWasNullPtr;
-                }
-                HALOperationResult res = calcItems[i].handler(calcItems[i].context);
-                if (res != HALOperationResult::Success)
-                    return res;
-            }
-#ifdef DEBUG_CALCRPN_EXEC
-            HALValue val;
-            halValueStack.GetFinalResult(val);
-            if (val.getType() == HALValue::Type::FLOAT)
-                printf(" result: float(%.6f)\n", val.asFloat());
-            else if (val.getType() == HALValue::Type::INT)
-                printf(" result: int(%d)\n", val.asInt());
-            else if (val.getType() == HALValue::Type::UINT)
-                printf(" result: uint:(%u)\n", val.asUInt());
-#endif
-            return HALOperationResult::Success;
+            // avoid dangling pointers
+            deleter = nullptr;
+            context = nullptr;
+            handler = nullptr;
         }
 
-        HALOperationResult CalcRPNToken::GetAndPushVariableValue_Handler(void* context) {
-            CachedDeviceAccess* item = static_cast<CachedDeviceAccess*>(context);
+        HALOperationResult CalcRPNToken::GetAndPushReadToHALValue_Function_Context_Handler(void* context) {
+            ReadToHALValue_Function_Context* cdaItem = static_cast<ReadToHALValue_Function_Context*>(context);
             HALValue value;
-            if (item->valueDirectAccessPtr != nullptr) {
-                value = *(item->valueDirectAccessPtr);
-            }
-            else if (item->readToHalValueFunc != nullptr) {
-                Device* device = item->GetDevice();
-                HALOperationResult result = item->readToHalValueFunc(device, value);
-                if (result != HALOperationResult::Success) return result;
-            } else {
-                Device* device = item->GetDevice();
-                HALOperationResult result = device->read(value);
-                if (result != HALOperationResult::Success) return result;
-            }
+            HALOperationResult result = cdaItem->handler(cdaItem->device, value);
+            if (result != HALOperationResult::Success) return result;
                 
 #ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
             if (halValueStack.sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
@@ -147,259 +145,40 @@ namespace HAL_JSON {
             return HALOperationResult::Success;
         }
 
-        HALOperationResult CalcRPNToken::GetAndPushConstValue_Handler(void* context) {
-            HALValue* item = static_cast<HALValue*>(context);
+        HALOperationResult CalcRPNToken::GetAndPushDeviceReadVariableValue_Handler(void* context) {
+            Device* cdaItem = static_cast<Device*>(context);
+            HALValue value;
+            HALOperationResult result = cdaItem->read(value);
+            if (result != HALOperationResult::Success) return result;
+                
+#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
+            if (halValueStack.sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
+#endif
+            halValueStack.items[halValueStack.sp++] = value;
+            return HALOperationResult::Success;
+        }
+
+        HALOperationResult CalcRPNToken::GetAndPushVariableValue_Handler(void* context) {
+            CachedDeviceRead* cdrItem = static_cast<CachedDeviceRead*>(context);
+            HALValue value;
+            HALOperationResult result = cdrItem->ReadSimple(value);
+            if (result != HALOperationResult::Success) return result;
+                
+#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
+            if (halValueStack.sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
+#endif
+            halValueStack.items[halValueStack.sp++] = value;
+            return HALOperationResult::Success;
+        }
+
+        HALOperationResult CalcRPNToken::GetAndPushValuePtr_Handler(void* context) {
 #ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
             if (halValueStack.sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
 #endif
             //printf("\nsetting constant value:%.6f\n", item->asFloat());
-            halValueStack.items[halValueStack.sp++] = *item;
+            halValueStack.items[halValueStack.sp++] = *(static_cast<HALValue*>(context));
             return HALOperationResult::Success;
         }
-
-
-
-/*
-        HALOperationResult CalcRPNToken::Calc_Addition_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a + b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_Subtract_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a - b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_Multiply_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a * b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_Divide_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            if (b.asInt() == 0) {
-                // Log to GlobalLogger about divide by zero
-                return HALOperationResult::DivideByZero;
-            }
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a / b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_Modulus_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            if (b.asInt() == 0) {
-                // Log to GlobalLogger about divide by zero
-                return HALOperationResult::DivideByZero;
-            }
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a % b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_BitwiseAnd_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a & b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_BitwiseOr_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = a | b;
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_BitwiseExOr_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a ^ b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_BitwiseLeftShift_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a << b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Calc_BitwiseRightShift_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a >> b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-
-        HALOperationResult CalcRPNToken::Compare_NotEqualsTo_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a != b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Compare_EqualsTo_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a == b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Compare_LessThan_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a < b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Compare_GreaterThan_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a > b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Compare_LessThanOrEqual_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a <= b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-        HALOperationResult CalcRPNToken::Compare_GreaterThanOrEqual_Operation_Handler(void* context) {
-            int sp = halValueStack.sp; // micro-optimization - store locally 
-#ifdef HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
-            if (sp < 2) { return HALOperationResult::StackUnderflow; }    // underflow check
-            if (sp >= halValueStack.size){ return HALOperationResult::StackOverflow; }   // overflow check before push
-#endif
-            HALValue* itemPtr = &halValueStack.items[sp];
-            HALValue b = *--itemPtr;
-            HALValue a = *--itemPtr;
-            *itemPtr++ = (a >= b);
-            halValueStack.sp = sp - 1;
-            return HALOperationResult::Success;
-        }
-
-        RPNHandler CalcRPNToken::GetRPN_OperatorFunction(ExpTokenType type) {
-            switch (type) {
-                case ExpTokenType::CompareEqualsTo: return &Compare_EqualsTo_Operation_Handler;
-                case ExpTokenType::CompareNotEqualsTo: return &Compare_NotEqualsTo_Operation_Handler;
-                case ExpTokenType::CompareLessThan: return &Compare_LessThan_Operation_Handler;
-                case ExpTokenType::CompareGreaterThan: return &Compare_GreaterThan_Operation_Handler;
-                case ExpTokenType::CompareLessThanOrEqual: return &Compare_LessThanOrEqual_Operation_Handler;
-                case ExpTokenType::CompareGreaterThanOrEqual: return &Compare_GreaterThanOrEqual_Operation_Handler;
-                case ExpTokenType::CalcPlus: return &Calc_Addition_Operation_Handler;
-                case ExpTokenType::CalcMinus: return &Calc_Subtract_Operation_Handler;
-                case ExpTokenType::CalcMultiply: return &Calc_Multiply_Operation_Handler;
-                case ExpTokenType::CalcDivide: return &Calc_Divide_Operation_Handler;
-                case ExpTokenType::CalcModulus: return &Calc_Modulus_Operation_Handler;
-                case ExpTokenType::CalcBitwiseAnd: return &Calc_BitwiseAnd_Operation_Handler;
-                case ExpTokenType::CalcBitwiseOr: return &Calc_BitwiseOr_Operation_Handler;
-                case ExpTokenType::CalcBitwiseExOr: return &Calc_BitwiseExOr_Operation_Handler;
-                case ExpTokenType::CalcBitwiseLeftShift: return &Calc_BitwiseLeftShift_Operation_Handler;
-                case ExpTokenType::CalcBitwiseRightShift: return &Calc_BitwiseRightShift_Operation_Handler;
-                default: return nullptr; // handled by caller
-            }
-        }*/
 
         RPNHandler CalcRPNToken::GetRPN_OperatorFunction(ExpTokenType type) {
             switch (type) {
@@ -419,7 +198,7 @@ namespace HAL_JSON {
                 case ExpTokenType::CalcBitwiseExOr: return &Operation_Handler<OpBitExOr>;
                 case ExpTokenType::CalcBitwiseLeftShift: return &Operation_Handler<OpBitLshift>;
                 case ExpTokenType::CalcBitwiseRightShift: return &Operation_Handler<OpBitRshift>;
-                default: return nullptr; // handled by caller
+                default: return &DummyHandler;
             }
         }
 
