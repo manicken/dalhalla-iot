@@ -157,6 +157,16 @@ A potential future solution is to convert configuration into **BSON** to allow d
 
 ---
 
+## Webbased WiFi configurator
+
+- Introduces a HTML + JavaScript tool as an alternative to the AP-based web portal.
+- Works in Chromium-based browsers (Edge, Opera, Chrome, etc.).
+- Enables configuration of Wi-Fi settings and credentials via USB-serial connection, without needing to connect to the device's AP.
+- **Log output:** displays messages printed by the device in real-time.
+- **Command input:** allows sending commands directly to the device.
+
+This provides a more flexible option for local setup and testing.
+
 ## Licensing
 
 The project currently uses **GPLv3**, to ensure it remains **fully open-source**.  
