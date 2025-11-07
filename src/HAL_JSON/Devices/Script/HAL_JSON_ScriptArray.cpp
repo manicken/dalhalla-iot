@@ -27,11 +27,35 @@ namespace HAL_JSON {
     
     ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
-
+        const JsonArray jsonArray = jsonObj[HAL_JSON_KEYNAME_ITEMS].as<JsonArray>();
+        int arraySize = jsonArray.size();
+        valueCount = arraySize;
+        values = new HALValue[arraySize];
+        for (int i=0;i<arraySize;i++) {
+            const JsonVariant& item = jsonArray[i];
+            if (item.is<uint32_t>())
+                values[i] = item.as<uint32_t>();
+            else if (item.is<int32_t>())
+                values[i] = item.as<int32_t>();
+            else
+                values[i] = item.as<float>();
+        }
+        if (jsonObj.containsKey("readonly")) {
+            readOnly = jsonObj["readonly"];
+        }
     }
 
     bool ScriptArray::VerifyJSON(const JsonVariant &jsonObj) {
-
+        const JsonArray jsonArray = jsonObj[HAL_JSON_KEYNAME_ITEMS].as<JsonArray>();
+        int arraySize = jsonArray.size();
+        for (int i=0;i<arraySize;i++) {
+            const JsonVariant& item = jsonArray[i];
+            if ((item.is<uint32_t>() || item.is<int32_t>() || item.is<float>()) == false) {
+                GlobalLogger.Error(F("invalid array value type at index:"), std::to_string(i).c_str() );
+                GlobalLogger.setLastEntrySource("ScriptArray VJ");
+                return false;
+            }
+        }
         return true;
     }
 
@@ -65,6 +89,19 @@ namespace HAL_JSON {
             }
             ret += ']';
             val.out_value = ret;
+        } else if (val.cmd.ValidNumber()) {
+            int index = 0;
+            if (val.cmd.ConvertTo_int32(index) == false) {
+                val.out_value = "invalid index not a integer";
+                return HALOperationResult::BracketOpSubscriptInvalid;
+            }
+
+            if (index < 0 || index >= valueCount) {
+                val.out_value = "invalid index out of range";
+                return HALOperationResult::BracketOpSubscriptOutOffRange;
+            }
+
+            val.out_value = values[index].toString();
         } else {
             val.out_value = "unknown command";
             return HALOperationResult::UnsupportedCommand;
@@ -83,6 +120,8 @@ namespace HAL_JSON {
     }
 
     HALOperationResult ScriptArray::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
+        if (readOnly) return HALOperationResult::UnsupportedOperation;
+
         int index = bracketSubscriptVal.asInt();
         if (index < 0 || index >= valueCount) {
             printf("\nScriptArray::write BracketOpSubscriptOutOffRange:%d\n", index);

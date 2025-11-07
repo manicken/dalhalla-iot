@@ -36,8 +36,9 @@ namespace HAL_JSON {
 
     class ScriptArray : public Device {
     private:
-        HALValue values[16]; // set static for test only
-        int valueCount = 16; // set static for test only
+        HALValue* values;
+        int valueCount = 0;
+        bool readOnly = false;
     public:
 
         /** called when all hal devices has been loaded */

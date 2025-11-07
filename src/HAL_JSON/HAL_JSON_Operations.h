@@ -74,6 +74,8 @@ namespace HAL_JSON {
         ContextWasNullPtr = 25,
         /** script engine specific error */
         BracketOpSubscriptOutOffRange = 26,
+        /** script engine specific error */
+        BracketOpSubscriptInvalid = 27,
 
         NotSet = 99,
     };

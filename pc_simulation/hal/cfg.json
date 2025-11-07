@@ -100,6 +100,6 @@
 	  {"uid":"rst","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELRST"}
 	]}
   ]},
-  {"uid":"arr1","type":"ARRAY"},
-  {"uid":"arr2","type":"ARRAY"}
+  {"uid":"arr1","type":"ARRAY","readonly":true,"items":[2,3.14,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67]},
+  {"uid":"arr2","type":"ARRAY","readonly":true,"items":[3.1415,1.4142,1.732,2.236]}
 ]
