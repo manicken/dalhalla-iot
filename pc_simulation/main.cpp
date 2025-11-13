@@ -34,13 +34,15 @@
     #include "../src/HAL_JSON/HAL_JSON_Manager.h"
     #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-    #include "stubs/HAL_JSON_REST/HAL_JSON_REST.h"
+    #include "ports/HAL_JSON_REST/HAL_JSON_REST.h"
 #endif
     #include "../src/Support/ConvertHelper.h"
     #include "../src/Support/CharArrayHelpers.h"
     #include "../src/HAL_JSON/HAL_JSON_ZeroCopyString.h"
      #include <ArduinoJson.h>
     #include "commandLoop.h"
+
+    #include "test_mqtt.h"
 
     std::string halJsonRestCallback(const std::string& path) {
         HAL_JSON::ZeroCopyString zcCmd(path.c_str()+1); // +1 = remove leading /
@@ -77,6 +79,7 @@
         HAL_JSON::ScriptEngine::ValidateAndLoadAllActiveScripts();
         std::cout << "\n****** Starting commandLoop thread\n";
         std::thread cmdThread(commandLoop); // start command input thread from commandLoop that is in commandLoop.h
+        test_mqtt::setup();
         long lastmillis = 0;
         while (running) { // running is in commandLoop.h
             HAL_JSON::Manager::loop();
@@ -86,6 +89,7 @@
                 if (HAL_JSON::ScriptEngine::ScriptsBlock::running)
                     HAL_JSON::ScriptEngine::Exec(); // runs the scriptengine
             }
+            test_mqtt::loop();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         cmdThread.join(); // wait for command thread to finish

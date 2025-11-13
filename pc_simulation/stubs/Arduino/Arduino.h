@@ -31,10 +31,10 @@
 #include <string>    // std::string for Windows
 #include <cstring>
 #include <cstdint>
-#include "../Stream_WIN.h"
+#include "../PrintStream/Stream.h"
+
 
 #define F(x) x
-
 
 using String = std::string;
 
@@ -43,12 +43,17 @@ using String = std::string;
 #endif
 #define __FlashStringHelper char 
 
+#define pgm_read_byte_near(addr) (*(const unsigned char*)(addr))
+
 
 #define HIGH 1
 #define LOW  0
 #define INPUT 0
 #define OUTPUT 1
 
+inline void yield() {
+    std::this_thread::yield();
+}
 
 
 // Simulate millis() using std::chrono
@@ -96,7 +101,8 @@ public:
     void flush() {}
     bool available() { return false; }
     void end() {}
-    void write(const uint8_t *buffer, size_t size) {}
+    size_t write(uint8_t b) override { return 1; }
+    size_t write(const uint8_t *buffer, size_t size) {return size;}
     uint8_t read() { return 0; }
 
     template <typename T>

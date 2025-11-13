@@ -22,34 +22,38 @@ BUILD_DIR = build
 # Header include path for ArduinoJson
 ifeq ($(OS),Windows_NT)
 INCLUDE_DIRS = \
+	./stubs/Arduino \
+	./ports/IPAddress \
+	./stubs/PrintStream \
 	./cpp-httplib \
 	../.pio/libdeps/esp32dev/ArduinoJson/src \
-	./stubs/Arduino \
-	./stubs/ESPAsyncWebServer \
-	./stubs/Ticker \
-	./stubs/LittleFS \
+	../.pio/libdeps/esp32dev/PubSubClient/src \
+	./ports/Ticker \
+	./ports/LittleFS \
+	./ports/WiFiClient \
+	./ports/HTTPClient \
 	./stubs/DHTesp \
 	./stubs/OneWire \
 	./stubs/DallasTemperature \
 	./stubs/WS2812FX \
-	./stubs/WiFiClient \
-	./stubs/HTTPClient \
 	./stubs/Adafruit_GFX \
 	./stubs/Adafruit_SSD1306 \
 	./stubs/Wire
 else
 INCLUDE_DIRS = \
-	../.pio/libdeps/esp32dev/ArduinoJson/src \
 	./stubs/Arduino \
-	./stubs/ESPAsyncWebServer \
-	./stubs/Ticker \
-	./stubs/LittleFS \
+	./ports/IPAddress \
+	./stubs/PrintStream \
+	../.pio/libdeps/esp32dev/ArduinoJson/src \
+	../.pio/libdeps/esp32dev/PubSubClient/src \
+	./ports/Ticker \
+	./ports/LittleFS \
+	./ports/WiFiClient \
+	./ports/HTTPClient \
 	./stubs/DHTesp \
 	./stubs/OneWire \
 	./stubs/DallasTemperature \
 	./stubs/WS2812FX \
-	./stubs/WiFiClient \
-	./stubs/HTTPClient \
 	./stubs/Adafruit_GFX \
 	./stubs/Adafruit_SSD1306 \
 	./stubs/Wire
@@ -58,20 +62,22 @@ INCLUDES = $(foreach dir,$(INCLUDE_DIRS),-I$(dir))
 #	
 # Source files
 SRC = \
-	./stubs/HAL_JSON_REST/HAL_JSON_REST.cpp \
-	main.cpp \
-	commandLoop.cpp \
 	./stubs/Arduino/Arduino.cpp \
-	./stubs/Ticker/Ticker.cpp \
-	./stubs/LittleFS/LittleFS.cpp \
-	./stubs/LittleFS/LittleFS_ext.cpp \
+    ./ports/IPAddress/IPAddress.cpp \
+	$(wildcard ./stubs/PrintStream/*.cpp) \
+    ../.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.cpp \
+	./ports/HAL_JSON_REST/HAL_JSON_REST.cpp \
+	$(wildcard *.cpp) \
+	./ports/Ticker/Ticker.cpp \
+	./ports/LittleFS/LittleFS.cpp \
+	./ports/LittleFS/LittleFS_ext.cpp \
+	./ports/WiFiClient/WiFiClient.cpp \
+	./ports/HTTPClient/HTTPClient.cpp \
 	./stubs/DHTesp/DHTesp.cpp \
 	./stubs/OneWire/OneWire.cpp \
 	./stubs/DallasTemperature/DallasTemperature.cpp \
 	./stubs/Wire/Wire.cpp \
 	./stubs/WS2812FX/WS2812FX.cpp \
-	./stubs/WiFiClient/WiFiClient.cpp \
-	./stubs/HTTPClient/HTTPClient.cpp \
 	./stubs/Adafruit_SSD1306/Adafruit_SSD1306.cpp \
 	../src/Drivers/REGO600.cpp \
 	../src/Drivers/RF433.cpp \
