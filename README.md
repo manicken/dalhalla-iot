@@ -2,12 +2,14 @@
 
 ## Overview
 
-I'm developing an **IoT framework** primarily targeting **ESP8266** and **ESP32** microcontrollers.  
+This is an **IoT framework** primarily targeting **ESP8266** and **ESP32** microcontrollers.  
 However, the framework itself is **not bound to any specific hardware** — most of the development was actually done on **Windows (MinGW)** and later **Linux**, to take advantage of advanced debugging tools that helped isolate a **Heisenbug**.
 
 Future candidates for porting include **Raspberry Pi Pico** and **Teensy**.
 
-Currently, the project uses the **Arduino framework** as a base, but there’s essentially nothing preventing it from running **fully standalone**, apart from needing to provide custom drivers.
+Currently, the project uses the **Arduino framework** as a base, 
+but there’s essentially nothing preventing it from running **fully standalone**, 
+apart from needing to provide custom drivers.
 
 The **WiFiManager library** is used to easily flash multiple devices with firmware and register them on a network.  
 This part may later evolve into something more like **Tasmota** or **ESPEasy**, simplifying device initialization.
@@ -17,7 +19,7 @@ This part may later evolve into something more like **Tasmota** or **ESPEasy**, 
 ## Key Features
 
 - **Modular and lightweight architecture** — significantly smaller codebase than ESPEasy or Tasmota.
-  - ~13,000 lines of code (VS Code Counter)
+  - ~14,000 lines of code (VS Code Counter)
   - Tasmota: ~240,000 LOC
   - ESPEasy: ~200,000 LOC
 - On ESP32, current firmware uses ~100 kB of flash (with room for optimization).

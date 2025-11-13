@@ -27,7 +27,7 @@ INCLUDE_DIRS = \
 	./stubs/PrintStream \
 	./cpp-httplib \
 	../.pio/libdeps/esp32dev/ArduinoJson/src \
-	../.pio/libdeps/esp32dev/PubSubClient/src \
+	./ports/PubSubClient \
 	./ports/Ticker \
 	./ports/LittleFS \
 	./ports/WiFiClient \
@@ -45,7 +45,7 @@ INCLUDE_DIRS = \
 	./ports/IPAddress \
 	./stubs/PrintStream \
 	../.pio/libdeps/esp32dev/ArduinoJson/src \
-	../.pio/libdeps/esp32dev/PubSubClient/src \
+	./ports/PubSubClient \
 	./ports/Ticker \
 	./ports/LittleFS \
 	./ports/WiFiClient \
@@ -65,7 +65,7 @@ SRC = \
 	./stubs/Arduino/Arduino.cpp \
     ./ports/IPAddress/IPAddress.cpp \
 	$(wildcard ./stubs/PrintStream/*.cpp) \
-    ../.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.cpp \
+    ./ports/PubSubClient/PubSubClient.cpp \
 	./ports/HAL_JSON_REST/HAL_JSON_REST.cpp \
 	$(wildcard *.cpp) \
 	./ports/Ticker/Ticker.cpp \

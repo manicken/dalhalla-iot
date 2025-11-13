@@ -48,11 +48,14 @@
 #include "RF433/HAL_JSON_TX433.h"
 #include "REGO600/HAL_JSON_REGO600.h"
 
-#include "HAL_JSON_ThingSpeak.h"
+
 #include "HAL_JSON_WS2812.h"
 #include "HAL_JSON_REST_Value.h"
 #include "HAL_JSON_REST_Cmd.h"
 #include "HAL_JSON_DeviceContainer.h"
+
+#include "HAL_JSON_ThingSpeak.h"
+#include "HomeAssistant/HAL_JSON_HomeAssistant.h"
 
 
 namespace HAL_JSON {
@@ -81,14 +84,17 @@ namespace HAL_JSON {
         {UseRootUID::Mandatory, "PWM_LEDC", nullptr, nullptr},
 #endif
         {UseRootUID::Mandatory, "I2C", I2C_BUS::Create, I2C_BUS::VerifyJSON},
-        {UseRootUID::Mandatory, "THINGSPEAK", ThingSpeak::Create, ThingSpeak::VerifyJSON},
-        {UseRootUID::Mandatory, "WS2812", WS2812::Create, WS2812::VerifyJSON},
+        
         {UseRootUID::Mandatory, "CONSTVAR", ScriptVariableReadOnly::Create, ScriptVariableReadOnly::VerifyJSON},
         {UseRootUID::Mandatory, "WRITEVAR", ScriptVariableWriteOnlyTest::Create, ScriptVariableWriteOnlyTest::VerifyJSON},
         {UseRootUID::Mandatory, "REST_VAR", REST_Value::Create, REST_Value::VerifyJSON},
         {UseRootUID::Mandatory, "REST_CMD", REST_Cmd::Create, REST_Cmd::VerifyJSON},
         {UseRootUID::Mandatory, "CONTAINER", DeviceContainer::Create, DeviceContainer::VerifyJSON},
         {UseRootUID::Mandatory, "ARRAY", ScriptArray::Create, ScriptArray::VerifyJSON},
+
+        {UseRootUID::Mandatory, "THINGSPEAK", ThingSpeak::Create, ThingSpeak::VerifyJSON},
+        {UseRootUID::Mandatory, "HOMEASSISTANT", HomeAssistant::Create, HomeAssistant::VerifyJSON},
+        {UseRootUID::Mandatory, "WS2812", WS2812::Create, WS2812::VerifyJSON},
         /** mandatory null terminator */
         {UseRootUID::Void, nullptr, nullptr, nullptr} // terminator
     };
