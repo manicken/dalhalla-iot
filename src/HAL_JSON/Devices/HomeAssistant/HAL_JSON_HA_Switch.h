@@ -41,7 +41,7 @@ namespace HAL_JSON {
     private:
         PubSubClient& mqttClient;
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant &jsonObj, const JsonVariant &jsonObjGlobal);
+        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
@@ -71,9 +71,9 @@ namespace HAL_JSON {
         /** Executes a device action with a provided command string. */
         HALOperationResult exec(ZeroCopyString& cmd) override ;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient);
-        Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient);
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
+        Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
         ~Switch();
 
 

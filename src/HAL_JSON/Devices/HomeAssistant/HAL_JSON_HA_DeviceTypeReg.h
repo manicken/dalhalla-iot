@@ -28,15 +28,15 @@
 
 namespace HAL_JSON {
 
-    typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient);
+    typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal);
     typedef bool (*HA_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
-    typedef void (*HA_HAL_DEVICE_SEND_DISCOVERY_FUNC)(PubSubClient& mqttClient, const JsonVariant &json, const JsonVariant &jsonGlobal);
+    //typedef void (*HA_HAL_DEVICE_SEND_DISCOVERY_FUNC)(PubSubClient& mqttClient, const JsonVariant &json);
 
     typedef struct HA_DeviceTypeDef {
         const char* typeName;
         HA_HAL_DEVICE_CREATE_FUNC Create_Function;
         HA_HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
-        HA_HAL_DEVICE_SEND_DISCOVERY_FUNC SendDiscovery_Function;
+        //HA_HAL_DEVICE_SEND_DISCOVERY_FUNC SendDiscovery_Function;
     } HA_DeviceTypeDef ;
 
     extern const HA_DeviceTypeDef HA_DeviceRegistry[];

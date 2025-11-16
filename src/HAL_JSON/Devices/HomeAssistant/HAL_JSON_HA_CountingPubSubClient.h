@@ -22,20 +22,17 @@
 */
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
 #include <PubSubClient.h>
 
 namespace HAL_JSON
 {
-    class HA_DeviceDiscovery {
+    class CountingPubSubClient : public PubSubClient {
     public:
-        static void SendBaseData(const JsonVariant &jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt);
-    };
+        size_t count = 0;
+        CountingPubSubClient();
+        
+        virtual size_t write(uint8_t b) override;
 
-    class PSC_JsonWriter {
-    public:
-        static void key(PubSubClient& mqtt, const char* key);
-        static void kv(PubSubClient& mqtt, const char* key, const char* value, bool last = false);
-
+        virtual size_t write(const uint8_t* buffer, size_t size) override;
     };
-} // namespace HAL_JSON
+}

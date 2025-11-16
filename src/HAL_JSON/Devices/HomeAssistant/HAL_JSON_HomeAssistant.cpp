@@ -67,30 +67,17 @@ namespace HAL_JSON {
             mqttClient.connect(clientId.c_str());
         }
 
-        const JsonVariant* jsonObjGrp = nullptr;
-
-        if (jsonObj.containsKey("group")) {
-            // one global group def
-            jsonObjGrp = jsonObj["group"];
-            
-
-        } else if (jsonObj.containsKey("groups")) {
-            // multiple device discovery group defs
-            // that in turn contain the actual items
-            bool* validItems = nullptr;
-            int validItemCount = 0;
-            GetFlattenGroupsValidItems(jsonObj, &validItems, &validItemCount);
-            deviceCount = validItemCount;
-            devices = new Device*[deviceCount](); // create array and initialize all to nullptr
-            int index = 0;
-            // go throught all here
-            const JsonArray& jsonArrayGroups = jsonObj["groups"];
-            int jsonArrayGroupsCount = jsonArrayGroups.size();
-
-            
-            delete validItems; // dont forget to delete/free
+        if (jsonObj.containsKey("groups")) {
+            ConstructDevicesFromFlattenGroupsItems(jsonObj);
+            // TODO add support for non flatten group items
+            // so that group uid:s can be included in the addressing scheme
+        } else {
+            ConstructDevicesNonGrouped(jsonObj);
         }
+        
+    }
 
+    void HomeAssistant::ConstructDevicesNonGrouped(const JsonVariant& jsonObj) {
         const JsonArray& jsonArrayItems = jsonObj["items"];
         int arrayCount = jsonArrayItems.size();
         bool* validItems = new bool[arrayCount];
@@ -114,6 +101,7 @@ namespace HAL_JSON {
         devices = new Device*[deviceCount](); // create array and initialize all to nullptr
         int index = 0;
         // second pass create devices
+        const JsonVariant& groupObj = jsonObj["group"];
         for (int i=0;i<arrayCount;i++) {
             if (validItems[i] == false) continue;
 
@@ -121,32 +109,52 @@ namespace HAL_JSON {
             const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
             const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
-            
-            devices[index++] = def->Create_Function(item, type, mqttClient);
-            def->SendDiscovery_Function(mqttClient, item, *jsonObjGrp);
+            devices[index++] = def->Create_Function(item, type, mqttClient, groupObj);
         }
-        
+        delete[] validItems;
     }
 
-    void HomeAssistant::GetFlattenGroupsValidItems(const JsonVariant& jsonObj, bool** validItems, int* validItemCount) {
+    void HomeAssistant::ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj) {
         int count = 0;
         const JsonArray& jsonArrayGroups = jsonObj["groups"];
         int jsonArrayGroupsCount = jsonArrayGroups.size();
         for (int i=0;i<jsonArrayGroupsCount;i++) {
             count += jsonArrayGroups[i]["items"].size();
         }
-        *validItems = new bool[count]();
+        bool* validItems = new bool[count]();
         int validItemIndex = 0;
-        *validItemCount = 0;
+        int validItemCount = 0;
+        // first pass count and mark valid items
         for (int i=0;i<jsonArrayGroupsCount;i++) {
             const JsonArray& jsonArrayItems = jsonArrayGroups[i]["items"];
             int jsonArrayItemsCount = jsonArrayItems.size();
             for (int j=0;j<jsonArrayItemsCount;j++) {
                 bool valid = GetFlattenGroupsValidItem(jsonArrayItems[j]);
-                if (valid) (*validItemCount)++;
-                (*validItems)[validItemIndex++] = valid;
+                if (valid) validItemCount++;
+                validItems[validItemIndex++] = valid;
             }
         }
+        deviceCount = validItemCount;
+        devices = new Device*[deviceCount]();
+        validItemIndex = 0;
+        int newItemIndex = 0;
+        for (int i=0;i<jsonArrayGroupsCount;i++) {
+            const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
+            const JsonArray& jsonArrayItems = jsonObjGrpItem["items"];
+            int jsonArrayItemsCount = jsonArrayItems.size();
+            for (int j=0;j<jsonArrayItemsCount;j++) {
+                if (validItems[validItemIndex++] == false) continue;
+
+                const JsonVariant& item = jsonArrayItems[j];
+                const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+        
+                const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+
+                devices[newItemIndex++] = def->Create_Function(item, type, mqttClient, jsonObjGrpItem);
+            
+            }
+        }
+        delete[] validItems;
     }
 
     bool HomeAssistant::GetFlattenGroupsValidItem(const JsonVariant& jsonObjItem) {

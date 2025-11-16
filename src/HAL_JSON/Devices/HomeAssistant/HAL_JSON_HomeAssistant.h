@@ -53,7 +53,8 @@ namespace HAL_JSON {
         int deviceCount;
 
         bool GetFlattenGroupsValidItem(const JsonVariant& jsonObj);
-        void GetFlattenGroupsValidItems(const JsonVariant& jsonObj, bool** validItems, int* validItemCount);
+        void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
+        void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);
         
     public:
 

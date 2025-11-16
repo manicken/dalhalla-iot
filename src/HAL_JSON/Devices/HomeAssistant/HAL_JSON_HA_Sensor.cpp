@@ -22,15 +22,34 @@
 */
 
 #include "HAL_JSON_HA_Sensor.h"
+#include "HAL_JSON_HA_DeviceDiscovery.h"
+#include "HAL_JSON_HA_CountingPubSubClient.h"
 
 namespace HAL_JSON {
 
-    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant &jsonObj, const JsonVariant &jsonObjGlobal) {
+    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
+        CountingPubSubClient dryRunPSC;
+
+        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", dryRunPSC);
+        // here can additional data be sent
+
+        char topic[128];
+        const char* typeStr = jsonObj["type"];
+        const char* uidStr = jsonObj["uid"];
+        snprintf(topic, sizeof(topic), "homeassistant/%s/%s/config", typeStr, uidStr);
         
+        mqttClient.beginPublish(topic, dryRunPSC.count, true);
+        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
+        
+
+        // here can additional data be sent
+
+        mqttClient.endPublish();
     }
     
-    Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
+    Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
 
+        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
     }
     Sensor::~Sensor() {
         
@@ -41,8 +60,8 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) {
-        return new Sensor(jsonObj, type, mqttClient);
+    Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) {
+        return new Sensor(jsonObj, type, mqttClient, jsonObjGlobal);
     }
 
     String Sensor::ToString() {

@@ -22,15 +22,21 @@
 */
 
 #include "HAL_JSON_HA_Switch.h"
+#include "HAL_JSON_HA_DeviceDiscovery.h"
 
 namespace HAL_JSON {
 
-    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant &jsonObj, const JsonVariant &jsonObjGlobal) {
+    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
         
+        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
+        // here can additional data be sent
+
     }
     
-    Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
+    Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         
+
+        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
     }
     Switch::~Switch() {
         
@@ -41,8 +47,8 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) {
-        return new Switch(jsonObj, type, mqttClient);
+    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) {
+        return new Switch(jsonObj, type, mqttClient, jsonObjGlobal);
     }
 
     String Switch::ToString() {

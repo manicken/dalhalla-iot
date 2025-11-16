@@ -21,21 +21,19 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <Arduino.h>
-#include <ArduinoJson.h>
-#include <PubSubClient.h>
+#include "HAL_JSON_HA_CountingPubSubClient.h"
 
 namespace HAL_JSON
 {
-    class HA_DeviceDiscovery {
-    public:
-        static void SendBaseData(const JsonVariant &jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt);
-    };
+    CountingPubSubClient::CountingPubSubClient() { count=0; }
 
-    class PSC_JsonWriter {
-    public:
-        static void key(PubSubClient& mqtt, const char* key);
-        static void kv(PubSubClient& mqtt, const char* key, const char* value, bool last = false);
+    size_t CountingPubSubClient::write(uint8_t b) {
+        count++;
+        return 1;
+    }
 
-    };
-} // namespace HAL_JSON
+    size_t CountingPubSubClient::write(const uint8_t* buffer, size_t size) {
+        count += size;
+        return size;
+    }
+}

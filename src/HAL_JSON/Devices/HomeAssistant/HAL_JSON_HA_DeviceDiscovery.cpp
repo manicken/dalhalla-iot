@@ -27,12 +27,12 @@
 namespace HAL_JSON
 {
 
-    void HA_DeviceDiscovery::SendBaseData(const JsonVariant& jsonObj, const JsonVariant* jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt) {
+    void HA_DeviceDiscovery::SendBaseData(const JsonVariant& jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt) {
         
-        if (jsonObjDeviceGroup) {
+        if (jsonObjDeviceGroup.isNull() == false) {
             PSC_JsonWriter::key(mqtt, "device");
             mqtt.write('{');
-            const char* deviceGroupUID = (*jsonObjDeviceGroup)["uid"];
+            const char* deviceGroupUID = jsonObjDeviceGroup["uid"];
             PSC_JsonWriter::key(mqtt, "identifiers");
             mqtt.write('[');
             mqtt.write('"');
@@ -42,7 +42,7 @@ namespace HAL_JSON
             mqtt.write(',');
             PSC_JsonWriter::kv(mqtt, "manufacturer", "Dalhal"); // hardcode for now
             PSC_JsonWriter::kv(mqtt, "model", "Virtual Sensor"); // hardcode for now
-            PSC_JsonWriter::kv(mqtt, "name", (*jsonObjDeviceGroup)["name"], true); // true == last item
+            PSC_JsonWriter::kv(mqtt, "name", jsonObjDeviceGroup["name"], true); // true == last item
             mqtt.write('}');
             mqtt.write(',');
         }
