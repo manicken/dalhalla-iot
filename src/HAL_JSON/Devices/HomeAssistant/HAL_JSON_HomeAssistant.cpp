@@ -50,7 +50,7 @@ namespace HAL_JSON {
             // could also have retry when doing automatic reconnect
         }
 
-        std::string clientId = "dalhalla_" + std::string(uidStr) + "_" + std::to_string(millis() & 0xFFFF);
+        clientId = "dalhal_" + std::string(uidStr) + "_" + std::to_string(millis() & 0xFFFF);
 
         if (jsonObj.containsKey("user"))
             username = GetAsConstChar(jsonObj, "user");
