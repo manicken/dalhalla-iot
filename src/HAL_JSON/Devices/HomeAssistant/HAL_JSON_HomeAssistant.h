@@ -39,10 +39,12 @@ namespace HAL_JSON {
 
     class HomeAssistant : public Device {
     private:
+        std::string clientId;
         std::string username;
         std::string password;
-        std::string host;
-        int port;
+        std::string host; // just for debug???
+        IPAddress ip;
+        uint16_t port;
 
         WiFiClient wifiClient;
         PubSubClient mqttClient;

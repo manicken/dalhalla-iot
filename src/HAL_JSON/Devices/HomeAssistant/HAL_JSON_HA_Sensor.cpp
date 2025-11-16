@@ -24,6 +24,10 @@
 #include "HAL_JSON_HA_Sensor.h"
 
 namespace HAL_JSON {
+
+    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant &jsonObj, const JsonVariant &jsonObjGlobal) {
+        
+    }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
 

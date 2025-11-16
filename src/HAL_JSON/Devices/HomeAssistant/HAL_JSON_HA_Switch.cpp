@@ -24,6 +24,10 @@
 #include "HAL_JSON_HA_Switch.h"
 
 namespace HAL_JSON {
+
+    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant &jsonObj, const JsonVariant &jsonObjGlobal) {
+        
+    }
     
     Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         

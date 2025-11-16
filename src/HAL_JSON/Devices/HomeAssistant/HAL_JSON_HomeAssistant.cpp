@@ -23,13 +23,55 @@
 
 #include "HAL_JSON_HomeAssistant.h"
 #include "HAL_JSON_HA_DeviceTypeReg.h"
+#include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include <WiFi.h>
 
 namespace HAL_JSON {
     
     HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
         mqttClient.setClient(wifiClient);
+        const char* uidStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID);
+        uid = encodeUID(uidStr);
+        if (jsonObj.containsKey("port")) {
+            port = GetAsUINT16(jsonObj, "port");
+        } else {
+            port = 1883;
+        }
+
+        const char* hostStr = GetAsConstChar(jsonObj, "host");
+        host = std::string(hostStr);
+        if (WiFi.hostByName(host.c_str(), ip)) {
+            // Successfully resolved
+            mqttClient.setServer(ip, port);
+        } else {
+            Serial.printf("Failed to resolve %s, will retry later\n", host.c_str());
+            // Optionally, store host string for next retry attempt
+            mqttClient.setServer(host.c_str(), port); // last-resort attempt
+            // could also have retry when doing automatic reconnect
+        }
+
+        std::string clientId = "dalhalla_" + std::string(uidStr) + "_" + std::to_string(millis() & 0xFFFF);
+
+        if (jsonObj.containsKey("user"))
+            username = GetAsConstChar(jsonObj, "user");
+        if (jsonObj.containsKey("pass"))
+            password = GetAsConstChar(jsonObj, "pass");
+
+        // connect directly here so that device discovery can use it
+        if (username.length() != 0 && password.length() != 0) {
+            mqttClient.connect(clientId.c_str(), username.c_str(), password.c_str());
+        } else {
+            mqttClient.connect(clientId.c_str());
+        }
+
+        if (jsonObj.containsKey("group")) {
+            // one global group def
+
+        } else if (jsonObj.containsKey("groups")) {
+            // one group def that can contain items
+
+        }
         
-        port = 1883;
     }
     HomeAssistant::~HomeAssistant() {
         

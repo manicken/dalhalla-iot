@@ -36,10 +36,10 @@
 namespace HAL_JSON {
 
     const HA_DeviceTypeDef HA_DeviceRegistry[] = {
-        {"sensor", Sensor::Create, Sensor::VerifyJSON},
-        {"switch",  Switch::Create, Switch::VerifyJSON},
+        {"sensor", Sensor::Create, Sensor::VerifyJSON, Sensor::SendDeviceDiscovery},
+        {"switch",  Switch::Create, Switch::VerifyJSON, Switch::SendDeviceDiscovery},
         /** mandatory null terminator */
-        {nullptr, nullptr, nullptr}
+        {nullptr, nullptr, nullptr, nullptr}
     };
     const HA_DeviceTypeDef* Get_HA_DeviceTypeDef(const char* type) {
         int i=0;
