@@ -29,6 +29,9 @@
 namespace HAL_JSON {
     
     HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+        devices = nullptr; // ensure that it's set
+        deviceCount = 0;
+
         mqttClient.setClient(wifiClient);
         const char* uidStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
@@ -64,17 +67,110 @@ namespace HAL_JSON {
             mqttClient.connect(clientId.c_str());
         }
 
+        const JsonVariant* jsonObjGrp = nullptr;
+
         if (jsonObj.containsKey("group")) {
             // one global group def
+            jsonObjGrp = jsonObj["group"];
+            
 
         } else if (jsonObj.containsKey("groups")) {
-            // one group def that can contain items
+            // multiple device discovery group defs
+            // that in turn contain the actual items
+            bool* validItems = nullptr;
+            int validItemCount = 0;
+            GetFlattenGroupsValidItems(jsonObj, &validItems, &validItemCount);
+            deviceCount = validItemCount;
+            devices = new Device*[deviceCount](); // create array and initialize all to nullptr
+            int index = 0;
+            // go throught all here
+            const JsonArray& jsonArrayGroups = jsonObj["groups"];
+            int jsonArrayGroupsCount = jsonArrayGroups.size();
 
+            
+            delete validItems; // dont forget to delete/free
+        }
+
+        const JsonArray& jsonArrayItems = jsonObj["items"];
+        int arrayCount = jsonArrayItems.size();
+        bool* validItems = new bool[arrayCount];
+        int validItemCount = 0;
+        // first pass count and check valid items
+        for (int i=0;i<arrayCount;i++) {
+            const JsonVariant& item = jsonArrayItems[i];
+            if (IsConstChar(item) == true) { validItems[i] = false; continue; }// comment item
+            if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
+            if (ValidateJsonStringField(item, HAL_JSON_KEYNAME_TYPE) == false) { validItems[i] = false; continue; }
+            
+            const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+            
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+            // no nullcheck is needed as ValidateJSON ensures that all types are correct
+            if (def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            validItemCount++;
+            validItems[i] = true;
+        }
+        deviceCount = validItemCount;
+        devices = new Device*[deviceCount](); // create array and initialize all to nullptr
+        int index = 0;
+        // second pass create devices
+        for (int i=0;i<arrayCount;i++) {
+            if (validItems[i] == false) continue;
+
+            const JsonVariant& item = jsonArrayItems[i];
+            const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+            
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+            
+            devices[index++] = def->Create_Function(item, type, mqttClient);
+            def->SendDiscovery_Function(mqttClient, item, *jsonObjGrp);
         }
         
     }
-    HomeAssistant::~HomeAssistant() {
+
+    void HomeAssistant::GetFlattenGroupsValidItems(const JsonVariant& jsonObj, bool** validItems, int* validItemCount) {
+        int count = 0;
+        const JsonArray& jsonArrayGroups = jsonObj["groups"];
+        int jsonArrayGroupsCount = jsonArrayGroups.size();
+        for (int i=0;i<jsonArrayGroupsCount;i++) {
+            count += jsonArrayGroups[i]["items"].size();
+        }
+        *validItems = new bool[count]();
+        int validItemIndex = 0;
+        *validItemCount = 0;
+        for (int i=0;i<jsonArrayGroupsCount;i++) {
+            const JsonArray& jsonArrayItems = jsonArrayGroups[i]["items"];
+            int jsonArrayItemsCount = jsonArrayItems.size();
+            for (int j=0;j<jsonArrayItemsCount;j++) {
+                bool valid = GetFlattenGroupsValidItem(jsonArrayItems[j]);
+                if (valid) (*validItemCount)++;
+                (*validItems)[validItemIndex++] = valid;
+            }
+        }
+    }
+
+    bool HomeAssistant::GetFlattenGroupsValidItem(const JsonVariant& jsonObjItem) {
+        // check if comment
+        if (IsConstChar(jsonObjItem) == true) { return false; }
+        // check if disabled
+        if (Device::DisabledInJson(jsonObjItem) == true) { return false; }
+        // check if type is a valid string
+        if (ValidateJsonStringField(jsonObjItem, HAL_JSON_KEYNAME_TYPE) == false) { return false; }
         
+        const char* type = GetAsConstChar(jsonObjItem, HAL_JSON_KEYNAME_TYPE);
+        const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+        // no nullcheck is needed as ValidateJSON ensures that all types are correct
+        if (def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
+        return true;
+    }
+
+    HomeAssistant::~HomeAssistant() {
+        if (devices) {
+            for (int i=0;i<deviceCount;i++) {
+                delete devices[i];
+            }
+            delete[] devices;
+        }
     }
 
     bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
@@ -101,29 +197,14 @@ namespace HAL_JSON {
     void HomeAssistant::loop() {
 
     }
-    void HomeAssistant::begin() {}
-    Device* HomeAssistant::findDevice(UIDPath& path) { return nullptr; }
 
-    HALOperationResult HomeAssistant::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        return HALOperationResult::UnsupportedOperation;
-    };
-    HALOperationResult HomeAssistant::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult HomeAssistant::exec(ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
-    Device::ReadToHALValue_FuncType HomeAssistant::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType HomeAssistant::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType HomeAssistant::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
+    void HomeAssistant::begin() {
 
-    Device::BracketOpRead_FuncType HomeAssistant::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType HomeAssistant::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    }
+
+    Device* HomeAssistant::findDevice(UIDPath& path) {
+        return Device::findInArray(reinterpret_cast<Device**>(devices), deviceCount, path, this);
+    }
+
     
-    HALValue* HomeAssistant::GetValueDirectAccessPtr() { return nullptr; }
 }

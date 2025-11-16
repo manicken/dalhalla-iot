@@ -56,7 +56,7 @@ namespace HAL_JSON {
         // first pass count valid items
         size_t validItemCount = 0;
         for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
+            const JsonVariant& item = items[i];
             if (IsConstChar(item) == true) { validItems[i] = false; continue; }// comment item
             if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
             if (ValidateJsonStringField(item, HAL_JSON_KEYNAME_TYPE) == false) { validItems[i] = false; continue; }
