@@ -41,6 +41,7 @@ namespace HAL_JSON {
     private:
         PubSubClient& mqttClient;
     public:
+        static void SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj);
         static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);
 
         HALOperationResult read(HALValue& val) override;

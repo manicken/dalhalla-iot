@@ -27,20 +27,22 @@
 
 namespace HAL_JSON {
 
+    void Sensor::SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj) {
+        mqttClient.write(',');
+        PSC_JsonWriter::kv(mqttClient, "device_class", jsonObj["device_class"]);
+        PSC_JsonWriter::kv(mqttClient, "unit_of_measurement", jsonObj["unit_of_measurement"], true);
+    }
+
     void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
         CountingPubSubClient dryRunPSC;
 
         HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", dryRunPSC);
+        SendSpecificDeviceDiscovery(dryRunPSC, jsonObj);
         // here can additional data be sent
 
-        char topic[128];
-        const char* typeStr = jsonObj["type"];
-        const char* uidStr = jsonObj["uid"];
-        snprintf(topic, sizeof(topic), "homeassistant/%s/%s/config", typeStr, uidStr);
-        
-        mqttClient.beginPublish(topic, dryRunPSC.count, true);
+        HA_DeviceDiscovery::StartSendBaseData(jsonObj, mqttClient, dryRunPSC.count);
         HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
-        
+        SendSpecificDeviceDiscovery(mqttClient, jsonObj);
 
         // here can additional data be sent
 
