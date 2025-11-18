@@ -59,31 +59,37 @@ namespace HAL_JSON
         if (ValidateJsonStringField(jsonObj,"icon")){
             PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "icon");
         }
+        const char* typeStr = GetAsConstChar(jsonObj,"type");
+        const char* uidStr = GetAsConstChar(jsonObj,"uid");
         
         // state_topic
+        psc_printf_s(mqtt, "\"state_topic\":\"%s/%s/%s\",", rootName, uidStr);
         PSC_JsonWriter::key(mqtt, "state_topic");
         mqtt.write('"');
         mqtt.write((uint8_t*)rootName, strlen(rootName));
         mqtt.write('/');
-        const char* typeStr = GetAsConstChar(jsonObj,"type");
+        
         mqtt.write((uint8_t*)typeStr, strlen(typeStr));
         mqtt.write('/');
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+        
         mqtt.write((uint8_t*)uidStr, strlen(uidStr));
         mqtt.write('"');
         mqtt.write(',');
         // unique_id
-        PSC_JsonWriter::key(mqtt, "unique_id");
+        psc_printf_s(mqtt, "\"unique_id\":\"%s_%s\",", rootName, uidStr);
+        /*PSC_JsonWriter::key(mqtt, "unique_id");
         mqtt.write('"');
         mqtt.write((uint8_t*)rootName, strlen(rootName));
         mqtt.write('_');
         mqtt.write((uint8_t*)uidStr, strlen(uidStr));
         mqtt.write('"');
         mqtt.write(',');
-        
+        */
         // availability_topic
         if (jsonObj.containsKey("use_availability_topic")) {
             
+            psc_printf_s(mqtt, "\"availability_topic\":\"%s_%s/status\",", rootName, uidStr);
+            /*
             PSC_JsonWriter::key(mqtt, "availability_topic");
             mqtt.write('"');
             mqtt.write((uint8_t*)rootName, strlen(rootName));
@@ -92,6 +98,7 @@ namespace HAL_JSON
             mqtt.write((uint8_t*)"/status", 8);
             mqtt.write('"');
             mqtt.write(',');
+            */
             if (ValidateJsonStringField(jsonObj,"payload_available")) {
                 PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "payload_available");
             }
@@ -141,5 +148,24 @@ namespace HAL_JSON
         if (false == last)
             mqtt.write(',');
     }
+
+    void psc_printf_s(PubSubClient& mqtt, const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+
+        while (*fmt) {
+            if (*fmt == '%' && *(fmt+1) == 's') {
+                const char* s = va_arg(args, const char*);
+                mqtt.write((const uint8_t*)s, strlen(s));
+                fmt += 2;
+            } else {
+                mqtt.write((uint8_t)*fmt);
+                fmt++;
+            }
+        }
+
+        va_end(args);
+    }
+
 
 } // namespace HAL_JSON
