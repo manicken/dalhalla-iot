@@ -41,7 +41,7 @@ namespace HAL_JSON
         if (jsonObjDeviceGroup.isNull() == false) {
             PSC_JsonWriter::key(mqtt, "device");
             mqtt.write('{');
-            const char* deviceGroupUID = jsonObjDeviceGroup["uid"];
+            const char* deviceGroupUID = GetAsConstChar(jsonObjDeviceGroup,"uid");
             PSC_JsonWriter::key(mqtt, "identifiers");
             mqtt.write('[');
             mqtt.write('"');
@@ -51,14 +51,13 @@ namespace HAL_JSON
             mqtt.write(',');
             PSC_JsonWriter::kv(mqtt, "manufacturer", "Dalhal"); // hardcode for now
             PSC_JsonWriter::kv(mqtt, "model", "Virtual Sensor"); // hardcode for now
-            PSC_JsonWriter::kv(mqtt, "name", jsonObjDeviceGroup["name"], true); // true == last item
+            PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObjDeviceGroup, "name", true); // true == last item
             mqtt.write('}');
             mqtt.write(',');
         }
 
         if (ValidateJsonStringField(jsonObj,"icon")){
-            const char* iconStr = GetAsConstChar(jsonObj, "icon");
-            PSC_JsonWriter::kv(mqtt, "icon", iconStr);
+            PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "icon");
         }
         
         // state_topic
@@ -66,10 +65,10 @@ namespace HAL_JSON
         mqtt.write('"');
         mqtt.write((uint8_t*)rootName, strlen(rootName));
         mqtt.write('/');
-        const char* typeStr = jsonObj["type"];
+        const char* typeStr = GetAsConstChar(jsonObj,"type");
         mqtt.write((uint8_t*)typeStr, strlen(typeStr));
         mqtt.write('/');
-        const char* uidStr = jsonObj["uid"];
+        const char* uidStr = GetAsConstChar(jsonObj,"uid");
         mqtt.write((uint8_t*)uidStr, strlen(uidStr));
         mqtt.write('"');
         mqtt.write(',');
@@ -81,11 +80,7 @@ namespace HAL_JSON
         mqtt.write((uint8_t*)uidStr, strlen(uidStr));
         mqtt.write('"');
         mqtt.write(',');
-        // device_class only used by sensors
-        const char* device_class = jsonObj["device_class"];
-        if (device_class != nullptr) {
-            PSC_JsonWriter::kv(mqtt, "device_class", device_class);
-        }
+        
         // availability_topic
         if (jsonObj.containsKey("use_availability_topic")) {
             
@@ -98,22 +93,20 @@ namespace HAL_JSON
             mqtt.write('"');
             mqtt.write(',');
             if (ValidateJsonStringField(jsonObj,"payload_available")) {
-                const char* paStr = GetAsConstChar(jsonObj, "payload_available");
-                PSC_JsonWriter::kv(mqtt, "payload_available", paStr);
+                PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "payload_available");
             }
             else {
                 PSC_JsonWriter::kv(mqtt, "payload_available", "online"); // default value
             }
             if (ValidateJsonStringField(jsonObj,"payload_not_available")) {
-                const char* paStr = GetAsConstChar(jsonObj, "payload_not_available");
-                PSC_JsonWriter::kv(mqtt, "payload_not_available", paStr);
+                PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "payload_not_available");
             }
             else {
                 PSC_JsonWriter::kv(mqtt, "payload_not_available", "offline"); // default value
             }
         }
-
-        PSC_JsonWriter::kv(mqtt, "name", jsonObj["name"], true); // true == dont add comma here
+        const char* nameStr = GetAsConstChar(jsonObj, "name");
+        PSC_JsonWriter::kv(mqtt, "name", nameStr, true); // true == dont add comma here
         // dont write comma here as the caller takes care of that
     }
 
@@ -124,7 +117,20 @@ namespace HAL_JSON
         mqtt.write(':');
     }
 
-    void PSC_JsonWriter::kv(PubSubClient& mqtt, const char* key, const char* value, bool last = false) {
+    void PSC_JsonWriter::copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last/* = false*/) {
+        mqtt.write('"');
+        mqtt.write((uint8_t*)key, strlen(key));
+        mqtt.write('"');
+        mqtt.write(':');
+        mqtt.write('"');
+        const char* value = GetAsConstChar(jsonObj, key);
+        mqtt.write((uint8_t*)value, strlen(value));
+        mqtt.write('"');
+        if (false == last)
+            mqtt.write(',');
+    }
+
+    void PSC_JsonWriter::kv(PubSubClient& mqtt, const char* key, const char* value, bool last/* = false*/) {
         mqtt.write('"');
         mqtt.write((uint8_t*)key, strlen(key));
         mqtt.write('"');

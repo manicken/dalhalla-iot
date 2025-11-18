@@ -37,6 +37,7 @@ namespace HAL_JSON
     public:
         static void key(PubSubClient& mqtt, const char* key);
         static void kv(PubSubClient& mqtt, const char* key, const char* value, bool last = false);
+        static void copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last = false);
 
     };
 } // namespace HAL_JSON

@@ -29,8 +29,8 @@ namespace HAL_JSON {
 
     void Sensor::SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj) {
         mqttClient.write(',');
-        PSC_JsonWriter::kv(mqttClient, "device_class", jsonObj["device_class"]);
-        PSC_JsonWriter::kv(mqttClient, "unit_of_measurement", jsonObj["unit_of_measurement"], true);
+        PSC_JsonWriter::copyFromJsonObj(mqttClient, jsonObj, "device_class");
+        PSC_JsonWriter::copyFromJsonObj(mqttClient, jsonObj, "unit_of_measurement", true);
     }
 
     void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
