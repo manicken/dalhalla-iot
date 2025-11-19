@@ -106,14 +106,12 @@ namespace HAL_JSON {
         if (cdr != nullptr) {
             HALValue val;
             cdr->ReadSimple(val);
-            //char topic[128];
-
-            //std::string uidStr = decodeUID(uid);
-            //snprintf(topic, sizeof(topic), "dalhal/sensor/%s", uidStr.c_str());
             mqttClient.publish(topic.c_str(), val.toString().c_str());
         }
     }
-    void Sensor::begin() {}
+    void Sensor::begin() {
+
+    }
 
     HALOperationResult Sensor::read(HALValue& val) {
         return HALOperationResult::UnsupportedOperation;
