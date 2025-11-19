@@ -114,6 +114,10 @@ namespace HAL_JSON {
     }
 
     HALOperationResult Sensor::read(HALValue& val) {
+        if (cdr != nullptr) {
+            cdr->ReadSimple(val);
+            return HALOperationResult::Success;
+        }
         return HALOperationResult::UnsupportedOperation;
 
     }
