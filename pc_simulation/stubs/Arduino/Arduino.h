@@ -32,7 +32,7 @@
 #include <cstring>
 #include <cstdint>
 #include "../PrintStream/Stream.h"
-
+#include <cstdarg> // variadic
 
 #define F(x) x
 
@@ -112,6 +112,36 @@ public:
     void println(const T& val) { std::cout << val << std::endl; }
 
     void println() { std::cout << std::endl; }
+
+    // printf implementation
+    void printf(const char* fmt, ...) {
+        constexpr size_t bufSize = 512;
+        char buffer[bufSize];
+
+        va_list args;
+        va_start(args, fmt);
+        int n = vsnprintf(buffer, bufSize, fmt, args);
+        va_end(args);
+
+        if (n > 0) {
+            std::cout.write(buffer, n);
+        }
+    }
+
+    void printf_ln(const char* fmt, ...) {
+        constexpr size_t bufSize = 512;
+        char buffer[bufSize];
+
+        va_list args;
+        va_start(args, fmt);
+        int n = vsnprintf(buffer, bufSize, fmt, args);
+        va_end(args);
+
+        if (n > 0) {
+            std::cout.write(buffer, n);
+        }
+        std::cout << std::endl;
+    }
 };
 
 extern SerialStub Serial; // Declared here, defined in a .cpp

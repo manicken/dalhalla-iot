@@ -32,6 +32,7 @@ INCLUDE_DIRS = \
 	./ports/LittleFS \
 	./ports/WiFiClient \
 	./ports/HTTPClient \
+	./ports/WiFi \
 	./stubs/DHTesp \
 	./stubs/OneWire \
 	./stubs/DallasTemperature \
@@ -50,6 +51,7 @@ INCLUDE_DIRS = \
 	./ports/LittleFS \
 	./ports/WiFiClient \
 	./ports/HTTPClient \
+	./ports/WiFi \
 	./stubs/DHTesp \
 	./stubs/OneWire \
 	./stubs/DallasTemperature \
@@ -73,6 +75,7 @@ SRC = \
 	./ports/LittleFS/LittleFS_ext.cpp \
 	./ports/WiFiClient/WiFiClient.cpp \
 	./ports/HTTPClient/HTTPClient.cpp \
+	./ports/WiFi/WiFi.cpp \
 	./stubs/DHTesp/DHTesp.cpp \
 	./stubs/OneWire/OneWire.cpp \
 	./stubs/DallasTemperature/DallasTemperature.cpp \
@@ -89,6 +92,7 @@ SRC = \
 	$(wildcard ../src/HAL_JSON/Devices/REGO600/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/RF433/*.cpp) \
 	$(wildcard ../src/HAL_JSON/Devices/Script/*.cpp) \
+	$(wildcard ../src/HAL_JSON/Devices/HomeAssistant/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/Parser/*.cpp) \
 	$(wildcard ../src/HAL_JSON/ScriptEngine/Runtime/*.cpp) \

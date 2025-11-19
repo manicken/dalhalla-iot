@@ -59,6 +59,23 @@ namespace HAL_JSON {
         return true;
     }
 
+    const char* GetValidatedJsonStringField(const JsonVariant &jsonObj, const char* keyName, const char* defaultValue){
+        if (!jsonObj.containsKey(keyName)) {
+            GlobalLogger.Error(HAL_JSON_ERR_MISSING_STRING_VALUE_KEY, keyName);
+            return defaultValue;
+        }
+        if (!IsConstChar(jsonObj,keyName)) {
+            GlobalLogger.Error(HAL_JSON_ERR_VALUE_TYPE_NOT_STRING, keyName);
+            return defaultValue;
+        }
+        const char* val = jsonObj[keyName].as<const char*>();
+        if (val == nullptr || strlen(val) == 0) {
+            GlobalLogger.Error(HAL_JSON_ERR_STRING_EMPTY, keyName);
+            return defaultValue;
+        }
+        return jsonObj[keyName].as<const char*>();
+    }
+
     bool ValidateJsonStringField_noContains(const JsonVariant &jsonObj, const char* keyName) {
         
         if (!IsConstChar(jsonObj,keyName)) {

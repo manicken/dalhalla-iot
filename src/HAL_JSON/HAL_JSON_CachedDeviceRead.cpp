@@ -45,6 +45,10 @@ namespace HAL_JSON {
         }
     };
 
+    HALOperationResult CachedDeviceRead::Handler_Invalid(void* ctx, HALValue& val) {
+        return HALOperationResult::ExecutionFailed;
+    }
+
     HALOperationResult CachedDeviceRead::Handler_Direct(void* ctx, HALValue& val) {
         HALValue* valPtr = static_cast<HALValue*>(ctx);
         val = *valPtr;
@@ -72,25 +76,65 @@ namespace HAL_JSON {
         else
             return c->device->read(subVal, val);
     }
-
+    CachedDeviceRead::~CachedDeviceRead() { if (deleter) deleter(context); }
+    CachedDeviceRead::CachedDeviceRead() {
+        context = nullptr;
+        handler = nullptr;
+        deleter = nullptr;
+    }
     CachedDeviceRead::CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName) 
-        : context(nullptr), handler(nullptr), deleter(nullptr) 
     {
+        context = nullptr;
+        handler = nullptr;
+        deleter = nullptr;
+        Set(zcStrUidPathAndFuncName);
+    }
+
+    bool CachedDeviceRead::Set(ZeroCopyString zcStrUidPathAndFuncName) {
+        if (deleter) deleter(context);
+
+        context = nullptr;
+        handler = nullptr;
+        deleter = nullptr;
+
         const char* bracketPos = zcStrUidPathAndFuncName.FindChar('[');
         if (bracketPos) {
             // Bracket read
             ZeroCopyString inner(bracketPos + 1, zcStrUidPathAndFuncName.end - 1);
-            CachedDeviceRead* subOperand = new CachedDeviceRead(inner);
             zcStrUidPathAndFuncName.end = bracketPos;
-
-            UIDPath uid(zcStrUidPathAndFuncName);
+            ZeroCopyString zcUid = zcStrUidPathAndFuncName.SplitOffHead('#');
+            UIDPath uid(zcUid);
             Device* device = Manager::findDevice(uid);
-            auto* ctx = new BracketContext{device, device->GetBracketOpRead_Function(zcStrUidPathAndFuncName), subOperand};
+            if (device == nullptr) {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid.ToString().c_str());
+                handler = &CachedDeviceRead::Handler_Invalid;
+                return false;
+            }
+
+            Device::BracketOpRead_FuncType bracketFunc = device->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
+            
+            if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName.ToString().c_str());
+                handler = &CachedDeviceRead::Handler_Invalid;
+                return false;
+            }
+
+            CachedDeviceRead* subOperand = new CachedDeviceRead();
+            if (subOperand->Set(inner) == false) {
+                // this will logg the error separately
+                //GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName.ToString().c_str());
+                delete subOperand;
+                handler = &CachedDeviceRead::Handler_Invalid;
+                return false;
+            }
+            
+
+            auto* ctx = new BracketContext{device, bracketFunc, subOperand};
 
             context = ctx;
             handler = &CachedDeviceRead::Handler_Bracket;
             deleter = ScriptEngine::DeleteAs<BracketContext>;
-            return;
+            return true;
         }
 
         // Funcname or plain read
@@ -98,19 +142,27 @@ namespace HAL_JSON {
         ZeroCopyString& funcName = zcStrUidPathAndFuncName;
         UIDPath uid(operandName);
         Device* device = Manager::findDevice(uid);
-        if (!device) { 
-            handler = [](void*, HALValue&) { return HALOperationResult::ExecutionFailed; };
-            return; 
+        if (!device) {
+            GlobalLogger.Error(F("CachedDeviceRead - could not find source device: "), operandName.ToString().c_str());
+            handler = &CachedDeviceRead::Handler_Invalid;
+            return false; 
         }
 
         // Func read
         Device::ReadToHALValue_FuncType readFunc = device->GetReadToHALValue_Function(funcName);
+        if (readFunc == nullptr && funcName.NotEmpty()) {
+            // this mean we requested to use a function name 
+            // that did not exist thus the default is no op
+            GlobalLogger.Error(F("CachedDeviceRead - could not find source device function: "), funcName.ToString().c_str());
+            handler = &CachedDeviceRead::Handler_Invalid;
+            return false;
+        }
         if (readFunc) {
             auto* ctx = new FuncContext{device, readFunc};
             context = ctx;
             handler = &CachedDeviceRead::Handler_Func;
             deleter = ScriptEngine::DeleteAs<FuncContext>;
-            return;
+            return true;
         }
 
         // Direct access
@@ -119,12 +171,13 @@ namespace HAL_JSON {
         if (valPtr) {
             context = valPtr;
             handler = &CachedDeviceRead::Handler_Direct;
-            return;
+            return true;
         }
 
         // Fallback device read
         context = device;
         handler = &CachedDeviceRead::Handler_Device;
+        return true;
     }
 
 }

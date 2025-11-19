@@ -24,7 +24,11 @@
 #include "commandLoop.h"
 #include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Parser_Tests.h"
 
+#include "../src/HAL_JSON/Devices/HomeAssistant/HAL_JSON_HA_DeviceDiscovery.h"
+#include "../src/HAL_JSON/Devices/HomeAssistant/HAL_JSON_HA_CountingPubSubClient.h"
+
 std::atomic<bool> running{true};
+
 
 void ParseHelpCommand(HAL_JSON::ZeroCopyString& zcCmd) {
     HAL_JSON::ZeroCopyString zcCmdHelp = zcCmd.SplitOffHead('/');
@@ -140,8 +144,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::chrono::duration<double, std::milli> duration = end - start;
 
         std::cout << "Parse time: " << duration.count() << " ms\n";
-    }
-    else if (zcCmdRoot == "ldtest") {
+    } else if (zcCmdRoot == "ldtest") {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
@@ -151,8 +154,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::chrono::duration<double, std::milli> duration = end - start;
 
         std::cout << "Parse time: " << duration.count() << " ms\n";
-    }
-    else if (zcCmdRoot == "ldval") {
+    } else if (zcCmdRoot == "ldval") {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
@@ -163,8 +165,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::chrono::duration<double, std::milli> duration = end - start;
 
         std::cout << "Parse time: " << duration.count() << " ms\n";
-    }
-    else if (zcCmdRoot == "ldcfg") {
+    } else if (zcCmdRoot == "ldcfg") {
         auto start = std::chrono::high_resolution_clock::now();
         HAL_JSON::Manager::setupMgr();
         
@@ -172,8 +173,45 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::chrono::duration<double, std::milli> duration = end - start;
 
         std::cout << "Parse time: " << duration.count() << " ms\n";
-    }
-    else {
+    } else if (zcCmdRoot == "ha_test") {
+        HAL_JSON::CountingPubSubClient cntPSC;
+/*
+#define JSON(...) #__VA_ARGS__
+        const char* deviceGroupUIDstr = "deviceGroupUIDstr";
+        const char* nameStr = "jsonObjDeviceGroup_name";
+        const char* jsonFmt = JSON(
+        {
+            "device": {
+            "identifiers": ["%s"],
+            "manufacturer": "Dalhal",
+            "model": "Virtual Sensor",
+            "name": "%s"
+            }
+        },
+        );
+        HAL_JSON::PSC_JsonWriter::printf_str(cntPSC, jsonFmt, deviceGroupUIDstr, nameStr);
+*/
+        StaticJsonDocument<512> deviceGroupDoc;
+        deviceGroupDoc["uid"] = "grp001";
+        deviceGroupDoc["name"] = "Test Group";
+        deviceGroupDoc["manufacturer"] = "Custom Maker";
+        deviceGroupDoc["model"] = "Model X";
+
+        StaticJsonDocument<512> deviceDoc;
+        deviceDoc["type"] = "sensor";
+        deviceDoc["uid"] = "temp01";
+        deviceDoc["name"] = "Temperature Sensor";
+        //deviceDoc["icon"] = "iconpath";
+        deviceDoc["use_availability_topic"] = true;
+        deviceDoc["payload_available"] = "on";
+        deviceDoc["payload_not_available"] = "off";
+
+        // Call the function
+        HAL_JSON::HA_DeviceDiscovery::SendBaseData(deviceDoc.as<JsonVariant>(), deviceGroupDoc.as<JsonVariant>(), "dalhal", cntPSC);
+    
+        std::cout << std::endl;
+
+    } else {
         std::cout << "Unknown command: " << cmd << "\n";
     }
 }

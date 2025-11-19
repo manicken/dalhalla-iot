@@ -34,12 +34,15 @@
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
+#include "../../HAL_JSON_CachedDeviceRead.h"
 
 namespace HAL_JSON {
 
     class Sensor : public Device {
     private:
         PubSubClient& mqttClient;
+        CachedDeviceRead* cdr;
+        std::string topic;
     public:
         static void SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj);
         static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);

@@ -25,6 +25,7 @@
 #include "HAL_JSON_HA_DeviceTypeReg.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include <WiFi.h>
+#include <Arduino.h>
 
 namespace HAL_JSON {
     

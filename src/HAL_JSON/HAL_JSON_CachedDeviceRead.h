@@ -50,16 +50,19 @@ namespace HAL_JSON {
 
     public:
         // Construct from UID/path string
-        CachedDeviceRead(const char* uidPathAndFuncName);
+        //CachedDeviceRead(const char* uidPathAndFuncName);
+        CachedDeviceRead();
         CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName);
+        bool Set(ZeroCopyString zcStrUidPathAndFuncName);
 
         // Execute the read
         HALOperationResult ReadSimple(HALValue& val);
 
-        ~CachedDeviceRead() { if (deleter) deleter(context); }
+        ~CachedDeviceRead();
 
     private:
         // Handlers
+        static HALOperationResult Handler_Invalid(void* ctx, HALValue& val);
         static HALOperationResult Handler_Direct(void* context, HALValue& val);
         static HALOperationResult Handler_Device(void* context, HALValue& val);
         static HALOperationResult Handler_Func(void* context, HALValue& val);

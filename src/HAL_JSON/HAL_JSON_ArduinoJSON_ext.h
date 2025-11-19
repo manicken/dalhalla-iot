@@ -36,6 +36,7 @@ namespace HAL_JSON {
     JsonVariant getValueIgnoreCase(JsonObject obj, const char* keyToFind);
 
     bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName);
+    const char* GetValidatedJsonStringField(const JsonVariant &jsonObj, const char* keyName, const char* defaultValue);
 
     bool ValidateJsonStringField_noContains(const JsonVariant &jsonObj, const char* keyName);
 

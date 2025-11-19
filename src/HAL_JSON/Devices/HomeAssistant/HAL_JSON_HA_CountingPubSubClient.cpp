@@ -23,17 +23,27 @@
 
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#include <iostream>
+#endif
+
 namespace HAL_JSON
 {
     CountingPubSubClient::CountingPubSubClient() { count=0; }
 
     size_t CountingPubSubClient::write(uint8_t b) {
         count++;
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+        std::cout << (char)b;
+#endif
         return 1;
     }
 
     size_t CountingPubSubClient::write(const uint8_t* buffer, size_t size) {
         count += size;
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+        std::cout.write((const char*)buffer, size);
+#endif
         return size;
     }
 }

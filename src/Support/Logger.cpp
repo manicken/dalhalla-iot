@@ -35,7 +35,8 @@ LogEntry::LogEntry() : timestamp(0),
       level(Loglevel::Info),
       errorCode(0),
       text(nullptr),
-      isCode(true) {}
+      isCode(true),
+      source(nullptr) {}
 
 void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode) {
     timestamp = time;
@@ -44,6 +45,7 @@ void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode) {
     if (text != nullptr) { free(text); text = nullptr; }
     isCode = true;
     isNew = true;
+    source = nullptr;
 }
 void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message) {
     timestamp = time;
@@ -52,6 +54,7 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     if (text != nullptr) { free(text); text = nullptr; }
     isCode = false;
     isNew = true;
+    source = nullptr;
 }
 void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const char* _text) {
     timestamp = time;
@@ -65,6 +68,7 @@ void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const char
     }
     isCode = true;
     isNew = true;
+    source = nullptr;
 }
 void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message, const char* _text) {
     timestamp = time;
@@ -78,6 +82,7 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     }
     isCode = false;
     isNew = true;
+    source = nullptr;
 }
 LogEntry::~LogEntry() {
     if (text) {

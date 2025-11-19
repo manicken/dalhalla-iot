@@ -50,7 +50,21 @@ namespace HAL_JSON {
     }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
-
+        const char* uidStr = GetAsConstChar(jsonObj, "uid");
+        uid = encodeUID(uidStr);
+        topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
+        topic = "dalhal/sensor/" + std::string(uidStr);
+        
+        if (ValidateJsonStringField(jsonObj, "source")) {
+            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+            cdr = new CachedDeviceRead();
+            if (cdr->Set(zcSrcDeviceUidStr) == false) {
+                delete cdr;
+                cdr = nullptr;
+            }
+        } else {
+            cdr = nullptr;
+        }
         SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
     }
     Sensor::~Sensor() {
@@ -58,7 +72,17 @@ namespace HAL_JSON {
     }
 
     bool Sensor::VerifyJSON(const JsonVariant &jsonObj) {
-
+        if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "device_class") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "unit_of_measurement") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "source")) {
+            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+            CachedDeviceRead cdr;
+            if (cdr.Set(zcSrcDeviceUidStr) == false) {
+                SET_ERR_LOC("HA_SENSOR_VJ");
+                return false;
+            }
+        }
         return true;
     }
 
@@ -79,7 +103,15 @@ namespace HAL_JSON {
     }
 
     void Sensor::loop() {
+        if (cdr != nullptr) {
+            HALValue val;
+            cdr->ReadSimple(val);
+            //char topic[128];
 
+            //std::string uidStr = decodeUID(uid);
+            //snprintf(topic, sizeof(topic), "dalhal/sensor/%s", uidStr.c_str());
+            mqttClient.publish(topic.c_str(), val.toString().c_str());
+        }
     }
     void Sensor::begin() {}
     Device* Sensor::findDevice(UIDPath& path) { return nullptr; }

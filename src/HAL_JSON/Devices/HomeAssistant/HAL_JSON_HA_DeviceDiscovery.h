@@ -38,6 +38,8 @@ namespace HAL_JSON
         static void key(PubSubClient& mqtt, const char* key);
         static void kv(PubSubClient& mqtt, const char* key, const char* value, bool last = false);
         static void copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last = false);
-        static void psc_printf_s(PubSubClient& mqtt, const char* fmt, ...);
+        static void printf_str(PubSubClient& mqtt, const char* fmt, ...)
+                __attribute__((format(printf, 2, 3)));
+        static void printf_str_indexed(PubSubClient& mqtt, const char* fmt, const char* args[], int argCount=0);
     };
 } // namespace HAL_JSON
