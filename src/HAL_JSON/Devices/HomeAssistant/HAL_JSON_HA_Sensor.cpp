@@ -114,28 +114,17 @@ namespace HAL_JSON {
         }
     }
     void Sensor::begin() {}
-    Device* Sensor::findDevice(UIDPath& path) { return nullptr; }
 
-    HALOperationResult Sensor::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Sensor::read(HALValue& val) {
+        return HALOperationResult::UnsupportedOperation;
+
+    }
     HALOperationResult Sensor::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        return HALOperationResult::UnsupportedOperation;
-    };
-    HALOperationResult Sensor::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Sensor::exec(ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
-    Device::ReadToHALValue_FuncType Sensor::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType Sensor::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType Sensor::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
 
-    Device::BracketOpRead_FuncType Sensor::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType Sensor::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+        mqttClient.publish(topic.c_str(), val.toString().c_str());
+        return HALOperationResult::Success;
+    };
     
-    HALValue* Sensor::GetValueDirectAccessPtr() { return nullptr; }
 }
