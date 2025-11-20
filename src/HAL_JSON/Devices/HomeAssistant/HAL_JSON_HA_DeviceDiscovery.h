@@ -30,7 +30,7 @@ namespace HAL_JSON
     class HA_DeviceDiscovery {
     public:
         static void StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, int packetLength);
-        static void SendBaseData(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* rootName);
+        static void SendBaseData(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* deviceId, const char* rootName);
         static void SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup);
     };
 

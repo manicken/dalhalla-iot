@@ -38,29 +38,29 @@ namespace HAL_JSON
         mqtt.beginPublish(topic, packetLength, true);
     }
 
-    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* rootName) {
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* deviceId, const char* rootTopicPath) {
         
         const char* uidStr = GetAsConstChar(jsonObj,"uid");
 
         // availability_topic
         const char* jsonFmt = JSON(
-            "availability_topic":"%s_%s/status",
+            "availability_topic":"%sus",
             "payload_available":"online",
             "payload_not_available":"offline",
-        );
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootName, uidStr);
+        ); // in the above format the rootTopicPath do allways end with /stat
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootTopicPath);
 
         // optional parameters
         if (jsonObj.containsKey("discovery")) {
             PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
         }
 
-        const char* args[] = { rootName, GetAsConstChar(jsonObj,"type"), uidStr, GetAsConstChar(jsonObj, "name"), nullptr };
+        const char* args[] = { rootTopicPath, deviceId, uidStr, GetAsConstChar(jsonObj, "name"), nullptr };
         const char* jsonFmt = JSON(
-            "state_topic":"%0/%1/%2",
-            "unique_id":"%0_%2",
+            "state_topic":"%0e",
+            "unique_id":"dalhal_%1_%2",
             "name":"%3"
-        );
+        ); // in the above format the rootTopicPath do allways end with /stat so to get the word state we only need to add e
         PSC_JsonWriter::printf_str_indexed(mqtt, jsonFmt, args);
         // dont write comma here as the caller takes care of that
     }

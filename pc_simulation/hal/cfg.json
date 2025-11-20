@@ -116,7 +116,7 @@
 	  {"uid":"switch_room1", "type":"switch", "source":"temps:a:a"}
     ]
   },
-  {"uid":"ha","type":"HOMEASSISTANT", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"uid":"ha","type":"HOMEASSISTANT", "device_id":"pc_sim", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
 	  {"uid":"ha_grp1", "name":"Development Test",
 	    "items": [

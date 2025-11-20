@@ -28,23 +28,30 @@
 namespace HAL_JSON {
 
 
-    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const char* deviceId, const char* rootTopicPath) {
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, "dalhal");
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, deviceId, rootTopicPath);
         // second real send 
         HA_DeviceDiscovery::StartSendData(mqttClient, jsonObj, dryRunPSC.count);
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(mqttClient, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, "dalhal");
+        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, deviceId, rootTopicPath);
         mqttClient.endPublish();
     }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
+        const char* deviceId = jsonObjRoot["deviceId"];
+  
+        // here status defines the max length needed as state is smaller
+        int needed = snprintf(nullptr, 0, "dalhal/%s/%s/", deviceId, uidStr) + 1 + sizeof("status");
+        topicBasePath = new char[needed];
+        snprintf(topicBasePath, needed, "dalhal/%s/%s/stat", deviceId, uidStr);
+
         state_topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
         state_topic = "dalhal/sensor/" + std::string(uidStr);
         availability_topic = "dalhal_" + std::string(uidStr) + "/status";
@@ -60,7 +67,7 @@ namespace HAL_JSON {
             cdr = nullptr;
         }
         refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, jsonObjRoot);
+        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, deviceId, topicBasePath);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start
     }
