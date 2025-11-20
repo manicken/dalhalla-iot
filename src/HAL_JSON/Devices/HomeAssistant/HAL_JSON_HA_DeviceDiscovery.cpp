@@ -38,24 +38,22 @@ namespace HAL_JSON
         mqtt.beginPublish(topic, packetLength, true);
     }
 
-    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* deviceId, const char* rootTopicPath) {
-        
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
-
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* deviceIdStr, const char* rootTopicPathStr) {
         // availability_topic
         const char* jsonFmt = JSON(
             "availability_topic":"%sus",
             "payload_available":"online",
             "payload_not_available":"offline",
         ); // in the above format the rootTopicPath do allways end with /stat
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootTopicPath);
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootTopicPathStr);
 
         // optional parameters
         if (jsonObj.containsKey("discovery")) {
             PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
         }
-
-        const char* args[] = { rootTopicPath, deviceId, uidStr, GetAsConstChar(jsonObj, "name"), nullptr };
+        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+        const char* nameStr = GetAsConstChar(jsonObj, "name");
+        const char* args[] = { rootTopicPathStr, deviceIdStr, uidStr, nameStr, nullptr };
         const char* jsonFmt = JSON(
             "state_topic":"%0e",
             "unique_id":"dalhal_%1_%2",
