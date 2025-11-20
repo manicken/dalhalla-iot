@@ -204,6 +204,30 @@ namespace HAL_JSON {
     }
 
     void HomeAssistant::loop() {
+        if (!devices) return;
+
+        if (mqttClient.connected() == false) {
+            unsigned long now = millis();
+            if (now - lastReconnectAttempt >= reconnectInterval) {
+                lastReconnectAttempt = now;
+                bool connected = false;
+                if (username.length() != 0 && password.length() != 0) {
+                    connected = mqttClient.connect(clientId.c_str(), username.c_str(), password.c_str());
+                } else {
+                    connected = mqttClient.connect(clientId.c_str());
+                }
+                if (!connected) {
+                    Serial.println("MQTT reconnect failed, will retry...");
+                    return;
+                }
+            } else { 
+                return;  // not enough time passed since last attempt
+            }
+        }
+
+        for (int i=0;i<deviceCount;i++) {
+            devices[i]->loop();
+        }
 
     }
 

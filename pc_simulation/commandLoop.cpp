@@ -202,9 +202,15 @@ void parseCommand(const char* cmd, bool oneShot) {
         deviceDoc["uid"] = "temp01";
         deviceDoc["name"] = "Temperature Sensor";
         //deviceDoc["icon"] = "iconpath";
+        deviceDoc["some number"] = 5;
+        deviceDoc["some number2"] = 5.2f;
         deviceDoc["use_availability_topic"] = true;
         deviceDoc["payload_available"] = "on";
         deviceDoc["payload_not_available"] = "off";
+
+        std::cout << "\nHAL_JSON::PSC_JsonWriter::SendAllItems:\n";
+        HAL_JSON::PSC_JsonWriter::SendAllItems(cntPSC, deviceDoc);
+        std::cout << "\n";
 
         // Call the function
         HAL_JSON::HA_DeviceDiscovery::SendBaseData(deviceDoc.as<JsonVariant>(), deviceGroupDoc.as<JsonVariant>(), "dalhal", cntPSC);

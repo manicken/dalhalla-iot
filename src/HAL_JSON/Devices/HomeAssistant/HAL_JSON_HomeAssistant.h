@@ -52,6 +52,9 @@ namespace HAL_JSON {
         Device** devices;
         int deviceCount;
 
+        unsigned long lastReconnectAttempt = 0;
+        const unsigned long reconnectInterval = 5000; // 10 seconds
+
         bool GetFlattenGroupsValidItem(const JsonVariant& jsonObj);
         void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
         void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);

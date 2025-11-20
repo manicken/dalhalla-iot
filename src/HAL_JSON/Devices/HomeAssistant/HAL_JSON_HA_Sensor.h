@@ -42,7 +42,11 @@ namespace HAL_JSON {
     private:
         PubSubClient& mqttClient;
         CachedDeviceRead* cdr;
-        std::string topic;
+        std::string state_topic;
+        std::string availability_topic;
+        uint32_t refreshMs;
+        uint32_t lastMs;
+        bool wasOnline;
     public:
         static void SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj);
         static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);

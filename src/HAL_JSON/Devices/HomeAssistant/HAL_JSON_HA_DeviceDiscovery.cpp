@@ -64,17 +64,13 @@ namespace HAL_JSON
             PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "icon");
         }
         // availability_topic
-        if (jsonObj.containsKey("use_availability_topic")) {
-            const char* plAvailableStr = GetValidatedJsonStringField(jsonObj,"payload_available", "online");
-            const char* plNotAvailableStr = GetValidatedJsonStringField(jsonObj,"payload_not_available", "offline");
+        const char* jsonFmt = JSON(
+            "availability_topic":"%s_%s/status",
+            "payload_available":"online",
+            "payload_not_available":"offline",
+        );
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootName, uidStr);
 
-            const char* jsonFmt = JSON(
-                "availability_topic":"%s_%s/status",
-                "payload_available":"%s",
-                "payload_not_available":"%s",
-            );
-            PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootName, uidStr, plAvailableStr, plNotAvailableStr);
-        }
         const char* args[] = { rootName, GetAsConstChar(jsonObj,"type"), uidStr, GetAsConstChar(jsonObj, "name"), nullptr };
         const char* jsonFmt = JSON(
             "state_topic":"%0/%1/%2",
@@ -109,7 +105,64 @@ namespace HAL_JSON
             mqtt.write(',');
     }
 
-    void PSC_JsonWriter::kv(PubSubClient& mqtt, const char* key, const char* value, bool last/* = false*/) {
+    void PSC_JsonWriter::SendAllItems(PubSubClient& mqtt, const JsonVariant &jsonObj) {
+        if (jsonObj.is<JsonObject>() == false) return;
+        JsonObject jsonObjItems = jsonObj.as<JsonObject>();
+        int itemCount = jsonObjItems.size();
+        if (itemCount == 0) return;
+        int index = 0;
+        for (const JsonPair& keyValue : jsonObjItems) {
+            PSC_JsonWriter::kv(mqtt, keyValue);
+            if (index < itemCount-1) mqtt.write(',');
+            index++;
+        }
+    }
+
+    void PSC_JsonWriter::kv(PubSubClient& mqtt, const JsonPair& keyValue) {
+        const char* keyStr = keyValue.key().c_str();
+        mqtt.write('"');
+        mqtt.write((uint8_t*)keyStr, keyValue.key().size());
+        mqtt.write('"');
+        mqtt.write(':');
+        PSC_JsonWriter::val(mqtt, keyValue.value());
+    }
+
+    void PSC_JsonWriter::val(PubSubClient& mqtt, const JsonVariant& valueObj) {
+        if (valueObj.is<const char*>()) {
+            const char* valStr = valueObj.as<const char*>();
+            mqtt.write('"');
+            mqtt.write((uint8_t*)valStr, strlen(valStr));
+            mqtt.write('"');
+        } else if (valueObj.is<bool>()) {
+            bool valBool = valueObj.as<bool>();
+            if (valBool)
+                mqtt.write((uint8_t*)"true", 4);
+            else
+                mqtt.write((uint8_t*)"false", 5);
+        } else if (valueObj.is<JsonArray>()) {
+            // finalize object
+            mqtt.write('[');
+            const JsonArray& items = valueObj.as<JsonArray>();
+            int itemCount = items.size();
+            for (int i=0;i<itemCount;i++) {
+                PSC_JsonWriter::val(mqtt, items[i]);
+                if (i<itemCount-1) mqtt.write(',');
+            }
+            mqtt.write(']');
+        } else if (valueObj.is<JsonObject>()) {
+            mqtt.write('{');
+            PSC_JsonWriter::SendAllItems(mqtt, valueObj);
+            mqtt.write('}');
+        } else if (valueObj.isNull()) {
+            mqtt.write((uint8_t*)"null", 4);
+        } else {
+            String tmp;
+            serializeJson(valueObj, tmp);
+            mqtt.write((uint8_t*)tmp.c_str(), tmp.length());
+        }
+    }
+
+    void PSC_JsonWriter::kv(PubSubClient& mqtt, const char* key, const char* value) {
         mqtt.write('"');
         mqtt.write((uint8_t*)key, strlen(key));
         mqtt.write('"');
@@ -117,8 +170,6 @@ namespace HAL_JSON
         mqtt.write('"');
         mqtt.write((uint8_t*)value, strlen(value));
         mqtt.write('"');
-        if (false == last)
-            mqtt.write(',');
     }
 
     void PSC_JsonWriter::printf_str(PubSubClient& mqtt, const char* fmt, ...) {

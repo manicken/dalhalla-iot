@@ -52,8 +52,9 @@ namespace HAL_JSON {
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
-        topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
-        topic = "dalhal/sensor/" + std::string(uidStr);
+        state_topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
+        state_topic = "dalhal/sensor/" + std::string(uidStr);
+        availability_topic = "dalhal_" + std::string(uidStr) + "/status";
         
         if (ValidateJsonStringField(jsonObj, "source")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
@@ -65,7 +66,10 @@ namespace HAL_JSON {
         } else {
             cdr = nullptr;
         }
+        refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
         SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
+        wasOnline = false;
+        lastMs = millis()-refreshMs; // force a direct update after start
     }
     Sensor::~Sensor() {
         
@@ -103,10 +107,28 @@ namespace HAL_JSON {
     }
 
     void Sensor::loop() {
-        if (cdr != nullptr) {
-            HALValue val;
-            cdr->ReadSimple(val);
-            mqttClient.publish(topic.c_str(), val.toString().c_str());
+
+        if (cdr == nullptr) return; // nothing to automate
+
+        unsigned long now = millis();
+        if (now - lastMs < refreshMs) {
+            return;
+        }
+        lastMs = now;
+
+        HALValue val;
+        HALOperationResult res = cdr->ReadSimple(val);
+        if (res == HALOperationResult::Success) {
+            if (!wasOnline) {
+                mqttClient.publish(availability_topic.c_str(), "online");
+                wasOnline = true;
+            }
+            mqttClient.publish(state_topic.c_str(), val.toString().c_str());
+        } else {
+            if (wasOnline) {
+                mqttClient.publish(availability_topic.c_str(), "offline");
+                wasOnline = false;
+            }
         }
     }
     void Sensor::begin() {
@@ -124,8 +146,11 @@ namespace HAL_JSON {
     HALOperationResult Sensor::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-
-        mqttClient.publish(topic.c_str(), val.toString().c_str());
+        if (!wasOnline) {
+            mqttClient.publish(availability_topic.c_str(), "online");
+            wasOnline = true;
+        }
+        mqttClient.publish(state_topic.c_str(), val.toString().c_str());
         return HALOperationResult::Success;
     };
     
