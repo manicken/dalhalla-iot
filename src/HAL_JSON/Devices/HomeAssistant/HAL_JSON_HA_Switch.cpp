@@ -26,17 +26,17 @@
 
 namespace HAL_JSON {
 
-    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
+    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
         
         HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
         // here can additional data be sent
 
     }
     
-    Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
+    Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         
 
-        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
+        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, jsonObjRoot);
     }
     Switch::~Switch() {
         
@@ -47,8 +47,8 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) {
-        return new Switch(jsonObj, type, mqttClient, jsonObjGlobal);
+    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+        return new Switch(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
     }
 
     String Switch::ToString() {
@@ -66,8 +66,9 @@ namespace HAL_JSON {
     void Switch::loop() {
 
     }
-    void Switch::begin() {}
-    Device* Switch::findDevice(UIDPath& path) { return nullptr; }
+    void Switch::begin() {
+        
+    }
 
     HALOperationResult Switch::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Switch::write(const HALValue& val) {
@@ -75,20 +76,5 @@ namespace HAL_JSON {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         return HALOperationResult::UnsupportedOperation;
     };
-    HALOperationResult Switch::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::exec(ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
-    Device::ReadToHALValue_FuncType Switch::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType Switch::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType Switch::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
 
-    Device::BracketOpRead_FuncType Switch::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType Switch::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    
-    HALValue* Switch::GetValueDirectAccessPtr() { return nullptr; }
 }

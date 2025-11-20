@@ -110,7 +110,7 @@ namespace HAL_JSON {
             const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
             const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
-            devices[index++] = def->Create_Function(item, type, mqttClient, groupObj);
+            devices[index++] = def->Create_Function(item, type, mqttClient, groupObj, jsonObj);
         }
         delete[] validItems;
     }
@@ -151,7 +151,7 @@ namespace HAL_JSON {
         
                 const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
 
-                devices[newItemIndex++] = def->Create_Function(item, type, mqttClient, jsonObjGrpItem);
+                devices[newItemIndex++] = def->Create_Function(item, type, mqttClient, jsonObjGrpItem, jsonObj);
             
             }
         }

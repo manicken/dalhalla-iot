@@ -28,7 +28,7 @@
 
 namespace HAL_JSON {
 
-    typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal);
+    typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot);
     typedef bool (*HA_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
     //typedef void (*HA_HAL_DEVICE_SEND_DISCOVERY_FUNC)(PubSubClient& mqttClient, const JsonVariant &json);
 

@@ -40,7 +40,7 @@ namespace HAL_JSON
 
     void HA_DeviceDiscovery::SendBaseData(const JsonVariant& jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt) {
         
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+        
 
         if (jsonObjDeviceGroup.isNull() == false) {
             const char* deviceGroupUIDstr = GetAsConstChar(jsonObjDeviceGroup,"uid");
@@ -60,9 +60,9 @@ namespace HAL_JSON
             );
             PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, manufacturerStr, modelStr, nameStr);
         }
-        if (ValidateJsonStringField(jsonObj,"icon")){
-            PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "icon");
-        }
+        
+        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+
         // availability_topic
         const char* jsonFmt = JSON(
             "availability_topic":"%s_%s/status",
@@ -71,6 +71,11 @@ namespace HAL_JSON
         );
         PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootName, uidStr);
 
+        // optional parameters
+        if (jsonObj.containsKey("discovery")) {
+            PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
+        }
+
         const char* args[] = { rootName, GetAsConstChar(jsonObj,"type"), uidStr, GetAsConstChar(jsonObj, "name"), nullptr };
         const char* jsonFmt = JSON(
             "state_topic":"%0/%1/%2",
@@ -78,10 +83,6 @@ namespace HAL_JSON
             "name":"%3"
         );
         PSC_JsonWriter::printf_str_indexed(mqtt, jsonFmt, args);
-        /*PSC_JsonWriter::printf_str(mqtt, "\"state_topic\":\"%s/%s/%s\",", rootName, typeStr, uidStr);
-        PSC_JsonWriter::printf_str(mqtt, "\"unique_id\":\"%s_%s\",", rootName, uidStr);
-        PSC_JsonWriter::copyFromJsonObj(mqtt, jsonObj, "name", true);
-        */
         // dont write comma here as the caller takes care of that
     }
 

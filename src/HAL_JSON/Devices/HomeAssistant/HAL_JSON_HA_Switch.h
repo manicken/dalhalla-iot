@@ -41,39 +41,19 @@ namespace HAL_JSON {
     private:
         PubSubClient& mqttClient;
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);
+        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
-        HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
-        HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
-        HALOperationResult read(const HALReadStringRequestValue& val) override;
-        HALOperationResult write(const HALWriteStringRequestValue& val) override;
-        HALOperationResult read(const HALReadValueByCmd& val) override;
-        HALOperationResult write(const HALWriteValueByCmd& val) override;
-        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
-        WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
-        BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
-        BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
-        HALValue* GetValueDirectAccessPtr() override;
+        
         /** called regulary from the main loop */
         void loop() override;
         /** called when all hal devices has been loaded */
         void begin() override;
-        /** used to find sub/leaf devices @ "group devices" */
-        Device* findDevice(UIDPath& path) override;
-
-        /** Executes a device action that requires no parameters. */
-        HALOperationResult exec() override ;
-        /** Executes a device action with a provided command string. */
-        HALOperationResult exec(ZeroCopyString& cmd) override ;
 
         static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
-        Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
+        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         ~Switch();
 
 

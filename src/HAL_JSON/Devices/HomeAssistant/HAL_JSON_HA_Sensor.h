@@ -48,8 +48,7 @@ namespace HAL_JSON {
         uint32_t lastMs;
         bool wasOnline;
     public:
-        static void SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj);
-        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal);
+        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
@@ -60,8 +59,8 @@ namespace HAL_JSON {
         void begin() override;
 
         static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
-        Sensor(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal);
+        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        Sensor(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         ~Sensor();
 
 

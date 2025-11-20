@@ -27,29 +27,18 @@
 
 namespace HAL_JSON {
 
-    void Sensor::SendSpecificDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj) {
-        mqttClient.write(',');
-        PSC_JsonWriter::copyFromJsonObj(mqttClient, jsonObj, "device_class");
-        PSC_JsonWriter::copyFromJsonObj(mqttClient, jsonObj, "unit_of_measurement", true);
-    }
 
-    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal) {
+    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+        // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
-
         HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", dryRunPSC);
-        SendSpecificDeviceDiscovery(dryRunPSC, jsonObj);
-        // here can additional data be sent
-
+        // second real send 
         HA_DeviceDiscovery::StartSendBaseData(jsonObj, mqttClient, dryRunPSC.count);
         HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
-        SendSpecificDeviceDiscovery(mqttClient, jsonObj);
-
-        // here can additional data be sent
-
         mqttClient.endPublish();
     }
     
-    Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
+    Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
         state_topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
@@ -67,7 +56,7 @@ namespace HAL_JSON {
             cdr = nullptr;
         }
         refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal);
+        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, jsonObjRoot);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start
     }
@@ -90,8 +79,8 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal) {
-        return new Sensor(jsonObj, type, mqttClient, jsonObjGlobal);
+    Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+        return new Sensor(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
     }
 
     String Sensor::ToString() {
