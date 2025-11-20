@@ -29,7 +29,7 @@
 
 namespace HAL_JSON
 {
-    void HA_DeviceDiscovery::StartSendBaseData(const JsonVariant &jsonObj, PubSubClient& mqtt, int packetLength) {
+    void HA_DeviceDiscovery::StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, int packetLength) {
         char topic[128];
         const char* typeStr = GetAsConstChar(jsonObj,"type");
         const char* uidStr = GetAsConstChar(jsonObj,"uid");
@@ -38,28 +38,7 @@ namespace HAL_JSON
         mqtt.beginPublish(topic, packetLength, true);
     }
 
-    void HA_DeviceDiscovery::SendBaseData(const JsonVariant& jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt) {
-        
-        
-
-        if (jsonObjDeviceGroup.isNull() == false) {
-            const char* deviceGroupUIDstr = GetAsConstChar(jsonObjDeviceGroup,"uid");
-            const char* nameStr = GetAsConstChar(jsonObjDeviceGroup, "name");
-            const char* manufacturerStr = GetAsConstChar(jsonObjDeviceGroup, "manufacturer");
-            if (manufacturerStr == nullptr) manufacturerStr = "Dalhal";
-            const char* modelStr = GetAsConstChar(jsonObjDeviceGroup, "model");
-            if (modelStr == nullptr) modelStr = "Virtual Sensor";
-
-            const char* jsonFmt = JSON(
-              "device": {
-                "identifiers": ["%s"],
-                "manufacturer": "%s",
-                "model": "%s",
-                "name": "%s"
-              },
-            );
-            PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, manufacturerStr, modelStr, nameStr);
-        }
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* rootName) {
         
         const char* uidStr = GetAsConstChar(jsonObj,"uid");
 
@@ -84,6 +63,25 @@ namespace HAL_JSON
         );
         PSC_JsonWriter::printf_str_indexed(mqtt, jsonFmt, args);
         // dont write comma here as the caller takes care of that
+    }
+
+    void HA_DeviceDiscovery::SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup) {
+        const char* deviceGroupUIDstr = GetAsConstChar(jsonObjDeviceGroup,"uid");
+        const char* nameStr = GetAsConstChar(jsonObjDeviceGroup, "name");
+        const char* manufacturerStr = GetAsConstChar(jsonObjDeviceGroup, "manufacturer");
+        if (manufacturerStr == nullptr) manufacturerStr = "Dalhal";
+        const char* modelStr = GetAsConstChar(jsonObjDeviceGroup, "model");
+        if (modelStr == nullptr) modelStr = "Virtual Sensor";
+
+        const char* jsonFmt = JSON(
+            "device": {
+            "identifiers": ["%s"],
+            "manufacturer": "%s",
+            "model": "%s",
+            "name": "%s"
+            },
+        );
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, manufacturerStr, modelStr, nameStr);
     }
 
     void PSC_JsonWriter::key(PubSubClient& mqtt, const char* key) {

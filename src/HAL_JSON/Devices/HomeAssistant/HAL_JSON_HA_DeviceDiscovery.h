@@ -29,8 +29,9 @@ namespace HAL_JSON
 {
     class HA_DeviceDiscovery {
     public:
-        static void StartSendBaseData(const JsonVariant &jsonObj, PubSubClient& mqtt, int packetLength);
-        static void SendBaseData(const JsonVariant &jsonObj, const JsonVariant& jsonObjDeviceGroup, const char* rootName, PubSubClient& mqtt);
+        static void StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, int packetLength);
+        static void SendBaseData(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* rootName);
+        static void SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup);
     };
 
     class PSC_JsonWriter {

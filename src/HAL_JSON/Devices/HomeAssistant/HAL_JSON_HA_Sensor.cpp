@@ -31,10 +31,14 @@ namespace HAL_JSON {
     void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
-        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", dryRunPSC);
+        if (jsonObjGlobal.isNull() == false)
+            HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, "dalhal");
         // second real send 
-        HA_DeviceDiscovery::StartSendBaseData(jsonObj, mqttClient, dryRunPSC.count);
-        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
+        HA_DeviceDiscovery::StartSendData(mqttClient, jsonObj, dryRunPSC.count);
+        if (jsonObjGlobal.isNull() == false)
+            HA_DeviceDiscovery::SendDeviceGroupData(mqttClient, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, "dalhal");
         mqttClient.endPublish();
     }
     

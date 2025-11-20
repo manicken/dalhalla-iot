@@ -23,14 +23,20 @@
 
 #include "HAL_JSON_HA_Switch.h"
 #include "HAL_JSON_HA_DeviceDiscovery.h"
+#include "HAL_JSON_HA_CountingPubSubClient.h"
 
 namespace HAL_JSON {
 
     void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        
-        HA_DeviceDiscovery::SendBaseData(jsonObj, jsonObjGlobal, "dalhal", mqttClient);
-        // here can additional data be sent
-
+        // first dry run to calculate payload size
+        CountingPubSubClient dryRunPSC;
+        HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, "dalhal");
+        // second real send 
+        HA_DeviceDiscovery::StartSendData(mqttClient, jsonObj, dryRunPSC.count);
+        HA_DeviceDiscovery::SendDeviceGroupData(mqttClient, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, "dalhal");
+        mqttClient.endPublish();
     }
     
     Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
@@ -67,7 +73,7 @@ namespace HAL_JSON {
 
     }
     void Switch::begin() {
-        
+
     }
 
     HALOperationResult Switch::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
