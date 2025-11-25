@@ -28,34 +28,17 @@
 namespace HAL_JSON {
 
 
-    void Sensor::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const char* deviceId, const char* rootTopicPath) {
-        // first dry run to calculate payload size
-        CountingPubSubClient dryRunPSC;
-        if (jsonObjGlobal.isNull() == false)
-            HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, deviceId, rootTopicPath);
-        // second real send 
-        HA_DeviceDiscovery::StartSendData(mqttClient, jsonObj, dryRunPSC.count);
-        if (jsonObjGlobal.isNull() == false)
-            HA_DeviceDiscovery::SendDeviceGroupData(mqttClient, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, deviceId, rootTopicPath);
-        mqttClient.endPublish();
+    void Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+        
     }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
-        const char* deviceId = jsonObjRoot["deviceId"];
+        const char* deviceIdStr = jsonObjRoot["deviceId"];
   
-        // here status defines the max length needed as state is smaller
-        int needed = snprintf(nullptr, 0, "dalhal/%s/%s/", deviceId, uidStr) + 1 + sizeof("status");
-        topicBasePath = new char[needed];
-        snprintf(topicBasePath, needed, "dalhal/%s/%s/stat", deviceId, uidStr);
+        topicBasePath.Set(deviceIdStr, uidStr);
 
-        state_topic.reserve(sizeof("dalhal/sensor/") + strlen(uidStr));
-        state_topic = "dalhal/sensor/" + std::string(uidStr);
-        availability_topic = "dalhal_" + std::string(uidStr) + "/status";
-        
         if (ValidateJsonStringField(jsonObj, "source")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
             cdr = new CachedDeviceRead();
@@ -67,12 +50,12 @@ namespace HAL_JSON {
             cdr = nullptr;
         }
         refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, deviceId, topicBasePath);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Sensor::SendDeviceDiscovery);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start
     }
     Sensor::~Sensor() {
-        
+        delete cdr;
     }
 
     bool Sensor::VerifyJSON(const JsonVariant &jsonObj) {
@@ -120,13 +103,16 @@ namespace HAL_JSON {
         HALOperationResult res = cdr->ReadSimple(val);
         if (res == HALOperationResult::Success) {
             if (!wasOnline) {
-                mqttClient.publish(availability_topic.c_str(), "online");
+                const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+                mqttClient.publish(availabilityTopicStr, "online");
                 wasOnline = true;
             }
-            mqttClient.publish(state_topic.c_str(), val.toString().c_str());
+            const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+            mqttClient.publish(stateTopicStr, val.toString().c_str());
         } else {
             if (wasOnline) {
-                mqttClient.publish(availability_topic.c_str(), "offline");
+                const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+                mqttClient.publish(availabilityTopicStr, "offline");
                 wasOnline = false;
             }
         }
@@ -147,10 +133,12 @@ namespace HAL_JSON {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
-            mqttClient.publish(availability_topic.c_str(), "online");
+            const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+            mqttClient.publish(availabilityTopicStr, "online");
             wasOnline = true;
         }
-        mqttClient.publish(state_topic.c_str(), val.toString().c_str());
+        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        mqttClient.publish(stateTopicStr, val.toString().c_str());
         return HALOperationResult::Success;
     };
     

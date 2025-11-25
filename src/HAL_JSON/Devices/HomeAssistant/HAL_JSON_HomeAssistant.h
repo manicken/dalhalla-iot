@@ -31,9 +31,12 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "HAL_JSON_HA_Device.h"
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
+
+
 
 namespace HAL_JSON {
 
@@ -58,6 +61,8 @@ namespace HAL_JSON {
         bool GetFlattenGroupsValidItem(const JsonVariant& jsonObj);
         void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
         void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);
+
+        void mqttCallback(char* topic, byte* payload, unsigned int length);
         
     public:
 

@@ -23,43 +23,82 @@
 
 #include "HAL_JSON_HA_DeviceDiscovery.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "HAL_JSON_HA_CountingPubSubClient.h"
 #include <cstdarg> // variadic
 
 #define JSON(...) #__VA_ARGS__
 
 namespace HAL_JSON
 {
-    void HA_DeviceDiscovery::StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, int packetLength) {
-        char topic[128];
-        const char* typeStr = GetAsConstChar(jsonObj,"type");
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
-        snprintf(topic, sizeof(topic), "homeassistant/%s/%s/config", typeStr, uidStr);
+
+    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
-        mqtt.beginPublish(topic, packetLength, true);
+        // first dry run to calculate payload size
+        CountingPubSubClient dryRunPSC;
+        if (jsonObjGlobal.isNull() == false)
+            HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, topicBasePath);
+        if (entityWriter)
+            entityWriter(dryRunPSC, jsonObj, topicBasePath);
+
+        // second real send 
+        HA_DeviceDiscovery::StartSendData(mqtt, jsonObj, topicBasePath, dryRunPSC.count);
+        if (jsonObjGlobal.isNull() == false)
+            HA_DeviceDiscovery::SendDeviceGroupData(mqtt, jsonObjGlobal);
+        HA_DeviceDiscovery::SendBaseData(mqtt, jsonObj, topicBasePath);
+        if (entityWriter)
+            entityWriter(mqtt, jsonObj, topicBasePath);
+        mqtt.endPublish();
     }
 
-    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, const char* deviceIdStr, const char* rootTopicPathStr) {
+    void HA_DeviceDiscovery::StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, TopicBasePath& topicBasePath, int packetLength) {
+        const char* typeStr = GetAsConstChar(jsonObj,"type");
+        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
+        int ddTopicLength = snprintf(nullptr, 0, "homeassistant/%s/dalhal_%.*s_%s/config", typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
+        ddTopicLength++;
+        char* topic = new char[ddTopicLength];
+        snprintf(topic, ddTopicLength, "homeassistant/%s/dalhal_%.*s_%s/config", typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
+        
+        mqtt.beginPublish(topic, packetLength, true);
+        delete topic;
+    }
+
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         // availability_topic
         const char* jsonFmt = JSON(
-            "availability_topic":"%sus",
+            "availability_topic":"%s",
             "payload_available":"online",
             "payload_not_available":"offline",
         ); // in the above format the rootTopicPath do allways end with /stat
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, rootTopicPathStr);
+        const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, availabilityTopicStr);
 
         // optional parameters
         if (jsonObj.containsKey("discovery")) {
             PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
         }
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
+        /*const char* uidStr = GetAsConstChar(jsonObj,"uid");
         const char* nameStr = GetAsConstChar(jsonObj, "name");
-        const char* args[] = { rootTopicPathStr, deviceIdStr, uidStr, nameStr, nullptr };
+        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        const char* args[] = { stateTopicStr, deviceIdStr, uidStr, nameStr, nullptr };
         const char* jsonFmt = JSON(
-            "state_topic":"%0e",
+            "state_topic":"%0",
             "unique_id":"dalhal_%1_%2",
             "name":"%3"
         ); // in the above format the rootTopicPath do allways end with /stat so to get the word state we only need to add e
         PSC_JsonWriter::printf_str_indexed(mqtt, jsonFmt, args);
+        */
+        ZeroCopyString zcUidStr = GetAsConstChar(jsonObj,"uid");
+        ZeroCopyString zcNameStr = GetAsConstChar(jsonObj, "name");
+        ZeroCopyString zcStateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
+        const char* jsonFmt = JSON(
+            "state_topic":"%s",
+            "unique_id":"dalhal_%s_%s",
+            "name":"%s"
+        );
+        PSC_JsonWriter::printf_zcstr(mqtt, jsonFmt, &zcStateTopicStr, &zcDeviceIdStr, &zcUidStr, &zcNameStr);
         // dont write comma here as the caller takes care of that
     }
 
@@ -185,6 +224,38 @@ namespace HAL_JSON
                 // Write argument
                 const char* s = va_arg(args, const char*);
                 mqtt.write((const uint8_t*)s, strlen(s));
+
+                fmt += 2;              // skip "%s"
+                segmentStart = fmt;    // start next literal
+            } else {
+                fmt++;
+            }
+        }
+        // Write remaining literal text
+        int len = fmt-segmentStart;
+        if (len > 0) {
+            mqtt.write((const uint8_t*)segmentStart, len);
+        }
+
+        va_end(args);
+    }
+
+    void PSC_JsonWriter::printf_zcstr(PubSubClient& mqtt, const char* fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        const char* segmentStart = fmt;
+        while (*fmt) {
+            if (*fmt == '%' && *(fmt+1) == 's') {
+
+                // Write literal segment before %s
+                int len = fmt-segmentStart;
+                if (len > 0) {
+                    mqtt.write((const uint8_t*)segmentStart, len);
+                }
+
+                // Write argument
+                ZeroCopyString* s = va_arg(args, ZeroCopyString*);
+                mqtt.write((const uint8_t*)s->start, s->Length());
 
                 fmt += 2;              // skip "%s"
                 segmentStart = fmt;    // start next literal

@@ -24,6 +24,7 @@
 #include "HAL_JSON_HomeAssistant.h"
 #include "HAL_JSON_HA_DeviceTypeReg.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "HAL_JSON_HA_TopicBasePath.h"
 #include <WiFi.h>
 #include <Arduino.h>
 
@@ -76,6 +77,37 @@ namespace HAL_JSON {
             ConstructDevicesNonGrouped(jsonObj);
         }
         
+        mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
+            this->mqttCallback(t, p, l);
+        });
+    }
+
+    void HomeAssistant::mqttCallback(char* topic, byte* payload, unsigned int length) {
+
+        const char* lastSlash = strrchr(topic, '/');
+        if (!lastSlash) return;
+        const TopicSuffix cmdTopic = GetTopicSuffix(TopicBasePathMode::Command);
+        if (strcmp(lastSlash + 1, cmdTopic.str) != 0) return; // not command
+
+        // find second-to-last slash
+        const char* secondLastSlash = lastSlash;
+        while (secondLastSlash > topic && *secondLastSlash != '/') secondLastSlash--;
+        if (*secondLastSlash != '/') return;
+
+        ZeroCopyString zcUID(secondLastSlash + 1, lastSlash);
+        // encode as uid for fast lockup
+        HAL_UID uid = encodeUID(zcUID);
+
+        // Iterate over all devices
+        for (int i = 0; i < deviceCount; i++) {
+            Device* dev = devices[i];
+            if (uid != dev->uid) continue;
+
+            ZeroCopyString zcCmdStr((char*)payload, (char*)payload+length);
+            dev->exec(zcCmdStr);
+            //dev->HandleCommand(zcCmdStr);
+            break;  // found a match
+        }
     }
 
     void HomeAssistant::ConstructDevicesNonGrouped(const JsonVariant& jsonObj) {

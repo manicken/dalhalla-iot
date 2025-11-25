@@ -35,21 +35,23 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 #include "../../HAL_JSON_CachedDeviceRead.h"
+#include "HAL_JSON_HA_TopicBasePath.h"
+#include "HAL_JSON_HA_Device.h"
 
 namespace HAL_JSON {
 
     class Sensor : public Device {
+        //using Device::Device;
     private:
         PubSubClient& mqttClient;
         CachedDeviceRead* cdr;
-        char* topicBasePath;
-        std::string state_topic;
-        std::string availability_topic;
+        TopicBasePath topicBasePath;
+
         uint32_t refreshMs;
         uint32_t lastMs;
         bool wasOnline;
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const char* deviceId, const char* rootName);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

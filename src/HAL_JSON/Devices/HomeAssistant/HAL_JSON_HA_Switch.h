@@ -34,17 +34,28 @@
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
+#include "../../HAL_JSON_CachedDeviceAccess.h"
+#include "HAL_JSON_HA_Device.h"
 
 namespace HAL_JSON {
 
     class Switch : public Device {
+       // using Device::Device;
     private:
         PubSubClient& mqttClient;
+        CachedDeviceAccess* cda;
+        TopicBasePath topicBasePath;
+
+        bool wasOnline;
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        static const char* PAYLOAD_ON;
+        static const char* PAYLOAD_OFF;
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
+
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         /** called regulary from the main loop */
         void loop() override;

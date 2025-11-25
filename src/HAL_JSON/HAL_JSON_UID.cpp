@@ -49,9 +49,12 @@ namespace HAL_JSON {
         const char* p = zcStr.start;
         const char* const end = zcStr.end;
         int i = 0;
+        char* strPtr = out.str;
         while (p < end && i < (int)HAL_UID::Size) {
-            out.str[i++] = *p;
-            p++;
+            //out.str[i++] = *p;
+            *strPtr++ = *p++;
+            i++;
+            //p++;
         }
         return out;
     }

@@ -91,7 +91,7 @@ namespace HAL_JSON {
         /** Executes a device action that requires no parameters. */
         virtual HALOperationResult exec();
         /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        virtual HALOperationResult exec(ZeroCopyString& cmd);
+        virtual HALOperationResult exec(const ZeroCopyString& cmd);
 
         virtual String ToString();
 

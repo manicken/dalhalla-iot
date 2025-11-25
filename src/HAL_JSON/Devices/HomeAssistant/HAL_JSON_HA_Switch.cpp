@@ -25,27 +25,48 @@
 #include "HAL_JSON_HA_DeviceDiscovery.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 
+#define JSON(...) #__VA_ARGS__
+
 namespace HAL_JSON {
 
-    void Switch::SendDeviceDiscovery(PubSubClient& mqttClient, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        // first dry run to calculate payload size
-        CountingPubSubClient dryRunPSC;
-        HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, "dalhal");
-        // second real send 
-        HA_DeviceDiscovery::StartSendData(mqttClient, jsonObj, dryRunPSC.count);
-        HA_DeviceDiscovery::SendDeviceGroupData(mqttClient, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(mqttClient, jsonObj, "dalhal");
-        mqttClient.endPublish();
+    const char* Switch::PAYLOAD_OFF = "OFF";
+    const char* Switch::PAYLOAD_ON = "ON";
+
+    void Switch::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+        const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_on":"%s"), Switch::PAYLOAD_ON);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_off":"%s"), Switch::PAYLOAD_OFF);
     }
     
     Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
-        
+        const char* uidStr = GetAsConstChar(jsonObj, "uid");
+        uid = encodeUID(uidStr);
+        const char* deviceIdStr = jsonObjRoot["deviceId"];
+  
+        topicBasePath.Set(deviceIdStr, uidStr);
 
-        SendDeviceDiscovery(mqttClient, jsonObj, jsonObjGlobal, jsonObjRoot);
+        if (ValidateJsonStringField(jsonObj, "source")) {
+            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+            cda = new CachedDeviceAccess(zcSrcDeviceUidStr);
+            /*if (cda->Set(zcSrcDeviceUidStr) == false) {
+                delete cdr;
+                cdr = nullptr;
+            }*/
+        } else {
+            //cdr = nullptr;
+        }
+        //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Switch::SendDeviceDiscovery);
+        wasOnline = false;
+
+        const char* commandTopic = topicBasePath.SetAndGet(TopicBasePathMode::Command);
+        mqttClient.subscribe(commandTopic);
+
+        //lastMs = millis()-refreshMs; // force a direct update after start
     }
     Switch::~Switch() {
-        
+        delete cda;
     }
 
     bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
@@ -80,7 +101,34 @@ namespace HAL_JSON {
     HALOperationResult Switch::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        return HALOperationResult::UnsupportedOperation;
+
+        if (!wasOnline) {
+            const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+            mqttClient.publish(availabilityTopicStr, "online");
+            wasOnline = true;
+        }
+        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        if (val.asUInt() == 0) {
+            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_OFF);
+        } else {
+            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_ON);
+        }
+        
+        return HALOperationResult::Success;
+
+        return HALOperationResult::Success;
     };
+
+    HALOperationResult Switch::exec(const ZeroCopyString& cmd) {
+        HALValue val;
+        if (cmd == Switch::PAYLOAD_ON) {
+            val = 1;
+        } else if (cmd == Switch::PAYLOAD_OFF) {
+            val = 0;
+        } else {
+            return HALOperationResult::UnsupportedCommand; // or some error code
+        }
+        return cda->WriteSimple(val);
+    }
 
 }
