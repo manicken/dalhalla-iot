@@ -46,8 +46,8 @@ namespace HAL_JSON {
   
         topicBasePath.Set(deviceIdStr, uidStr);
 
-        if (ValidateJsonStringField(jsonObj, "source")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+        if (ValidateJsonStringField(jsonObj, "target")) {
+            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
             cda = new CachedDeviceAccess(zcSrcDeviceUidStr);
             /*if (cda->Set(zcSrcDeviceUidStr) == false) {
                 delete cdr;
@@ -71,6 +71,7 @@ namespace HAL_JSON {
 
     bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "target")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
             /*CachedDeviceAccess cdaTmp;

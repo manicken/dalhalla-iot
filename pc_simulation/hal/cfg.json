@@ -105,9 +105,9 @@
   {"uid":"ha1","type":"HOMEASSISTANT", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp1", "name":"Development Test"}, 
     "items": [
-	  {"uid":"temp_room1", "type":"sensor", "unit_of_measurement": "°C", "device_class": "temperature", "source":"temps:a:a"},
-	  {"uid":"temp_room2", "type":"sensor", "unit_of_measurement": "°C", "device_class": "temperature", "source":"temps:a:b"},
-	  {"uid":"hum_room1", "type":"sensor", "unit_of_measurement": "%", "device_class": "humidity", "source":"hum"}
+	  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a"},
+	  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b"},
+	  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum"}
     ]
   },
   {"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
