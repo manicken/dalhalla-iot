@@ -110,24 +110,24 @@
 	  {"uid":"hum_room1", "type":"sensor", "unit_of_measurement": "%", "device_class": "humidity", "source":"hum"}
     ]
   },
-  {"uid":"ha2","type":"HOMEASSISTANT", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp2", "name":"Development Test2"}, 
     "items": [
-	  {"uid":"switch_room1", "type":"switch", "source":"temps:a:a"}
+	  {"uid":"switch_room1", "type":"switch"}
     ]
   },
-  {"uid":"ha","type":"HOMEASSISTANT", "device_id":"pc_sim", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
 	  {"uid":"ha_grp1", "name":"Development Test",
 	    "items": [
-		  {"uid":"temp_room1", "type":"sensor", "unit_of_measurement": "°C", "device_class": "temperature", "source":"temps:a:a"},
-		  {"uid":"temp_room2", "type":"sensor", "unit_of_measurement": "°C", "device_class": "temperature", "source":"temps:a:b"},
-		  {"uid":"hum_room1", "type":"sensor", "unit_of_measurement": "%", "device_class": "humidity", "source":"hum"}
+		  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a"},
+		  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b"},
+		  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum"}
 	    ]
 	  },
 	  {"uid":"ha_grp2", "name":"Development Test2",
         "items": [
-	      {"uid":"switch_room1", "type":"switch", "source":"temps:a:a"}
+	      {"uid":"switch_room1", "type":"switch"}
         ]
 	  }
     ]

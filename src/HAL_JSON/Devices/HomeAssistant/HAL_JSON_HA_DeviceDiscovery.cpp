@@ -66,13 +66,13 @@ namespace HAL_JSON
 
     void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         // availability_topic
-        const char* jsonFmt = JSON(
+        const char* jsonFmt_availability_topic = JSON(
             "availability_topic":"%s",
             "payload_available":"online",
             "payload_not_available":"offline",
         ); // in the above format the rootTopicPath do allways end with /stat
         const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, availabilityTopicStr);
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt_availability_topic, availabilityTopicStr);
 
         // optional parameters
         if (jsonObj.containsKey("discovery")) {

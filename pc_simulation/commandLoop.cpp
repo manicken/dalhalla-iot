@@ -26,6 +26,7 @@
 
 #include "../src/HAL_JSON/Devices/HomeAssistant/HAL_JSON_HA_DeviceDiscovery.h"
 #include "../src/HAL_JSON/Devices/HomeAssistant/HAL_JSON_HA_CountingPubSubClient.h"
+#include "../src/HAL_JSON/Devices/HomeAssistant/HAL_JSON_HA_TopicBasePath.h"
 
 std::atomic<bool> running{true};
 
@@ -211,9 +212,10 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "\nHAL_JSON::PSC_JsonWriter::SendAllItems:\n";
         HAL_JSON::PSC_JsonWriter::SendAllItems(cntPSC, deviceDoc);
         std::cout << "\n";
-
+        HAL_JSON::TopicBasePath topicBasePath;
+        topicBasePath.Set("PC sim test", "sim_test_uid");
         // Call the function
-        HAL_JSON::HA_DeviceDiscovery::SendBaseData(deviceDoc.as<JsonVariant>(), deviceGroupDoc.as<JsonVariant>(), "dalhal", cntPSC);
+        HAL_JSON::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceDoc, deviceGroupDoc, topicBasePath);
     
         std::cout << std::endl;
 

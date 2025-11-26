@@ -36,7 +36,7 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-
+#define HAL_JSON_HOME_ASSISTANT_DEFAULT_PORT 1883
 
 namespace HAL_JSON {
 

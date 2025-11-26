@@ -35,7 +35,7 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 #include "../../HAL_JSON_CachedDeviceAccess.h"
-#include "HAL_JSON_HA_Device.h"
+#include "HAL_JSON_HA_TopicBasePath.h"
 
 namespace HAL_JSON {
 

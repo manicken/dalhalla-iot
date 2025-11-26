@@ -60,8 +60,6 @@ namespace HAL_JSON {
 
     bool Sensor::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "device_class") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "unit_of_measurement") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "source")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
             CachedDeviceRead cdr;

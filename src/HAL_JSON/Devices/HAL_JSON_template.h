@@ -65,7 +65,7 @@ namespace HAL_JSON {
         /** Executes a device action that requires no parameters. */
         HALOperationResult exec() override ;
         /** Executes a device action with a provided command string. */
-        HALOperationResult exec(ZeroCopyString& cmd) override ;
+        HALOperationResult exec(const ZeroCopyString& cmd) override ;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);

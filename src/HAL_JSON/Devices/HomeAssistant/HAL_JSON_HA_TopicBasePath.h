@@ -26,6 +26,14 @@
 #include "../../HAL_JSON_ZeroCopyString.h"
 
 namespace HAL_JSON {
+
+    enum class TopicBasePathMode {
+        BaseRoot,
+        State,
+        Status,
+        Availability,
+        Command
+    };
     
     struct TopicSuffix {
         TopicBasePathMode mode;
@@ -35,13 +43,7 @@ namespace HAL_JSON {
 
     const TopicSuffix& GetTopicSuffix(TopicBasePathMode mode);
 
-    enum class TopicBasePathMode {
-        BaseRoot,
-        State,
-        Status,
-        Availability,
-        Command
-    };
+    
 
     class TopicBasePath {
     private:

@@ -70,7 +70,15 @@ namespace HAL_JSON {
     }
 
     bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
-
+        if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "target")) {
+            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
+            /*CachedDeviceAccess cdaTmp;
+            if (cdaTmp.Set(zcSrcDeviceUidStr) == false) {
+                SET_ERR_LOC("HA_SENSOR_VJ");
+                return false;
+            }*/
+        }
         return true;
     }
 

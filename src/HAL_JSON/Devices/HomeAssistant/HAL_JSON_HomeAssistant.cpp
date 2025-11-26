@@ -29,6 +29,24 @@
 #include <Arduino.h>
 
 namespace HAL_JSON {
+
+    bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
+        if (ValidateJsonStringField(jsonObj, "deviceId") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
+        if (ValidateJsonStringField(jsonObj, "host") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
+        if (jsonObj.containsKey("groups")) {
+            if (jsonObj["groups"].is<JsonArray>()) return true;
+            GlobalLogger.Error(F("HASS cfg groups is not a array"));
+        } else if (jsonObj.containsKey("items")) {
+            if (jsonObj["items"].is<JsonArray>()) return true;
+            GlobalLogger.Error(F("HASS cfg items is not a array"));
+        }
+        GlobalLogger.Error(F("HASS cfg do not contain either groups or items array"));
+        return false;
+    }
+
+    Device* HomeAssistant::Create(const JsonVariant &jsonObj, const char* type) {
+        return new HomeAssistant(jsonObj, type);
+    }
     
     HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
         devices = nullptr; // ensure that it's set
@@ -40,7 +58,7 @@ namespace HAL_JSON {
         if (jsonObj.containsKey("port")) {
             port = GetAsUINT16(jsonObj, "port");
         } else {
-            port = 1883;
+            port = HAL_JSON_HOME_ASSISTANT_DEFAULT_PORT;
         }
 
         const char* hostStr = GetAsConstChar(jsonObj, "host");
@@ -214,14 +232,7 @@ namespace HAL_JSON {
         }
     }
 
-    bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
-
-        return true;
-    }
-
-    Device* HomeAssistant::Create(const JsonVariant &jsonObj, const char* type) {
-        return new HomeAssistant(jsonObj, type);
-    }
+    
 
     String HomeAssistant::ToString() {
         String ret;

@@ -36,7 +36,6 @@
 #include <PubSubClient.h>
 #include "../../HAL_JSON_CachedDeviceRead.h"
 #include "HAL_JSON_HA_TopicBasePath.h"
-#include "HAL_JSON_HA_Device.h"
 
 namespace HAL_JSON {
 
