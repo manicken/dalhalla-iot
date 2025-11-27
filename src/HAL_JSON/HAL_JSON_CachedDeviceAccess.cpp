@@ -57,8 +57,10 @@ namespace HAL_JSON {
             printf("@CachedDeviceAccess const - device not found:>>%s<<\n", uidStr.c_str());
             return;
         }
-        
-        printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
+        //if (zcStrFuncName.Length() != 0)
+        //    printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
+        //else
+        //    printf("create cached device access: %s\n", uidPath.ToString().c_str());
         readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
         writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName);
         execFunc = device->GetExec_Function(zcStrFuncName);

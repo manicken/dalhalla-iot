@@ -68,6 +68,15 @@ namespace HAL_JSON {
     const char* ZeroCopyString::FindChar(char ch) const {
         return static_cast<const char*>(memchr(start, ch, Length()));
     }
+    const char* ZeroCopyString::FindCharReverse(char ch) const {
+        if (IsEmpty()) return nullptr;
+        const char* ptr = end-1;
+        while (ptr >= start) {
+            if (*ptr == ch) return ptr;
+            ptr--;
+        }
+        return nullptr;
+    }
     bool ZeroCopyString::ContainsChar(char ch) const {
         return static_cast<const char*>(memchr(start, ch, Length())) != nullptr;
     }
@@ -229,11 +238,48 @@ namespace HAL_JSON {
         const char* splitPos = FindChar(delimiter);
         const char* newStartPos = start;
         if (splitPos == nullptr) {
-            start = end;
+            start = end; // this makes the source(this) string empty
             return ZeroCopyString(newStartPos, end);
         }
         start = splitPos + 1;
         return ZeroCopyString(newStartPos, splitPos);
+    }
+
+    ZeroCopyString ZeroCopyString::SplitOffTail(char delimiter) {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        
+        const char* splitPos = FindCharReverse(delimiter);
+        const char* newEndPos = end;
+        if (splitPos == nullptr) {
+            end = start; // this makes the source(this) string empty
+            return ZeroCopyString(start, newEndPos); // return the whole source string as a new ZeroCopyString
+        }
+        end = splitPos; // modify source(this)
+        return ZeroCopyString(splitPos+1, newEndPos); 
+    }
+
+    ZeroCopyString ZeroCopyString::SplitOffHead(const char* delimiterPtr) {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+
+        const char* newStartPos = start;
+        if (ContainsPtr(delimiterPtr) == false) {
+            start = end; // this makes the source(this) string empty
+            return ZeroCopyString(newStartPos, end);
+        }
+        start = delimiterPtr + 1;
+        return ZeroCopyString(newStartPos, delimiterPtr);
+    }
+
+    ZeroCopyString ZeroCopyString::SplitOffTail(const char* delimiterPtr) {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+
+        const char* newEndPos = end;
+        if (ContainsPtr(delimiterPtr) == false) {
+            end = start; // this makes the source(this) string empty
+            return ZeroCopyString(start, newEndPos); // return the whole source string as a new ZeroCopyString
+        }
+        end = delimiterPtr; // modify source(this)
+        return ZeroCopyString(delimiterPtr+1, newEndPos); 
     }
 
     bool ZeroCopyString::Equals(const ZeroCopyString& other) const {

@@ -24,6 +24,7 @@
 #include "HAL_JSON_HA_Sensor.h"
 #include "HAL_JSON_HA_DeviceDiscovery.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
+#include "HAL_JSON_HA_Constants.h"
 
 namespace HAL_JSON {
 
@@ -49,7 +50,7 @@ namespace HAL_JSON {
         } else {
             cdr = nullptr;
         }
-        refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
+        refreshMs = ParseRefreshTimeMs(jsonObj, HAL_JSON_HA_SENSOR_DEFAULT_REFRESH_MS);
         HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Sensor::SendDeviceDiscovery);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start

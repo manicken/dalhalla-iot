@@ -37,6 +37,8 @@
 #include "../../HAL_JSON_CachedDeviceRead.h"
 #include "HAL_JSON_HA_TopicBasePath.h"
 
+#define HAL_JSON_HA_SENSOR_DEFAULT_REFRESH_MS 5000
+
 namespace HAL_JSON {
 
     class Sensor : public Device {

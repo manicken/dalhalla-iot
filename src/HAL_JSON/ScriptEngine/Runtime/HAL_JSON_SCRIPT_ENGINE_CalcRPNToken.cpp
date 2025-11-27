@@ -75,7 +75,7 @@ namespace HAL_JSON {
                 handler = &CalcRPNToken::GetAndPushReadToHALValue_Function_Context_Handler;
             } else {
                 deleter = nullptr; // the context is allways non owning
-                printf("\nCalcRPNToken - non bracket non funcname accessor\n");
+                //printf("\nCalcRPNToken - non bracket non funcname accessor\n");
                 UIDPath uidPath(expToken);
                 Device* device = Manager::findDevice(uidPath);
 
@@ -86,7 +86,7 @@ namespace HAL_JSON {
                 }
                 HALValue* directPtr = device->GetValueDirectAccessPtr();
                 if (directPtr != nullptr) {
-                    printf("\nCalcRPNToken - Did use direct access ptr%s\n", expToken.ToString().c_str());
+                    //printf("\nCalcRPNToken - Did use direct access ptr%s\n", expToken.ToString().c_str());
                     context = directPtr;
                     handler = &CalcRPNToken::GetAndPushValuePtr_Handler;
                 } else {

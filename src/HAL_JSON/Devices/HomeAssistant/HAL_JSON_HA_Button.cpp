@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_HA_Switch.h"
+#include "HAL_JSON_HA_Button.h"
 #include "HAL_JSON_HA_DeviceDiscovery.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 #include "HAL_JSON_HA_Constants.h"
@@ -29,17 +29,12 @@
 
 namespace HAL_JSON {
 
-    const char* Switch::PAYLOAD_OFF = "OFF";
-    const char* Switch::PAYLOAD_ON = "ON";
-
-    void Switch::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_on":"%s"), Switch::PAYLOAD_ON);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_off":"%s"), Switch::PAYLOAD_OFF);
     }
     
-    Switch::Switch(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
+    Button::Button(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
         const char* deviceIdStr = jsonObjRoot["deviceId"];
@@ -57,16 +52,16 @@ namespace HAL_JSON {
             //cdr = nullptr;
         }
         //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Switch::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
         wasOnline = false;
 
         //lastMs = millis()-refreshMs; // force a direct update after start
     }
-    Switch::~Switch() {
+    Button::~Button() {
         delete cda;
     }
 
-    bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
+    bool Button::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "target")) {
@@ -80,11 +75,11 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        return new Switch(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
+    Device* Button::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+        return new Button(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
     }
 
-    String Switch::ToString() {
+    String Button::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -96,17 +91,17 @@ namespace HAL_JSON {
         return ret;
     }
 
-    void Switch::loop() {
+    void Button::loop() {
 
     }
-    void Switch::begin() {
+    void Button::begin() {
         const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
         mqttClient.publish(availabilityTopicStr, "online");
         wasOnline = true;
     }
 
-    HALOperationResult Switch::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Switch::write(const HALValue& val) {
+    HALOperationResult Button::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Button::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
@@ -116,25 +111,14 @@ namespace HAL_JSON {
             wasOnline = true;
         }
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        if (val.asUInt() == 0) {
-            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_OFF);
-        } else {
-            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_ON);
-        }
         
+        mqttClient.publish(stateTopicStr, "");
+
         return HALOperationResult::Success;
     };
 
-    HALOperationResult Switch::exec(const ZeroCopyString& cmd) {
-        HALValue val;
-        if (cmd == Switch::PAYLOAD_ON) {
-            val = 1;
-        } else if (cmd == Switch::PAYLOAD_OFF) {
-            val = 0;
-        } else {
-            return HALOperationResult::UnsupportedCommand; // or some error code
-        }
-        return cda->WriteSimple(val);
+    HALOperationResult Button::exec(const ZeroCopyString& cmd) {
+        return cda->Exec();
     }
 
 }

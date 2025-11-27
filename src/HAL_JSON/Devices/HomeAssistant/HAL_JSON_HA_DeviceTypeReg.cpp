@@ -32,12 +32,14 @@
 // Available Home Assistant device-endpoint-entities types here
 #include "HAL_JSON_HA_Sensor.h"
 #include "HAL_JSON_HA_Switch.h"
+#include "HAL_JSON_HA_Button.h"
 
 namespace HAL_JSON {
 
     const HA_DeviceTypeDef HA_DeviceRegistry[] = {
         {"sensor", Sensor::Create, Sensor::VerifyJSON},
         {"switch",  Switch::Create, Switch::VerifyJSON},
+        {"button", Button::Create, Button::VerifyJSON},
         /** mandatory null terminator */
         {nullptr, nullptr, nullptr}
     };

@@ -9,7 +9,7 @@ namespace test_mqtt {
     const char* mqtt_server   = "127.0.0.1"; // public broker for testing
     const int   mqtt_port     = 1883;
     const char* mqtt_clientID = "DalhalSimWinClient";
-    const char* mqtt_topic    = "dalhal/sim/test";
+    const char* mqtt_topic    = "dalhal/#";
     // -----------------------------------------------------------------------------
     // Callback when a message is received
     // -----------------------------------------------------------------------------
@@ -31,6 +31,7 @@ namespace test_mqtt {
 
         if (mqttClient.connect(mqtt_clientID)) {
             std::cout << "Connected to broker." << std::endl;
+            mqttClient.unsubscribe(mqtt_topic);
             mqttClient.subscribe(mqtt_topic);
             mqttClient.publish(mqtt_topic, "Hello from Windows Dalhal simulator!");
         } else {

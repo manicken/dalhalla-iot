@@ -21,10 +21,16 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_HA_Device.h"
+#pragma once
+
+#define HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "dalhal"
+#define HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATUS "status"
+#define HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATE "state"
+#define HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_COMMAND "command"
+
+
+#define JSON(...) #__VA_ARGS__
 
 namespace HAL_JSON {
 
-    const char* HA_Device::GetCommandTopic() { return nullptr; }
-    void HA_Device::HandleCommand(const ZeroCopyString& payload) { }
 }

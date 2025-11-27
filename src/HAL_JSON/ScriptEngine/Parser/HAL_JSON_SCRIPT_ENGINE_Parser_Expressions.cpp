@@ -322,7 +322,7 @@ namespace HAL_JSON {
                 ReportError("expr. cannot start with a operator");
                 anyError = true;
             }
-            printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
+            //printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
             /*for (int i=tokens.currIndex;i<tokens.currentEndIndex;i++) {
                 printf("%s\n",tokens.items[i].ToString().c_str());
             }*/
@@ -562,7 +562,7 @@ namespace HAL_JSON {
                     }
                 } else {
                     HALValue halValue(HALValue::Type::TEST);
-                    printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
+                    //printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {
                         operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");

@@ -82,6 +82,8 @@ namespace HAL_JSON {
         bool ContainsPtr(const char* ptr) const;
         /** Returns pointer to first occurrence of ch, or nullptr */
         const char* FindChar(char ch) const;
+        /** Returns pointer to first occurrence of ch starting from the end, or nullptr */
+        const char* FindCharReverse(char ch) const;
         /** Returns pointer to first occurrence of ch, or nullptr from the start pointer given*/
         const char* FindChar(char ch, const char* start) const;
         bool ContainsChar(char ch) const;
@@ -129,6 +131,9 @@ namespace HAL_JSON {
          *   // head = "foo", z now represents "bar/baz"
          */
         ZeroCopyString SplitOffHead(char delimiter);
+        ZeroCopyString SplitOffTail(char delimiter);
+        ZeroCopyString SplitOffHead(const char* delimiterPtr);
+        ZeroCopyString SplitOffTail(const char* delimiterPtr);
 
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;

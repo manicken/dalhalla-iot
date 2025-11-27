@@ -22,11 +22,11 @@
 */
 
 #include "HAL_JSON_HA_DeviceDiscovery.h"
+#include "HAL_JSON_HA_Constants.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 #include <cstdarg> // variadic
 
-#define JSON(...) #__VA_ARGS__
 
 namespace HAL_JSON
 {
@@ -35,19 +35,24 @@ namespace HAL_JSON
         
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
+        dryRunPSC.write('{'); // start of json object
+        dryRunPSC.write('\n'); // easier debug prints
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
         HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, topicBasePath);
         if (entityWriter)
             entityWriter(dryRunPSC, jsonObj, topicBasePath);
-
+        dryRunPSC.write('}'); // end of json object
         // second real send 
         HA_DeviceDiscovery::StartSendData(mqtt, jsonObj, topicBasePath, dryRunPSC.count);
+        mqtt.write('{'); // start of json object
+        mqtt.write('\n'); // easier debug prints
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(mqtt, jsonObjGlobal);
         HA_DeviceDiscovery::SendBaseData(mqtt, jsonObj, topicBasePath);
         if (entityWriter)
             entityWriter(mqtt, jsonObj, topicBasePath);
+        mqtt.write('}'); // end of json object
         mqtt.endPublish();
     }
 
@@ -55,10 +60,11 @@ namespace HAL_JSON
         const char* typeStr = GetAsConstChar(jsonObj,"type");
         const char* uidStr = GetAsConstChar(jsonObj,"uid");
         ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
-        int ddTopicLength = snprintf(nullptr, 0, "homeassistant/%s/dalhal_%.*s_%s/config", typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
+        const char* cfgFormatStr = "homeassistant/%s/" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%.*s_%s/config";
+        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
         ddTopicLength++;
         char* topic = new char[ddTopicLength];
-        snprintf(topic, ddTopicLength, "homeassistant/%s/dalhal_%.*s_%s/config", typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
+        snprintf(topic, ddTopicLength, cfgFormatStr, typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
         
         mqtt.beginPublish(topic, packetLength, true);
         delete topic;
@@ -67,9 +73,9 @@ namespace HAL_JSON
     void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         // availability_topic
         const char* jsonFmt_availability_topic = JSON(
-            "availability_topic":"%s",
-            "payload_available":"online",
-            "payload_not_available":"offline",
+            "availability_topic":"%s",\n
+            "payload_available":"online",\n
+            "payload_not_available":"offline",\n
         ); // in the above format the rootTopicPath do allways end with /stat
         const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
         PSC_JsonWriter::printf_str(mqtt, jsonFmt_availability_topic, availabilityTopicStr);
@@ -77,28 +83,22 @@ namespace HAL_JSON
         // optional parameters
         if (jsonObj.containsKey("discovery")) {
             PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
+            mqtt.write(',');
+            mqtt.write('\n');
         }
-        /*const char* uidStr = GetAsConstChar(jsonObj,"uid");
-        const char* nameStr = GetAsConstChar(jsonObj, "name");
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        const char* args[] = { stateTopicStr, deviceIdStr, uidStr, nameStr, nullptr };
-        const char* jsonFmt = JSON(
-            "state_topic":"%0",
-            "unique_id":"dalhal_%1_%2",
-            "name":"%3"
-        ); // in the above format the rootTopicPath do allways end with /stat so to get the word state we only need to add e
-        PSC_JsonWriter::printf_str_indexed(mqtt, jsonFmt, args);
-        */
+        
+        ZeroCopyString zcStateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        ZeroCopyString zcRootNameStr = HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
         ZeroCopyString zcUidStr = GetAsConstChar(jsonObj,"uid");
         ZeroCopyString zcNameStr = GetAsConstChar(jsonObj, "name");
-        ZeroCopyString zcStateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
+
         const char* jsonFmt = JSON(
-            "state_topic":"%s",
-            "unique_id":"dalhal_%s_%s",
-            "name":"%s"
+            "state_topic":"%s",\n
+            "unique_id":"%s_%s_%s",\n
+            "name":"%s"\n
         );
-        PSC_JsonWriter::printf_zcstr(mqtt, jsonFmt, &zcStateTopicStr, &zcDeviceIdStr, &zcUidStr, &zcNameStr);
+        PSC_JsonWriter::printf_zcstr(mqtt, jsonFmt, &zcStateTopicStr, &zcRootNameStr ,&zcDeviceIdStr, &zcUidStr, &zcNameStr);
         // dont write comma here as the caller takes care of that
     }
 
@@ -111,12 +111,12 @@ namespace HAL_JSON
         if (modelStr == nullptr) modelStr = "Virtual Sensor";
 
         const char* jsonFmt = JSON(
-            "device": {
-            "identifiers": ["%s"],
-            "manufacturer": "%s",
-            "model": "%s",
-            "name": "%s"
-            },
+            "device": {\n
+            "identifiers": ["%s"],\n
+            "manufacturer": "%s",\n
+            "model": "%s",\n
+            "name": "%s"\n
+            },\n
         );
         PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, manufacturerStr, modelStr, nameStr);
     }
@@ -137,8 +137,10 @@ namespace HAL_JSON
         const char* value = GetAsConstChar(jsonObj, key);
         mqtt.write((uint8_t*)value, strlen(value));
         mqtt.write('"');
-        if (false == last)
+        if (false == last) {
             mqtt.write(',');
+            mqtt.write('\n');
+        }
     }
 
     void PSC_JsonWriter::SendAllItems(PubSubClient& mqtt, const JsonVariant &jsonObj) {
@@ -149,7 +151,10 @@ namespace HAL_JSON
         int index = 0;
         for (const JsonPair& keyValue : jsonObjItems) {
             PSC_JsonWriter::kv(mqtt, keyValue);
-            if (index < itemCount-1) mqtt.write(',');
+            if (index < itemCount-1) {
+                mqtt.write(',');
+                mqtt.write('\n');
+            }
             index++;
         }
     }
@@ -182,7 +187,10 @@ namespace HAL_JSON
             int itemCount = items.size();
             for (int i=0;i<itemCount;i++) {
                 PSC_JsonWriter::val(mqtt, items[i]);
-                if (i<itemCount-1) mqtt.write(',');
+                if (i<itemCount-1) {
+                    mqtt.write(',');
+                    mqtt.write('\n');
+                }
             }
             mqtt.write(']');
         } else if (valueObj.is<JsonObject>()) {

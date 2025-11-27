@@ -31,58 +31,40 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
-#include "HAL_JSON_HA_Constants.h"
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-
-
-#define HAL_JSON_HOME_ASSISTANT_DEFAULT_PORT 1883
+#include "../../HAL_JSON_CachedDeviceAccess.h"
+#include "HAL_JSON_HA_TopicBasePath.h"
 
 namespace HAL_JSON {
 
-    class HomeAssistant : public Device {
+    class Button : public Device {
+       // using Device::Device;
     private:
-        std::string deviceID;
-        std::string username;
-        std::string password;
-        std::string host; // just for debug???
-        IPAddress ip;
-        uint16_t port;
+        PubSubClient& mqttClient;
+        CachedDeviceAccess* cda;
+        TopicBasePath topicBasePath;
 
-        WiFiClient wifiClient;
-        PubSubClient mqttClient;
-
-        Device** devices;
-        int deviceCount;
-
-        unsigned long lastReconnectAttempt = 0;
-        const unsigned long reconnectInterval = 5000; // 10 seconds
-
-        bool GetFlattenGroupsValidItem(const JsonVariant& jsonObj);
-        void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
-        void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);
-
-        void mqttCallback(char* topic, byte* payload, unsigned int length);
-
-        void SubscribeToCommandTopic();
-
-        void Connect();
-        
+        bool wasOnline;
     public:
 
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
+
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         /** called regulary from the main loop */
         void loop() override;
         /** called when all hal devices has been loaded */
         void begin() override;
-        /** used to find sub/leaf devices @ "group devices" */
-        Device* findDevice(UIDPath& path) override;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        HomeAssistant(const JsonVariant &jsonObj, const char* type);
-        ~HomeAssistant();
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        Button(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        ~Button();
 
 
         String ToString() override;

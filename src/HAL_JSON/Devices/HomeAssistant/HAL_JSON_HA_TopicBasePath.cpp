@@ -22,6 +22,7 @@
 */
 
 #include "HAL_JSON_HA_TopicBasePath.h"
+#include "HAL_JSON_HA_Constants.h"
 #include <stdio.h> // snprintf
 #include <string.h> // strlen
 
@@ -30,10 +31,9 @@ namespace HAL_JSON {
     
     static const TopicSuffix suffixTable[] = {
         { TopicBasePathMode::BaseRoot,     "", 0},
-        { TopicBasePathMode::State,       "state", sizeof("state")-1 },
-        { TopicBasePathMode::Status,      "status", sizeof("status")-1 },
-        { TopicBasePathMode::Availability,"active", sizeof("active")-1 },
-        { TopicBasePathMode::Command,     "command", sizeof("command")-1}
+        { TopicBasePathMode::State,       HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATE, sizeof(HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATE)-1 },
+        { TopicBasePathMode::Status,      HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATUS, sizeof(HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_STATUS)-1 },
+        { TopicBasePathMode::Command,     HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_COMMAND, sizeof(HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_COMMAND)-1}
         
     };
 
@@ -51,9 +51,9 @@ namespace HAL_JSON {
     void TopicBasePath::Set(const char* deviceIdStr, const char* uidStr) {
         if (pathStr != nullptr) return; // can/should only be set once
 
-        // Compute dalhal/<device>/<uid>/ length
+        // Compute <HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME>/<device>/<uid>/ length
         int baseLen = snprintf(nullptr, 0,
-                            "dalhal/%s/%s/", deviceIdStr, uidStr);
+                            HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "/%s/%s/", deviceIdStr, uidStr);
 
         // Compute longest suffix
         size_t maxSuffixLen = 0;
@@ -67,7 +67,7 @@ namespace HAL_JSON {
 
         // Write the base only
         snprintf(pathStr, allocatedSize,
-                "dalhal/%s/%s/", deviceIdStr, uidStr);
+                HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "/%s/%s/", deviceIdStr, uidStr);
 
         // Dynamic part begins here
         pathStrDynamicStart = pathStr + baseLen;

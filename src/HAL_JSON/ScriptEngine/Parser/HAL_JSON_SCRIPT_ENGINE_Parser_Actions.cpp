@@ -118,7 +118,7 @@ namespace HAL_JSON {
                             anyError = true;
                             continue;
                         }
-                        printf("AssignmentParts::rhs= %s (%d)\n",AssignmentParts::rhs.SliceToString().c_str(), AssignmentParts::rhs.SliceTokenCount());
+                        //printf("AssignmentParts::rhs= %s (%d)\n",AssignmentParts::rhs.SliceToString().c_str(), AssignmentParts::rhs.SliceTokenCount());
                         // Validate LHS
                         // here set opMode to ReadWrite on compound operators otherwise write only
                         ValidateOperandMode opMode = ValidateOperandMode::UnSet;

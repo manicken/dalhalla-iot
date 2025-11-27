@@ -27,6 +27,7 @@
 #include "HAL_JSON_HA_TopicBasePath.h"
 #include <WiFi.h>
 #include <Arduino.h>
+#include "HAL_JSON_HA_Constants.h"
 
 namespace HAL_JSON {
 
@@ -51,10 +52,12 @@ namespace HAL_JSON {
     HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
         devices = nullptr; // ensure that it's set
         deviceCount = 0;
+        deviceID = std::string(GetAsConstChar(jsonObj, "deviceId"));
 
         mqttClient.setClient(wifiClient);
         const char* uidStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
+        //Serial.printf("device UID input:>>>%s<<< output:>>>%s<<<\n", uidStr, decodeUID(uid).c_str());
         if (jsonObj.containsKey("port")) {
             port = GetAsUINT16(jsonObj, "port");
         } else {
@@ -72,20 +75,13 @@ namespace HAL_JSON {
             mqttClient.setServer(host.c_str(), port); // last-resort attempt
             // could also have retry when doing automatic reconnect
         }
-
-        clientId = "dalhal_" + std::string(uidStr) + "_" + std::to_string(millis() & 0xFFFF);
-
+        
         if (jsonObj.containsKey("user"))
             username = GetAsConstChar(jsonObj, "user");
         if (jsonObj.containsKey("pass"))
             password = GetAsConstChar(jsonObj, "pass");
 
-        // connect directly here so that device discovery can use it
-        if (username.length() != 0 && password.length() != 0) {
-            mqttClient.connect(clientId.c_str(), username.c_str(), password.c_str());
-        } else {
-            mqttClient.connect(clientId.c_str());
-        }
+        Connect();
 
         if (jsonObj.containsKey("groups")) {
             ConstructDevicesFromFlattenGroupsItems(jsonObj);
@@ -94,25 +90,75 @@ namespace HAL_JSON {
         } else {
             ConstructDevicesNonGrouped(jsonObj);
         }
-        
         mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
             this->mqttCallback(t, p, l);
         });
+        
+    }
+
+    void HomeAssistant::Connect() {
+        const char* clientIdFormat_cStr = "%s_%s_%s";
+        const char* rootName_cStr = HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        std::string uidStr = decodeUID(uid);
+        const char* uid_cStr = uidStr.c_str();
+        const char* deviceID_cStr = deviceID.c_str();
+
+        int commandTopicStrLength = snprintf(nullptr, 0, clientIdFormat_cStr, rootName_cStr, deviceID_cStr, uid_cStr) + 1;
+        char* clientIdStr = new char[commandTopicStrLength];
+        snprintf(clientIdStr, commandTopicStrLength, clientIdFormat_cStr, rootName_cStr, deviceID_cStr, uid_cStr);
+        Serial.printf("connecting using clientId:%s\n", clientIdStr);
+        if (username.length() != 0 && password.length() != 0) { // the default connect is using CleanSession = true
+            if (mqttClient.connect(clientIdStr, username.c_str(), password.c_str()) == false) {
+                Serial.println("ERROR - HASS MQTT could not connect using credentials");
+            }
+        } else {
+            if (mqttClient.connect(clientIdStr) == false) { // the default connect is using CleanSession = true
+                Serial.println("ERROR - HASS MQTT could not connect without credentials");
+            } 
+        }
+        delete[] clientIdStr;
+        if (mqttClient.connected()) {
+            Serial.println("HASS - MQTT connected to brooker");
+            SubscribeToCommandTopic();
+        }
+    }
+
+    void HomeAssistant::SubscribeToCommandTopic() {
+        
+        const char* cmdTopicFormat_cStr = "%s/%s/+/%s";
+        const char* rootName_cStr = HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        const char* cmdName_cStr = HAL_JSON_HOME_ASSISTANT_TOPICBASEPATH_COMMAND;
+        const char* deviceID_cStr = deviceID.c_str();
+        int commandTopicStrLength = snprintf(nullptr, 0, cmdTopicFormat_cStr, rootName_cStr, deviceID_cStr, cmdName_cStr) + 1;
+        char* commandTopicStr = new char[commandTopicStrLength];
+        snprintf(commandTopicStr, commandTopicStrLength, cmdTopicFormat_cStr, rootName_cStr, deviceID_cStr, cmdName_cStr);
+        mqttClient.subscribe(commandTopicStr);
+        delete[] commandTopicStr;
     }
 
     void HomeAssistant::mqttCallback(char* topic, byte* payload, unsigned int length) {
+        Serial.printf("\r\nmqttCallback\r\ntopic:%s\r\n payload:%.*s\r\n", topic, (int)length, (char*)payload);
 
-        const char* lastSlash = strrchr(topic, '/');
-        if (!lastSlash) return;
+        // wrap in a ZeroCopyString for neat functions
+        ZeroCopyString zcTopic(topic);
+
+        // find the lastSlash
+        const char* lastSlash = zcTopic.FindCharReverse('/');
+        if (lastSlash == nullptr) { Serial.println("last slash not found"); return; }
+
+        // split of the tail
+        ZeroCopyString zcTopicTail = zcTopic.SplitOffTail(lastSlash);
+
         const TopicSuffix cmdTopic = GetTopicSuffix(TopicBasePathMode::Command);
-        if (strcmp(lastSlash + 1, cmdTopic.str) != 0) return; // not command
+        if (zcTopicTail != cmdTopic.str) { Serial.printf("\nis not command:%s\n", zcTopicTail.ToString().c_str()); return; } // not command
 
         // find second-to-last slash
-        const char* secondLastSlash = lastSlash;
-        while (secondLastSlash > topic && *secondLastSlash != '/') secondLastSlash--;
-        if (*secondLastSlash != '/') return;
+        const char* secondLastSlash = zcTopic.FindCharReverse('/');
+        if (secondLastSlash == nullptr) { Serial.println("second last slash not found"); return; }
 
-        ZeroCopyString zcUID(secondLastSlash + 1, lastSlash);
+        ZeroCopyString zcUID = zcTopic.SplitOffTail(secondLastSlash);
+        std::string uidDbgStr = zcUID.ToString();
+        Serial.printf("\r\nextracted UID:>>>%s<<<\r\n", uidDbgStr.c_str());
         // encode as uid for fast lockup
         HAL_UID uid = encodeUID(zcUID);
 
@@ -124,8 +170,9 @@ namespace HAL_JSON {
             ZeroCopyString zcCmdStr((char*)payload, (char*)payload+length);
             dev->exec(zcCmdStr);
             //dev->HandleCommand(zcCmdStr);
-            break;  // found a match
+            return;  // found a match
         }
+        Serial.println("device not found");
     }
 
     void HomeAssistant::ConstructDevicesNonGrouped(const JsonVariant& jsonObj) {
@@ -232,8 +279,6 @@ namespace HAL_JSON {
         }
     }
 
-    
-
     String HomeAssistant::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
@@ -250,23 +295,17 @@ namespace HAL_JSON {
         if (!devices) return;
 
         if (mqttClient.connected() == false) {
+            Serial.println("HASS - MQTT connection is down, trying to reconnect");
             unsigned long now = millis();
             if (now - lastReconnectAttempt >= reconnectInterval) {
                 lastReconnectAttempt = now;
-                bool connected = false;
-                if (username.length() != 0 && password.length() != 0) {
-                    connected = mqttClient.connect(clientId.c_str(), username.c_str(), password.c_str());
-                } else {
-                    connected = mqttClient.connect(clientId.c_str());
-                }
-                if (!connected) {
-                    Serial.println("MQTT reconnect failed, will retry...");
-                    return;
-                }
+                Connect();
             } else { 
+                Serial.print('.');
                 return;  // not enough time passed since last attempt
             }
         }
+        mqttClient.loop();
 
         for (int i=0;i<deviceCount;i++) {
             devices[i]->loop();
@@ -275,7 +314,10 @@ namespace HAL_JSON {
     }
 
     void HomeAssistant::begin() {
-
+        if (!devices) return;
+        for (int i=0;i<deviceCount;i++) {
+            devices[i]->begin();
+        }
     }
 
     Device* HomeAssistant::findDevice(UIDPath& path) {
