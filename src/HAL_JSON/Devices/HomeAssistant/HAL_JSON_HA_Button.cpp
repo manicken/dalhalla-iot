@@ -37,9 +37,9 @@ namespace HAL_JSON {
     Button::Button(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
-        const char* deviceIdStr = jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = jsonObjRoot["deviceId"];
   
-        topicBasePath.Set(deviceIdStr, uidStr);
+        topicBasePath.Set(deviceId_cStr, uidStr);
 
         if (ValidateJsonStringField(jsonObj, "target")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
@@ -49,11 +49,13 @@ namespace HAL_JSON {
                 cdr = nullptr;
             }*/
         } else {
-            //cdr = nullptr;
+            cda = nullptr;
         }
         //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
-        wasOnline = false;
+
+        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, cfgTopic_cStr, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
+        delete[] cfgTopic_cStr;
 
         //lastMs = millis()-refreshMs; // force a direct update after start
     }
@@ -65,7 +67,7 @@ namespace HAL_JSON {
         if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "target")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
+            //ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
             /*CachedDeviceAccess cdaTmp;
             if (cdaTmp.Set(zcSrcDeviceUidStr) == false) {
                 SET_ERR_LOC("HA_SENSOR_VJ");
@@ -90,32 +92,6 @@ namespace HAL_JSON {
        
         return ret;
     }
-
-    void Button::loop() {
-
-    }
-    void Button::begin() {
-        const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-        mqttClient.publish(availabilityTopicStr, "online");
-        wasOnline = true;
-    }
-
-    HALOperationResult Button::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Button::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-
-        if (!wasOnline) {
-            const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            mqttClient.publish(availabilityTopicStr, "online");
-            wasOnline = true;
-        }
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        
-        mqttClient.publish(stateTopicStr, "");
-
-        return HALOperationResult::Success;
-    };
 
     HALOperationResult Button::exec(const ZeroCopyString& cmd) {
         return cda->Exec();

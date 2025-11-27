@@ -157,8 +157,8 @@ namespace HAL_JSON {
         if (secondLastSlash == nullptr) { Serial.println("second last slash not found"); return; }
 
         ZeroCopyString zcUID = zcTopic.SplitOffTail(secondLastSlash);
-        std::string uidDbgStr = zcUID.ToString();
-        Serial.printf("\r\nextracted UID:>>>%s<<<\r\n", uidDbgStr.c_str());
+        //std::string uidDbgStr = zcUID.ToString();
+        //Serial.printf("\r\nextracted UID:>>>%s<<<\r\n", uidDbgStr.c_str());
         // encode as uid for fast lockup
         HAL_UID uid = encodeUID(zcUID);
 

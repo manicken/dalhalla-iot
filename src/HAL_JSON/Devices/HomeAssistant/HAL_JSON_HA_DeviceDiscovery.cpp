@@ -31,7 +31,16 @@
 namespace HAL_JSON
 {
 
-    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
+    const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
+        const char* cfgFormatStr = "homeassistant/%s/" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%s_%s/config";
+        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceId_cStr, uid_cStr);
+        ddTopicLength++;
+        char* topicStr = new char[ddTopicLength];
+        snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, deviceId_cStr, uid_cStr);
+        return topicStr;
+    }
+
+    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* cfgTopic_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
@@ -39,47 +48,33 @@ namespace HAL_JSON
         dryRunPSC.write('\n'); // easier debug prints
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(dryRunPSC, jsonObj, topicBasePath);
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, deviceId_cStr, jsonObj);
         if (entityWriter)
             entityWriter(dryRunPSC, jsonObj, topicBasePath);
         dryRunPSC.write('}'); // end of json object
+
         // second real send 
-        HA_DeviceDiscovery::StartSendData(mqtt, jsonObj, topicBasePath, dryRunPSC.count);
+        mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
         if (jsonObjGlobal.isNull() == false)
             HA_DeviceDiscovery::SendDeviceGroupData(mqtt, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(mqtt, jsonObj, topicBasePath);
+        HA_DeviceDiscovery::SendBaseData(mqtt, deviceId_cStr, jsonObj);
         if (entityWriter)
             entityWriter(mqtt, jsonObj, topicBasePath);
         mqtt.write('}'); // end of json object
         mqtt.endPublish();
     }
 
-    void HA_DeviceDiscovery::StartSendData(PubSubClient& mqtt, const JsonVariant &jsonObj, TopicBasePath& topicBasePath, int packetLength) {
-        const char* typeStr = GetAsConstChar(jsonObj,"type");
-        const char* uidStr = GetAsConstChar(jsonObj,"uid");
-        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
-        const char* cfgFormatStr = "homeassistant/%s/" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%.*s_%s/config";
-        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
-        ddTopicLength++;
-        char* topic = new char[ddTopicLength];
-        snprintf(topic, ddTopicLength, cfgFormatStr, typeStr, (int)zcDeviceIdStr.Length(), zcDeviceIdStr.start, uidStr);
-        
-        mqtt.beginPublish(topic, packetLength, true);
-        delete topic;
+    void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
+        const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+        PSC_JsonWriter::kv(mqtt, "availability_topic", availabilityTopicStr); mqtt.write(','); mqtt.write('\n');
+        PSC_JsonWriter::kv(mqtt, "payload_available", HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE); mqtt.write(','); mqtt.write('\n');
+        PSC_JsonWriter::kv(mqtt, "payload_not_available", HAL_JSON_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
     }
 
-    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
-        // availability_topic
-        const char* jsonFmt_availability_topic = JSON(
-            "availability_topic":"%s",\n
-            "payload_available":"online",\n
-            "payload_not_available":"offline",\n
-        ); // in the above format the rootTopicPath do allways end with /stat
-        const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt_availability_topic, availabilityTopicStr);
-
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const char* deviceId_cStr, const JsonVariant& jsonObj) {
+        
         // optional parameters
         if (jsonObj.containsKey("discovery")) {
             PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
@@ -87,38 +82,37 @@ namespace HAL_JSON
             mqtt.write('\n');
         }
         
-        ZeroCopyString zcStateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        ZeroCopyString zcRootNameStr = HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME;
-        ZeroCopyString zcDeviceIdStr = topicBasePath.GetDeviceId();
-        ZeroCopyString zcUidStr = GetAsConstChar(jsonObj,"uid");
-        ZeroCopyString zcNameStr = GetAsConstChar(jsonObj, "name");
+        const char* rootName_cStr = HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        const char* uid_cStr = GetAsConstChar(jsonObj,"uid");
+        const char* name_cStr = GetAsConstChar(jsonObj, "name");
 
-        const char* jsonFmt = JSON(
-            "state_topic":"%s",\n
-            "unique_id":"%s_%s_%s",\n
-            "name":"%s"\n
-        );
-        PSC_JsonWriter::printf_zcstr(mqtt, jsonFmt, &zcStateTopicStr, &zcRootNameStr ,&zcDeviceIdStr, &zcUidStr, &zcNameStr);
-        // dont write comma here as the caller takes care of that
+        PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, deviceId_cStr, uid_cStr);
+        PSC_JsonWriter::kv(mqtt, "name", name_cStr);
     }
 
     void HA_DeviceDiscovery::SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup) {
         const char* deviceGroupUIDstr = GetAsConstChar(jsonObjDeviceGroup,"uid");
         const char* nameStr = GetAsConstChar(jsonObjDeviceGroup, "name");
-        const char* manufacturerStr = GetAsConstChar(jsonObjDeviceGroup, "manufacturer");
-        if (manufacturerStr == nullptr) manufacturerStr = "Dalhal";
-        const char* modelStr = GetAsConstChar(jsonObjDeviceGroup, "model");
-        if (modelStr == nullptr) modelStr = "Virtual Sensor";
-
+        
         const char* jsonFmt = JSON(
             "device": {\n
             "identifiers": ["%s"],\n
-            "manufacturer": "%s",\n
-            "model": "%s",\n
-            "name": "%s"\n
-            },\n
+            "name": "%s"
         );
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, manufacturerStr, modelStr, nameStr);
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, nameStr);
+
+        const char* manufacturer_cStr = GetAsConstChar(jsonObjDeviceGroup, "manufacturer");
+        if (manufacturer_cStr != nullptr) {
+            PSC_JsonWriter::printf_str(mqtt, JSON(,\n"manufacturer": "%s"), manufacturer_cStr);
+        }
+        const char* model_cStr = GetAsConstChar(jsonObjDeviceGroup, "model");
+        if (model_cStr != nullptr) {
+            PSC_JsonWriter::printf_str(mqtt, JSON(,\n"model": "%s"), model_cStr);
+        }
+        mqtt.write('\n');
+        mqtt.write('}');
+        mqtt.write(',');
+        mqtt.write('\n');
     }
 
     void PSC_JsonWriter::key(PubSubClient& mqtt, const char* key) {

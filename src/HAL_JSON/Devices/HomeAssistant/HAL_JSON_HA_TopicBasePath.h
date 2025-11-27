@@ -31,7 +31,6 @@ namespace HAL_JSON {
         BaseRoot,
         State,
         Status,
-        Availability,
         Command
     };
     

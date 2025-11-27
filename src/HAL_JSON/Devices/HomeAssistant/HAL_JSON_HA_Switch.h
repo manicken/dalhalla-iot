@@ -46,7 +46,7 @@ namespace HAL_JSON {
         CachedDeviceAccess* cda;
         TopicBasePath topicBasePath;
 
-        bool wasOnline;
+        bool momentary;
     public:
         static const char* PAYLOAD_ON;
         static const char* PAYLOAD_OFF;
@@ -57,11 +57,6 @@ namespace HAL_JSON {
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         
-        /** called regulary from the main loop */
-        void loop() override;
-        /** called when all hal devices has been loaded */
-        void begin() override;
-
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);

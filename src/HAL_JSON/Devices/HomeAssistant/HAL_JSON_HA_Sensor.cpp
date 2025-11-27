@@ -30,15 +30,19 @@ namespace HAL_JSON {
 
 
     void Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
-        
+        mqtt.write(',');
+        mqtt.write('\n');
+        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, topicBasePath);
+        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(UIDPathMaxLength::One,type) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
-        const char* deviceIdStr = jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = jsonObjRoot["deviceId"];
   
-        topicBasePath.Set(deviceIdStr, uidStr);
+        topicBasePath.Set(deviceId_cStr, uidStr);
 
         if (ValidateJsonStringField(jsonObj, "source")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
@@ -51,7 +55,11 @@ namespace HAL_JSON {
             cdr = nullptr;
         }
         refreshMs = ParseRefreshTimeMs(jsonObj, HAL_JSON_HA_SENSOR_DEFAULT_REFRESH_MS);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, jsonObj, jsonObjGlobal, topicBasePath, Sensor::SendDeviceDiscovery);
+
+        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, cfgTopic_cStr, jsonObj, jsonObjGlobal, topicBasePath, Sensor::SendDeviceDiscovery);
+        delete[] cfgTopic_cStr;
+
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start
     }
@@ -104,7 +112,7 @@ namespace HAL_JSON {
         if (res == HALOperationResult::Success) {
             if (!wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                mqttClient.publish(availabilityTopicStr, "online");
+                mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
                 wasOnline = true;
             }
             const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
@@ -112,7 +120,7 @@ namespace HAL_JSON {
         } else {
             if (wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                mqttClient.publish(availabilityTopicStr, "offline");
+                mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
                 wasOnline = false;
             }
         }
@@ -123,8 +131,7 @@ namespace HAL_JSON {
 
     HALOperationResult Sensor::read(HALValue& val) {
         if (cdr != nullptr) {
-            cdr->ReadSimple(val);
-            return HALOperationResult::Success;
+            return cdr->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
 
@@ -134,7 +141,7 @@ namespace HAL_JSON {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
             const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            mqttClient.publish(availabilityTopicStr, "online");
+            mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
             wasOnline = true;
         }
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);

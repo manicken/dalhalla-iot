@@ -35,6 +35,8 @@ namespace HAL_JSON
         count++;
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         std::cout << (char)b;
+#elif defined(ESP8266) || defined(ESP32)
+        Serial.write(b);
 #endif
         return 1;
     }
@@ -43,6 +45,8 @@ namespace HAL_JSON
         count += size;
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         std::cout.write((const char*)buffer, size);
+#elif defined(ESP8266) || defined(ESP32)
+        Serial.write(buffer, size);
 #endif
         return size;
     }
