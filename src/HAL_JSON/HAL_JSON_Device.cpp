@@ -88,8 +88,13 @@ namespace HAL_JSON {
             if (!dev) continue;
 
             if (dev->uid == currUID) {
-                if ((dev->uidMaxLength == UIDPathMaxLength::One) || path.isLast()) {
-                    return dev;  // exact match
+                if (dev->uidMaxLength == UIDPathMaxLength::One) {
+                    if (path.isLast())
+                        return dev;  // exact match, path ends here
+                    else {
+                        GlobalLogger.Error(F("Device UIDPathMaxLength::One cannot resolve multi-segment path"), dev->type);
+                        return nullptr; // path has more segments but device can't have children
+                    }
                 } else {
                     // If a device matched the currUID but couldn't directly resolve the full path,
                     // attempt an indirect lookup via the matched device.

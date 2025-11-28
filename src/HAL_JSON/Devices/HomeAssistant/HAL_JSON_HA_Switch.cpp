@@ -121,8 +121,10 @@ namespace HAL_JSON {
         } else {
             mqttClient.publish(stateTopicStr, Switch::PAYLOAD_ON);
         }
-
-        return cda->WriteSimple(val);
+        if (cda != nullptr) {
+            return cda->WriteSimple(val);
+        }
+        return HALOperationResult::UnsupportedOperation;
     };
 
     HALOperationResult Switch::exec(const ZeroCopyString& cmd) {

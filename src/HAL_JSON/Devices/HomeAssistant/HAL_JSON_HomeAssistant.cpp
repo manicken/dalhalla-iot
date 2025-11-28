@@ -49,7 +49,7 @@ namespace HAL_JSON {
         return new HomeAssistant(jsonObj, type);
     }
     
-    HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
         devices = nullptr; // ensure that it's set
         deviceCount = 0;
         deviceID = std::string(GetAsConstChar(jsonObj, "deviceId"));
@@ -321,7 +321,7 @@ namespace HAL_JSON {
     }
 
     Device* HomeAssistant::findDevice(UIDPath& path) {
-        return Device::findInArray(reinterpret_cast<Device**>(devices), deviceCount, path, this);
+        return Device::findInArray(devices, deviceCount, path, this);
     }
 
     
