@@ -136,7 +136,6 @@ namespace Drivers {
     void REGO600::ManualRequest_Schedule(RequestMode reqMode) {
         manualRequest_Mode = reqMode;
         if (requestInProgress == false) {
-            requestInProgress = true;
             ManualRequest_PrepareAndSend(); // this will start send the request
         }
         else {
@@ -171,13 +170,14 @@ namespace Drivers {
         mode = manualRequest_Mode;
         auto info = getCmdInfo(uartTxBuffer[1]);
         currentExpectedRxLength = info->size;
-        REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
+        SendRequestFrameAndResetRx();
         return true;
     }
 
     void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb) {
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
+            Serial.println("manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -188,6 +188,7 @@ namespace Drivers {
     void REGO600::RequestWholeLCD(RequestCallback cb) {
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
+            Serial.println("manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -196,6 +197,7 @@ namespace Drivers {
     void REGO600::RequestFrontPanelLeds(RequestCallback cb) {
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
+            Serial.println("manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -203,18 +205,19 @@ namespace Drivers {
     }
 
     void REGO600::RefreshLoop_SendCurrent() {
+        
         uartTxBuffer[1] = refreshLoopList[refreshLoopIndex]->opcode;
         SetRequestAddr(refreshLoopList[refreshLoopIndex]->address);
         CalcAndSetTxChecksum();
-        auto info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
+        const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
         currentExpectedRxLength = info->size;
-        REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
+        SendRequestFrameAndResetRx();
     }
 
     void REGO600::RefreshLoop_Restart() {
         lastUpdateMs = millis();
         refreshLoopIndex = 0;
-        RefreshLoop_SendCurrent();
+        RefreshLoop_SendCurrent();   
     }
 
     void REGO600::RefreshLoop_Continue() {
@@ -230,8 +233,9 @@ namespace Drivers {
         }
     }
     bool REGO600::RefreshLoopDone() {
-        if (refreshLoopDone == false)
+        if (refreshLoopDone == false) {
             return false;
+        }
         refreshLoopDone = false;
         return true;
     }
@@ -241,14 +245,14 @@ namespace Drivers {
         if (requestInProgress == false) { 
             //  here we just take care of any glitches and receive garbage data if any
             ClearUARTRxBuffer(REGO600_UART_TO_USE);
-            if (mode != RequestMode::RefreshLoop) return;
-            if (refreshLoopList == nullptr) return;
+            //if (mode != RequestMode::RefreshLoop) { return; }
+            if (refreshLoopList == nullptr) { return; }
 
             uint32_t now = millis();
             if (now - lastUpdateMs >= refreshTimeMs) {
-                RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs
+                RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
             }
-            return;
+            return; // usually dont expect a response directly
         }
 
         uint32_t failsafeReadCount = 0;
@@ -262,22 +266,25 @@ namespace Drivers {
                         refreshLoopList[refreshLoopIndex]->SetFromBuffer(uartRxBuffer);
                         if (manualRequest_Pending) {
                             manualRequest_Pending = false;
-                            if (ManualRequest_PrepareAndSend() == true)
+                            if (ManualRequest_PrepareAndSend() == true) {
                                 return;
+                            }
                         }
                         RefreshLoop_Continue();
 
                     } else if (mode == RequestMode::Lcd) {
                         for (int bi=1,ti=0;ti<20;bi+=2,ti++) {
-                            readLCD_Text[ti+readLCD_RowIndex*20] = uartRxBuffer[bi]*16 + uartRxBuffer[bi];
+                            readLCD_Text[ti+readLCD_RowIndex*20] = uartRxBuffer[bi]*16 + uartRxBuffer[bi+1];
                         }
                         if (readLCD_RowIndex == 3) { // this was the last row
                             
                             // execute a callback here
-                            if (manualRequest_Callback != nullptr)
+                            if (manualRequest_Callback != nullptr) {
                                 manualRequest_Callback(readLCD_Text, manualRequest_Mode);
-                            else
+                            } else {
                                 GlobalLogger.Error(F("LCD - mReqCB not set"));
+                                Serial.println("LCD - mReqCB not set");
+                            }
 
                             mode = RequestMode::RefreshLoop;
                             manualRequest_Mode = RequestMode::RefreshLoop;
@@ -286,23 +293,26 @@ namespace Drivers {
                             readLCD_RowIndex++;
                             uartTxBuffer[4] = readLCD_RowIndex;
                             uartTxBuffer[8] = readLCD_RowIndex;
-                            REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
+                            SendRequestFrameAndResetRx();
                         }
                     } else if (mode == RequestMode::FrontPanelLeds) {
-                        if (uartRxBuffer[3] == 0x01) readFrontPanelLeds_Data |= 0x01;
+                        if (uartRxBuffer[3] == 0x01) { 
+                            readFrontPanelLeds_Data |= 0x01;
+                        }
                         if (readFrontPanelLedsIndex != 4) {
                             readFrontPanelLedsIndex++;
                             readFrontPanelLeds_Data <<= 1; // shift data to the right
                             uartTxBuffer[4] = readFrontPanelLedsIndex + 0x12;
                             uartTxBuffer[8] = readFrontPanelLedsIndex + 0x12;
-                            REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
+                            SendRequestFrameAndResetRx();
                         } else {
                             
-                            if (manualRequest_Callback != nullptr)
+                            if (manualRequest_Callback != nullptr) {
                                 manualRequest_Callback(&readFrontPanelLeds_Data, manualRequest_Mode);
-                            else
+                            } else {
                                 GlobalLogger.Error(F("FP - mReqCB not set"));
-
+                                Serial.println("FP - mReqCB not set");
+                            }
                             mode = RequestMode::RefreshLoop;
                             manualRequest_Mode = RequestMode::RefreshLoop;
                             RefreshLoop_Continue();
@@ -319,6 +329,7 @@ namespace Drivers {
                         else {
                             //manuallyRequest.reset(); // free the current data
                             GlobalLogger.Error(F("OT - mReqCB not set"));
+                            Serial.println("OT - mReqCB not set");
                         }
                         manualRequest.reset(); // free the current data
                         mode = RequestMode::RefreshLoop;
@@ -329,29 +340,36 @@ namespace Drivers {
                 }
             } else {
                 requestInProgress = false; // to make the remaining data reads faster, if any 
+                mode = RequestMode::RefreshLoop;
                 ClearUARTRxBuffer(REGO600_UART_TO_USE);
                 GlobalLogger.Error(F("REGO600 - uartRxBuffer full"));
+                Serial.println("REGO600 - uartRxBuffer full");
                 //if (this->ws.count() > 0) this->ws.textAll("{\"error\":\"uartRxBuffer full\"}\n");
             }
         }
         if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
             GlobalLogger.Error(F("REGO600 - read failsafe overflow"));
+            Serial.println("REGO600 - read failsafe overflow");
         }
     }
 
-    void REGO600::SendReq(uint16_t address) {
+    void REGO600::SendRequestFrameAndResetRx() {
         uartRxBufferIndex = 0;
-        SetRequestAddr(address);
-        CalcAndSetTxChecksum();
+        requestInProgress = true;
         REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
     }
 
+    void REGO600::SendReq(uint16_t address) {
+        SetRequestAddr(address);
+        CalcAndSetTxChecksum();
+        SendRequestFrameAndResetRx();
+    }
+
     void REGO600::Send(uint16_t address, uint16_t data) {
-        uartRxBufferIndex = 0;
         SetRequestAddr(address);
         SetRequestData(data);
         CalcAndSetTxChecksum();
-        REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
+        SendRequestFrameAndResetRx();
     }
 
     void REGO600::SetRequestAddr(uint16_t address) {

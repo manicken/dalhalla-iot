@@ -177,6 +177,7 @@ namespace Drivers {
         void SetRequestData(uint16_t data);
         void SendReq(uint16_t address);
         void Send(uint16_t address, uint16_t data);
+        void SendRequestFrameAndResetRx();
         //void SendNextRequest();
         void StartSendOneRegisterReadRequest(uint16_t address);
         void CalcAndSetTxChecksum();

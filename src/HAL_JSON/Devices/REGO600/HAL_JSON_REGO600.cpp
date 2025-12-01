@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 

@@ -302,15 +302,14 @@ namespace HAL_JSON {
         if (!devices) return;
 
         if (mqttClient.connected() == false) {
-            Serial.println("HASS - MQTT connection is down, trying to reconnect");
+            
             unsigned long now = millis();
             if (now - lastReconnectAttempt >= reconnectInterval) {
                 lastReconnectAttempt = now;
+                Serial.println("HASS - MQTT connection is down, trying to reconnect");
                 Connect();
-            } else { 
-                Serial.print('.');
-                return;  // not enough time passed since last attempt
             }
+            return;
         }
         mqttClient.loop();
 
