@@ -177,6 +177,7 @@ namespace HAL_JSON {
         return Device::findInArray(devices, deviceCount, path, nullptr);
     }
 
+    /* obsolete functions
     HALOperationResult Manager::read(const HALReadRequest &req) {
         Device* device = findDevice(req.path);
         if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
@@ -223,6 +224,7 @@ namespace HAL_JSON {
         if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
         return device->exec(cmd);
     }
+        */
 
     bool Manager::ReadJSON(const char* path) {
         if (path == nullptr) {
@@ -305,23 +307,39 @@ namespace HAL_JSON {
      * it's just to check that everything is correct
      * in the future it could be a real TEST function
     */
-    void Manager::TEST() {
-        std::string result;
-        ZeroCopyString cmd("getDevices");
+    /*void Manager::TEST() {
 
-        HALReadStringRequestValue strVal = {cmd, result};
-        UIDPath path("1WTG");
-        HALReadStringRequest req{path, strVal};
-        if (read(req) == HALOperationResult::Success) {
+        ZeroCopyString zcPath = "1WTG";
+        UIDPath path(zcPath);
+        Device* device = Manager::findDevice(path);
+        if (device == nullptr) {
+            std::string msg = "\"error\":\"device not found: " + zcPath.ToString() + "\"";
+            Serial.println(msg.c_str());
+            
+        } else {
+            std::string result;
+            ZeroCopyString cmd("getDevices");
+            HALReadStringRequestValue strVal = {cmd, result};
+            //HALReadStringRequest req{path, strVal};
+            if (device->read(strVal) == HALOperationResult::Success) {
 
-            Serial.println(result.c_str());
+                Serial.println(strVal.out_value.c_str());
+            }
         }
 
-        HALValue value;
-        UIDPath path2("1WTG:D2");
-        HALReadRequest req2(path2, value);
-        if (read(req2) == HALOperationResult::Success) {
-            Serial.println(value.asFloat());
+        ZeroCopyString zcPath2 = "1WTG:D2";
+        UIDPath path2(zcPath2);
+        Device* device2 = Manager::findDevice(path2);
+        if (device2 == nullptr) {
+            std::string msg = "\"error\":\"device not found: " + zcPath2.ToString() + "\"";
+            Serial.println(msg.c_str());
+            
+        } else {
+            HALValue value;
+            //HALReadRequest req2(path2, value); // obsolete
+            if (device2->read(value) == HALOperationResult::Success) {
+                Serial.println(value.asFloat());
+            }
         }
-    }
+    }*/
 }

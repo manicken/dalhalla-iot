@@ -51,6 +51,7 @@ namespace HAL_JSON {
         static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
+        HALOperationResult exec() override;
         
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);

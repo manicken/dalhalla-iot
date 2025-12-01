@@ -23,7 +23,21 @@
 
 #include "HAL_JSON_Device.h"
 
+//#define PRINT_FAIL_OPERATION_DEBUG_MESSAGE
+
+#ifdef PRINT_FAIL_OPERATION_DEBUG_MESSAGE
+#define PrintReadFailOperation(KIND) Serial.printf("rd(" KIND ") @ type:%s",type); 
+#define PrintWriteFailOperation(KIND) Serial.printf("wr(" KIND ") @ type:%s",type);
+#define PrintExecFailOperation(KIND) Serial.printf("exec(" KIND ") @ type:%s",type);
+#else
+#define PrintReadFailOperation(KIND)
+#define PrintWriteFailOperation(KIND)
+#define PrintExecFailOperation(KIND)
+#endif
+
 namespace HAL_JSON {
+
+    const char* Device::GetType() { return type; } 
 
     Device::Device(UIDPathMaxLength uidMaxLength, const char* type) : uidMaxLength(uidMaxLength), type(type) { }
 
@@ -41,16 +55,47 @@ namespace HAL_JSON {
 
     String Device::ToString() { return ""; }
 
-    HALOperationResult Device::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::write(const HALValue& val) { return HALOperationResult::UnsupportedOperation; };
-    HALOperationResult Device::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Device::exec(const ZeroCopyString& zcStr) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Device::read(HALValue& val) { 
+        PrintReadFailOperation("HALValue&");
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Device::write(const HALValue& val) { 
+        PrintWriteFailOperation("HALValue&"); 
+        return HALOperationResult::UnsupportedOperation;
+    };
+    HALOperationResult Device::read(const HALValue& bracketSubscriptVal, HALValue& val) { 
+        PrintReadFailOperation("HALValue&, HALValue&"); 
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Device::write(const HALValue& bracketSubscriptVal, const HALValue& val) { 
+        PrintWriteFailOperation("HALValue&, HALValue&"); 
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Device::read(const HALReadStringRequestValue& val) { 
+        PrintReadFailOperation("HALReadStringRequestValue&"); 
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Device::write(const HALWriteStringRequestValue& val) { 
+        PrintWriteFailOperation("HALWriteStringRequestValue&"); 
+        return HALOperationResult::UnsupportedOperation; 
+    }
+    HALOperationResult Device::read(const HALReadValueByCmd& val) { 
+        PrintReadFailOperation("HALReadValueByCmd&"); 
+        return HALOperationResult::UnsupportedOperation; 
+    }
+    HALOperationResult Device::write(const HALWriteValueByCmd& val) { 
+        PrintWriteFailOperation("HALWriteValueByCmd&"); 
+        return HALOperationResult::UnsupportedOperation; 
+    }
+    HALOperationResult Device::exec() { 
+        PrintExecFailOperation(""); 
+        return HALOperationResult::UnsupportedOperation; 
+    }
+    HALOperationResult Device::exec(const ZeroCopyString& zcStr) { 
+        PrintExecFailOperation("ZeroCopyString&"); 
+        return HALOperationResult::UnsupportedOperation; 
+    }
+
     Device::ReadToHALValue_FuncType Device::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::WriteHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::Exec_FuncType Device::GetExec_Function(ZeroCopyString& zcFuncName) { return nullptr; }

@@ -53,6 +53,8 @@ namespace HAL_JSON {
         const char* type;
         bool loopTaskDone = false;
     public:
+        const char* GetType();
+        
         using Exec_FuncType = HALOperationResult (*)(Device*);
         using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue& outValue);
         using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue& value);

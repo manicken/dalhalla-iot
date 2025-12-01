@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
+#include "HAL_JSON/HAL_JSON_ZeroCopyString.h"
 
 #include <time.h>
 
@@ -50,6 +50,8 @@ struct LogEntry {
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message);
       void Set(time_t time, Loglevel level, uint32_t errorCode, const char* text);
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message, const char* text);
+      void Set(time_t time, Loglevel level, uint32_t errorCode, const HAL_JSON::ZeroCopyString& zcStr);
+      void Set(time_t time, Loglevel level, const __FlashStringHelper* message, const HAL_JSON::ZeroCopyString& zcStr);
 
       ~LogEntry();
 
@@ -69,17 +71,17 @@ class Logger {
     void Error(const __FlashStringHelper* msg);
     void Error(uint32_t code, const char* text);
     void Error(const __FlashStringHelper* msg, const char* text);
-    void Error(const __FlashStringHelper* msg, const JsonVariant& jsonObj);
+    void Error(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr);
     void Info(uint32_t code);
     void Info(const __FlashStringHelper* msg);
     void Info(uint32_t code, const char* text);
     void Info(const __FlashStringHelper* msg, const char* text);
-    void Info(const __FlashStringHelper* msg, const JsonVariant& jsonObj);
+    void Info(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr);
     void Warn(uint32_t code);
     void Warn(const __FlashStringHelper* msg);
     void Warn(uint32_t code, const char* text);
     void Warn(const __FlashStringHelper* msg, const char* text);
-    void Warn(const __FlashStringHelper* msg, const JsonVariant& jsonObj);
+    void Warn(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr);
     void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
 
     

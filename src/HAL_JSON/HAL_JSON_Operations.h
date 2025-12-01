@@ -37,11 +37,11 @@ namespace HAL_JSON {
         const ZeroCopyString& cmd;
         HALWriteValueByCmd(const HALValue& value, const ZeroCopyString& cmd): value(value), cmd(cmd) {}
     };
-    struct HALWriteValueByCmdReq {
+    /*struct HALWriteValueByCmdReq { // obsolete
         UIDPath& path;
         const HALWriteValueByCmd& valByCmd;
         HALWriteValueByCmdReq(UIDPath& p, const HALWriteValueByCmd& valByCmd) : path(p), valByCmd(valByCmd) {}
-    };
+    };*/
     enum class HALOperationResult {
         Success = 0,
         DeviceNotFound = 1,
@@ -88,23 +88,23 @@ namespace HAL_JSON {
         HALReadValueByCmd(HALValue& out, const ZeroCopyString& cmd): out_value(out), cmd(cmd) {}
     };
 
-    struct HALReadValueByCmdReq {
+    /*struct HALReadValueByCmdReq { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         const HALReadValueByCmd& valByCmd;
         HALReadValueByCmdReq(UIDPath& p, const HALReadValueByCmd& valByCmd) : path(p), valByCmd(valByCmd) {}
-    };
+    };*/
 
-    struct HALReadRequest {
+    /*struct HALReadRequest { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         HALValue& out_value;
         HALReadRequest(UIDPath& p, HALValue& out) : path(p), out_value(out) {}
-    };
+    };*/
 
-    struct HALWriteRequest {
+    /*struct HALWriteRequest { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         const HALValue& value;
         HALWriteRequest(UIDPath& p, const HALValue& val) : path(p), value(val) {}
-    };
+    };*/
 
     struct HALReadStringRequestValue {
         std::string& out_value;
@@ -118,17 +118,17 @@ namespace HAL_JSON {
         HALWriteStringRequestValue(const ZeroCopyString& value, std::string& result): value(value), result(result) {}
     };
 
-    struct HALReadStringRequest {
+    /*struct HALReadStringRequest { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         HALReadStringRequestValue& value;
         HALReadStringRequest(UIDPath& p, HALReadStringRequestValue& value) : path(p), value(value) {}
-    };
+    };*/
 
-    struct HALWriteStringRequest {
+    /*struct HALWriteStringRequest { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         HALWriteStringRequestValue& value;
         HALWriteStringRequest(UIDPath& p, HALWriteStringRequestValue& value) : path(p), value(value) {}
-    };
+    };*/
 
     struct HALStringRequestValue {
         const ZeroCopyString& output;
@@ -136,9 +136,9 @@ namespace HAL_JSON {
         HALStringRequestValue(const ZeroCopyString& output, std::string& input): output(output), input(input) {}
     };
 
-    struct HALStringRequest {
+    /*struct HALStringRequest { // obsolete
         UIDPath& path; // need to be non const as it's mutable
         HALStringRequestValue& value;
         HALStringRequest(UIDPath& p, HALStringRequestValue& value) : path(p), value(value) {}
-    };
+    };*/
 }

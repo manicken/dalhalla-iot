@@ -66,6 +66,10 @@ namespace HAL_JSON {
          * note this is mostly intended for debug or when the string is needed somewhere else 
          */
         std::string ToString() const;
+        /**
+         * returns copy of the string as a null terminated char* array using malloc so free must be used
+         */
+        char* ToCharString() const;
         ZeroCopyString();
         ZeroCopyString(const char* start, const char* end);
         /**

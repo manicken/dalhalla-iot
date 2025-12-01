@@ -97,4 +97,8 @@ namespace HAL_JSON {
         return cda->Exec();
     }
 
+    HALOperationResult Button::exec() {
+        return cda->Exec();
+    }
+
 }

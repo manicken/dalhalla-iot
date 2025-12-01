@@ -61,6 +61,18 @@ namespace HAL_JSON {
         if (!start || !end || end < start) return {};
         return std::string(start, end);
     }
+
+    char* ZeroCopyString::ToCharString() const {
+        if (IsEmpty()) return nullptr;
+        const size_t len = Length();
+        char* str = static_cast<char*>(malloc(len + 1));
+        if (!str) return nullptr;  // malloc failed
+
+        memcpy(str, start, len);  // Data() is assumed to return pointer to content
+        str[len] = '\0';
+
+        return str;
+    }
     bool ZeroCopyString::ContainsPtr(const char* ptr) const {
         if (!ptr || !start || !end || (end <= start) || ptr<start || ptr>=end) return false;
         return true;

@@ -84,6 +84,32 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     isNew = true;
     source = nullptr;
 }
+void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const HAL_JSON::ZeroCopyString& zcStr) {
+    timestamp = time;
+    level = _level;
+    errorCode = _errorCode;
+    if (text != nullptr) { free(text); text = nullptr; }
+
+    // safe to just use the following as when zcStr is empty it returns nullptr
+    text = zcStr.ToCharString();  // <-- heap-allocate using malloc and copy the string
+
+    isCode = true;
+    isNew = true;
+    source = nullptr;
+}
+void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message, const HAL_JSON::ZeroCopyString& zcStr) {
+    timestamp = time;
+    level = _level;
+    message = _message;
+    if (text != nullptr) { free(text); text = nullptr; }
+
+    // safe to just use the following as when zcStr is empty it returns nullptr
+    text = zcStr.ToCharString();  // <-- heap-allocate using malloc and copy the string
+
+    isCode = false;
+    isNew = true;
+    source = nullptr;
+}
 LogEntry::~LogEntry() {
     if (text) {
         free(text);
@@ -122,10 +148,8 @@ void Logger::Error(const __FlashStringHelper* msg, const char* text) {
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, text);
     advance();
 }
-void Logger::Error(const __FlashStringHelper* msg, const JsonVariant& jsonObj) {
-    String jsonStr;
-    serializeJson(jsonObj, jsonStr);
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, jsonStr.c_str());
+void Logger::Error(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, zcStr);
     advance();
 }
 void Logger::Info(uint32_t code) {
@@ -144,10 +168,8 @@ void Logger::Info(const __FlashStringHelper* msg, const char* text) {
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, text);
     advance();
 }
-void Logger::Info(const __FlashStringHelper* msg, const JsonVariant& jsonObj) {
-    String jsonStr;
-    serializeJson(jsonObj, jsonStr);
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, jsonStr.c_str());
+void Logger::Info(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, zcStr);
     advance();
 }
 void Logger::Warn(uint32_t code) {
@@ -166,10 +188,8 @@ void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, text);
     advance();
 }
-void Logger::Warn(const __FlashStringHelper* msg, const JsonVariant& jsonObj) {
-    String jsonStr;
-    serializeJson(jsonObj, jsonStr);
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, jsonStr.c_str());
+void Logger::Warn(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, zcStr);
     advance();
 }
 

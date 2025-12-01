@@ -105,8 +105,9 @@ namespace HAL_JSON {
                 ScriptEngine::ScriptsBlock::running = true;
             } else {
                 anyErrors = true;
-                message += "\"error\":\"Unknown scripts subcommand.\"";
-                message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
+                GlobalLogger.Error(F("Unknown scripts subcommand: "), zcSubCmd);
+                //message += "\"error\":\"Unknown scripts subcommand.\"";
+                //message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
             }
             if (anyErrors == false)
                 message += "\"info\":\"OK\"";
@@ -123,23 +124,18 @@ namespace HAL_JSON {
         else
         {
             anyErrors = true;
-            message += "\"error\":\"Unknown command.\"";
-            message += ",\"command\":\""+zcCommand.ToString()+"\"";
+            GlobalLogger.Error(F("Unknown command: "), zcCommand);
+            //message += "\"error\":\"Unknown command.\"";
+            //message += ",\"command\":\""+zcCommand.ToString()+"\"";
         }
         if (anyErrors) {
 
-            try {
-                const LogEntry& lastEntry = GlobalLogger.getLastEntry();
+            const LogEntry& lastEntry = GlobalLogger.getLastEntry();
+            if (lastEntry.level == Loglevel::Error) {
                 String lastEntryStr = lastEntry.MessageToString();
                 message += "\"error\":\"";
                 message += lastEntryStr.c_str();
                 message += "\"";
-                
-            } catch (const std::exception& e) {
-                message += "\"info\":\"EXCEPTION: ";
-                message += e.what();
-                message += "\",";
-                anyErrors = true;
             }
         }
         message = "{" + message;
@@ -187,113 +183,138 @@ namespace HAL_JSON {
 #ifdef HAL_JSON_CommandExecutor_DEBUG_CMD
         message += params.ToString() + "},";
 #endif
-
-        if (params.zcValue.Length() == 0) {
-            message += "\"error\":\"No value provided for writing.\"";
+        // check if have uid given
+        if (params.zcUid.IsEmpty()) {
+            GlobalLogger.Error(F("uid path is empty"));
+            //message += "\"error\":\"uid path is empty\"";
             return false;
-        } else {
-            HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
+        }
+        // check if device exists
+        UIDPath uidPath(params.zcUid);
+        Device* device = Manager::findDevice(uidPath);
+        if (device == nullptr) {
+            GlobalLogger.Error(F("device not found: "), params.zcUid);
+            //message += "\"error\":\"device not found\"";
+            //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
+            return false;
+        }
+        // write need a value
+        if (params.zcValue.Length() == 0) {
+            GlobalLogger.Error(F("No value provided for writing."));
+            //message += "\"error\":\"No value provided for writing.\"";
+            return false;
+        }
 
-            if (params.zcType == HAL_JSON_CMD_EXEC_BOOL_TYPE) {
-                uint32_t uintValue = 0;
+        HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
 
-                if ((params.zcValue == "true") || (params.zcValue == "1")) {
-                    uintValue = 1;
-                } else if ((params.zcValue == "false") || (params.zcValue == "0")) {
-                    uintValue = 0;
-                } else {
+        if (params.zcType == HAL_JSON_CMD_EXEC_BOOL_TYPE) {
+            uint32_t uintValue = 0;
 
-                    message += "{\"error\":\"Invalid boolean value.\"}";
-                    return false;
-                }
+            if ((params.zcValue == "true") || (params.zcValue == "1")) {
+                uintValue = 1;
+            } else if ((params.zcValue == "false") || (params.zcValue == "0")) {
+                uintValue = 0;
+            } else {
 
-                UIDPath uidPath(params.zcUid);
+                //message += "{\"error\":\"Invalid boolean value.\"}";
+                GlobalLogger.Error(F("Invalid boolean value."));
+                return false;
+            }
+
+            //UIDPath uidPath(params.zcUid); // obsolete
+            HALValue halValue = uintValue;
+            //HALWriteRequest req(uidPath, halValue); // obsolete
+
+            writeResult = device->write(halValue);
+            if (writeResult == HALOperationResult::Success) {
+                message += "\"info\":{\"Value written\":\"";
+                message += std::to_string(uintValue);
+                message += "\"}";
+            }
+        }
+        else if (params.zcType == HAL_JSON_CMD_EXEC_UINT32_TYPE) {
+            // Convert value to integer
+            uint32_t uintValue = 0;
+            if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
+                GlobalLogger.Error(F("Invalid uint32 value."));
+                //message += "{\"error\":\"Invalid uint32 value.\"}";
+            } else {
+                //UIDPath uidPath(params.zcUid); // obsolete
                 HALValue halValue = uintValue;
-                HALWriteRequest req(uidPath, halValue);
+                //HALWriteRequest req(uidPath, halValue); // obsolete
 
-                writeResult = Manager::write(req);
+                writeResult = device->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
                     message += "\"info\":{\"Value written\":\"";
                     message += std::to_string(uintValue);
                     message += "\"}";
                 }
             }
-            else if (params.zcType == HAL_JSON_CMD_EXEC_UINT32_TYPE) {
-                // Convert value to integer
-                uint32_t uintValue = 0;
-                if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
-                    message += "{\"error\":\"Invalid uint32 value.\"}";
-                } else {
-                    UIDPath uidPath(params.zcUid);
-                    HALValue halValue = uintValue;
-                    HALWriteRequest req(uidPath, halValue);
 
-                    writeResult = Manager::write(req);
-                    if (writeResult == HALOperationResult::Success) {
-                        message += "\"info\":{\"Value written\":\"";
-                        message += std::to_string(uintValue);
-                        message += "\"}";
-                    }
-                }
-
-            } else if (params.zcType == HAL_JSON_CMD_EXEC_FLOAT_TYPE) {
-                // Convert value to integer
-                float floatValue = 0.0f;
-                if (params.zcValue.ConvertTo_float(floatValue) == false) {
-                    message += "{\"error\":\"Invalid float value.\"}";
-                } else {
+        } else if (params.zcType == HAL_JSON_CMD_EXEC_FLOAT_TYPE) {
+            // Convert value to integer
+            float floatValue = 0.0f;
+            if (params.zcValue.ConvertTo_float(floatValue) == false) {
+                GlobalLogger.Error(F("Invalid float value."));
+                //message += "{\"error\":\"Invalid float value.\"}";
+            } else {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                    std::cout << "float value written: " << floatValue << "\n";
+                std::cout << "float value written: " << floatValue << "\n";
 #endif
-                    UIDPath uidPath(params.zcUid);
-                    HALValue halValue = floatValue;
-                    HALWriteRequest req(uidPath, halValue);
+                //UIDPath uidPath(params.zcUid); // obsolete
+                HALValue halValue = floatValue;
+                //HALWriteRequest req(uidPath, halValue); // obsolete
 
-                    writeResult = Manager::write(req);
-                    if (writeResult == HALOperationResult::Success) {
-                        message += "\"info\":{\"Value written\":\"";
-                        message += std::to_string(floatValue);
-                        message += "\"}";
-                    }
-                }
-
-            } else if (params.zcType == HAL_JSON_CMD_EXEC_STRING_TYPE) {
-                UIDPath uidPath(params.zcUid);
-                std::string result;
-                HALWriteStringRequestValue strHalValue(params.zcValue, result);
-                
-                HALWriteStringRequest req(uidPath, strHalValue);
-
-                writeResult = Manager::write(req);
+                writeResult = device->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    message += "\"info\":{\"String written\":\"OK\"}";
-                    //message += stdString.c_str();
-                    //message += "\"}";
-                }
-
-            } else if (params.zcType == HAL_JSON_CMD_EXEC_JSON_STR_TYPE) {
-                UIDPath uidPath(params.zcUid);
-                std::string result;
-                HALWriteStringRequestValue strHalValue(params.zcValue, result);
-                HALWriteStringRequest req(uidPath, strHalValue);
-
-                writeResult = Manager::write(req);
-                if (writeResult == HALOperationResult::Success) {
-                    message += "\"info\":{\"Json written\":\"OK\"}";
-                    //message += stdString.c_str();
-                    //message += "}";
+                    message += "\"info\":{\"Value written\":\"";
+                    message += std::to_string(floatValue);
+                    message += "\"}";
                 }
             }
-            else {
-                message += "\"error\":\"Unknown type for writing.\"";
-                return false;
+
+        } else if (params.zcType == HAL_JSON_CMD_EXEC_STRING_TYPE) {
+            //UIDPath uidPath(params.zcUid);  // obsolete
+            std::string result;
+            HALWriteStringRequestValue strHalValue(params.zcValue, result);
+            
+            //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
+
+            writeResult = device->write(strHalValue);
+            if (writeResult == HALOperationResult::Success) {
+                message += "\"info\":{\"String written\":\"OK\"}";
+                //message += stdString.c_str();
+                //message += "\"}";
             }
-            if (writeResult != HALOperationResult::Success) {
-                message += "\"error\":\"";
-                message += HALOperationResultToString(writeResult);
-                message += "\"";
-                return false;
+
+        } else if (params.zcType == HAL_JSON_CMD_EXEC_JSON_STR_TYPE) {
+            //UIDPath uidPath(params.zcUid);  // obsolete
+            std::string result;
+            HALWriteStringRequestValue strHalValue(params.zcValue, result);
+            //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
+
+            writeResult = device->write(strHalValue);
+            if (writeResult == HALOperationResult::Success) {
+                message += "\"info\":{\"Json written\":\"OK\"}";
+                //message += stdString.c_str();
+                //message += "}";
             }
+        }
+        else {
+            GlobalLogger.Error(F("Unknown type for writing."));
+            //message += "\"error\":\"Unknown type for writing.\"";
+            return false;
+        }
+        if (writeResult != HALOperationResult::Success) {
+            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(writeResult));
+            GlobalLogger.setLastEntrySource(device->GetType());
+            /*message += "\"error\":\"";
+            message += HALOperationResultToString(writeResult);
+            message += '"';
+            message += ",\"target_type\":\"";
+            message += device->GetType();
+            message += '"';*/
+            return false;
         }
         return true;
     }
@@ -310,33 +331,48 @@ namespace HAL_JSON {
 #ifdef HAL_JSON_CommandExecutor_DEBUG_CMD
         message += params.ToString() + "},";
 #endif
+        // check if have uid given
+        if (params.zcUid.IsEmpty()) {
+            GlobalLogger.Error(F("uid path is empty"));
+            //message += "\"error\":\"uid path is empty\"";
+            return false;
+        }
+        // check if device exists
+        UIDPath uidPath(params.zcUid);
+        Device* device = Manager::findDevice(uidPath);
+        if (device == nullptr) {
+            GlobalLogger.Error(F("device not found: "), params.zcUid);
+            //message += "\"error\":\"device not found\"";
+            //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
+            return false;
+        }
         HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
 
         if (params.zcType == HAL_JSON_CMD_EXEC_BOOL_TYPE) {
-            UIDPath uidPath(params.zcUid);
+            //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
-            HALReadRequest req(uidPath, halValue);
+            //HALReadRequest req(uidPath, halValue); // obsolete
 
-            readResult = Manager::read(req);
+            readResult = device->read(halValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
         } else if (params.zcType == HAL_JSON_CMD_EXEC_UINT32_TYPE) {
-            UIDPath uidPath(params.zcUid);
+            //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
-            HALReadRequest req(uidPath, halValue);
+            //HALReadRequest req(uidPath, halValue); // obsolete
 
-            readResult = Manager::read(req);
+            readResult = device->read(halValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
         } else if (params.zcType == HAL_JSON_CMD_EXEC_FLOAT_TYPE) {
-            UIDPath uidPath(params.zcUid);
+            //UIDPath uidPath(params.zcUid); // obsolete
             if (params.zcValue.Length() == 0) {
                 HALValue halValue;
-                HALReadRequest req(uidPath, halValue);
+                //HALReadRequest req(uidPath, halValue); // obsolete
 
-                readResult = Manager::read(req);
+                readResult = device->read(halValue);
                 if (readResult == HALOperationResult::Success) {
                     valueStr = std::to_string(halValue.asFloat());
                 }
@@ -344,43 +380,49 @@ namespace HAL_JSON {
             else {
                 HALValue halValue;
                 HALReadValueByCmd valByCmd(halValue, params.zcValue);
-                HALReadValueByCmdReq req(uidPath, valByCmd);
+                //HALReadValueByCmdReq req(uidPath, valByCmd); // obsolete
 
-                readResult = Manager::read(req);
+                readResult = device->read(valByCmd);
                 if (readResult == HALOperationResult::Success) {
                     valueStr = std::to_string(halValue.asFloat());
                 }
             }
         } else if (params.zcType == HAL_JSON_CMD_EXEC_STRING_TYPE) {
-            UIDPath uidPath(params.zcUid);
+            //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);
-            HALReadStringRequest req(uidPath, strHalValue);
+            //HALReadStringRequest req(uidPath, strHalValue); // obsolete
 
-            readResult = Manager::read(req);
+            readResult = device->read(strHalValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = "\"";
                 valueStr += result;
                 valueStr += "\"";
             }
         } else if (params.zcType == HAL_JSON_CMD_EXEC_JSON_STR_TYPE) {
-            UIDPath uidPath(params.zcUid);
+            //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);
-            HALReadStringRequest req(uidPath, strHalValue);
+            //HALReadStringRequest req(uidPath, strHalValue); // obsolete
 
-            readResult = Manager::read(req);
+            readResult = device->read(strHalValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr += result;
             }
         } else {
-            message += "\"error\":\"Unknown type for reading.\"";
+            GlobalLogger.Error(F("Unknown type for reading."));
+            //message += "\"error\":\"Unknown type for reading.\"";
             return false;
         }
         if (readResult != HALOperationResult::Success) {
-            message += "\"error\":\"";
+            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(readResult));
+            GlobalLogger.setLastEntrySource(device->GetType());
+            /*message += "\"error\":\"";
             message += HALOperationResultToString(readResult);
-            message += "\"";
+            message += '"';
+            message += ",\"target_type\":\"";
+            message += device->GetType();
+            message += '"';*/
             return false;
         }
         message += DeviceConstStrings::value;
@@ -389,20 +431,40 @@ namespace HAL_JSON {
     }
 
     bool CommandExecutor::execCmd(ZeroCopyString& zcStr, std::string& message) {
+        ZeroCopyString zcPath = zcStr.SplitOffHead('/');
+        // check if have uid given
+        if (zcPath.IsEmpty()) {
+            GlobalLogger.Error(F("uid path empty"));
+            //message += "\"error\":\"uid path is empty\"";
+            return false;
+        }
+        // first check if device exists
+        UIDPath uidPath(zcPath);
+        Device* device = Manager::findDevice(uidPath);
+        if (device == nullptr) {
+            GlobalLogger.Error(F("device not found: "), zcPath);
+            //message += "\"error\":\"device not found\"";
+            //message += ",\"uidpath\":\"" + zcPath.ToString() + "\"";
+            return false;
+        }
+
         HALOperationResult res = HALOperationResult::NotSet;
-        if (zcStr.FindChar('/') != nullptr) {
-            ZeroCopyString zcPath = zcStr.SplitOffHead('/');
-            UIDPath path(zcPath);
-            res = Manager::exec(path, zcStr);
-            
+        if (zcStr.NotEmpty()) {
+            //UIDPath path(zcPath); // obsolete
+            res = device->exec(zcStr);
         } else {
-            UIDPath path(zcStr);
-            res = Manager::exec(path);
+            //UIDPath path(zcStr); // obsolete
+            res = device->exec();
         }
         if (res != HALOperationResult::Success) {
-            message += "\"error\":\"";
+            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(res));
+            GlobalLogger.setLastEntrySource(device->GetType());
+            /*message += "\"error\":\"";
             message += HALOperationResultToString(res);
-            message += "\"";
+            message += '"';
+            message += ",\"target_type\":\"";
+            message += device->GetType();
+            message += '"';*/
             return false;
         }
         return true;
