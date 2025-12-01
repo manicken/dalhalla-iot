@@ -187,9 +187,9 @@ namespace HAL_JSON {
             if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
             if (ValidateJsonStringField(item, HAL_JSON_KEYNAME_TYPE) == false) { validItems[i] = false; continue; }
             
-            const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+            const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
             if (def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
@@ -204,10 +204,10 @@ namespace HAL_JSON {
             if (validItems[i] == false) continue;
 
             const JsonVariant& item = jsonArrayItems[i];
-            const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+            const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
-            devices[index++] = def->Create_Function(item, type, mqttClient, groupObj, jsonObj);
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+            devices[index++] = def->Create_Function(item, def->typeName, mqttClient, groupObj, jsonObj);
         }
         delete[] validItems;
     }
@@ -244,11 +244,11 @@ namespace HAL_JSON {
                 if (validItems[validItemIndex++] == false) continue;
 
                 const JsonVariant& item = jsonArrayItems[j];
-                const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
+                const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
         
-                const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+                const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
 
-                devices[newItemIndex++] = def->Create_Function(item, type, mqttClient, jsonObjGrpItem, jsonObj);
+                devices[newItemIndex++] = def->Create_Function(item, def->typeName, mqttClient, jsonObjGrpItem, jsonObj);
             
             }
         }
@@ -263,8 +263,8 @@ namespace HAL_JSON {
         // check if type is a valid string
         if (ValidateJsonStringField(jsonObjItem, HAL_JSON_KEYNAME_TYPE) == false) { return false; }
         
-        const char* type = GetAsConstChar(jsonObjItem, HAL_JSON_KEYNAME_TYPE);
-        const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type);
+        const char* type_cStr = GetAsConstChar(jsonObjItem, HAL_JSON_KEYNAME_TYPE);
+        const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
         // no nullcheck is needed as ValidateJSON ensures that all types are correct
         if (def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
         return true;
@@ -285,8 +285,15 @@ namespace HAL_JSON {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
-        ret += "\"";
+        ret += this->type;
+        ret += "\",\"items\":[";
+        for (int i=0;i<deviceCount;i++) {
+            ret += '{';
+            ret += devices[i]->ToString();
+            ret += '}';
+            if (i<deviceCount-1) ret += ',';
+        }
+        ret += ']';
        
         return ret;
     }

@@ -33,6 +33,7 @@
 #include "HAL_JSON_HA_Sensor.h"
 #include "HAL_JSON_HA_Switch.h"
 #include "HAL_JSON_HA_Button.h"
+#include "HAL_JSON_HA_DeviceContainer.h"
 
 namespace HAL_JSON {
 
@@ -40,6 +41,7 @@ namespace HAL_JSON {
         {"sensor", Sensor::Create, Sensor::VerifyJSON},
         {"switch",  Switch::Create, Switch::VerifyJSON},
         {"button", Button::Create, Button::VerifyJSON},
+        {"CONTAINER", HA_DeviceContainer::Create, HA_DeviceContainer::VerifyJSON},
         /** mandatory null terminator */
         {nullptr, nullptr, nullptr}
     };

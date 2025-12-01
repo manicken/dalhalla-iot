@@ -36,21 +36,8 @@ namespace HAL_JSON {
     SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID));
-        //GPIO_manager::ReservePin(pin);
-        //const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
-         // jsonObj[HAL_JSON_KEYNAME_UID]);// | "");
         inactiveState = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE, 0);
         pulseLength = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, 0);
-        //if (jsonObj.containsKey(HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE)) {
-           // inactiveState = jsonObj[HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE];// | 0;//.as<uint8_t>();
-        //} else {
-        //    inactiveState = 0;
-        //}
-        //if (jsonObj.containsKey(HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT)) {
-            //pulseLength = jsonObj[HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT];// | 0;//.as<uint32_t>();
-        //} else {
-        //    pulseLength = 0; // will hopefully be set at write
-        //}
         pinMode(pin, OUTPUT); // output
         digitalWrite(pin, inactiveState);
     }

@@ -20,13 +20,16 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
-#include "HAL_JSON_DeviceContainer.h"
-#include "../HAL_JSON_Manager.h"
+#include "../../HAL_JSON_Device_GlobalDefines.h"
+#include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../../../Support/Logger.h"
+#include "HAL_JSON_HA_DeviceContainer.h"
+#include "HAL_JSON_HomeAssistant.h"
+#include "HAL_JSON_HA_DeviceTypeReg.h"
 
 namespace HAL_JSON {
     
-    DeviceContainer::~DeviceContainer() {
+    HA_DeviceContainer::~HA_DeviceContainer() {
         if (devices) {
             for (int i = 0; i < deviceCount; ++i) {
                 delete devices[i];
@@ -35,7 +38,7 @@ namespace HAL_JSON {
         }
     }
 
-    DeviceContainer::DeviceContainer(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
+    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : Device(UIDPathMaxLength::Many,type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         const JsonArray& jsonArray = jsonObj[HAL_JSON_KEYNAME_ITEMS].as<JsonArray>();
         
@@ -48,7 +51,9 @@ namespace HAL_JSON {
             JsonVariant jsonItem = jsonArray[i];
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-            bool valid = Manager::VerifyDeviceJson(jsonItem);
+            const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+            bool valid = def->Verify_JSON_Function(jsonItem);
             validDevices[i] = valid;
             deviceCountTmp++;
         }
@@ -73,9 +78,11 @@ namespace HAL_JSON {
         // Second pass: actually create and store devices
         uint32_t index = 0;
         for (int i=0;i<arraySize;i++) {
-            JsonVariant jsonItem = jsonArray[i];
+            const JsonVariant& jsonItem = jsonArray[i];
             if (validDevices[i] == false) continue;
-            devices[index++] = Manager::CreateDeviceFromJSON(jsonItem);
+            const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+            devices[index++] = def->Create_Function(jsonItem, def->typeName, mqttClient, jsonObjGlobal, jsonObjRoot);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -83,7 +90,7 @@ namespace HAL_JSON {
         delete[] validDevices; // free memory
     }
 
-    bool DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
+    bool HA_DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
         if (jsonObj.containsKey(HAL_JSON_KEYNAME_ITEMS) == false) {
             GlobalLogger.Error(HAL_JSON_ERR_MISSING_KEY(HAL_JSON_KEYNAME_ITEMS));
             SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
@@ -105,17 +112,19 @@ namespace HAL_JSON {
             const JsonVariant& jsonItem = items[i];
             if (IsConstChar(jsonItem) == true) { continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
-            bool valid = Manager::VerifyDeviceJson(jsonItem);
+            const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
+            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+            bool valid = def->Verify_JSON_Function(jsonItem);
             if (valid == false) HAL_JSON_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
         }
         return true;
     }
 
-    Device* DeviceContainer::Create(const JsonVariant &jsonObj, const char* type) {
-        return new DeviceContainer(jsonObj, type);
+    Device* HA_DeviceContainer::Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
+        return new HA_DeviceContainer(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
     }
 
-    String DeviceContainer::ToString() {
+    String HA_DeviceContainer::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -134,7 +143,7 @@ namespace HAL_JSON {
         return ret;
     }
 
-    void DeviceContainer::loop() {
+    void HA_DeviceContainer::loop() {
         if (devices == nullptr || deviceCount == 0) return;
         for (int i=0;i<deviceCount;i++)
         {
@@ -142,7 +151,7 @@ namespace HAL_JSON {
         }
     }
 
-    void DeviceContainer::begin() {
+    void HA_DeviceContainer::begin() {
         if (devices == nullptr || deviceCount == 0) return;
         for (int i=0;i<deviceCount;i++)
         {
@@ -150,7 +159,7 @@ namespace HAL_JSON {
         }
     }
     
-    Device* DeviceContainer::findDevice(UIDPath& path) {
+    Device* HA_DeviceContainer::findDevice(UIDPath& path) {
         return Device::findInArray(devices, deviceCount, path, this);
     }
 
