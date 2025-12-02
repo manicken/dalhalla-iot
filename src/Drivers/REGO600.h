@@ -50,11 +50,19 @@
 
 namespace Drivers {
 
+
+
     class REGO600 {
     public:
-        
-        
 
+        enum class RequestType {
+                Value,
+                Text,
+                ErrorLogItem,
+                WriteConfirm,
+                NotSet
+            };
+        
         // theese are the only available op-codes (verified by rom-dump)
         enum class OpCodes : uint8_t {
             ReadFrontPanel = 0x00,
@@ -68,20 +76,23 @@ namespace Drivers {
             ReadDisplay = 0x20,
             ReadLastError = 0x40,
             ReadPrevError = 0x42,
-            ReadRegoVersion = 0x7F
+            ReadRegoVersion = 0x7F,
+            NotSet = 0xFF
+        };
+
+        struct CmdVsResponseSize {
+            OpCodes opcode;
+            uint32_t size;
+            RequestType type;
         };
         
         struct Request {
-            enum class Type {
-                Value,
-                Text,
-                ErrorLogItem,
-                WriteConfirm
-            };
+            
 
-            const uint32_t opcode;
+            const CmdVsResponseSize& info;
+            //const uint32_t opcode;
             const uint16_t address;
-            const Type type;
+            //const Request::Type type;
 
             union Response { // type name this so that it can be passed
                 uint32_t* value;
@@ -90,12 +101,13 @@ namespace Drivers {
 
             Request() = delete;
             /**  */
-            Request(uint32_t opcode, uint16_t address, Type type);
+            Request(uint32_t opcode, uint16_t address);
             /** externalValue is a non-owning pointer to external data. 
              * Do not delete; must remain valid during Request's lifetime.
              */
             Request(uint32_t opcode, uint16_t address, uint32_t& externalValue);
             void SetFromBuffer(uint8_t* buff);
+            bool CalcAndCompareChecksum(uint8_t* buff);
 
             ~Request();
 
@@ -107,11 +119,7 @@ namespace Drivers {
         };
         
 
-        struct CmdVsResponseSize {
-            OpCodes opcode;
-            uint32_t size;
-            Request::Type type;
-        };
+        
 
         /** theese are the states the main task can be in */
         enum class RequestMode {
@@ -137,7 +145,7 @@ namespace Drivers {
         void RequestWholeLCD(RequestCallback cb);
         void RequestFrontPanelLeds(RequestCallback cb);
 
-        static const CmdVsResponseSize* getCmdInfo(uint8_t opcode);
+        static const CmdVsResponseSize& getCmdInfo(uint8_t opcode);
         /** this is a "latching flag"/"one-shot flag", i.e. if read and was true it automatically resets the internal flag to false */
         bool RefreshLoopDone();
     private:
@@ -148,7 +156,9 @@ namespace Drivers {
         size_t currentExpectedRxLength = 0;
         
         uint32_t refreshTimeMs = 5000; // this needs to calculated depending on how many items in refreshLoopList (max items is 17 -> 17*0.2 = 3.4 sec) but also what the json cfg have
+        uint32_t requestTimeoutMs = 10000;
         uint32_t lastUpdateMs = 0;
+        uint32_t lastRequestMs = 0;
         Request* const* refreshLoopList; // a const pointer to a list of mutable Request object pointers
         const int refreshLoopCount;
         int refreshLoopIndex = 0;

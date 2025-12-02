@@ -51,12 +51,13 @@ namespace HAL_JSON {
         }
         // second pass
         requestList = new (std::nothrow) Drivers::REGO600::Request*[registerItemCount]();
-        registerItems = new (std::nothrow) REGO600register*[registerItemCount]();
+        registerItems = new (std::nothrow) Device*[registerItemCount]();
         int index = 0;
         for (int i=0;i<itemCount;i++) {
             if (validItems[i] == false) continue;
             const JsonVariant& item = items[i];
-            registerItems[index] = new REGO600register(item, nullptr);
+            REGO600register* itemReg = new REGO600register(item, nullptr);
+            
             const char* opcodeStr = GetAsConstChar(item, HAL_JSON_KEYNAME_REGO600_OPCODE);
             const char* addressStr = GetAsConstChar(item, HAL_JSON_KEYNAME_REGO600_ADDRESS);
 
@@ -65,7 +66,8 @@ namespace HAL_JSON {
  
             // here value is passed by ref so that REGO600 driver can access and change the value,
             // that makes REGO600register read function can then get the correct value
-            requestList[index] = new Drivers::REGO600::Request(opcode, address, registerItems[i]->value); 
+            requestList[index] = new Drivers::REGO600::Request(opcode, address, itemReg->value);
+            registerItems[index] = itemReg;
             index++;
         }
         delete[] validItems;
@@ -144,18 +146,22 @@ namespace HAL_JSON {
             if (first == false) { ret += ","; }
             else
                 first = false;
-            ret += "{";
+            ret += '{';
             ret += registerItems[i]->ToString();
             ret += ",\"opcode\":\"";
-            ret += Convert::toHex((uint8_t)requestList[i]->opcode).c_str();
+            ret += Convert::toHex((uint8_t)requestList[i]->info.opcode).c_str();
             ret += "\",\"addr\":\"";
             ret += Convert::toHex(requestList[i]->address).c_str();
-            ret += "\",\"valuetype\":\"";
-            ret += HAL_JSON::ToString(registerItems[i]->valueType);
-            ret += "\"}";
+            ret += "\",";
+            ret += registerItems[i]->ToString();
+            ret += "}";
         }
-        ret += "]";
+        ret += ']';
         return ret;
+    }
+
+    Device* REGO600::findDevice(UIDPath& path) {
+        return Device::findInArray(registerItems, registerItemCount, path, this);
     }
 
 }

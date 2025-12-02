@@ -42,7 +42,7 @@ namespace HAL_JSON {
         uint8_t txPin = 0;
         /** this is only logical devices */
         int registerItemCount = 0; // used by both registerItems and requestList
-        REGO600register** registerItems = nullptr;
+        Device** registerItems = nullptr;
         Drivers::REGO600::Request** requestList = nullptr;
         Drivers::REGO600* rego600 = nullptr;
     public:
@@ -53,5 +53,8 @@ namespace HAL_JSON {
         void loop() override;
         void begin() override;
         String ToString() override;
+
+        /** used to find sub/leaf devices @ "group devices" */
+        Device* findDevice(UIDPath& path) override;
     };
 }

@@ -27,53 +27,62 @@ namespace Drivers {
 
     //const size_t CmdVsResponseSizeTable_Count = 12;
     const REGO600::CmdVsResponseSize CmdVsResponseSizeTable[] = {
-        {REGO600::OpCodes::ReadFrontPanel,      5,  REGO600::Request::Type::Value}, // Read from front panel (keyboard+leds) {reg 09FF+xx}
-        {REGO600::OpCodes::WriteFrontPanel,     1,  REGO600::Request::Type::WriteConfirm}, // Write to front panel (keyboard+leds) {reg 09FF+xx}
-        {REGO600::OpCodes::ReadSystemRegister,  5,  REGO600::Request::Type::Value}, // Read from system register (heat curve, temperatures, devices) {reg 1345+xx}
-        {REGO600::OpCodes::WriteSystemRegister, 1,  REGO600::Request::Type::WriteConfirm}, // Write into system register (heat curve, temperatures, devices) {reg 1345+xx}
-        {REGO600::OpCodes::ReadTimerRegisters,  5,  REGO600::Request::Type::Value}, // Read from timer registers {reg 1B45+xx}
-        {REGO600::OpCodes::WriteTimerRegisters, 1,  REGO600::Request::Type::WriteConfirm}, // Write into timer registers {reg 1B45+xx}
-        {REGO600::OpCodes::ReadRegister_1B61,   5,  REGO600::Request::Type::Value}, // Read from register 1B61 {reg 1B61+xx}
-        {REGO600::OpCodes::WriteRegister_1B61,  1,  REGO600::Request::Type::WriteConfirm}, // Write into register 1B61 {1B61+xx}
-        {REGO600::OpCodes::ReadDisplay,         42, REGO600::Request::Type::Text}, // Read from display {0AC7+15h*xx}
-        {REGO600::OpCodes::ReadLastError,       42, REGO600::Request::Type::ErrorLogItem}, // Read last error line [4100/00]
-        {REGO600::OpCodes::ReadPrevError,       42, REGO600::Request::Type::ErrorLogItem}, // Read previous error line (prev from last reading) [4100/01]
-        {REGO600::OpCodes::ReadRegoVersion,     5,  REGO600::Request::Type::Value} // Read rego version {constant 0258 = 600 ?Rego 600?}
+        {REGO600::OpCodes::NotSet,              0,  REGO600::RequestType::NotSet},
+        {REGO600::OpCodes::ReadFrontPanel,      5,  REGO600::RequestType::Value}, // Read from front panel (keyboard+leds) {reg 09FF+xx}
+        {REGO600::OpCodes::WriteFrontPanel,     1,  REGO600::RequestType::WriteConfirm}, // Write to front panel (keyboard+leds) {reg 09FF+xx}
+        {REGO600::OpCodes::ReadSystemRegister,  5,  REGO600::RequestType::Value}, // Read from system register (heat curve, temperatures, devices) {reg 1345+xx}
+        {REGO600::OpCodes::WriteSystemRegister, 1,  REGO600::RequestType::WriteConfirm}, // Write into system register (heat curve, temperatures, devices) {reg 1345+xx}
+        {REGO600::OpCodes::ReadTimerRegisters,  5,  REGO600::RequestType::Value}, // Read from timer registers {reg 1B45+xx}
+        {REGO600::OpCodes::WriteTimerRegisters, 1,  REGO600::RequestType::WriteConfirm}, // Write into timer registers {reg 1B45+xx}
+        {REGO600::OpCodes::ReadRegister_1B61,   5,  REGO600::RequestType::Value}, // Read from register 1B61 {reg 1B61+xx}
+        {REGO600::OpCodes::WriteRegister_1B61,  1,  REGO600::RequestType::WriteConfirm}, // Write into register 1B61 {1B61+xx}
+        {REGO600::OpCodes::ReadDisplay,         42, REGO600::RequestType::Text}, // Read from display {0AC7+15h*xx}
+        {REGO600::OpCodes::ReadLastError,       42, REGO600::RequestType::ErrorLogItem}, // Read last error line [4100/00]
+        {REGO600::OpCodes::ReadPrevError,       42, REGO600::RequestType::ErrorLogItem}, // Read previous error line (prev from last reading) [4100/01]
+        {REGO600::OpCodes::ReadRegoVersion,     5,  REGO600::RequestType::Value} // Read rego version {constant 0258 = 600 ?Rego 600?}
     };
-    const REGO600::CmdVsResponseSize* REGO600::getCmdInfo(uint8_t opcode) {
+    const REGO600::CmdVsResponseSize& REGO600::getCmdInfo(uint8_t opcode) {
 
         for (const auto& entry : CmdVsResponseSizeTable) {
             if (static_cast<uint8_t>(entry.opcode) == opcode) {
-                return &entry;
+                return entry;
             }
         }
-        return nullptr; // Not found
+        return CmdVsResponseSizeTable[0]; // Not found
     }
 
-    REGO600::Request::Request(uint32_t opcode, uint16_t address, uint32_t& externalValue) : opcode(opcode), type(Type::Value), address(address) {
+    REGO600::Request::Request(uint32_t opcode, uint16_t address, uint32_t& externalValue) : address(address), info(getCmdInfo(opcode)) {
         response.value = &externalValue;
     }
 
-    REGO600::Request::Request(uint32_t opcode, uint16_t address, Type type) : opcode(opcode), type(type), address(address) {
-        if (type == Type::Text) {
-            response.text = new char[21](); 
+    REGO600::Request::Request(uint32_t opcode, uint16_t address) : address(address), info(getCmdInfo(opcode)) {
+        if (info.type == RequestType::Text) {
+            response.text = new char[21](); // 20 characters + null terminator
         }
-        else if (type == Type::Value) {
+        else if (info.type == RequestType::Value) {
             response.value = nullptr;
         }
-        else if (type == Type::ErrorLogItem) {
+        else if (info.type == RequestType::ErrorLogItem) {
             response.text = new char[20](); // 3 digit error code + space + 6 char date + space + 8 char time + null terminator
         }
     }
+    bool REGO600::Request::CalcAndCompareChecksum(uint8_t* buff) {
+        uint8_t chksum = 0;
+        uint32_t length = info.size-1;
+        for (int i = 1 ; i < length; i++) {
+            chksum ^= buff[i];
+        }
+        return chksum == buff[length];
+    }
     void REGO600::Request::SetFromBuffer(uint8_t* buff) {
-        if (type == Type::Value && response.value) {
+        if (info.type == RequestType::Value && response.value) {
             *response.value = (buff[1] << 14) + (buff[2] << 7) + buff[3];
 
-        } else if (type == Type::Text) {
+        } else if (info.type == RequestType::Text) {
             for (int bi=1,ti=0;ti<20;bi+=2,ti++) {
-                response.text[ti] = buff[bi]*16 + buff[bi];
+                response.text[ti] = buff[bi]*16 + buff[bi+1];
             }
-        } else if (type == Type::ErrorLogItem) {
+        } else if (info.type == RequestType::ErrorLogItem) {
             
             uint32_t code = buff[1]*16 + buff[2];
             response.text[0] = (code / 100)+0x30;
@@ -83,12 +92,13 @@ namespace Drivers {
             response.text[2] = (code)+0x30;
             response.text[3] = 0x20; // space
             for (int bi=3,ti=4;ti<20;bi+=2,ti++) {
-                response.text[ti] = buff[bi]*16 + buff[bi];
+                response.text[ti] = buff[bi]*16 + buff[bi+1];
             }
         } // there are currently no more types right now
     }
     REGO600::Request::~Request() {
-        if ((type == Type::Text || type == Type::ErrorLogItem) && response.text != nullptr) {
+        // delete owning
+        if ((info.type == RequestType::Text || info.type == RequestType::ErrorLogItem) && response.text != nullptr) {
             delete[] response.text;
         }
     }
@@ -146,6 +156,7 @@ namespace Drivers {
         if (manualRequest_Mode == RequestMode::Lcd) {
             uartTxBuffer[1] = static_cast<uint8_t>(OpCodes::ReadDisplay);
             readLCD_RowIndex = 0;
+            currentExpectedRxLength = 42;
             SetRequestAddr(0x00);
             uartTxBuffer[8] = 0x00;
             if (readLCD_Text == nullptr) // initialize it, if this is the first use
@@ -155,12 +166,14 @@ namespace Drivers {
         } else if (manualRequest_Mode == RequestMode::FrontPanelLeds) {
             readFrontPanelLeds_Data = 0x00;
             uartTxBuffer[1] = static_cast<uint8_t>(OpCodes::ReadFrontPanel);
+            currentExpectedRxLength = 5;
             readFrontPanelLedsIndex = 0;
             SetRequestAddr(0x12);
             CalcAndSetTxChecksum();
             
         } else if (manualRequest_Mode == RequestMode::OneTime && manualRequest != nullptr) {
-            uartTxBuffer[1] = manualRequest->opcode;
+            uartTxBuffer[1] = (uint8_t)manualRequest->info.opcode;
+            currentExpectedRxLength = manualRequest->info.size;
             SetRequestAddr(manualRequest->address);
             CalcAndSetTxChecksum();
             
@@ -168,8 +181,8 @@ namespace Drivers {
             return false;
         }
         mode = manualRequest_Mode;
-        auto info = getCmdInfo(uartTxBuffer[1]);
-        currentExpectedRxLength = info->size;
+        //const CmdVsResponseSize* info = getCmdInfo(uartTxBuffer[1]);
+        
         SendRequestFrameAndResetRx();
         return true;
     }
@@ -205,12 +218,13 @@ namespace Drivers {
     }
 
     void REGO600::RefreshLoop_SendCurrent() {
-        
-        uartTxBuffer[1] = refreshLoopList[refreshLoopIndex]->opcode;
-        SetRequestAddr(refreshLoopList[refreshLoopIndex]->address);
+        Request* req = refreshLoopList[refreshLoopIndex];
+
+        uartTxBuffer[1] = (uint8_t)req->info.opcode;
+        SetRequestAddr(req->address);
         CalcAndSetTxChecksum();
-        const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
-        currentExpectedRxLength = info->size;
+       //const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
+        currentExpectedRxLength = req->info.size;
         SendRequestFrameAndResetRx();
     }
 
@@ -241,18 +255,25 @@ namespace Drivers {
     }
     #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
     void REGO600::loop() {
-        
+        uint32_t now = millis();
+
         if (requestInProgress == false) { 
             //  here we just take care of any glitches and receive garbage data if any
             ClearUARTRxBuffer(REGO600_UART_TO_USE);
             //if (mode != RequestMode::RefreshLoop) { return; }
             if (refreshLoopList == nullptr) { return; }
 
-            uint32_t now = millis();
             if (now - lastUpdateMs >= refreshTimeMs) {
                 RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
             }
             return; // usually dont expect a response directly
+        }
+
+        if (now - lastRequestMs >= requestTimeoutMs) {
+            
+            GlobalLogger.Error(F("REGO600 - request timeout"));
+            Serial.println("REGO600 - request timeout");
+            SendRequestFrameAndResetRx(); // retry current
         }
 
         uint32_t failsafeReadCount = 0;
@@ -263,6 +284,13 @@ namespace Drivers {
                     ClearUARTRxBuffer(REGO600_UART_TO_USE);
                     // RX is done
                     if (mode == RequestMode::RefreshLoop) {
+                        if (refreshLoopList[refreshLoopIndex]->CalcAndCompareChecksum(uartRxBuffer) == false) {
+                            GlobalLogger.Error(F("refreshLoopList RX - Checksum error"));
+                            Serial.println("refreshLoopList RX - Checksum error");
+                            
+                            RefreshLoop_SendCurrent(); // retry
+                            return;
+                        }
                         refreshLoopList[refreshLoopIndex]->SetFromBuffer(uartRxBuffer);
                         if (manualRequest_Pending) {
                             manualRequest_Pending = false;
@@ -320,7 +348,18 @@ namespace Drivers {
                     } else if (mode == RequestMode::OneTime) {
                         
                         if (manualRequest_Callback != nullptr) {
+
+
                             // only set here, there is no point setting the data if there are no receiver
+                            // actually making the request in the first place when
+                            // the callback is not set is actually pointless
+                            if (manualRequest->CalcAndCompareChecksum(uartRxBuffer) == false) {
+                                // try the request again
+                                GlobalLogger.Error(F("manualReq RX - Checksum error"));
+                                Serial.println("manualReq RX - Checksum error");
+                                SendRequestFrameAndResetRx();
+                                return;
+                            }
                             manualRequest->SetFromBuffer(uartRxBuffer); 
                             //Request* request = manuallyRequest.release();
                             manualRequest_Callback(manualRequest.get(), manualRequest_Mode);
@@ -354,6 +393,7 @@ namespace Drivers {
     }
 
     void REGO600::SendRequestFrameAndResetRx() {
+        lastRequestMs = millis();
         uartRxBufferIndex = 0;
         requestInProgress = true;
         REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);

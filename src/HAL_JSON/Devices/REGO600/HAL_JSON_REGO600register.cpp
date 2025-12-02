@@ -88,7 +88,10 @@ namespace HAL_JSON {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
-        ret += "\"";
+        ret += '"';
+        ret += ",\"valuetype\":\"";
+        ret += HAL_JSON::ToString(valueType);
+        ret += '"';
         return ret;
     }
 
