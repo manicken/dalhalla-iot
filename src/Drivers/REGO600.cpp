@@ -189,7 +189,7 @@ namespace Drivers {
 
     void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb) {
         if (req->info.type != RequestType::WriteConfirm && cb == nullptr) {
-            
+            return; // no point if cb for some reason is nullptr
         }
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
