@@ -66,6 +66,7 @@ namespace HAL_JSON {
 
         HAL_UID uid;
         const UIDPathMaxLength uidMaxLength;
+        /** can be used as a flag to signal a event */
         bool LoopTaskDone();
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);

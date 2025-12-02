@@ -188,6 +188,9 @@ namespace Drivers {
     }
 
     void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb) {
+        if (req->info.type != RequestType::WriteConfirm && cb == nullptr) {
+            
+        }
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
             Serial.println("manual request allready in progress");
@@ -195,10 +198,12 @@ namespace Drivers {
         }
         manualRequest_Callback = cb;
         manualRequest = std::move(req); // could also do req.release() to return the raw ptr, but then the raw ptr needs to be deleted when used
+
         ManualRequest_Schedule(RequestMode::OneTime);
     }
 
     void REGO600::RequestWholeLCD(RequestCallback cb) {
+        if (cb == nullptr) return; // no point if cb for some reason is nullptr
         if (mode != RequestMode::RefreshLoop) { 
             GlobalLogger.Error(F("manual request allready in progress"));
             Serial.println("manual request allready in progress");

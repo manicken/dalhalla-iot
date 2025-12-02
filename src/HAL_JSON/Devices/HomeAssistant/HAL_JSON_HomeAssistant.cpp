@@ -109,11 +109,11 @@ namespace HAL_JSON {
         Serial.printf("connecting using clientId:%s\n", clientIdStr);
         if (username.length() != 0 && password.length() != 0) { // the default connect is using CleanSession = true
             if (mqttClient.connect(clientIdStr, username.c_str(), password.c_str()) == false) {
-                Serial.println("ERROR - HASS MQTT could not connect using credentials");
+                //Serial.println("ERR - HA MQTT nocould not connect using credentials");
             }
         } else {
             if (mqttClient.connect(clientIdStr) == false) { // the default connect is using CleanSession = true
-                Serial.println("ERROR - HASS MQTT could not connect without credentials");
+                //Serial.println("ERROR - HASS MQTT could not connect without credentials");
             } 
         }
         delete[] clientIdStr;

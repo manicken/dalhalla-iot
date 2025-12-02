@@ -39,7 +39,8 @@
 #include "CoreDevices/HAL_JSON_DigitalInput.h"
 #include "CoreDevices/HAL_JSON_DigitalOutput.h"
 #include "CoreDevices/HAL_JSON_PWMAnalogWrite.h"
-#include "CoreDevices/HAL_JSON_SinglePulseOutput.h"
+
+#include "HAL_JSON_SinglePulseOutput.h"
 
 #include "CoreDevices/HAL_JSON_I2C_BUS.h"
 
