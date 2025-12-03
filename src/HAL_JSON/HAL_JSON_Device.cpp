@@ -63,11 +63,7 @@ namespace HAL_JSON {
     Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) {
         return nullptr;
     }
-/*
-    bool Device::EventCheck_Function(Device* device, uint32_t value) {
-        return value < device->loopDoneCounter;
-    }
-*/
+
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     String Device::ToString() { return ""; }

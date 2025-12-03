@@ -24,6 +24,18 @@
 #include "HAL_JSON_template.h"
 
 namespace HAL_JSON {
+
+    Device::EventCheck_FuncType Template::Get_EventCheck_Function(ZeroCopyString& zcFuncName) {
+        if (zcFuncName.EqualsIC("loopDone")) return Template::EventCheck_Function;
+        // add more sub-event functions here if needed
+        return nullptr;
+    }
+    
+    bool Template::EventCheck_Function(Device* device, uint32_t value) {
+        Template* tDev = static_cast<Template*>(device);
+        return value < tDev->loopDoneCounter;
+    }
+
     
     Template::Template(const JsonVariant &jsonObj, const char* type) : Device(type) {
 

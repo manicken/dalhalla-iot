@@ -37,6 +37,19 @@ namespace HAL_JSON {
     class Template : public Device {
     private:
         uint8_t pin = 0; // if pin would be used
+
+        /** 
+         * Monotonic event counter.
+         *
+         * Increments every time the event occurs. 
+         * Consumers store their own "last seen" value and compare against this,
+         * making the event safe for multiple independent consumers.
+         *
+         * This guarantees no event loss (unless counter wraps) and allows any
+         * number of consumers to detect the same event without interfering with
+         * each other.
+         */
+        uint32_t loopDoneCounter = 0;
     public:
 
         HALOperationResult read(HALValue& val) override;
@@ -53,6 +66,9 @@ namespace HAL_JSON {
 
         BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
         BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
+
+        EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString& zcFuncName) override;
+        static bool EventCheck_Function(Device* device, uint32_t value);
 
         HALValue* GetValueDirectAccessPtr() override;
         /** called regulary from the main loop */
