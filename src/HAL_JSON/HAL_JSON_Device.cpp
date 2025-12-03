@@ -60,9 +60,7 @@ namespace HAL_JSON {
     void Device::loop() {}
     void Device::begin() {}
 
-    Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) {
-        return nullptr;
-    }
+    
 
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
@@ -115,6 +113,8 @@ namespace HAL_JSON {
 
     Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+
+    Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 
