@@ -77,6 +77,7 @@ namespace HAL_JSON {
         HAL_UID getNextUID();
         HAL_UID peekNextUID();
         bool isLast();
+        bool hasMore();
 
         std::string ToString(ToStringType type = ToStringType::String);
 

@@ -109,6 +109,10 @@ namespace HAL_JSON {
         if (itemCount == 0) return true; // ideally this wont happen
         return (currentItemIndex==(itemCount-1));
     }
+    bool UIDPath::hasMore() {
+        if (itemCount == 0) return false; // ideally this wont happen
+        return (currentItemIndex<(itemCount-1));
+    }
 
     std::string UIDPath::ToString(ToStringType type) {
         std::string ret;

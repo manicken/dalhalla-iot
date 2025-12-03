@@ -135,9 +135,9 @@ namespace HAL_JSON {
         if (path.empty()) {
             return DeviceFindResult::EmptyUIDPath;
         }
+        
+        // Determine which UID to compare/consume at this level
         HAL_UID currUID;
-
-        // Determine which UID to compare at this level
         if (currentDevice && currentDevice->uid.IsSet()) {
             currUID = path.getNextUID();   // advance for subdevice
         } else {
@@ -152,9 +152,12 @@ namespace HAL_JSON {
             Device* dev = devices[i];
             if (!dev) continue; // failsafe
 
-            if (dev->uid == currUID) {
+            //----------------------------------------------------------------------
+            // 1) Direct match on UID
+            //----------------------------------------------------------------------
+            if (dev->uid == currUID) { // only for absolute paths
 
-                if (path.isLast()) {
+                if (path.hasMore() == false) {
                     // exact/current level match, path ends here
                     outDevice = dev;
                     return DeviceFindResult::Success;
@@ -162,10 +165,30 @@ namespace HAL_JSON {
                 // recurse find
                 return dev->findDevice(path, outDevice);
                 
-            } else if (dev->uid.NotSet() && !path.isLast()) { // this will only happen on devices that supports subdevices directly
-                DeviceFindResult res = dev->findDevice(path, outDevice); // recurse into placeholder
-                if (res == DeviceFindResult::Success) {
-                    return res;
+            }
+            //----------------------------------------------------------------------
+            // 2) Placeholder device (uid.NotSet())
+            //
+            // Can recurse if ANY of these are true:
+            //   A) It is root device             → currentDevice == null
+            //   B) More segments remain          → !path.isLast()
+            //   C) Parent has UID                → currentDevice && currentDevice->uid.IsSet()
+            //
+            // This covers special cases like:
+            //   temps::a (explicit empty segment)
+            //   temps:a  (implicit skip of placeholder)
+            //----------------------------------------------------------------------
+            if (dev->uid.NotSet())
+            {
+                bool isRoot         = (currentDevice == nullptr);
+                bool hasMore        = path.hasMore();
+                bool parentHasUID   = (currentDevice && currentDevice->uid.IsSet());
+
+                if (isRoot || hasMore || parentHasUID)
+                {
+                    DeviceFindResult res = dev->findDevice(path, outDevice);
+                    if (res == DeviceFindResult::Success)
+                        return res;
                 }
             }
         }
