@@ -29,7 +29,7 @@ namespace HAL_JSON {
 
     const char ThingSpeak::TS_ROOT_URL[] = "http://api.thingspeak.com/update?api_key=";
     
-    ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         const char* keyStr = GetAsConstChar(jsonObj, "key");

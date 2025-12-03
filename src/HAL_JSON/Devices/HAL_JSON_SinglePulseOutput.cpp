@@ -33,7 +33,7 @@ namespace HAL_JSON {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
     }
 
-    SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : Device(type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID));
         inactiveState = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE, 0);
@@ -46,12 +46,7 @@ namespace HAL_JSON {
         pinMode(pin, INPUT); // input
         pulseTicker.detach();
     }
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-    Device* SinglePulseOutput::findDevice(UIDPath& path) {
-        if (path.first() == uid) return this;
-        else return nullptr;
-    }
-#endif
+
     HALOperationResult SinglePulseOutput::read(HALValue &val) {
         //val.set(value); // read back the latest write value
         val = pulseLength;

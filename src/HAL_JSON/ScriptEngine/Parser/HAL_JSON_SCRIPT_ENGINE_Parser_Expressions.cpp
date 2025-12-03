@@ -474,9 +474,11 @@ namespace HAL_JSON {
             }
 
             UIDPath path(varOperand);
-            outInfo.device = Manager::findDevice(path);
-            if (!outInfo.device) {
-                operandToken.ReportTokenError("Could not find device: ", varOperand.ToString().c_str());
+            DeviceFindResult devFindRes = Manager::findDevice(path, outInfo.device);
+            if (devFindRes != DeviceFindResult::Success) {
+                std::string msg = varOperand.ToString();
+                msg += " because: " + std::string(DeviceFindResultToString(devFindRes));
+                operandToken.ReportTokenError("Could not find device: ", msg.c_str());
                 anyError = true;
                 return OperandTargetInfoResult::DeviceNotFound;
             }

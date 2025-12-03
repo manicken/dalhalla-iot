@@ -45,7 +45,7 @@ namespace HAL_JSON {
     Device* TX433::Create(const JsonVariant &jsonObj, const char* type) {
         return new TX433(jsonObj, type);
     }
-    TX433::TX433(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
+    TX433::TX433(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         pin = GetAsUINT32(jsonObj,HAL_JSON_KEYNAME_PIN);//].as<uint8_t>();
@@ -90,20 +90,8 @@ namespace HAL_JSON {
         pinMode(pin, INPUT); // reset to input so other devices can safely use it
     }
 
-    Device* TX433::findDevice(UIDPath& path) {
-        if (units == nullptr) return nullptr;
-        else if (unitCount == 0) return nullptr;
-
-        HAL_UID uidToFind = path.peekNextUID();
-        if (uidToFind.Invalid()) { GlobalLogger.Error(F("TX433::findDevice - uidToFind is Invalid")); return nullptr; } // early break
-        
-        
-        for (int i=0;i<unitCount;i++) {
-            TX433unit* unit = units[i];
-            if (!unit) continue; // absolute failsafe
-            if (unit->uid == uidToFind) return unit;
-        }
-        return nullptr;
+    DeviceFindResult TX433::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(reinterpret_cast<Device**>(units), unitCount, path, this, outDevice);
     }
 
     HALOperationResult TX433::write(const HALWriteStringRequestValue &val) {

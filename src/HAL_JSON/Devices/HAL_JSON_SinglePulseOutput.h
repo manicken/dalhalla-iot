@@ -28,10 +28,10 @@
 #include <string>
 #include <ArduinoJson.h>
 #include <Ticker.h>
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Support/Logger.h"
+#include "../HAL_JSON_Device.h"
+#include "../HAL_JSON_Device_GlobalDefines.h"
+#include "../HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
@@ -48,9 +48,7 @@ namespace HAL_JSON {
         static Device* Create(const JsonVariant& jsonObj, const char* type);
         SinglePulseOutput(const JsonVariant& jsonObj, const char* type);
         ~SinglePulseOutput();
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-        Device* findDevice(UIDPath& path) override;
-#endif
+
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
         HALOperationResult exec() override;

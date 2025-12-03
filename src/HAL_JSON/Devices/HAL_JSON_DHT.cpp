@@ -33,7 +33,7 @@ namespace HAL_JSON {
             CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03);
     }
 
-    DHT::DHT(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    DHT::DHT(const JsonVariant &jsonObj, const char* type) : Device(type) {
         //const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         //uid = encodeUID(uidStr);
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));

@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : Device(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         const JsonArray jsonArray = jsonObj[HAL_JSON_KEYNAME_ITEMS].as<JsonArray>();
         int arraySize = jsonArray.size();

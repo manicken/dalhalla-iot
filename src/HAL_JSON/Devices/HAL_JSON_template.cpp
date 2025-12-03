@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    Template::Template(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    Template::Template(const JsonVariant &jsonObj, const char* type) : Device(type) {
 
     }
 
@@ -53,7 +53,7 @@ namespace HAL_JSON {
 
     void Template::loop() {}
     void Template::begin() {}
-    Device* Template::findDevice(UIDPath& path) { return nullptr; }
+    DeviceFindResult Template::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     HALOperationResult Template::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
     HALOperationResult Template::write(const HALValue& val) {

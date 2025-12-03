@@ -27,7 +27,7 @@
 namespace HAL_JSON {
 
     
-    I2C_BUS::I2C_BUS(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
+    I2C_BUS::I2C_BUS(const JsonVariant &jsonObj, const char* type) : Device(type) {
         deviceCount = 0;
         devices = nullptr;
 
@@ -192,9 +192,9 @@ namespace HAL_JSON {
         return ret;
     }
 
-    Device* I2C_BUS::findDevice(UIDPath& path) {
+    DeviceFindResult I2C_BUS::findDevice(UIDPath& path, Device*& outDevice) {
         //printf("\nI2C_BUS::findDevice: %s\n", path.ToString().c_str());
-        return Device::findInArray(reinterpret_cast<Device**>(devices), deviceCount, path, this);
+        return Device::findInArray(reinterpret_cast<Device**>(devices), deviceCount, path, this, outDevice);
     }
 
     void I2C_BUS::loop() {

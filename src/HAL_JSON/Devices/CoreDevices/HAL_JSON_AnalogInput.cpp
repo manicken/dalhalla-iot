@@ -34,7 +34,7 @@ namespace HAL_JSON {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::IN));
     }
 
-    AnalogInput::AnalogInput(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    AnalogInput::AnalogInput(const JsonVariant &jsonObj, const char* type) : Device(type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID)); 
         //pin = jsonObj[HAL_JSON_KEYNAME_PIN];//.as<uint8_t>();
@@ -45,12 +45,7 @@ namespace HAL_JSON {
     }
 
     AnalogInput::~AnalogInput() { pinMode(pin, INPUT); } // input
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-    Device* AnalogInput::findDevice(UIDPath& path) {
-        if (path.first() == uid) return this;
-        else return nullptr;
-    }
-#endif
+
     HALOperationResult AnalogInput::read(HALValue &val) {
         //val.set((uint32_t)analogRead(pin));
         val = (uint32_t)analogRead(pin);

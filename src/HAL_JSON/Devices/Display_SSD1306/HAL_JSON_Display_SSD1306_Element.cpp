@@ -26,7 +26,7 @@
 
 namespace HAL_JSON {
     
-    Display_SSD1306_Element::Display_SSD1306_Element(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    Display_SSD1306_Element::Display_SSD1306_Element(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         xPos = GetAsUINT8(jsonObj, "x");

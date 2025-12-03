@@ -43,9 +43,7 @@ namespace HAL_JSON {
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         DigitalOutput(const JsonVariant &jsonObj, const char* type);
         ~DigitalOutput();
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-        Device* findDevice(UIDPath& path) override;
-#endif
+
         HALOperationResult read(HALValue &val) override;
         HALOperationResult write(const HALValue &val) override;
         String ToString() override;

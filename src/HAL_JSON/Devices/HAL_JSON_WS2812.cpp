@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    WS2812::WS2812(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    WS2812::WS2812(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = GetAsUINT8(jsonObj, "pin");

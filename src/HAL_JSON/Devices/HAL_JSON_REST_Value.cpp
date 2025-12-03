@@ -35,7 +35,7 @@ namespace HAL_JSON {
     }
 
     REST_Value::REST_Value(const JsonVariant &jsonObj, const char* type)
-        : HAL_JSON::Device(HAL_JSON::UIDPathMaxLength::One, type),
+        : HAL_JSON::Device(type),
         lastRefresh(0)
     {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));

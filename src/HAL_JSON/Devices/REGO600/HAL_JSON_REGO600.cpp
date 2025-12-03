@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many,type) {
+    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 
@@ -160,8 +160,8 @@ namespace HAL_JSON {
         return ret;
     }
 
-    Device* REGO600::findDevice(UIDPath& path) {
-        return Device::findInArray(registerItems, registerItemCount, path, this);
+    DeviceFindResult REGO600::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(registerItems, registerItemCount, path, this, outDevice);
     }
 
 }

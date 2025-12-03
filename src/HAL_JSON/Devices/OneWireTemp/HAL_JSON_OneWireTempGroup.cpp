@@ -58,7 +58,7 @@ namespace HAL_JSON {
         }
         return true;
     }
-    OneWireTempGroup::OneWireTempGroup(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::Many, type),
+    OneWireTempGroup::OneWireTempGroup(const JsonVariant &jsonObj, const char* type) : Device(type),
         autoRefresh(
             [this]() { requestTemperatures(); },
             [this]() { readAll(); },
@@ -102,36 +102,8 @@ namespace HAL_JSON {
         }
     }
 
-    Device* OneWireTempGroup::findDevice(UIDPath& path) {
-        return Device::findInArray(reinterpret_cast<Device**>(busses), busCount, path, this);
-        /*HAL_UID currLevelUID;
-
-        if (uid.IsSet()) // current device uid
-            currLevelUID = path.getNextUID();
-        else  // current device uid == 0
-            currLevelUID = path.getCurrentUID();
-
-        if (currLevelUID.Invalid()) { GlobalLogger.Error(F("OneWireTempGroup::findDevice - currLevelUID is Invalid")); return nullptr; } // early break
-        
-        //HAL_JSON_DEBUG(F("OneWireTempGroup::findDevice - uid: "), decodeUID(uid).c_str());
-        //HAL_JSON_DEBUG(F("OneWireTempGroup::findDevice - currLevelUID: "),decodeUID(currLevelUID).c_str());
-
-        for (int i=0;i<busCount;i++)
-        {
-            OneWireTempBus* bus = busses[i];
-            if (!bus) continue;  // absolute failsafe
-            if (bus->uid == currLevelUID) {
-                if (path.isLast()) return bus;
-                //GlobalLogger.Info(F("bus->uid == currLevelUID"));
-                return bus->findDevice(path); // this is the final step
-
-            } else if (bus->uid == 0 && !path.isLast()) {
-                Device* dev = bus->findDevice(path);
-                if (dev != nullptr) return dev;
-            }
-            
-        }
-        return nullptr;*/
+    DeviceFindResult OneWireTempGroup::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(reinterpret_cast<Device**>(busses), busCount, path, this, outDevice);
     }
 
     HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {

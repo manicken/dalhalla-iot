@@ -37,9 +37,23 @@
 
 namespace HAL_JSON {
 
+    const char* DeviceFindResultToString(DeviceFindResult res) {
+        switch (res)
+        {
+            case DeviceFindResult::DeviceNotFound: return "DeviceNotFound";
+            case DeviceFindResult::EmptyUIDPath: return "EmptyUIDPath";
+            case DeviceFindResult::InvalidUID: return "InvalidUID";
+            case DeviceFindResult::PathTooDeep: return "PathTooDeep";
+            case DeviceFindResult::SubDevicesNotSupported: return "SubDevicesNotSupported";
+            case DeviceFindResult::SubDeviceListEmpty: return "SubDeviceListEmpty";
+            case DeviceFindResult::Success: return "Success";
+            default: return "Unknown";
+        }
+    }
+
     const char* Device::GetType() { return type; } 
 
-    Device::Device(UIDPathMaxLength uidMaxLength, const char* type) : uidMaxLength(uidMaxLength), type(type) { }
+    Device::Device(const char* type) : type(type) { }
 
     Device::~Device() {}
 
@@ -51,7 +65,7 @@ namespace HAL_JSON {
         loopTaskDone = false;
         return true;
     }
-    Device* Device::findDevice(UIDPath& path) { return nullptr; }
+    DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     String Device::ToString() { return ""; }
 
@@ -111,6 +125,53 @@ namespace HAL_JSON {
         return jsonObj[HAL_JSON_KEYNAME_DISABLED].as<bool>(); 
     }
 
+    DeviceFindResult Device::findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice, Device*& outDevice) {
+        outDevice = nullptr; // allways set
+        
+        if (!devices || deviceCount == 0) {
+            GlobalLogger.Error(F("Could not continue search at device type: "), currentDevice?currentDevice->type:"root");
+            return DeviceFindResult::SubDeviceListEmpty;
+        }
+        if (path.empty()) {
+            return DeviceFindResult::EmptyUIDPath;
+        }
+        HAL_UID currUID;
+
+        // Determine which UID to compare at this level
+        if (currentDevice && currentDevice->uid.IsSet()) {
+            currUID = path.getNextUID();   // advance for subdevice
+        } else {
+            currUID = path.getCurrentUID(); // root level or placeholder
+        }
+
+        if (currUID.Invalid()) {
+            return DeviceFindResult::InvalidUID;
+        }
+
+        for (int i = 0; i < deviceCount; i++) {
+            Device* dev = devices[i];
+            if (!dev) continue; // failsafe
+
+            if (dev->uid == currUID) {
+
+                if (path.isLast()) {
+                    // exact/current level match, path ends here
+                    outDevice = dev;
+                    return DeviceFindResult::Success;
+                }
+                // recurse find
+                return dev->findDevice(path, outDevice);
+                
+            } else if (dev->uid.NotSet() && !path.isLast()) { // this will only happen on devices that supports subdevices directly
+                DeviceFindResult res = dev->findDevice(path, outDevice); // recurse into placeholder
+                if (res == DeviceFindResult::Success) {
+                    return res;
+                }
+            }
+        }
+        return DeviceFindResult::DeviceNotFound;
+    }
+/*
     Device* Device::findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice) {
         if (!devices || deviceCount == 0) return nullptr;
         if (path.empty()) return nullptr;
@@ -156,7 +217,7 @@ namespace HAL_JSON {
             return nullptr;
         }
         return indirectMatch;
-    }
+    }*/
 
     namespace DeviceConstStrings {
         HAL_JSON_DEVICE_CONST_STR_DEFINE(uid, "\"uid\":\"");

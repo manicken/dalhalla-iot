@@ -49,12 +49,13 @@ namespace HAL_JSON {
         ZeroCopyString& zcStrFuncName = zcStrUidPathAndFuncName;
 
         UIDPath uidPath(zcStrUidPath);
-        device = Manager::findDevice(uidPath);
 
-        if (device == nullptr) {
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
+
+        if (devFindRes != DeviceFindResult::Success) {
             
             std::string uidStr = uidPath.ToString();
-            printf("@CachedDeviceRead - device not found:>>%s<<\n", uidStr.c_str());
+            printf("@CachedDeviceRead - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidStr.c_str());
             return;
         }
         

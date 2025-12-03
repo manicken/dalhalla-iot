@@ -191,9 +191,11 @@ namespace HAL_JSON {
         }
         // check if device exists
         UIDPath uidPath(params.zcUid);
-        Device* device = Manager::findDevice(uidPath);
-        if (device == nullptr) {
+        Device* outDevice = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
+            GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
             //message += "\"error\":\"device not found\"";
             //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
             return false;
@@ -225,7 +227,7 @@ namespace HAL_JSON {
             HALValue halValue = uintValue;
             //HALWriteRequest req(uidPath, halValue); // obsolete
 
-            writeResult = device->write(halValue);
+            writeResult = outDevice->write(halValue);
             if (writeResult == HALOperationResult::Success) {
                 message += "\"info\":{\"Value written\":\"";
                 message += std::to_string(uintValue);
@@ -243,7 +245,7 @@ namespace HAL_JSON {
                 HALValue halValue = uintValue;
                 //HALWriteRequest req(uidPath, halValue); // obsolete
 
-                writeResult = device->write(halValue);
+                writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
                     message += "\"info\":{\"Value written\":\"";
                     message += std::to_string(uintValue);
@@ -265,7 +267,7 @@ namespace HAL_JSON {
                 HALValue halValue = floatValue;
                 //HALWriteRequest req(uidPath, halValue); // obsolete
 
-                writeResult = device->write(halValue);
+                writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
                     message += "\"info\":{\"Value written\":\"";
                     message += std::to_string(floatValue);
@@ -280,7 +282,7 @@ namespace HAL_JSON {
             
             //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
 
-            writeResult = device->write(strHalValue);
+            writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 message += "\"info\":{\"String written\":\"OK\"}";
                 //message += stdString.c_str();
@@ -293,7 +295,7 @@ namespace HAL_JSON {
             HALWriteStringRequestValue strHalValue(params.zcValue, result);
             //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
 
-            writeResult = device->write(strHalValue);
+            writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 message += "\"info\":{\"Json written\":\"OK\"}";
                 //message += stdString.c_str();
@@ -307,7 +309,7 @@ namespace HAL_JSON {
         }
         if (writeResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(writeResult));
-            GlobalLogger.setLastEntrySource(device->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->GetType());
             /*message += "\"error\":\"";
             message += HALOperationResultToString(writeResult);
             message += '"';
@@ -339,9 +341,11 @@ namespace HAL_JSON {
         }
         // check if device exists
         UIDPath uidPath(params.zcUid);
-        Device* device = Manager::findDevice(uidPath);
-        if (device == nullptr) {
+        Device* outDevice = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
+            GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
             //message += "\"error\":\"device not found\"";
             //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
             return false;
@@ -353,7 +357,7 @@ namespace HAL_JSON {
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
 
-            readResult = device->read(halValue);
+            readResult = outDevice->read(halValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
@@ -362,7 +366,7 @@ namespace HAL_JSON {
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
 
-            readResult = device->read(halValue);
+            readResult = outDevice->read(halValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
@@ -372,7 +376,7 @@ namespace HAL_JSON {
                 HALValue halValue;
                 //HALReadRequest req(uidPath, halValue); // obsolete
 
-                readResult = device->read(halValue);
+                readResult = outDevice->read(halValue);
                 if (readResult == HALOperationResult::Success) {
                     valueStr = std::to_string(halValue.asFloat());
                 }
@@ -382,7 +386,7 @@ namespace HAL_JSON {
                 HALReadValueByCmd valByCmd(halValue, params.zcValue);
                 //HALReadValueByCmdReq req(uidPath, valByCmd); // obsolete
 
-                readResult = device->read(valByCmd);
+                readResult = outDevice->read(valByCmd);
                 if (readResult == HALOperationResult::Success) {
                     valueStr = std::to_string(halValue.asFloat());
                 }
@@ -393,7 +397,7 @@ namespace HAL_JSON {
             HALReadStringRequestValue strHalValue(params.zcValue, result);
             //HALReadStringRequest req(uidPath, strHalValue); // obsolete
 
-            readResult = device->read(strHalValue);
+            readResult = outDevice->read(strHalValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr = "\"";
                 valueStr += result;
@@ -405,7 +409,7 @@ namespace HAL_JSON {
             HALReadStringRequestValue strHalValue(params.zcValue, result);
             //HALReadStringRequest req(uidPath, strHalValue); // obsolete
 
-            readResult = device->read(strHalValue);
+            readResult = outDevice->read(strHalValue);
             if (readResult == HALOperationResult::Success) {
                 valueStr += result;
             }
@@ -416,7 +420,7 @@ namespace HAL_JSON {
         }
         if (readResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(readResult));
-            GlobalLogger.setLastEntrySource(device->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->GetType());
             /*message += "\"error\":\"";
             message += HALOperationResultToString(readResult);
             message += '"';
@@ -440,9 +444,11 @@ namespace HAL_JSON {
         }
         // first check if device exists
         UIDPath uidPath(zcPath);
-        Device* device = Manager::findDevice(uidPath);
-        if (device == nullptr) {
+        Device* outDevice = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), zcPath);
+            GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
             //message += "\"error\":\"device not found\"";
             //message += ",\"uidpath\":\"" + zcPath.ToString() + "\"";
             return false;
@@ -451,14 +457,14 @@ namespace HAL_JSON {
         HALOperationResult res = HALOperationResult::NotSet;
         if (zcStr.NotEmpty()) {
             //UIDPath path(zcPath); // obsolete
-            res = device->exec(zcStr);
+            res = outDevice->exec(zcStr);
         } else {
             //UIDPath path(zcStr); // obsolete
-            res = device->exec();
+            res = outDevice->exec();
         }
         if (res != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(res));
-            GlobalLogger.setLastEntrySource(device->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->GetType());
             /*message += "\"error\":\"";
             message += HALOperationResultToString(res);
             message += '"';

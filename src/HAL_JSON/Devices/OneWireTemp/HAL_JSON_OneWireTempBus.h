@@ -55,7 +55,7 @@ namespace HAL_JSON {
         
         OneWireTempDevice* GetFirstDevice();
         /** this function will search the devices to find the device with the uid */
-        Device* findDevice(UIDPath& path) override;
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void requestTemperatures();
         void readAll();
         HALOperationResult read(const HALReadStringRequestValue& val) override;

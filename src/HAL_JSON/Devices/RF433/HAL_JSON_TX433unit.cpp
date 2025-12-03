@@ -32,7 +32,7 @@ namespace HAL_JSON {
         return true;
     }
     
-    TX433unit::TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin) : Device(UIDPathMaxLength::One,type), pin(pin) {
+    TX433unit::TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin) : Device(type), pin(pin) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         const char* modelStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_MODEL);

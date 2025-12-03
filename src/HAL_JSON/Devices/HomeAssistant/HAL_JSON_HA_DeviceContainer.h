@@ -47,7 +47,7 @@ namespace HAL_JSON {
         /** called when all hal devices has been loaded */
         void begin() override;
         /** used to find sub/leaf devices @ "group devices" */
-        Device* findDevice(UIDPath& path) override;
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);

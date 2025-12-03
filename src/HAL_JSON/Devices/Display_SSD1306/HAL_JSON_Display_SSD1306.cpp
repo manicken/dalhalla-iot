@@ -39,7 +39,7 @@ namespace HAL_JSON {
         return new Display_SSD1306(jsonObj, type, wire);
     }
     
-    Display_SSD1306::Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(UIDPathMaxLength::Many,type) {
+    Display_SSD1306::Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(type) {
 
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
@@ -161,8 +161,8 @@ namespace HAL_JSON {
         return ret;
     }
 
-    Device* Display_SSD1306::findDevice(UIDPath& path) {
-        return Device::findInArray(reinterpret_cast<Device**>(elements), elementCount, path, this);
+    DeviceFindResult Display_SSD1306::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(reinterpret_cast<Device**>(elements), elementCount, path, this, outDevice);
     }
 
     HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {

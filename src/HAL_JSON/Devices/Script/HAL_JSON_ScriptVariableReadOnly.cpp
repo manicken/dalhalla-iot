@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    ScriptVariableReadOnly::ScriptVariableReadOnly(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One,type) {
+    ScriptVariableReadOnly::ScriptVariableReadOnly(const JsonVariant &jsonObj, const char* type) : Device(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
     }

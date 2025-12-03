@@ -48,9 +48,7 @@ namespace HAL_JSON {
         static uint32_t frequency;
         
         PWMAnalogWriteConfig(const JsonVariant &jsonObj, const char* type);
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-        Device* findDevice(UIDPath& path) override;
-#endif
+
         HALOperationResult write(const HALWriteStringRequestValue& value) override;
         String ToString() override;
 
@@ -73,9 +71,7 @@ namespace HAL_JSON {
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         PWMAnalogWrite(const JsonVariant &jsonObj, const char* type);
         ~PWMAnalogWrite();
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-        Device* findDevice(UIDPath& path) override;
-#endif
+
         HALOperationResult read(HALValue &val) override;
         HALOperationResult write(const HALValue &val) override;
         String ToString() override;

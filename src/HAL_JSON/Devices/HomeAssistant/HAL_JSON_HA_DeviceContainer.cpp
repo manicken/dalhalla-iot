@@ -38,7 +38,7 @@ namespace HAL_JSON {
         }
     }
 
-    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : Device(UIDPathMaxLength::Many,type) {
+    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : Device(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         const JsonArray& jsonArray = jsonObj[HAL_JSON_KEYNAME_ITEMS].as<JsonArray>();
         
@@ -159,8 +159,8 @@ namespace HAL_JSON {
         }
     }
     
-    Device* HA_DeviceContainer::findDevice(UIDPath& path) {
-        return Device::findInArray(devices, deviceCount, path, this);
+    DeviceFindResult HA_DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
 }

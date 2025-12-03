@@ -77,17 +77,8 @@ namespace HAL_JSON {
         static void CleanUp();
 
         // Device operations
-        static Device* findDevice(UIDPath& path);
-/* obsolete functions
-        static HALOperationResult read(const HALReadRequest& req);
-        static HALOperationResult write(const HALWriteRequest& req);
-        static HALOperationResult read(const HALReadStringRequest& req);
-        static HALOperationResult write(const HALWriteStringRequest& req);
-        static HALOperationResult read(const HALReadValueByCmdReq& req);
-        static HALOperationResult write(const HALWriteValueByCmdReq& req);
-        static HALOperationResult exec(UIDPath& path);
-        static HALOperationResult exec(UIDPath& path, ZeroCopyString& cmd);
-*/
+        static DeviceFindResult findDevice(UIDPath& path, Device*& outDevice);
+
         // Maintenance
         static void loop();
         

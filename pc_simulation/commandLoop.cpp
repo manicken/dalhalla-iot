@@ -215,7 +215,11 @@ void parseCommand(const char* cmd, bool oneShot) {
         HAL_JSON::TopicBasePath topicBasePath;
         topicBasePath.Set("PC sim test", "sim_test_uid");
         // Call the function
-        HAL_JSON::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceDoc, deviceGroupDoc, topicBasePath);
+        const char* type_cStr = deviceDoc["type"];
+        const char* uid_cStr =  deviceDoc["uid"];
+        const char* deviceID_cStr = "PC_sim";
+        const char* cfgTopic_cStr = HAL_JSON::HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceID_cStr, type_cStr, uid_cStr);
+        HAL_JSON::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceID_cStr, cfgTopic_cStr, deviceDoc, deviceGroupDoc, topicBasePath);
     
         std::cout << std::endl;
 

@@ -58,10 +58,11 @@ namespace HAL_JSON {
                 ZeroCopyString funcName = expToken;
                 ZeroCopyString varOperand = funcName.SplitOffHead('#');
                 UIDPath uidPath(varOperand);
-                Device* device = Manager::findDevice(uidPath);
+                Device* device = nullptr;
+                DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
 
-                if (device == nullptr) { // failsafe
-                    printf("@CalcRPNToken - CachedDeviceAccess - device not found:>>%s<<\n", uidPath.ToString().c_str());
+                if (devFindRes != DeviceFindResult::Success) { // failsafe
+                    printf("@CalcRPNToken - CachedDeviceAccess - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;
                     return;
                 }
@@ -77,10 +78,11 @@ namespace HAL_JSON {
                 deleter = nullptr; // the context is allways non owning
                 //printf("\nCalcRPNToken - non bracket non funcname accessor\n");
                 UIDPath uidPath(expToken);
-                Device* device = Manager::findDevice(uidPath);
+                Device* device = nullptr;
+                DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
 
-                if (device == nullptr) {  // failsafe
-                    printf("\nCalcRPNToken - @non bracket non funcname accessor - device not found:>>%s<<\n", uidPath.ToString().c_str());
+                if (devFindRes != DeviceFindResult::Success) {  // failsafe
+                    printf("\nCalcRPNToken - @non bracket non funcname accessor - %d:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;
                     return;
                 }

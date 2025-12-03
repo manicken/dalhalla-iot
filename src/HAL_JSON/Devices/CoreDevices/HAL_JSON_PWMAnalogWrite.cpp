@@ -45,7 +45,7 @@ namespace HAL_JSON {
         return true;
     }
 
-    PWMAnalogWriteConfig::PWMAnalogWriteConfig(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    PWMAnalogWriteConfig::PWMAnalogWriteConfig(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         //PWMAnalogWriteConfig::frequency = jsonObj[HAL_JSON_KEYNAME_PWM_CFG_FREQUENCY];//.as<uint32_t>();
@@ -61,12 +61,7 @@ namespace HAL_JSON {
         analogWriteFrequency(PWMAnalogWriteConfig::frequency);
 #endif
     }
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-    Device* PWMAnalogWriteConfig::findDevice(UIDPath& path) {
-        if (path.first() == uid) return this;
-        else return nullptr;
-    }
-#endif
+
     HALOperationResult PWMAnalogWriteConfig::write(const HALWriteStringRequestValue& value) {
         // could be supported in the future
         // for direct set of cfg
@@ -101,7 +96,7 @@ namespace HAL_JSON {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
     }
 
-    PWMAnalogWrite::PWMAnalogWrite(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    PWMAnalogWrite::PWMAnalogWrite(const JsonVariant &jsonObj, const char* type) : Device(type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID));
         //pin = jsonObj[HAL_JSON_KEYNAME_PIN];//.as<uint8_t>();
@@ -113,12 +108,7 @@ namespace HAL_JSON {
     }
 
     PWMAnalogWrite::~PWMAnalogWrite() { pinMode(pin, INPUT); } // input
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-    Device* PWMAnalogWrite::findDevice(UIDPath& path) {
-        if (path.first() == uid) return this;
-        else return nullptr;
-    }
-#endif
+
     HALOperationResult PWMAnalogWrite::read(HALValue &val) {
         //val.set(value); // just read back latest write
         val = value;

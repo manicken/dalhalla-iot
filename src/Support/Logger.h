@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "HAL_JSON/HAL_JSON_ZeroCopyString.h"
+#include "../HAL_JSON/HAL_JSON_ZeroCopyString.h"
 
 #include <time.h>
 

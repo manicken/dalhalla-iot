@@ -104,32 +104,33 @@ namespace HAL_JSON {
             zcStrUidPathAndFuncName.end = bracketPos;
             ZeroCopyString zcUid = zcStrUidPathAndFuncName.SplitOffHead('#');
             UIDPath uid(zcUid);
-            Device* device = Manager::findDevice(uid);
-            if (device == nullptr) {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid.ToString().c_str());
+            Device* outDevice = nullptr;
+            DeviceFindResult res = Manager::findDevice(uid, outDevice);
+            if (res != DeviceFindResult::Success) {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid);
+                GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));
                 handler = &CachedDeviceRead::Handler_Invalid;
                 return false;
             }
 
-            Device::BracketOpRead_FuncType bracketFunc = device->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
+            Device::BracketOpRead_FuncType bracketFunc = outDevice->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
             
             if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName.ToString().c_str());
+                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
                 handler = &CachedDeviceRead::Handler_Invalid;
                 return false;
             }
 
             CachedDeviceRead* subOperand = new CachedDeviceRead();
             if (subOperand->Set(inner) == false) {
-                // this will logg the error separately
-                //GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName.ToString().c_str());
+                // error is reported in the set above
                 delete subOperand;
                 handler = &CachedDeviceRead::Handler_Invalid;
                 return false;
             }
             
 
-            auto* ctx = new BracketContext{device, bracketFunc, subOperand};
+            auto* ctx = new BracketContext{outDevice, bracketFunc, subOperand};
 
             context = ctx;
             handler = &CachedDeviceRead::Handler_Bracket;
@@ -141,15 +142,17 @@ namespace HAL_JSON {
         ZeroCopyString operandName = zcStrUidPathAndFuncName.SplitOffHead('#');
         ZeroCopyString& funcName = zcStrUidPathAndFuncName;
         UIDPath uid(operandName);
-        Device* device = Manager::findDevice(uid);
-        if (!device) {
+        Device* outDevice = nullptr;
+        DeviceFindResult res =  Manager::findDevice(uid, outDevice);
+        if (res != DeviceFindResult::Success) {
             GlobalLogger.Error(F("CachedDeviceRead - could not find source device: "), operandName.ToString().c_str());
+            GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));
             handler = &CachedDeviceRead::Handler_Invalid;
             return false; 
         }
 
         // Func read
-        Device::ReadToHALValue_FuncType readFunc = device->GetReadToHALValue_Function(funcName);
+        Device::ReadToHALValue_FuncType readFunc = outDevice->GetReadToHALValue_Function(funcName);
         if (readFunc == nullptr && funcName.NotEmpty()) {
             // this mean we requested to use a function name 
             // that did not exist thus the default is no op
@@ -158,7 +161,7 @@ namespace HAL_JSON {
             return false;
         }
         if (readFunc) {
-            auto* ctx = new FuncContext{device, readFunc};
+            auto* ctx = new FuncContext{outDevice, readFunc};
             context = ctx;
             handler = &CachedDeviceRead::Handler_Func;
             deleter = ScriptEngine::DeleteAs<FuncContext>;
@@ -167,7 +170,7 @@ namespace HAL_JSON {
 
         // Direct access
         deleter = nullptr; // non owning
-        HALValue* valPtr = device->GetValueDirectAccessPtr();
+        HALValue* valPtr = outDevice->GetValueDirectAccessPtr();
         if (valPtr) {
             context = valPtr;
             handler = &CachedDeviceRead::Handler_Direct;
@@ -175,7 +178,7 @@ namespace HAL_JSON {
         }
 
         // Fallback device read
-        context = device;
+        context = outDevice;
         handler = &CachedDeviceRead::Handler_Device;
         return true;
     }

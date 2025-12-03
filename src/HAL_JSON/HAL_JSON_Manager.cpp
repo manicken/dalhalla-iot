@@ -172,59 +172,10 @@ namespace HAL_JSON {
         return true;
     }
 
-    Device* Manager::findDevice(UIDPath& path) {
+    DeviceFindResult Manager::findDevice(UIDPath& path, Device*& outDevice) {
         path.reset(); // ensure to be at root level
-        return Device::findInArray(devices, deviceCount, path, nullptr);
+        return Device::findInArray(devices, deviceCount, path, nullptr, outDevice);
     }
-
-    /* obsolete functions
-    HALOperationResult Manager::read(const HALReadRequest &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->read(req.out_value);
-    }
-    HALOperationResult Manager::write(const HALWriteRequest &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->write(req.value);
-    }
-    HALOperationResult Manager::read(const HALReadStringRequest &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->read(req.value);
-    }
-    HALOperationResult Manager::write(const HALWriteStringRequest &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->write(req.value);
-    }
-    HALOperationResult Manager::read(const HALReadValueByCmdReq &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->read(req.valByCmd);
-    }
-    HALOperationResult Manager::write(const HALWriteValueByCmdReq &req) {
-        Device* device = findDevice(req.path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        //Serial.println(F("found device"));
-        return device->write(req.valByCmd);
-    }
-    HALOperationResult Manager::exec(UIDPath& path) {
-        Device* device = findDevice(path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        return device->exec();
-    }
-    HALOperationResult Manager::exec(UIDPath& path, ZeroCopyString& cmd) {
-        Device* device = findDevice(path);
-        if (device == nullptr) { return HALOperationResult::DeviceNotFound; }
-        return device->exec(cmd);
-    }
-        */
 
     bool Manager::ReadJSON(const char* path) {
         if (path == nullptr) {
@@ -311,9 +262,10 @@ namespace HAL_JSON {
 
         ZeroCopyString zcPath = "1WTG";
         UIDPath path(zcPath);
-        Device* device = Manager::findDevice(path);
-        if (device == nullptr) {
-            std::string msg = "\"error\":\"device not found: " + zcPath.ToString() + "\"";
+        Device* device = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(path, device);
+        if (devFindRes != DeviceFindResult::Success) {
+            std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes))+": " + zcPath.ToString() + "\"";
             Serial.println(msg.c_str());
             
         } else {
@@ -329,9 +281,10 @@ namespace HAL_JSON {
 
         ZeroCopyString zcPath2 = "1WTG:D2";
         UIDPath path2(zcPath2);
-        Device* device2 = Manager::findDevice(path2);
-        if (device2 == nullptr) {
-            std::string msg = "\"error\":\"device not found: " + zcPath2.ToString() + "\"";
+        Device* device2 = nullptr;
+        DeviceFindResult devFindRes2 = Manager::findDevice(path2, device2);
+        if (devFindRes2 != DeviceFindResult::Success) {
+            std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes2))+": " + zcPath2.ToString() + "\"";
             Serial.println(msg.c_str());
             
         } else {

@@ -37,11 +37,23 @@
 
 
 namespace HAL_JSON {
-    
+    /* obsolete
     enum class UIDPathMaxLength : uint8_t {
         One,
         Many
     };
+    */
+
+    enum class DeviceFindResult {
+        Success,
+        DeviceNotFound,
+        PathTooDeep,
+        SubDevicesNotSupported,
+        SubDeviceListEmpty,
+        EmptyUIDPath,
+        InvalidUID
+    };
+    const char* DeviceFindResultToString(DeviceFindResult res);
 
     //typedef bool (*ReadToHALValue_FuncType)(HAL_JSON::Device*, HALValue&);
     
@@ -61,11 +73,11 @@ namespace HAL_JSON {
         using BracketOpRead_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, const HALValue& value);
 
-        Device(UIDPathMaxLength uidMaxLength, const char* type);
+        Device(const char* type);
         virtual ~Device();
 
         HAL_UID uid;
-        const UIDPathMaxLength uidMaxLength;
+        //const UIDPathMaxLength uidMaxLength; // obsolete
         /** can be used as a flag to signal a event */
         bool LoopTaskDone();
         virtual HALOperationResult read(HALValue& val);
@@ -89,7 +101,7 @@ namespace HAL_JSON {
         /** called when all hal devices has been loaded */
         virtual void begin();
         /** used to find sub/leaf devices @ "group devices" */
-        virtual Device* findDevice(UIDPath& path);
+        virtual DeviceFindResult findDevice(UIDPath& path, Device*& outDevice);
 
         /** Executes a device action that requires no parameters. */
         virtual HALOperationResult exec();
@@ -100,7 +112,7 @@ namespace HAL_JSON {
 
         static bool DisabledInJson(const JsonVariant& jsonObj);
 
-        static Device* findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice);
+        static DeviceFindResult findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice, Device*& outDevice);
     };
 
     

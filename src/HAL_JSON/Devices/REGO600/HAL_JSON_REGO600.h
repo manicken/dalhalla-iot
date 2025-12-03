@@ -55,6 +55,6 @@ namespace HAL_JSON {
         String ToString() override;
 
         /** used to find sub/leaf devices @ "group devices" */
-        Device* findDevice(UIDPath& path) override;
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
     };
 }

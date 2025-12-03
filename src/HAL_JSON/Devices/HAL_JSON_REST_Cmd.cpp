@@ -35,7 +35,7 @@ namespace HAL_JSON {
     }
 
     REST_Cmd::REST_Cmd(const JsonVariant &jsonObj, const char* type)
-        : HAL_JSON::Device(HAL_JSON::UIDPathMaxLength::One, type)
+        : HAL_JSON::Device(type)
     {
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
         remoteUrl = GetAsConstChar(jsonObj, "url");

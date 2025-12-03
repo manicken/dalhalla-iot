@@ -55,7 +55,7 @@ namespace HAL_JSON {
         I2C_BUS(const JsonVariant &jsonObj, const char* type);
         ~I2C_BUS();
 
-        Device* findDevice(UIDPath& path) override;
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void loop() override;
 
         HALOperationResult read(const HALReadStringRequestValue& val) override;

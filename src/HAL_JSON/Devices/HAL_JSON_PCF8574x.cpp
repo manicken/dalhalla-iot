@@ -30,7 +30,7 @@ namespace HAL_JSON {
                (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
     }
     
-    PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(UIDPathMaxLength::One,type), wire(&wire) {
+    PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(type), wire(&wire) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         const char* addrStr = GetAsConstChar(jsonObj, "addr");

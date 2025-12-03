@@ -33,7 +33,7 @@ namespace HAL_JSON {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
     }
 
-    DigitalOutput::DigitalOutput(const JsonVariant &jsonObj, const char* type) : Device(UIDPathMaxLength::One, type) {
+    DigitalOutput::DigitalOutput(const JsonVariant &jsonObj, const char* type) : Device(type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID));
         //pin = jsonObj[HAL_JSON_KEYNAME_PIN];//.as<uint8_t>();
@@ -46,12 +46,7 @@ namespace HAL_JSON {
     }
 
     DigitalOutput::~DigitalOutput() { pinMode(pin, INPUT); /*input*/ } // release the pin
-#ifndef HAL_JSON_USE_EFFICIENT_FIND
-    Device* DigitalOutput::findDevice(UIDPath& path) {
-        if (path.first() == uid) return this;
-        else return nullptr;
-    }
-#endif
+
     HALOperationResult DigitalOutput::read(HALValue &val) {
         //val.set(value); // read back the latest write value
         val = value;
