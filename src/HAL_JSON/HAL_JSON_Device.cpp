@@ -59,12 +59,15 @@ namespace HAL_JSON {
 
     void Device::loop() {}
     void Device::begin() {}
-    bool Device::LoopTaskDone() {
-        if (loopTaskDone == false)
-            return false;
-        loopTaskDone = false;
-        return true;
+
+    Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) {
+        return nullptr;
     }
+/*
+    bool Device::EventCheck_Function(Device* device, uint32_t value) {
+        return value < device->loopDoneCounter;
+    }
+*/
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     String Device::ToString() { return ""; }
@@ -189,6 +192,8 @@ namespace HAL_JSON {
                     DeviceFindResult res = dev->findDevice(path, outDevice);
                     if (res == DeviceFindResult::Success)
                         return res;
+
+                    // need to continue search other devices here
                 }
             }
         }
