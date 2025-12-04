@@ -83,9 +83,7 @@ namespace HAL_JSON {
         {"DHT", DHT::RegistryDefine},
         {"TX433", TX433::RegistryDefine},
         {"REGO600", REGO600::RegistryDefine},
-#if defined(ESP32) || defined(_WIN32)
-        {"PWM_LEDC", RegistryItemNullDefault},
-#endif
+
         {"I2C", I2C_BUS::RegistryDefine},
         
         {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
@@ -99,7 +97,12 @@ namespace HAL_JSON {
         {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
         {"WS2812", WS2812::RegistryDefine},
         /** mandatory null terminator */
-        RegistryTerminatorItem
+        RegistryTerminatorItem, // Stop for active devices
+
+        /** --- Planned / future devices --- */
+#if defined(ESP32) || defined(_WIN32)
+        {"PWM_LEDC", RegistryItemNullDefault},
+#endif
     };
 
     const DeviceRegistryItem& GetDeviceRegistryItem(const char* type) {
