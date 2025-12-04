@@ -43,14 +43,18 @@ namespace HAL_JSON {
         Void
     };
 
-    typedef struct DeviceTypeDef {
-        UseRootUID useRootUID;
-        const char* typeName;
-        HAL_DEVICE_CREATE_FUNC Create_Function;
+    typedef struct DeviceRegistryDefine {
+		UseRootUID useRootUID;
+		HAL_DEVICE_CREATE_FUNC Create_Function;
         HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
-    } DeviceTypeDef ;
+	} DeviceRegistryDefine;
+    
+	typedef struct DeviceRegistryItem {
+        const char* typeName;
+        DeviceRegistryDefine def;
+    } DeviceRegistryItem ;
 
-    extern const DeviceTypeDef DeviceRegistry[];
+    extern const DeviceRegistryItem DeviceRegistry[];
 
-    const DeviceTypeDef* GetDeviceTypeDef(const char* type);
+    const DeviceRegistryItem& GetDeviceRegistryItem(const char* type);
 }

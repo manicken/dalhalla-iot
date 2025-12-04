@@ -189,9 +189,9 @@ namespace HAL_JSON {
             
             const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (regItem.def.Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }
@@ -206,8 +206,8 @@ namespace HAL_JSON {
             const JsonVariant& item = jsonArrayItems[i];
             const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
-            devices[index++] = def->Create_Function(item, def->typeName, mqttClient, groupObj, jsonObj);
+            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, mqttClient, groupObj, jsonObj);
         }
         delete[] validItems;
     }
@@ -246,9 +246,9 @@ namespace HAL_JSON {
                 const JsonVariant& item = jsonArrayItems[j];
                 const char* type_cStr = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
         
-                const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+                const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
 
-                devices[newItemIndex++] = def->Create_Function(item, def->typeName, mqttClient, jsonObjGrpItem, jsonObj);
+                devices[newItemIndex++] = regItem.def.Create_Function(item, regItem.typeName, mqttClient, jsonObjGrpItem, jsonObj);
             
             }
         }
@@ -264,9 +264,9 @@ namespace HAL_JSON {
         if (ValidateJsonStringField(jsonObjItem, HAL_JSON_KEYNAME_TYPE) == false) { return false; }
         
         const char* type_cStr = GetAsConstChar(jsonObjItem, HAL_JSON_KEYNAME_TYPE);
-        const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
+        const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
         // no nullcheck is needed as ValidateJSON ensures that all types are correct
-        if (def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
+        if (regItem.def.Verify_JSON_Function(jsonObjItem) == false) { return false; }
         return true;
     }
 

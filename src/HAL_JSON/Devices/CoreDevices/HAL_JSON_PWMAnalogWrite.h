@@ -31,6 +31,7 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -44,6 +45,11 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         static uint8_t resolution; // used together with inv_out to get correct value
         static uint32_t frequency;
         
@@ -69,6 +75,11 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         PWMAnalogWrite(const JsonVariant &jsonObj, const char* type);
         ~PWMAnalogWrite();
 

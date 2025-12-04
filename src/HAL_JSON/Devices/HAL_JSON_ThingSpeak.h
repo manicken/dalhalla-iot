@@ -32,6 +32,7 @@
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
 #include "../HAL_JSON_CachedDeviceAccess.h"
+#include "HAL_JSON_DeviceTypesRegistry.h"
 
 #if defined(ESP8266)
 #include <ESP8266HTTPClient.h>
@@ -63,6 +64,11 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         ThingSpeak(const JsonVariant &jsonObj, const char* type);
         ~ThingSpeak();
         HALOperationResult exec() override;

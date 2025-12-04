@@ -36,6 +36,7 @@
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_OneWireTempDevice.h"
 #include "HAL_JSON_OneWireTempAutoRefresh.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -71,7 +72,11 @@ namespace HAL_JSON {
     public:
         
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Optional,
+            Create,
+            &OneWireTempBus::VerifyJSON
+        };
         OneWireTempBusAtRoot(const JsonVariant &jsonObj, const char* type);
         ~OneWireTempBusAtRoot();
 

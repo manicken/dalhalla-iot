@@ -31,6 +31,7 @@
 #include "../HAL_JSON_Device.h"
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
+#include "CoreDevices/HAL_JSON_I2C_BUS_DeviceTypeReg.h"
 
 #include <Wire.h>
 
@@ -44,6 +45,11 @@ namespace HAL_JSON {
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         static bool HasAddress(uint8_t addr);
+        static constexpr I2C_DeviceRegistryDefine RegistryDefine = {
+            Create,
+            VerifyJSON,
+            HasAddress
+        };
 
         PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
 

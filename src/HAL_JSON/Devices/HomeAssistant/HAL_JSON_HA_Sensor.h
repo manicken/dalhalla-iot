@@ -36,6 +36,7 @@
 #include <PubSubClient.h>
 #include "../../HAL_JSON_CachedDeviceRead.h"
 #include "HAL_JSON_HA_TopicBasePath.h"
+#include "HAL_JSON_HA_DeviceTypeReg.h"
 
 #define HAL_JSON_HA_SENSOR_DEFAULT_REFRESH_MS 5000
 
@@ -64,6 +65,12 @@ namespace HAL_JSON {
 
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+
+        static constexpr HA_DeviceRegistryDefine RegistryDefine = {
+            Create,
+            VerifyJSON
+        };
+
         Sensor(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         ~Sensor();
 

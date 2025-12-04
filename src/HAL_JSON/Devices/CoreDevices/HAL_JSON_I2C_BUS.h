@@ -31,6 +31,7 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 #include <Wire.h>
 
@@ -52,6 +53,11 @@ namespace HAL_JSON {
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         I2C_BUS(const JsonVariant &jsonObj, const char* type);
         ~I2C_BUS();
 

@@ -31,6 +31,7 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -40,6 +41,13 @@ namespace HAL_JSON {
         int valueCount = 0;
         bool readOnly = false;
     public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
 
         /** called when all hal devices has been loaded */
         void begin() override;
@@ -55,8 +63,7 @@ namespace HAL_JSON {
         //BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
         //BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        
         ScriptArray(const JsonVariant &jsonObj, const char* type);
 
         String ToString() override;

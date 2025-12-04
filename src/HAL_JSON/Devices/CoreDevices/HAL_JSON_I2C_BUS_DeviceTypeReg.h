@@ -32,15 +32,19 @@ namespace HAL_JSON {
     typedef bool (*I2C_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
 
-    typedef struct I2C_DeviceTypeDef {
-        const char* typeName;
+    typedef struct I2C_DeviceRegistryDefine {
         I2C_HAL_DEVICE_CREATE_FUNC Create_Function;
         I2C_HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
-    } I2C_DeviceTypeDef ;
+    } I2C_DeviceRegistryDefine;
 
-    extern const I2C_DeviceTypeDef I2C_DeviceRegistry[];
-    const I2C_DeviceTypeDef* GetI2C_DeviceTypeDef(const char* type);
+    typedef struct I2C_DeviceRegistryItem {
+        const char* typeName;
+        I2C_DeviceRegistryDefine def;
+    } I2C_DeviceRegistryItem ;
+
+    extern const I2C_DeviceRegistryItem I2C_DeviceRegistry[];
+    const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type);
     // used by i2c scanner to describe which devices a adress belongs to
     std::string describeI2CAddress(uint8_t addr);
 

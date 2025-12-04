@@ -35,27 +35,30 @@
 
 namespace HAL_JSON {
 
-    const I2C_DeviceTypeDef I2C_DeviceRegistry[] = {
-        {"SSD1306", Display_SSD1306::Create, Display_SSD1306::VerifyJSON, Display_SSD1306::HasAddress},
-        {"PCF8574x",  PCF8574x::Create, PCF8574x::VerifyJSON, PCF8574x::HasAddress},
+    constexpr I2C_DeviceRegistryDefine RegistryItemNullDefault = {nullptr, nullptr, nullptr};
+    constexpr I2C_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
+
+    constexpr I2C_DeviceRegistryItem I2C_DeviceRegistry[] = {
+        {"SSD1306",   Display_SSD1306::RegistryDefine},
+        {"PCF8574x",  PCF8574x::RegistryDefine},
         /** mandatory null terminator */
-        {nullptr, nullptr, nullptr}
+        RegistryTerminatorItem
     };
-    const I2C_DeviceTypeDef* GetI2C_DeviceTypeDef(const char* type) {
+    const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type) {
         int i=0;
         while (true) {
-            const I2C_DeviceTypeDef& def = I2C_DeviceRegistry[i++];
-            if (def.typeName == nullptr) break;
-            if (strcasecmp(def.typeName, type) == 0) return &def;
+            const I2C_DeviceRegistryItem& regItem = I2C_DeviceRegistry[i++];
+            if (regItem.typeName == nullptr) break;
+            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
         }
-        return nullptr;
+        return RegistryTerminatorItem;
     }
     std::string describeI2CAddress(uint8_t addr) {
         std::string deviceNames;
         deviceNames.reserve(32); // to minimize heap fragmentation
         bool first = true;
         for (int i = 0; I2C_DeviceRegistry[i].typeName != nullptr; i++) {
-            if (I2C_DeviceRegistry[i].HasAddress_Function(addr)) {
+            if (I2C_DeviceRegistry[i].def.HasAddress_Function(addr)) {
                 if (first == false) deviceNames += ',';
                 else first = false;
                 deviceNames += I2C_DeviceRegistry[i].typeName;

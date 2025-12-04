@@ -32,6 +32,7 @@
 
 #include "HAL_JSON_REGO600register.h"
 #include "../../../Drivers/REGO600.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -48,6 +49,11 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         REGO600(const JsonVariant &jsonObj, const char* type);
         ~REGO600();
         void loop() override;

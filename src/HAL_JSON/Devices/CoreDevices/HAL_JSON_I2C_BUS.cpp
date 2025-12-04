@@ -63,9 +63,9 @@ namespace HAL_JSON {
             
             const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
             
-            const I2C_DeviceTypeDef* def = GetI2C_DeviceTypeDef(type);
+            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (regItem.def.Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }
@@ -78,9 +78,9 @@ namespace HAL_JSON {
             if (validItems[i] == false) continue;
             
             const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
-            const I2C_DeviceTypeDef* def = GetI2C_DeviceTypeDef(type);
+            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
              // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            devices[index++] = def->Create_Function(item, "SSD1306", *wire);
+            devices[index++] = regItem.def.Create_Function(item, "SSD1306", *wire);
         }
         delete[] validItems;
     }
@@ -135,24 +135,24 @@ namespace HAL_JSON {
             if (ValidateJsonStringField(item, HAL_JSON_KEYNAME_TYPE) == false) HAL_JSON_VALIDATE_IN_LOOP_FAIL_OPERATION;
             
             const char* type = GetAsConstChar(item, HAL_JSON_KEYNAME_TYPE);
-            const I2C_DeviceTypeDef* def = GetI2C_DeviceTypeDef(type);
-            if (def == nullptr) {
+            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
+            if (regItem.typeName == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - could not find type:"),type);
                 SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
             
-            if (def->Verify_JSON_Function == nullptr) {
+            if (regItem.def.Verify_JSON_Function == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - Verify_JSON_Function nullptr:"),type);
                 SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
-            if (def->Create_Function == nullptr) {
+            if (regItem.def.Create_Function == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - Create_Function nullptr:"),type);
                 SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
-            if (def->Verify_JSON_Function(item) == false) HAL_JSON_VALIDATE_IN_LOOP_FAIL_OPERATION;
+            if (regItem.def.Verify_JSON_Function(item) == false) HAL_JSON_VALIDATE_IN_LOOP_FAIL_OPERATION;
             validItemCount++;
 
         }

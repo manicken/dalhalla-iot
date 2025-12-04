@@ -52,8 +52,8 @@ namespace HAL_JSON {
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
-            bool valid = def->Verify_JSON_Function(jsonItem);
+            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            bool valid = regItem.def.Verify_JSON_Function(jsonItem);
             validDevices[i] = valid;
             deviceCountTmp++;
         }
@@ -81,8 +81,8 @@ namespace HAL_JSON {
             const JsonVariant& jsonItem = jsonArray[i];
             if (validDevices[i] == false) continue;
             const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
-            devices[index++] = def->Create_Function(jsonItem, def->typeName, mqttClient, jsonObjGlobal, jsonObjRoot);
+            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            devices[index++] = regItem.def.Create_Function(jsonItem, regItem.typeName, mqttClient, jsonObjGlobal, jsonObjRoot);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -113,8 +113,8 @@ namespace HAL_JSON {
             if (IsConstChar(jsonItem) == true) { continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, HAL_JSON_KEYNAME_TYPE);
-            const HA_DeviceTypeDef* def = Get_HA_DeviceTypeDef(type_cStr);
-            bool valid = def->Verify_JSON_Function(jsonItem);
+            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            bool valid = regItem.def.Verify_JSON_Function(jsonItem);
             if (valid == false) HAL_JSON_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
         }
         return true;

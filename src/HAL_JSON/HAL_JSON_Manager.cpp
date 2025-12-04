@@ -68,18 +68,18 @@ namespace HAL_JSON {
 
     Device* Manager::CreateDeviceFromJSON(const JsonVariant &jsonObj) {
         const char* type = jsonObj[HAL_JSON_KEYNAME_TYPE].as<const char*>();
-        const DeviceTypeDef* def = GetDeviceTypeDef(type);
-        if (def == nullptr) {
+        const DeviceRegistryItem& regItem = GetDeviceRegistryItem(type);
+        if (regItem.typeName == nullptr) {
             // should never happen as VerifyJson is called before and do actually verify that this function should work
             GlobalLogger.Error(F("CreateDeviceFromJSON - something is very wrong if this happens"));
             return nullptr; // no match
         }
 
-        if (def->Create_Function == nullptr) {
+        if (regItem.def.Create_Function == nullptr) {
             GlobalLogger.Error(F("CreateDeviceFromJSON - Create_Function == nullptr - something is very wrong if this happens"));
             return nullptr; // should never happen as VerifyJson is called before and do actually verify that this pointer do point to something
         }
-        return def->Create_Function(jsonObj, def->typeName);
+        return regItem.def.Create_Function(jsonObj, regItem.typeName);
     }
     bool Manager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         
@@ -87,19 +87,19 @@ namespace HAL_JSON {
 
         const char* type = jsonObj[HAL_JSON_KEYNAME_TYPE].as<const char*>();
 
-        const DeviceTypeDef* def = GetDeviceTypeDef(type);
-        if (def == nullptr) {
+        const DeviceRegistryItem& regItem = GetDeviceRegistryItem(type);
+        if (regItem.typeName == nullptr) {
             GlobalLogger.Error(F("VerifyDeviceJson - could not find type:"),type);
             return false;
         }
 
-        if (def->useRootUID == UseRootUID::Mandatory)
+        if (regItem.def.useRootUID == UseRootUID::Mandatory)
             if (!ValidateJsonStringField(jsonObj, HAL_JSON_KEYNAME_UID)) { SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
-        if (def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
-        if (def->Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
+        if (regItem.def.Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
+        if (regItem.def.Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
 
-        return def->Verify_JSON_Function(jsonObj);
+        return regItem.def.Verify_JSON_Function(jsonObj);
 
     }
 
@@ -245,12 +245,7 @@ namespace HAL_JSON {
             Device* device = devices[i];
             if (device == nullptr) continue;
             device->loop();
-            if (device->LoopTaskDone()) {
-                // do something here
-                // here we can have a callback
-                // right now the only use for this would be to signal to RuleManager (future implementation, next in queue)
-                // so that reads from rules are synced with refresh rates of the different devices
-            }
+            
         }
     }
     /** 

@@ -61,51 +61,54 @@
 
 namespace HAL_JSON {
 
-    const DeviceTypeDef DeviceRegistry[] = {
-        {UseRootUID::Mandatory, "VAR", ScriptVariable::Create, ScriptVariable::VerifyJSON},
+    constexpr DeviceRegistryDefine RegistryItemNullDefault = {UseRootUID::Void, nullptr, nullptr };
+    constexpr DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
 
-        {UseRootUID::Mandatory, "DIN", DigitalInput::Create, DigitalInput::VerifyJSON},
-        {UseRootUID::Mandatory, "DOUT", DigitalOutput::Create, DigitalOutput::VerifyJSON},
-        {UseRootUID::Mandatory, "DPOUT", SinglePulseOutput::Create, SinglePulseOutput::VerifyJSON},
+    constexpr DeviceRegistryItem DeviceRegistry[] = {
+        {"VAR", ScriptVariable::RegistryDefine},
+
+        {"DIN", DigitalInput::RegistryDefine},
+        {"DOUT", DigitalOutput::RegistryDefine},
+        {"DPOUT", SinglePulseOutput::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
-        {UseRootUID::Mandatory, "ADC", AnalogInput::Create, AnalogInput::VerifyJSON},
+        {"ADC", AnalogInput::RegistryDefine},
 #endif
-        {UseRootUID::Mandatory, "PWM_AW", PWMAnalogWrite::Create, PWMAnalogWrite::VerifyJSON},
-        {UseRootUID::Mandatory, "PWM_AW_CFG", PWMAnalogWriteConfig::Create, PWMAnalogWriteConfig::VerifyJSON},
+        {"PWM_AW", PWMAnalogWrite::RegistryDefine},
+        {"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine},
 
-        {UseRootUID::Optional, "1WTG", OneWireTempGroup::Create, OneWireTempGroup::VerifyJSON},
-        {UseRootUID::Optional, "1WTB", OneWireTempBusAtRoot::Create, OneWireTempBus::VerifyJSON},
-        {UseRootUID::Mandatory, "1WTD", OneWireTempDeviceAtRoot::Create, OneWireTempDeviceAtRoot::VerifyJSON},
+        {"1WTG", OneWireTempGroup::RegistryDefine},
+        {"1WTB", OneWireTempBusAtRoot::RegistryDefine},
+        {"1WTD", OneWireTempDeviceAtRoot::RegistryDefine},
 
-        {UseRootUID::Mandatory, "DHT", DHT::Create, DHT::VerifyJSON},
-        {UseRootUID::Mandatory, "TX433", TX433::Create, TX433::VerifyJSON},
-        {UseRootUID::Mandatory, "REGO600", REGO600::Create, REGO600::VerifyJSON},
+        {"DHT", DHT::RegistryDefine},
+        {"TX433", TX433::RegistryDefine},
+        {"REGO600", REGO600::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
-        {UseRootUID::Mandatory, "PWM_LEDC", nullptr, nullptr},
+        {"PWM_LEDC", RegistryItemNullDefault},
 #endif
-        {UseRootUID::Mandatory, "I2C", I2C_BUS::Create, I2C_BUS::VerifyJSON},
+        {"I2C", I2C_BUS::RegistryDefine},
         
-        {UseRootUID::Mandatory, "CONSTVAR", ScriptVariableReadOnly::Create, ScriptVariableReadOnly::VerifyJSON},
-        {UseRootUID::Mandatory, "WRITEVAR", ScriptVariableWriteOnlyTest::Create, ScriptVariableWriteOnlyTest::VerifyJSON},
-        {UseRootUID::Mandatory, "REST_VAR", REST_Value::Create, REST_Value::VerifyJSON},
-        {UseRootUID::Mandatory, "REST_CMD", REST_Cmd::Create, REST_Cmd::VerifyJSON},
-        {UseRootUID::Mandatory, "CONTAINER", DeviceContainer::Create, DeviceContainer::VerifyJSON},
-        {UseRootUID::Mandatory, "ARRAY", ScriptArray::Create, ScriptArray::VerifyJSON},
+        {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
+        {"WRITEVAR", ScriptVariableWriteOnlyTest::RegistryDefine},
+        {"REST_VAR", REST_Value::RegistryDefine},
+        {"REST_CMD", REST_Cmd::RegistryDefine},
+        {"CONTAINER", DeviceContainer::RegistryDefine},
+        {"ARRAY", ScriptArray::RegistryDefine},
 
-        {UseRootUID::Mandatory, "THINGSPEAK", ThingSpeak::Create, ThingSpeak::VerifyJSON},
-        {UseRootUID::Mandatory, "HOMEASSISTANT", HomeAssistant::Create, HomeAssistant::VerifyJSON},
-        {UseRootUID::Mandatory, "WS2812", WS2812::Create, WS2812::VerifyJSON},
+        {"THINGSPEAK", ThingSpeak::RegistryDefine},
+        {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
+        {"WS2812", WS2812::RegistryDefine},
         /** mandatory null terminator */
-        {UseRootUID::Void, nullptr, nullptr, nullptr} // terminator
+        RegistryTerminatorItem
     };
 
-    const DeviceTypeDef* GetDeviceTypeDef(const char* type) {
+    const DeviceRegistryItem& GetDeviceRegistryItem(const char* type) {
         int i=0;
         while (true) {
-            const DeviceTypeDef& def = DeviceRegistry[i++];
-            if (def.typeName == nullptr) break;
-            if (strcasecmp(def.typeName, type) == 0) return &def;
+            const DeviceRegistryItem& regItem = DeviceRegistry[i++];
+            if (regItem.typeName == nullptr) break;
+            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
         }
-        return nullptr;
+        return RegistryTerminatorItem;
     }
 }

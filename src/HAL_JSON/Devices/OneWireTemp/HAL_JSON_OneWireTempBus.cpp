@@ -25,9 +25,7 @@
 
 namespace HAL_JSON {
 
-    Device* OneWireTempBusAtRoot::Create(const JsonVariant &jsonObj, const char* type) {
-        return new OneWireTempBusAtRoot(jsonObj, type);
-    }
+    
 
     bool OneWireTempBus::VerifyJSON(const JsonVariant &jsonObj) {
         
@@ -268,5 +266,9 @@ namespace HAL_JSON {
         ret += autoRefresh.ToString();
         
         return ret;
+    }
+
+    Device* OneWireTempBusAtRoot::Create(const JsonVariant &jsonObj, const char* type) {
+        return new OneWireTempBusAtRoot(jsonObj, type);
     }
 }

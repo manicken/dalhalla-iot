@@ -36,6 +36,8 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
+#include "../HAL_JSON_DeviceTypesRegistry.h"
+
 
 #define HAL_JSON_HOME_ASSISTANT_DEFAULT_PORT 1883
 
@@ -70,8 +72,14 @@ namespace HAL_JSON {
         void Connect();
         
     public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
 
-        
         /** called regulary from the main loop */
         void loop() override;
         /** called when all hal devices has been loaded */
@@ -79,8 +87,7 @@ namespace HAL_JSON {
         /** used to find sub/leaf devices @ "group devices" */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        
         HomeAssistant(const JsonVariant &jsonObj, const char* type);
         ~HomeAssistant();
 

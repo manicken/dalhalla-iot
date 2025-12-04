@@ -37,21 +37,24 @@
 
 namespace HAL_JSON {
 
-    const HA_DeviceTypeDef HA_DeviceRegistry[] = {
-        {"sensor", Sensor::Create, Sensor::VerifyJSON},
-        {"switch",  Switch::Create, Switch::VerifyJSON},
-        {"button", Button::Create, Button::VerifyJSON},
-        {"CONTAINER", HA_DeviceContainer::Create, HA_DeviceContainer::VerifyJSON},
+    constexpr HA_DeviceRegistryDefine RegistryItemNullDefault = {nullptr, nullptr };
+    constexpr HA_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
+
+    constexpr HA_DeviceRegistryItem HA_DeviceRegistry[] = {
+        {"sensor",    Sensor::RegistryDefine},
+        {"switch",    Switch::RegistryDefine},
+        {"button",    Button::RegistryDefine},
+        {"CONTAINER", HA_DeviceContainer::RegistryDefine},
         /** mandatory null terminator */
-        {nullptr, nullptr, nullptr}
+        RegistryTerminatorItem
     };
-    const HA_DeviceTypeDef* Get_HA_DeviceTypeDef(const char* type) {
+    const HA_DeviceRegistryItem& Get_HA_DeviceRegistryItem(const char* type) {
         int i=0;
         while (true) {
-            const HA_DeviceTypeDef& def = HA_DeviceRegistry[i++];
-            if (def.typeName == nullptr) break;
-            if (strcasecmp(def.typeName, type) == 0) return &def;
+            const HA_DeviceRegistryItem& regItem = HA_DeviceRegistry[i++];
+            if (regItem.typeName == nullptr) break;
+            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
         }
-        return nullptr;
+        return RegistryTerminatorItem;
     }
 }

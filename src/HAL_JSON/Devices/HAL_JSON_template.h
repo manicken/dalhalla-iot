@@ -31,6 +31,7 @@
 #include "../HAL_JSON_Device.h"
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
+#include "HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -85,6 +86,12 @@ namespace HAL_JSON {
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
+
         Template(const JsonVariant &jsonObj, const char* type);
 
 

@@ -32,6 +32,7 @@
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 
 #include "HAL_JSON_TX433unit.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 #define HAL_JSON_KEYNAME_TX433_UNITS "units"
 
@@ -45,6 +46,11 @@ namespace HAL_JSON {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         TX433(const JsonVariant &jsonObj, const char* type);
         TX433(TX433&) = delete;
         ~TX433();

@@ -36,6 +36,7 @@
 #include <PubSubClient.h>
 #include "../../HAL_JSON_CachedDeviceAccess.h"
 #include "HAL_JSON_HA_TopicBasePath.h"
+#include "HAL_JSON_HA_DeviceTypeReg.h"
 
 namespace HAL_JSON {
 
@@ -59,6 +60,10 @@ namespace HAL_JSON {
         
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        static constexpr HA_DeviceRegistryDefine RegistryDefine = {
+            Create,
+            VerifyJSON
+        };
         Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         ~Switch();
 

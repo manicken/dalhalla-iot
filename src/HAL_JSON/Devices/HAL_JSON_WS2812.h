@@ -31,6 +31,7 @@
 #include "../HAL_JSON_Device.h"
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
+#include "HAL_JSON_DeviceTypesRegistry.h"
 
 #include <WS2812FX.h>
 
@@ -44,6 +45,12 @@ namespace HAL_JSON {
         WS2812FX* ws2812fx;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
+
         WS2812(const JsonVariant &jsonObj, const char* type);
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;

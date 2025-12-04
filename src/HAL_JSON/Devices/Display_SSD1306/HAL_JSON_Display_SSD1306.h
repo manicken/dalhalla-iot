@@ -34,6 +34,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "../CoreDevices/HAL_JSON_I2C_BUS_DeviceTypeReg.h"
 
 namespace HAL_JSON {
 
@@ -49,6 +50,12 @@ namespace HAL_JSON {
         static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static bool HasAddress(uint8_t addr);
+        static constexpr I2C_DeviceRegistryDefine RegistryDefine = {
+            Create,
+            VerifyJSON,
+            HasAddress
+        };
+
         
         Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         ~Display_SSD1306();

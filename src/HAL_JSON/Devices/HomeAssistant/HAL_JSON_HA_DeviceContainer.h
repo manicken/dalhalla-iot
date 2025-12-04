@@ -31,7 +31,7 @@
 #include "../../HAL_JSON_Device.h"
 
 #include <PubSubClient.h>
-
+#include "HAL_JSON_HA_DeviceTypeReg.h"
 
 namespace HAL_JSON {
 
@@ -51,6 +51,10 @@ namespace HAL_JSON {
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        static constexpr HA_DeviceRegistryDefine RegistryDefine = {
+            Create,
+            VerifyJSON
+        };
         HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
         ~HA_DeviceContainer();
         String ToString() override;

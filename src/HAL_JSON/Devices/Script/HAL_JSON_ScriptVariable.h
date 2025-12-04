@@ -32,6 +32,7 @@
 #include "../../HAL_JSON_Device.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {
 
@@ -39,8 +40,14 @@ namespace HAL_JSON {
     private:
         HALValue value;
     public:
+        
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         ScriptVariable(const JsonVariant &jsonObj, const char* type);
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

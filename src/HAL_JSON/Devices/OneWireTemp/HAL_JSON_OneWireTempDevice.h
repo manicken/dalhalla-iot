@@ -37,6 +37,7 @@
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_OneWireTempAutoRefresh.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
 
 #define HAL_JSON_KEYNAME_ONE_WIRE_ROMID       "romid"
 #define HAL_JSON_KEYNAME_ONE_WIRE_TEMPFORMAT "format"
@@ -83,7 +84,11 @@ namespace HAL_JSON {
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
         OneWireTempDeviceAtRoot(const JsonVariant &jsonObj, const char* type);
         ~OneWireTempDeviceAtRoot();
 //#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
