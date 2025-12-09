@@ -44,7 +44,7 @@ namespace HAL_JSON {
         return Convert::HexToBytes(romIdStr, nullptr, 8);
     }
 
-    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         const char* romIdStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
@@ -69,7 +69,22 @@ namespace HAL_JSON {
         return HALOperationResult::Success;
     }
 
-    
+    void OneWireTempDevice::read(DallasTemperature& dTemp) {
+        float tempVal = 0;
+        bool updateVal = false;
+        if (format == OneWireTempDeviceTempFormat::Celsius) {
+            tempVal = dTemp.getTempC(romid.bytes);
+            updateVal = (tempVal != DEVICE_DISCONNECTED_C);
+        }
+        else if (format == OneWireTempDeviceTempFormat::Fahrenheit) {
+            tempVal = dTemp.getTempF(romid.bytes);
+            updateVal = (tempVal != DEVICE_DISCONNECTED_F);
+        }
+        if (updateVal) {
+            value = tempVal;
+            triggerEvent(); // actually a async event trigger
+        }
+    }
     
     String OneWireTempDevice::ToString() {
         String ret;
@@ -131,10 +146,7 @@ namespace HAL_JSON {
     }
 
     void OneWireTempDeviceAtRoot::readAll() {
-        if (format == OneWireTempDeviceTempFormat::Celsius)
-            value = dTemp->getTempC(romid.bytes);
-        else if (format == OneWireTempDeviceTempFormat::Fahrenheit)
-            value = dTemp->getTempF(romid.bytes);
+        read(*dTemp);
     }
 
     HALOperationResult OneWireTempDeviceAtRoot::write(const HALValue& val) {

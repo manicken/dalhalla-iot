@@ -114,10 +114,8 @@ namespace HAL_JSON {
     void OneWireTempBus::readAll()
     {
         for (int i=0;i<deviceCount;i++) {
-            if (devices[i]->format == OneWireTempDeviceTempFormat::Celsius)
-                devices[i]->value = dTemp->getTempC(devices[i]->romid.bytes);
-            else if (devices[i]->format == OneWireTempDeviceTempFormat::Fahrenheit)
-                devices[i]->value = dTemp->getTempF(devices[i]->romid.bytes);
+            OneWireTempDevice* device = devices[i];
+            device->read(*dTemp);
         }
     }
 

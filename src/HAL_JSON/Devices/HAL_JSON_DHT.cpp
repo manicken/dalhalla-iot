@@ -33,7 +33,7 @@ namespace HAL_JSON {
             CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03);
     }
 
-    DHT::DHT(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    DHT::DHT(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
         //const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         //uid = encodeUID(uidStr);
         uid = encodeUID(GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID));
@@ -96,6 +96,9 @@ namespace HAL_JSON {
         if (now - lastUpdateMs >= refreshTimeMs) {
             lastUpdateMs = millis();
             data = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
+            if (data.humidity != NAN && data.temperature != NAN) {
+                triggerEvent();
+            } 
             //humidityValue = data.humidity;
 
         }

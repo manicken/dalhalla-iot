@@ -34,6 +34,7 @@
 #include "../../../Support/Logger.h"
 #include "../../../Support/ConvertHelper.h"
 #include "../../HAL_JSON_Device.h"
+#include "../../HAL_JSON_SimpleEventDevice.h"
 #include "../../HAL_JSON_Device_GlobalDefines.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_OneWireTempAutoRefresh.h"
@@ -56,7 +57,8 @@ namespace HAL_JSON {
         };
     } OneWireAddress;
 
-    class OneWireTempDevice : public Device {
+    class OneWireTempDevice : public SimpleEventDevice {
+        
     public:
         OneWireAddress romid;
         OneWireTempDeviceTempFormat format = OneWireTempDeviceTempFormat::Celsius;
@@ -68,6 +70,8 @@ namespace HAL_JSON {
         ~OneWireTempDevice();
         
         HALOperationResult read(HALValue& val) override;
+
+        void read(DallasTemperature& dTemp);
 
         String ToString() override;
     };

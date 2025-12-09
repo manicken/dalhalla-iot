@@ -31,6 +31,7 @@
 
 #include "../../Support/Logger.h"
 #include "../HAL_JSON_Device.h"
+#include "../HAL_JSON_SimpleEventDevice.h"
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
@@ -46,7 +47,7 @@
 
 namespace HAL_JSON {
 
-    class DHT : public Device {
+    class DHT : public SimpleEventDevice {
     private:
         DHTesp dht;
         uint8_t pin = 0;

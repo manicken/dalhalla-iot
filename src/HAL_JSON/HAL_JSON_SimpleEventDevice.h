@@ -32,10 +32,11 @@ namespace HAL_JSON
         uint32_t eventCounter = 0;      // private to event devices only
 
     public:
+        SimpleEventDevice(const char* type) : Device(type) {}
         static bool EventCheck(Device* dev, uint32_t& lastSeen);
         EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString&) override;
 
-    protected:
+    
         inline void triggerEvent() {
             ++eventCounter;
         }
