@@ -32,6 +32,10 @@ namespace HAL_JSON {
     ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
+
+        refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0);
+        useOwnTaskLoop = (refreshTimeMs != 0); // if not default given value just skip
+
         const char* keyStr = GetAsConstChar(jsonObj, "key");
         
         strncpy(API_KEY, keyStr, sizeof(API_KEY) - 1);
@@ -67,6 +71,16 @@ namespace HAL_JSON {
 
     ThingSpeak::~ThingSpeak() {
         delete[] fields;
+    }
+
+    void ThingSpeak::loop() {
+        if (useOwnTaskLoop == false) return;
+
+        uint32_t now = millis();
+        if ((now - lastUpdateMs) > refreshTimeMs) {
+            lastUpdateMs = now;
+            exec();
+        }
     }
 
     HALOperationResult ThingSpeak::exec() {

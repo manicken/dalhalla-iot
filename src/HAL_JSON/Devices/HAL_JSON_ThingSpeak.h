@@ -46,6 +46,7 @@
 #include "../HAL_JSON_SimpleEventDevice.h"
 
 #define DALHALLA_THINGSPEAK_MAX_FIELDS 8
+#define HAL_JSON_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS 60*1000
 
 namespace HAL_JSON {
 
@@ -71,6 +72,10 @@ namespace HAL_JSON {
         std::string urlApi;
         ThingSpeakField* fields;
         int fieldCount;
+        bool useOwnTaskLoop = false;
+        uint32_t refreshTimeMs = HAL_JSON_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS;
+        uint32_t lastUpdateMs = 0;
+
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
@@ -84,5 +89,7 @@ namespace HAL_JSON {
         HALOperationResult exec() override;
 
         String ToString() override;
+
+        void loop() override;
     };
 }
