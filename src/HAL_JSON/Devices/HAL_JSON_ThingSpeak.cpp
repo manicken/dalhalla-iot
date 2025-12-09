@@ -47,7 +47,20 @@ namespace HAL_JSON {
             ThingSpeakField& field = fields[index++];
             field.index = atoi(indexStr);
 
-            field.cda = new CachedDeviceAccess(valueStr);
+            field.cdr = new CachedDeviceRead(valueStr);
+            UIDPath uidPath(valueStr);
+            Device* deviceOut = nullptr;
+            DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
+            if (devFindRes == DeviceFindResult::Success) {
+                ZeroCopyString zcEmpty;
+                field.eventFunc = deviceOut->Get_EventCheck_Function(zcEmpty);
+                if (field.eventFunc != nullptr) {
+                    field.eventCheckDevice = deviceOut;
+                    field.valueChangedCounter = 0;
+                } else {
+                    field.eventCheckDevice = nullptr; // also set to nullptr
+                }
+            }
         }
         urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
     }
@@ -58,20 +71,28 @@ namespace HAL_JSON {
 
     HALOperationResult ThingSpeak::exec() {
         //std::string urlApi;
+        bool hasUpdates = false;
         urlApi.clear();
         urlApi += TS_ROOT_URL;
         urlApi += API_KEY;
         for (int i=0;i<fieldCount;i++) {
             ThingSpeakField& field = fields[i];
+            if (field.DataReady() == false) continue; // skip values that have not currently been changed
             HALValue val;
-            HALOperationResult hres = field.cda->ReadSimple(val);
+            HALOperationResult hres = field.cdr->ReadSimple(val);
             if (hres != HALOperationResult::Success) continue;
+            if (val.isNaN()) continue; // allows devices that have not been read currently to signal not set values
             
             urlApi += "&field";
             urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
             urlApi += '=';
             val.appendToString(urlApi);
+            hasUpdates = true;
         }
+        if (hasUpdates == false) {
+            return HALOperationResult::ExecutionFailed;
+        }
+
         http.begin(wifiClient, urlApi.c_str());
                 
         int httpCode = http.GET();

@@ -115,6 +115,8 @@ namespace HAL_JSON {
     Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
 
     Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+
+    
     
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 

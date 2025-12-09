@@ -68,12 +68,12 @@ namespace HAL_JSON {
         const char* GetType();
         
         using Exec_FuncType = HALOperationResult (*)(Device*);
-        using ReadToHALValue_FuncType = HALOperationResult (*)(Device*, HALValue& outValue);
-        using WriteHALValue_FuncType = HALOperationResult (*)(Device*, const HALValue& value);
-        using BracketOpRead_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, HALValue& outValue);
-        using BracketOpWrite_FuncType = HALOperationResult (*)(Device*, const HALValue& subscriptValue, const HALValue& value);
+        using ReadToHALValue_FuncType = HALOperationResult (*)(Device* device, HALValue& outValue);
+        using WriteHALValue_FuncType = HALOperationResult (*)(Device* device, const HALValue& value);
+        using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
+        using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
-        using EventCheck_FuncType = bool (*)(Device*, uint32_t);
+        using EventCheck_FuncType = bool (*)(Device* device, uint32_t& lastSeen);
 
         Device(const char* type);
         virtual ~Device();
@@ -99,7 +99,7 @@ namespace HAL_JSON {
         virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
 
         virtual EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString& zcFuncName);
-
+        //virtual HALOperationResult EventCheck(uint32_t lastSeen);
         
         
         /** called regulary from the main loop */

@@ -31,7 +31,7 @@
 #include "../HAL_JSON_Device.h"
 #include "../HAL_JSON_Device_GlobalDefines.h"
 #include "../HAL_JSON_ArduinoJSON_ext.h"
-#include "../HAL_JSON_CachedDeviceAccess.h"
+#include "../HAL_JSON_CachedDeviceRead.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
 #if defined(ESP8266)
@@ -43,13 +43,23 @@
 #include <HTTPClient.h>
 #endif
 
+#include "../HAL_JSON_SimpleEventDevice.h"
+
 #define DALHALLA_THINGSPEAK_MAX_FIELDS 8
 
 namespace HAL_JSON {
 
     struct ThingSpeakField {
         int index;
-        CachedDeviceAccess* cda;
+        uint32_t valueChangedCounter;
+        Device* eventCheckDevice;
+        Device::EventCheck_FuncType eventFunc;
+        CachedDeviceRead* cdr;
+
+        inline bool DataReady() {
+            if (eventFunc == nullptr || eventCheckDevice == nullptr) return true; // allways return true if no event device
+            return eventFunc(eventCheckDevice, valueChangedCounter);
+        }
     };
 
     class ThingSpeak : public Device {
