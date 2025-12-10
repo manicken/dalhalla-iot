@@ -36,6 +36,7 @@
 #include "../Support/ConstantStrings.h"
 
 #include "System/MainConfig.h"
+#include "OTA.h"
 
 namespace System {
 
@@ -110,42 +111,67 @@ namespace System {
 
     void failsafeLoop()
     {
-        // blink rapid to alert a crash
+        // Fast blink on crash
         HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = 300;
         HeartbeatLed::HEARTBEATLED_ON_INTERVAL = 300;
-        //connect_to_wifi();
-#ifdef WIFI_MANAGER_WRAPPER_H_
-        WiFiManager_Handler(display);
-#endif
-        
-        DEBUG_UART.begin(115200);
-        DEBUG_UART.println();
-        DEBUG_UART.println(F("************************************"));
-        DEBUG_UART.println(F("* Now entering failsafe OTA loop.. *"));
-        DEBUG_UART.println(F("************************************"));
 
-        AsyncWebServer* asyncServer = new AsyncWebServer(80);
-        asyncServer->on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", "The system will now reset and luckily go into normal mode.");
-            // Small delay to ensure the response is sent before restarting
-            delay(100); // NOT blocking in this context, short enough to work
-#if defined(ESP32)
-            esp_restart();  // Software reset
-#elif defined(ESP8266)
-            ESP.restart();
-#endif
-        });
-        asyncServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", "The system is in OTA failsafe loop.");
-        });
-        asyncServer->begin();
+        Serial.begin(115200);
+        Serial.println("\n******** FAILSAFE MODE ********");
 
-        while (1)
-        {
-            ArduinoOTA.handle();
+        // --- STEP 1: Auto-connect to last WiFi ---
+        WiFi.mode(WIFI_STA);
+        WiFi.begin();   // With stored credentials, works on both esp32 + esp8266
+
+        unsigned long startAttempt = millis();
+        while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 8000) {
+            delay(50);    // yield to WiFi
             HeartbeatLed::task();
         }
+
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.printf("Failsafe WiFi connected: %s\n", WiFi.localIP().toString().c_str());
+        } else {
+            Serial.println("Failsafe WiFi FAILED → Starting AP");
+            WiFi.mode(WIFI_AP);
+            WiFi.softAP("Failsafe-Device", "12345678");
+            Serial.print("AP IP: ");
+            Serial.println(WiFi.softAPIP());
+        }
+
+        // --- STEP 2: Setup OTA ---
+        ArduinoOTA.onStart([](){ Serial.println("OTA Start"); });
+        ArduinoOTA.onEnd([](){ Serial.println("OTA End"); });
+        ArduinoOTA.onError([](ota_error_t err){
+            Serial.printf("OTA Error %u\n", err);
+        });
+        ArduinoOTA.begin();
+
+        // --- STEP 3: AsyncWebServer ---
+        AsyncWebServer* server = new AsyncWebServer(80);
+
+        server->on("/", HTTP_GET, [](AsyncWebServerRequest *req){
+            req->send(200, "text/plain", 
+                    "Device is in FAILSAFE mode.\nUse OTA or /reset");
+        });
+
+        server->on("/reset", HTTP_GET, [](AsyncWebServerRequest *req){
+            req->send(200, "text/plain", "Restarting...");
+            delay(200);
+            ESP.restart();
+        });
+
+        server->begin();
+        Serial.println("Failsafe HTTP server started");
+
+        // --- STEP 4: FAILSAFE LOOP ---
+        while (true) {
+            ArduinoOTA.handle();    // Required
+            HeartbeatLed::task();   // Non-blocking
+            
+            delay(10);              // Prevent WDT reset
+        }
     }
+
 
     void initWebServerHandlers(AsyncWebServer& webserver)
     {

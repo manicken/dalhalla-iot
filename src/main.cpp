@@ -63,7 +63,7 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 
 void setup() {
     if (Info::resetReason_is_crash(false)) {
-        OTA::setup();
+        
         System::failsafeLoop();
     }
     DEBUG_UART.begin(115200);
@@ -128,7 +128,7 @@ void setup() {
 }
 
 void loop() {
-    ArduinoOTA.handle();
+    //ArduinoOTA.handle();
     HeartbeatLed::task();
     Scheduler::HandleAlarms();
 #ifdef HAL_JSON_H_
