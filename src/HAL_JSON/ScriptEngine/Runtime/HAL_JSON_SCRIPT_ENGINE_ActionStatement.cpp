@@ -41,7 +41,8 @@ namespace HAL_JSON {
             ReportInfo("\n**************** Action ************* lefthand side:" + Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
             ReportInfo("**************** Action ******** assigment operator:" + std::string(1, Parser::Actions::AssignmentParts::op) + "\n");
             
-            target = new CachedDeviceAccess(Parser::Actions::AssignmentParts::lhs);
+            target = new CachedDeviceAccess();
+            target->Set(Parser::Actions::AssignmentParts::lhs); // should allready be valid at this stage
 
             if (Expressions::IsExpressionEmpty(Parser::Actions::AssignmentParts::rhs)) {
                 calcRpn = nullptr; // not used here

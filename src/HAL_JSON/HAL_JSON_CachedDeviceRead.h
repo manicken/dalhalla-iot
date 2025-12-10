@@ -52,7 +52,7 @@ namespace HAL_JSON {
         // Construct from UID/path string
         //CachedDeviceRead(const char* uidPathAndFuncName);
         CachedDeviceRead();
-        CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName);
+        //CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName); prevent usage that could lead to uncertain states
         bool Set(ZeroCopyString zcStrUidPathAndFuncName);
 
         // Execute the read

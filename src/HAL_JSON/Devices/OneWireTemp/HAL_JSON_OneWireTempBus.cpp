@@ -82,7 +82,7 @@ namespace HAL_JSON {
             if (valid == false) continue;
             deviceCount++;
         }
-        devices = new (std::nothrow) OneWireTempDevice*[deviceCount]();
+        devices = new (std::nothrow) Device*[deviceCount]();
         uint32_t index = 0;
         for (int i=0;i<itemCount;i++) {
             if (validDevices[i] == false) continue;
@@ -114,13 +114,13 @@ namespace HAL_JSON {
     void OneWireTempBus::readAll()
     {
         for (int i=0;i<deviceCount;i++) {
-            OneWireTempDevice* device = devices[i];
+            OneWireTempDevice* device = static_cast<OneWireTempDevice*>(devices[i]); // cast for fast exec not using vtable lockup
             device->read(*dTemp);
         }
     }
 
     DeviceFindResult OneWireTempBus::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(reinterpret_cast<Device**>(devices), deviceCount, path, this, outDevice);
+        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
     HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
@@ -148,8 +148,9 @@ namespace HAL_JSON {
     bool OneWireTempBus::haveDeviceWithRomID(OneWireAddress addr) {
         if (deviceCount == 0 || devices == nullptr) return false;
         for (int i=0;i<deviceCount;i++) {
-            // cast the romid to uint64_t for fast and easy compare
-            if (devices[i]->romid.id == addr.id) return true;
+            
+            OneWireTempDevice* device = static_cast<OneWireTempDevice*>(devices[i]); // cast for special access
+            if (device->romid.id == addr.id) return true;
         }
         return false;
     }

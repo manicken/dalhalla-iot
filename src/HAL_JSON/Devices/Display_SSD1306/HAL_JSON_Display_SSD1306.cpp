@@ -80,7 +80,7 @@ namespace HAL_JSON {
         }
         // second pass actually create the devices
         elementCount = validItemCount;
-        elements = new Display_SSD1306_Element*[validItemCount]();
+        elements = new Device*[validItemCount](); /*Display_SSD1306_Element*/
         int index = 0;
         for (int i=0;i<itemCount;i++) {
             const JsonVariant item = items[i];
@@ -162,20 +162,20 @@ namespace HAL_JSON {
     }
 
     DeviceFindResult Display_SSD1306::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(reinterpret_cast<Device**>(elements), elementCount, path, this, outDevice);
+        return Device::findInArray(elements, elementCount, path, this, outDevice);
     }
 
     HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {
         ZeroCopyString zcData = val.value;
-        printf("\nDisplay_SSD1306::write data:%s\n", zcData.ToString().c_str());
+        //printf("\nDisplay_SSD1306::write data:%s\n", zcData.ToString().c_str());
         ZeroCopyString zcCmd = zcData.SplitOffHead('/');
         
         if (zcCmd == "text") {
-            printf("\nDisplay_SSD1306::write text:%s\n", zcData.ToString().c_str());
+            //printf("\nDisplay_SSD1306::write text:%s\n", zcData.ToString().c_str());
             display->write(zcData.start, zcData.Length());
         }
         else if (zcCmd == "print") {
-            printf("\nDisplay_SSD1306::write print:%s\n", zcData.ToString().c_str());
+            //printf("\nDisplay_SSD1306::write print:%s\n", zcData.ToString().c_str());
             display->write(zcData.start, zcData.Length());
             display->display();
         }
@@ -198,7 +198,9 @@ namespace HAL_JSON {
     void Display_SSD1306::loop() {
         display->clearDisplay();
         for (int i=0;i<elementCount;i++) {
-            Display_SSD1306_Element& el = *elements[i];
+            Display_SSD1306_Element* elPtr = static_cast<Display_SSD1306_Element*>(elements[i]);
+            if (elPtr == nullptr) continue;
+            Display_SSD1306_Element& el = *elPtr;
             display->setCursor(el.xPos, el.yPos);
             display->print(el.label.c_str());
 

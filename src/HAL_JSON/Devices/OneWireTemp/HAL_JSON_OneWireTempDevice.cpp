@@ -58,6 +58,7 @@ namespace HAL_JSON {
                 format = OneWireTempDeviceTempFormat::Fahrenheit;
             // else the default value is used (defined in .h file)
         }
+        
     }
 
     OneWireTempDevice::~OneWireTempDevice() {

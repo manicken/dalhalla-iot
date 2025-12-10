@@ -26,9 +26,22 @@
 
 namespace HAL_JSON {
 
-    CachedDeviceAccess::CachedDeviceAccess(const char* uidPathAndFuncName) : CachedDeviceAccess(ZeroCopyString(uidPathAndFuncName)) { }
+    CachedDeviceAccess::~CachedDeviceAccess() {
+        if (bracketAccessSubscriptOperand != nullptr)
+            delete bracketAccessSubscriptOperand;
+    }
 
-    CachedDeviceAccess::CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName) {
+    CachedDeviceAccess::CachedDeviceAccess() {
+        readToHalValueFunc = nullptr;
+        valueDirectAccessPtr = nullptr;
+        execFunc = nullptr;
+        bracketReadFunc = nullptr;
+        bracketWriteFunc = nullptr;
+        bracketAccessSubscriptOperand = nullptr;
+    }
+    bool CachedDeviceAccess::Set(const char* uidPathAndFuncName) { return Set(ZeroCopyString(uidPathAndFuncName)); }
+
+    bool CachedDeviceAccess::Set(ZeroCopyString zcStrUidPathAndFuncName) {
         // allways set all to nullptr
         readToHalValueFunc = nullptr;
         valueDirectAccessPtr = nullptr;
@@ -41,7 +54,12 @@ namespace HAL_JSON {
         const char* bracketPos = zcStrUidPathAndFuncName.FindChar('[');
         if (bracketPos) {
             ZeroCopyString bracketVarOperand(bracketPos+1, zcStrUidPathAndFuncName.end-1);
-            bracketAccessSubscriptOperand = new CachedDeviceAccess(bracketVarOperand);
+            bracketAccessSubscriptOperand = new CachedDeviceAccess();
+            if (bracketAccessSubscriptOperand->Set(bracketVarOperand) == false) {
+                delete bracketAccessSubscriptOperand;
+                bracketAccessSubscriptOperand = nullptr;
+                return false;
+            }
             zcStrUidPathAndFuncName.end = bracketPos;
         }
 
@@ -55,7 +73,7 @@ namespace HAL_JSON {
             
             std::string uidStr = uidPath.ToString();
             printf("@CachedDeviceAccess const - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidStr.c_str());
-            return;
+            return false;
         }
         //if (zcStrFuncName.Length() != 0)
         //    printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
@@ -68,6 +86,7 @@ namespace HAL_JSON {
         bracketWriteFunc = device->GetBracketOpWrite_Function(zcStrFuncName);
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
+        return true;
     }
 
     HALOperationResult CachedDeviceAccess::Exec() {

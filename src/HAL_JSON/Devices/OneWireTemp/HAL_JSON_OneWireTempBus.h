@@ -48,7 +48,7 @@ namespace HAL_JSON {
         bool haveDeviceWithRomID(OneWireAddress addr);
     public:
         int deviceCount = 0;
-        OneWireTempDevice **devices;
+        Device **devices;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         OneWireTempBus(const JsonVariant &jsonObj, const char* type);

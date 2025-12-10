@@ -42,7 +42,7 @@ namespace HAL_JSON {
     private:
         Adafruit_SSD1306* display;
 
-        Display_SSD1306_Element** elements; // TODO change this into plain array for minimal heap fragmentation
+        Device** elements;
         int elementCount;
     public:
         // here we could implement functions for to use with spi interface as well

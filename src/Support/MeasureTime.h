@@ -1,6 +1,6 @@
 #pragma once
 
-#define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
+//#define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <chrono>

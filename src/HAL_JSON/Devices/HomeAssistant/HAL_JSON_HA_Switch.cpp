@@ -56,11 +56,11 @@ namespace HAL_JSON {
 
         if (ValidateJsonStringField(jsonObj, "target")) {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
-            cda = new CachedDeviceAccess(zcSrcDeviceUidStr);
-            /*if (cda->Set(zcSrcDeviceUidStr) == false) {
-                delete cdr;
-                cdr = nullptr;
-            }*/
+            cda = new CachedDeviceAccess();
+            if (cda->Set(zcSrcDeviceUidStr) == false) {
+                delete cda;
+                cda = nullptr;
+            }
         } else {
             cda = nullptr;
         }

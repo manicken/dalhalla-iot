@@ -82,13 +82,14 @@ namespace HAL_JSON {
         handler = nullptr;
         deleter = nullptr;
     }
+    /* prevent usage that could lead to uncertain states
     CachedDeviceRead::CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName) 
     {
         context = nullptr;
         handler = nullptr;
         deleter = nullptr;
         Set(zcStrUidPathAndFuncName);
-    }
+    }*/
 
     bool CachedDeviceRead::Set(ZeroCopyString zcStrUidPathAndFuncName) {
         if (deleter) deleter(context);

@@ -65,13 +65,13 @@ namespace HAL_JSON {
             if (finalOutputCount > finalOutputStackNeededSize) finalOutputStackNeededSize = finalOutputCount;
         }
         void Expressions::PrintCalcedStackSizes() {
-            printf("\nrpnOutputStack NeededSize:%d\n", rpnOutputStackNeededSize);
-            printf("opStackSize NeededSize:%d\n", opStackSizeNeededSize);
+            //printf("\nrpnOutputStack NeededSize:%d\n", rpnOutputStackNeededSize);
+            //printf("opStackSize NeededSize:%d\n", opStackSizeNeededSize);
             /** development test only */
-            printf("logicRPNNodeStack NeededSize:%d\n\n", finalOutputStackNeededSize);
+            //printf("logicRPNNodeStack NeededSize:%d\n\n", finalOutputStackNeededSize);
         }
         void Expressions::InitStacks() {
-            printf("\n*************************************************** InitStacks ********************************\n");
+            //printf("\n*************************************************** InitStacks ********************************\n");
             int extraStackSize = 10;
             rpnOutputStackNeededSize += extraStackSize;
             opStackSizeNeededSize += extraStackSize;
@@ -85,7 +85,7 @@ namespace HAL_JSON {
             logicRPNNodeStackPool = new LogicRPNNode[finalOutputStackNeededSize];
             logicRPNNodeStack = new LogicRPNNode*[finalOutputStackNeededSize];
             halValueStack.Init(rpnOutputStackNeededSize);
-            printf("\n[DONE]\n");
+            //printf("\n[DONE]\n");
         }
         void Expressions::ClearStacks() {
             

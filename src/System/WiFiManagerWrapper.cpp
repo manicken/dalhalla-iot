@@ -60,6 +60,7 @@ namespace WiFiManagerWrapper {
 
         while (WiFi.status() != WL_CONNECTED && millis() - start < connectTimeout) {
             delay(50); // short delay to avoid blocking too long
+            yield();
         }
 
         wifiConnected = (WiFi.status() == WL_CONNECTED);

@@ -127,9 +127,9 @@ namespace HAL_JSON {
     }
 
     DeviceFindResult Device::findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice, Device*& outDevice) {
-        outDevice = nullptr; // allways set
+        //outDevice = nullptr; // allways set
         
-        if (!devices || deviceCount == 0) {
+        if (devices == nullptr || *devices == nullptr || deviceCount == 0) {
             GlobalLogger.Error(F("Could not continue search at device type: "), currentDevice?currentDevice->type:"root");
             return DeviceFindResult::SubDeviceListEmpty;
         }

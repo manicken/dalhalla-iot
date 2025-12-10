@@ -88,17 +88,17 @@ namespace HAL_JSON {
         else if (zcCommand == HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON) {
             long startMillis = millis();
             anyErrors = reloadJSON(zcStr, message) == false;
-            printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
+            //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
             startMillis = millis();
             anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
-            printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
+            //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
         }
         else if (zcCommand == "scripts") {
             ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
             if (zcSubCmd == "reload") {
                 long startMillis = millis();
                 anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
-                printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
+                //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
             } else if (zcSubCmd == "stop") {
                 ScriptEngine::ScriptsBlock::running = false;
             } else if (zcSubCmd == "start") {

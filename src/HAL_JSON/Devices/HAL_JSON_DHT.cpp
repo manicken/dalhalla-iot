@@ -54,8 +54,7 @@ namespace HAL_JSON {
         else if (CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03))
             model = DHTesp::DHT_MODEL_t::RHT03;
         dht.setup(pin,model);
-        lastUpdateMs = millis();
-        data = dht.getTempAndHumidity();
+        lastUpdateMs = millis()-refreshTimeMs; // direct update
      }
 
     bool DHT::VerifyJSON(const JsonVariant &jsonObj) {
@@ -93,14 +92,13 @@ namespace HAL_JSON {
 
     void DHT::loop() {
         uint32_t now = millis();
-        if (now - lastUpdateMs >= refreshTimeMs) {
+        if ((now - lastUpdateMs) >= refreshTimeMs) {
             lastUpdateMs = millis();
-            data = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
-            if (data.humidity != NAN && data.temperature != NAN) {
+            TempAndHumidity tempData = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
+            if (tempData.humidity != NAN && tempData.temperature != NAN) {
+                data = tempData;
                 triggerEvent();
             } 
-            //humidityValue = data.humidity;
-
         }
     }
 

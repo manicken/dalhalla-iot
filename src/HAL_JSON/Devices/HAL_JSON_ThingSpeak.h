@@ -67,7 +67,7 @@ namespace HAL_JSON {
     private:
         HTTPClient http;
         WiFiClient wifiClient;
-        static const char TS_ROOT_URL[];
+        
         char API_KEY[17];
         std::string urlApi;
         ThingSpeakField* fields;
@@ -77,6 +77,7 @@ namespace HAL_JSON {
         uint32_t lastUpdateMs = 0;
 
     public:
+        static const char* TS_ROOT_URL;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {

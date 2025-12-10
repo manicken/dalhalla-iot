@@ -31,7 +31,7 @@ namespace HAL_JSON {
         return nullptr;
     }
     
-    bool Template::EventCheck_Function(Device* device, uint32_t value) {
+    bool Template::EventCheck_Function(Device* device, uint32_t& value) {
         Template* tDev = static_cast<Template*>(device);
         return value < tDev->loopDoneCounter;
     }

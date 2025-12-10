@@ -101,14 +101,14 @@ namespace HAL_JSON {
                     useDefaultFile = true;
                 }
                 else {
-                    printf("\nUsing scripts list file:\n");
+                    //printf("\nUsing scripts list file:\n");
 
                     int scriptCount = ParseAndTokenize<ZeroCopyString>(scriptsListContents);
-                    printf("\nscript count:%d\n", scriptCount);
+                    //printf("\nscript count:%d\n", scriptCount);
                     InitScriptList(scriptCount);
                     if (false == ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
                         useDefaultFile = true;
-                        printf("\ntokenize scripts list file fail!\n");
+                        Serial.print("\ntokenize scripts list file fail!\n");
                     } else {
                         //for (int i=0;i<scriptCount;i++) {
                         //    std::string s = scriptsToLoad.scriptFileList[i].ToString();
@@ -122,7 +122,7 @@ namespace HAL_JSON {
                 useDefaultFile = true;
             }
             if (useDefaultFile) {
-                printf("\nUsing default script file: script.txt\n");
+                Serial.print("\nUsing default script file: script.txt\n");
                 InitScriptList(1);
                 scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
             }
@@ -157,9 +157,10 @@ namespace HAL_JSON {
             for (int i = 0;i<count;i++) {
                 
                 std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
-                printf("\nValidating script:%s\n",path.c_str());
+                //printf("\nValidating script:%s\n",path.c_str());
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
                 if (valid == false) return false;
+                //yield();
             }
             return true;
         }
@@ -181,6 +182,7 @@ namespace HAL_JSON {
                 std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), ScriptFileParsed);
                 if (valid == false) return false;
+                //yield();
             }
             return true;
         }

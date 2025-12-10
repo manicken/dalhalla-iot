@@ -47,7 +47,8 @@ namespace HAL_JSON {
         void CalcRPNToken::SetAsCachedDeviceAccess(ExpressionToken& expToken)
         {
             if (expToken.ContainsChar('[')) {
-                CachedDeviceRead* cdr = new CachedDeviceRead(expToken);
+                CachedDeviceRead* cdr = new CachedDeviceRead();
+                cdr->Set(expToken); // dont need to check if return true as at this stage it's valid
 
                 // Assign context, handler, and deleter
                 context = cdr;

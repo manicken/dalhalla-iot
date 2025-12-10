@@ -83,7 +83,7 @@ namespace HAL_JSON {
                 ReportInfo("**********************************************************************************\n");
                 ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
                 ReportInfo("**********************************************************************************\n");
-    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+    #if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(DEBUG_PRINT_SCRIPT_ENGINE) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
     #endif
                 if (validateOnly) {

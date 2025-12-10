@@ -36,7 +36,11 @@ namespace HAL_JSON {
 
         const char* sourceStr = GetAsConstChar(jsonObj,"source");
         if (sourceStr != nullptr) {
-            cdaSource = new CachedDeviceAccess(sourceStr);
+            cdaSource = new CachedDeviceAccess();
+            if (cdaSource->Set(sourceStr) == false) {
+                delete cdaSource;
+                cdaSource = nullptr;
+            }
         }
         else
             cdaSource = nullptr;

@@ -37,16 +37,16 @@
 namespace HAL_JSON {
     void begin() {
         HAL_JSON::REST::setupRest();
-        printf("\nBefore Manager::setupMgr()\n");
+        //printf("\nBefore Manager::setupMgr()\n");
         //Info::PrintHeapInfo();
         
         if (Manager::setupMgr() == false)
             return;
-        printf("\nBefore ScriptEngine::ValidateAndLoadAllActiveScripts\n");
+        //printf("\nBefore ScriptEngine::ValidateAndLoadAllActiveScripts\n");
         //Info::PrintHeapInfo();
         ScriptEngine::ValidateAndLoadAllActiveScripts(); 
         
-        printf("\nAfter ScriptEngine::ValidateAndLoadAllActiveScripts\n");
+        //printf("\nAfter ScriptEngine::ValidateAndLoadAllActiveScripts\n");
         //Info::PrintHeapInfo();
     }
 
@@ -80,6 +80,7 @@ namespace HAL_JSON {
         if (currmillis-lastmillis > 100) {
             lastmillis = currmillis;
             Manager::loop();
+            
             if (ScriptEngine::ScriptsBlock::running)
                 ScriptEngine::Exec(); // runs the scriptengine
         }

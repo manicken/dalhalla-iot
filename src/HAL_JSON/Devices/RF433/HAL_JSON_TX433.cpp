@@ -66,7 +66,7 @@ namespace HAL_JSON {
                 unitCount++;
             }
             // second pass create units(devices)
-            units = new (std::nothrow) TX433unit*[unitCount]();
+            units = new (std::nothrow) Device*[unitCount](); /*TX433unit*/
             uint32_t index = 0;
             for (int i=0;i<_unitCount;i++) {
                 if (validUnits[i] == false) continue;
@@ -91,7 +91,7 @@ namespace HAL_JSON {
     }
 
     DeviceFindResult TX433::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(reinterpret_cast<Device**>(units), unitCount, path, this, outDevice);
+        return Device::findInArray(units, unitCount, path, this, outDevice);
     }
 
     HALOperationResult TX433::write(const HALWriteStringRequestValue &val) {

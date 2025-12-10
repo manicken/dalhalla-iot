@@ -59,7 +59,7 @@ namespace HAL_JSON {
             return;
         }
         
-        printf("create cached device read: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
+        //printf("create cached device read: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
         readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
         bracketReadFunc = device->GetBracketOpRead_Function(zcStrFuncName);
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();

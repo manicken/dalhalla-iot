@@ -39,13 +39,16 @@ namespace HAL_JSON {
             refreshTimeMs = _refreshTimeMs - HAL_JSON_ONE_WIRE_TEMP_CONVERSION_TIME_MS;
         else
             refreshTimeMs = 0; // or some minimum value to avoid underflow
+        // reset states
+        state = State::IDLE;
+        lastUpdateMs = millis();
     }
 
 	void OneWireTempAutoRefresh::loop() {
 		uint32_t now = millis();
         switch (state) {
             case State::IDLE:
-                if (now - lastUpdateMs >= refreshTimeMs) {
+                if ((now - lastUpdateMs) >= refreshTimeMs) {
                     if (requestTemperatures != nullptr)
                         requestTemperatures();
                     //else

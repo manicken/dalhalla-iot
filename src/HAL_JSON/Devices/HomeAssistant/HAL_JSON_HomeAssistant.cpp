@@ -249,7 +249,7 @@ namespace HAL_JSON {
                 const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
 
                 devices[newItemIndex++] = regItem.def.Create_Function(item, regItem.typeName, mqttClient, jsonObjGrpItem, jsonObj);
-            
+                yield();
             }
         }
         delete[] validItems;

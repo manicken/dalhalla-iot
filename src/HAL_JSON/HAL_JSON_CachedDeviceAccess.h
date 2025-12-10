@@ -60,9 +60,12 @@ namespace HAL_JSON {
         CachedDeviceAccess* bracketAccessSubscriptOperand;
         
     public:
-
-        CachedDeviceAccess(const char* uidPathAndFuncName);
-        CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
+        CachedDeviceAccess();
+        ~CachedDeviceAccess();
+        bool Set(const char* uidPathAndFuncName);
+        bool Set(ZeroCopyString zcStrUidPathAndFuncName);
+        //CachedDeviceAccess(const char* uidPathAndFuncName);
+        //CachedDeviceAccess(ZeroCopyString zcStrUidPathAndFuncName);
 
         HALOperationResult Exec();
         HALOperationResult WriteSimple(const HALValue& val);

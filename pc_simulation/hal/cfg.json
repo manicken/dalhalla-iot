@@ -80,7 +80,7 @@
     {"uid":"pcf1","type":"PCF8574x","addr":"38"},
     {"uid":"pcf2","type":"PCF8574x","addr":"39"}
   ]},
-  {"uid":"ts1","type":"THINGSPEAK","key":"0123456789ABCDEF",
+  {"uid":"ts1","type":"THINGSPEAK","refreshtimesec":5,"firstUpdateAfterSeconds":0,"testserver":true,"key":"0123456789ABCDEF",
     "items":{
       "1":"temps:a:a",
       "2":"temps:a:b",

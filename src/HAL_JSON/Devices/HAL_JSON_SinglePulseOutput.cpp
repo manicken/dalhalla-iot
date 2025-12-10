@@ -58,7 +58,7 @@ namespace HAL_JSON {
     }
 
     HALOperationResult SinglePulseOutput::write(const HALValue &val) {
-        if (val.getType() == HALValue::Type::TEST) { printf("\nSinglePulseOutput::write TEST\n"); return HALOperationResult::Success; }// test write to check feature
+        if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
         uint32_t t = val;

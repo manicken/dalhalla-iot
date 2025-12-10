@@ -28,6 +28,9 @@
 
 #include <random>
 
+#define DEVICE_DISCONNECTED_C -127
+#define DEVICE_DISCONNECTED_F -196.6
+
 class DallasTemperature {
 private:
     float tempC = 20.0f;

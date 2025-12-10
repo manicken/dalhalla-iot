@@ -63,7 +63,8 @@ namespace HAL_JSON {
             [this]() { requestTemperatures(); },
             [this]() { readAll(); },
             ParseRefreshTimeMs(jsonObj,HAL_JSON_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
-        )
+        ), 
+        busses(nullptr)
     {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);      
@@ -82,7 +83,7 @@ namespace HAL_JSON {
             if (valid == false) continue;
             busCount++;
         }
-        busses = new OneWireTempBus*[busCount]();
+        busses = new Device*[busCount]();
         // second pass create busses
         uint32_t index = 0;
         for (int i=0;i<itemCount;i++) {
@@ -103,14 +104,14 @@ namespace HAL_JSON {
     }
 
     DeviceFindResult OneWireTempGroup::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(reinterpret_cast<Device**>(busses), busCount, path, this, outDevice);
+        return Device::findInArray(busses, busCount, path, this, outDevice);
     }
 
     HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
         if (val.cmd == "getAllNewDevices") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
             val.out_value = "[";
             for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = busses[i];
+                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
@@ -122,7 +123,7 @@ namespace HAL_JSON {
         else if (val.cmd == "getAllNewDevicesWithTemp") {
             val.out_value = "[";
             for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = busses[i];
+                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
@@ -134,7 +135,7 @@ namespace HAL_JSON {
         else if (val.cmd == "getAllDevices") { // (as json) return a complete list of all devices found for all busses
             val.out_value = "[";
             for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = busses[i];
+                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
@@ -146,7 +147,7 @@ namespace HAL_JSON {
         else if (val.cmd == "getAllTemperatures") { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
             val.out_value = "[";
             for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = busses[i];
+                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
@@ -163,13 +164,15 @@ namespace HAL_JSON {
 
     void OneWireTempGroup::requestTemperatures() {
         for (int i=0;i<busCount;i++) {
-            busses[i]->requestTemperatures();
+            OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast because need of non generic function
+            bus->requestTemperatures();
         }
     }
 
     void OneWireTempGroup::readAll() {
         for (int i=0;i<busCount;i++) {
-            busses[i]->readAll();
+            OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast because need of non generic function
+            bus->readAll();
         }
     }
 

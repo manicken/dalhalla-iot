@@ -83,22 +83,22 @@ namespace HAL_JSON {
         return itemCount;
     }
     HAL_UID UIDPath::getCurrentUID() {
-        if (currentItemIndex == itemCount) return HAL_UID::UID_INVALID; // ideally this wont happen
+        if (currentItemIndex >= itemCount || items == nullptr) return HAL_UID::UID_INVALID; // ideally this wont happen
         return items[currentItemIndex];
     }
     HAL_UID UIDPath::getNextUID() {
-        if (itemCount == 0) return HAL_UID::UID_INVALID; // ideally this wont happen
+        if (itemCount == 0 || items == nullptr) return HAL_UID::UID_INVALID; // ideally this wont happen
         if (currentItemIndex == (itemCount-1)) return HAL_UID::UID_INVALID; // ideally this wont happen
         currentItemIndex++;
         return items[currentItemIndex];
     }
     HAL_UID UIDPath::peekNextUID() {
-        if (itemCount == 0) return HAL_UID::UID_INVALID; // ideally this wont happen
-        if (currentItemIndex == (itemCount-1)) return HAL_UID::UID_INVALID; // ideally this wont happen
+        if (itemCount == 0 || items == nullptr) return HAL_UID::UID_INVALID; // ideally this wont happen
+        if (currentItemIndex >= (itemCount-1)) return HAL_UID::UID_INVALID; // ideally this wont happen
         return items[currentItemIndex+1];
     }
     HAL_UID UIDPath::resetAndGetFirst() {
-        if (itemCount == 0) return HAL_UID::UID_INVALID; // ideally this wont happen
+        if (itemCount == 0 || items == nullptr) return HAL_UID::UID_INVALID; // ideally this wont happen
         currentItemIndex = 0;
         return items[0];
     }

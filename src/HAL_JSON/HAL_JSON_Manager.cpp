@@ -104,7 +104,7 @@ namespace HAL_JSON {
     }
 
     void Manager::CleanUp() {
-        printf("\n&&&&&&&&&&&&&&&&&&&&&&&& CLEANUP OF LOADED DEVICES &&&&&&&&&&&&&&&&&&&&&&\n");
+        //printf("\n&&&&&&&&&&&&&&&&&&&&&&&& CLEANUP OF LOADED DEVICES &&&&&&&&&&&&&&&&&&&&&&\n");
         // cleanup of prev device list if existent
         if (devices != nullptr) {
             for (int i=0;i<HAL_JSON::Manager::deviceCount;i++) {
@@ -116,6 +116,7 @@ namespace HAL_JSON {
             delete[] devices;
             devices = nullptr;
         }
+        HAL_JSON::Manager::deviceCount = 0;
     }
 
     bool Manager::ParseJSON(const JsonArray &jsonArray) {
@@ -142,20 +143,23 @@ namespace HAL_JSON {
         }
         CleanUp();
         
-        HAL_JSON::Manager::deviceCount = deviceCount;
+        
         if (deviceCount == 0) {
             GlobalLogger.Error(F("The loaded JSON cfg does not contain any valid devices!\n" 
                                  "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
             return false;
         }
+        printf("\nTrying to allocate for %d devices\n", deviceCount);
 
         // Allocate space for all devices
-        devices = new Device*[HAL_JSON::Manager::deviceCount]();
-
+        devices = new Device*[deviceCount]();
+        
         if (devices == nullptr) {
             GlobalLogger.Error(F("Failed to allocate device array"));
             return false;
         }
+        printf("\nOK\n");
+        HAL_JSON::Manager::deviceCount = deviceCount;
 
         GPIO_manager::ClearAllReservations(); 
         // Second pass: actually create and store devices
@@ -222,11 +226,6 @@ namespace HAL_JSON {
         bool parseOk = ParseJSON(jsonItems);
 
         delete[] jsonBuffer;
-        if (parseOk == false) {
-            //GlobalLogger.Error(F("ParseJSON(jsonItems) fail"));
-            //Serial.println("");
-        }
-        //if (parseOk == true) reloadVersion++;
 
         return parseOk;
     }
@@ -235,6 +234,7 @@ namespace HAL_JSON {
             Device* device = devices[i];
             if (device == nullptr) continue;
             device->begin();
+            yield(); // give time to RTOS and WiFi tasks
         }
     }
 
@@ -245,7 +245,7 @@ namespace HAL_JSON {
             Device* device = devices[i];
             if (device == nullptr) continue;
             device->loop();
-            
+            yield(); // give time to RTOS and WiFi tasks
         }
     }
     /** 

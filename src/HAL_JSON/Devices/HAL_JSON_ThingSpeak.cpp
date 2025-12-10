@@ -23,18 +23,38 @@
 
 #include "HAL_JSON_ThingSpeak.h"
 
+#if __has_include("../../../secrets/thingspeak_test_server.h")
+#include "../../../secrets/thingspeak_test_server.h"
+#endif
+
 #define DEBUG_UART Serial
 
 namespace HAL_JSON {
 
-    const char ThingSpeak::TS_ROOT_URL[] = "http://api.thingspeak.com/update?api_key=";
+    const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
     
     ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
 
         refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0);
-        useOwnTaskLoop = (refreshTimeMs != 0); // if not default given value just skip
+        if (refreshTimeMs != 0) {
+            useOwnTaskLoop = true;
+            if (refreshTimeMs < 1000) refreshTimeMs = 1000;
+        } else {
+            useOwnTaskLoop = false;
+        }
+        
+        if (jsonObj["testserver"].as<bool>()) {
+#ifdef HAL_JSON_DEVICES_THINGSPEAK_TEST_SERVER
+            ThingSpeak::TS_ROOT_URL = "http://" HAL_JSON_DEVICES_THINGSPEAK_TEST_SERVER ":8083/update?api_key=";
+#else
+            ThingSpeak::TS_ROOT_URL = "http://127.0.0.1:8083/update?api_key=";
+#endif
+        } else {
+            ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
+        }
+
 
         const char* keyStr = GetAsConstChar(jsonObj, "key");
         
@@ -51,13 +71,17 @@ namespace HAL_JSON {
             ThingSpeakField& field = fields[index++];
             field.index = atoi(indexStr);
 
-            field.cdr = new CachedDeviceRead(valueStr);
-            UIDPath uidPath(valueStr);
+            field.cdr = new CachedDeviceRead();
+            ZeroCopyString zcStrUidPathAndFuncName(valueStr);
+            field.cdr->Set(zcStrUidPathAndFuncName);
+            
+            ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
+            UIDPath uidPath(zcStrUidPathAndFuncName);
             Device* deviceOut = nullptr;
             DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
             if (devFindRes == DeviceFindResult::Success) {
-                ZeroCopyString zcEmpty;
-                field.eventFunc = deviceOut->Get_EventCheck_Function(zcEmpty);
+                //ZeroCopyString zcEmpty;
+                field.eventFunc = deviceOut->Get_EventCheck_Function(zcFuncName);
                 if (field.eventFunc != nullptr) {
                     field.eventCheckDevice = deviceOut;
                     field.valueChangedCounter = 0;
@@ -67,6 +91,16 @@ namespace HAL_JSON {
             }
         }
         urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
+
+        if (useOwnTaskLoop) {
+            uint32_t firstUpdateAfterSeconds = jsonObj["firstUpdateAfterSeconds"].as<uint32_t>();
+            if (firstUpdateAfterSeconds == 0) {
+                lastUpdateMs = millis() - refreshTimeMs; // force a first update directly
+            } else {
+                lastUpdateMs = millis() - firstUpdateAfterSeconds*1000; // force a first update after timeout
+            }
+        }
+        
     }
 
     ThingSpeak::~ThingSpeak() {
@@ -102,6 +136,7 @@ namespace HAL_JSON {
             urlApi += '=';
             val.appendToString(urlApi);
             hasUpdates = true;
+            yield();
         }
         if (hasUpdates == false) {
             return HALOperationResult::ExecutionFailed;
@@ -114,6 +149,7 @@ namespace HAL_JSON {
         else DEBUG_UART.println(F("[FAIL]\r\n"));
 
         http.end();
+        yield();
         return HALOperationResult::Success;
     }
 
@@ -171,6 +207,16 @@ namespace HAL_JSON {
                 SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
                 return false;
             }
+
+            // validate that the device exists, cannot be done here as devices are not loaded at this stage
+            // could be fix
+            /*CachedDeviceRead cdr;
+            ZeroCopyString zcStrUidPathAndFuncName(valueStr);
+            if (cdr.Set(zcStrUidPathAndFuncName) == false) {
+                GlobalLogger.Error(F("could not find device: "), indexStr);
+                SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
+                return false;
+            }*/
         }
         
         return true;
