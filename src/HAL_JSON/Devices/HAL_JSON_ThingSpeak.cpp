@@ -31,6 +31,42 @@
 
 namespace HAL_JSON {
 
+    ThingSpeakField::ThingSpeakField() :
+        index(0), 
+        valueChangedCounter(0),
+        eventFunc(nullptr),
+        eventCheckDevice(nullptr),
+        cdr(nullptr) {}
+
+    void ThingSpeakField::SetEventHandler(ZeroCopyString zcStrUidPathAndFuncName) {
+        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
+        UIDPath uidPath(zcStrUidPathAndFuncName);
+        Device* deviceOut = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
+        if (devFindRes == DeviceFindResult::Success) {
+            //ZeroCopyString zcEmpty;
+            eventFunc = deviceOut->Get_EventCheck_Function(zcFuncName);
+            if (eventFunc != nullptr) {
+                eventCheckDevice = deviceOut;
+                valueChangedCounter = 0;
+            } else {
+                eventCheckDevice = nullptr; // also set to nullptr
+            }
+        } else {
+            eventFunc = nullptr;
+            eventCheckDevice = nullptr;
+        }
+    }
+
+    void ThingSpeakField::Set(int index, const char* uidPathAndFuncName_cStr) {
+        index = index;
+        cdr = new CachedDeviceRead();
+        ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
+        cdr->Set(zcStrUidPathAndFuncName);
+        SetEventHandler(zcStrUidPathAndFuncName);
+    }
+
+
     const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
     
     ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(type) {
@@ -40,7 +76,7 @@ namespace HAL_JSON {
         refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0);
         if (refreshTimeMs != 0) {
             useOwnTaskLoop = true;
-            if (refreshTimeMs < 1000) refreshTimeMs = 1000;
+            //if (refreshTimeMs < 1000) refreshTimeMs = 1000;
         } else {
             useOwnTaskLoop = false;
         }
@@ -65,30 +101,10 @@ namespace HAL_JSON {
         fieldCount = items.size();
         fields = new ThingSpeakField[fieldCount];
         int index = 0;
-        for (JsonPair kv : items) {
-            const char* indexStr = kv.key().c_str();
-            const char* valueStr = kv.value().as<const char*>();
-            ThingSpeakField& field = fields[index++];
-            field.index = atoi(indexStr);
-
-            field.cdr = new CachedDeviceRead();
-            ZeroCopyString zcStrUidPathAndFuncName(valueStr);
-            field.cdr->Set(zcStrUidPathAndFuncName);
-            
-            ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
-            UIDPath uidPath(zcStrUidPathAndFuncName);
-            Device* deviceOut = nullptr;
-            DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
-            if (devFindRes == DeviceFindResult::Success) {
-                //ZeroCopyString zcEmpty;
-                field.eventFunc = deviceOut->Get_EventCheck_Function(zcFuncName);
-                if (field.eventFunc != nullptr) {
-                    field.eventCheckDevice = deviceOut;
-                    field.valueChangedCounter = 0;
-                } else {
-                    field.eventCheckDevice = nullptr; // also set to nullptr
-                }
-            }
+        for (const JsonPair& kv : items) {
+            int fieldIndex = atoi(kv.key().c_str());
+            const char* uidPathAndFuncName_cStr = kv.value().as<const char*>();
+            fields[index++].Set(fieldIndex, uidPathAndFuncName_cStr);
         }
         urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
 
@@ -108,12 +124,16 @@ namespace HAL_JSON {
     }
 
     void ThingSpeak::loop() {
+        // corruption test
+        //Serial.printf("ThingSpeak::loop this=%p vptr=0x%08X fieldCount=%d\n", this,
+        //      (uint32_t) (this ? *((uint32_t*)this) : 0), fieldCount);
+
         if (useOwnTaskLoop == false) return;
 
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;
-            exec();
+            HALOperationResult res = this->exec();
         }
     }
 
@@ -136,7 +156,7 @@ namespace HAL_JSON {
             urlApi += '=';
             val.appendToString(urlApi);
             hasUpdates = true;
-            yield();
+            delay(0);
         }
         if (hasUpdates == false) {
             return HALOperationResult::ExecutionFailed;
@@ -149,7 +169,7 @@ namespace HAL_JSON {
         else DEBUG_UART.println(F("[FAIL]\r\n"));
 
         http.end();
-        yield();
+        delay(0);
         return HALOperationResult::Success;
     }
 
@@ -208,8 +228,10 @@ namespace HAL_JSON {
                 return false;
             }
 
-            // validate that the device exists, cannot be done here as devices are not loaded at this stage
-            // could be fix
+            // validate that the device exists, 
+            // cannot be done here as devices are not loaded at this stage
+            // and we do actually need the device instances to make the checks
+            // to fix it the whole system need complete rewrite
             /*CachedDeviceRead cdr;
             ZeroCopyString zcStrUidPathAndFuncName(valueStr);
             if (cdr.Set(zcStrUidPathAndFuncName) == false) {
@@ -225,8 +247,6 @@ namespace HAL_JSON {
     Device* ThingSpeak::Create(const JsonVariant &jsonObj, const char* type) {
         return new ThingSpeak(jsonObj, type);
     }
-
-    
 
     String ThingSpeak::ToString() {
         String ret;

@@ -37,6 +37,7 @@
 
 #include "System/MainConfig.h"
 #include "OTA.h"
+#include "FSBrowserAsync.h"
 
 namespace System {
 
@@ -112,11 +113,10 @@ namespace System {
     void failsafeLoop()
     {
         // Fast blink on crash
-        HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = 300;
-        HeartbeatLed::HEARTBEATLED_ON_INTERVAL = 300;
-
+        HeartbeatLed::setup(500, 500);
+        
         Serial.begin(115200);
-        Serial.println("\n******** FAILSAFE MODE ********");
+        Serial.println("\r\n******** FAILSAFE MODE ********");
 
         // --- STEP 1: Auto-connect to last WiFi ---
         WiFi.mode(WIFI_STA);
@@ -160,8 +160,10 @@ namespace System {
             ESP.restart();
         });
 
+        FSBrowser::setup(*server);
+
         server->begin();
-        Serial.println("Failsafe HTTP server started");
+        Serial.println("\r\nFailsafe HTTP server started");
 
         // --- STEP 4: FAILSAFE LOOP ---
         while (true) {

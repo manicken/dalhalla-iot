@@ -57,6 +57,12 @@ namespace HAL_JSON {
         Device::EventCheck_FuncType eventFunc;
         CachedDeviceRead* cdr;
 
+        ThingSpeakField();
+
+        void Set(int index, const char* uidPathAndFuncName_cStr);
+        
+        void SetEventHandler(ZeroCopyString zcStrUidPathAndFuncName);
+
         inline bool DataReady() {
             if (eventFunc == nullptr || eventCheckDevice == nullptr) return true; // allways return true if no event device
             return eventFunc(eventCheckDevice, valueChangedCounter);

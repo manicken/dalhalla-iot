@@ -65,7 +65,9 @@ namespace HeartbeatLed
 
     extern unsigned long HEARTBEATLED_ON_INTERVAL;
     extern unsigned long HEARTBEATLED_OFF_INTERVAL;
-
+    /** setups a simple HeartbeatLed not using webserver attachments */
+    void setup();
+    void setup(unsigned long onInterval, unsigned long offInterval);
     void setup(WEBSERVER_TYPE &srv);
     void task(void);
     

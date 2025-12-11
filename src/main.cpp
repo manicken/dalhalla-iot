@@ -62,7 +62,7 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 /**************************************************************************/
 
 void setup() {
-    if (Info::resetReason_is_crash(false)) {
+    if (Info::resetReason_is_crash(true)) {
         
         System::failsafeLoop();
     }
@@ -125,12 +125,13 @@ void setup() {
     // make sure that the following are allways at the end of this function
     //Info::PrintHeapInfo();
     DEBUG_UART.println(F("\r\n!!!!!End of MAIN Setup!!!!!\r\n"));
+    delay(0);
 }
 
 void loop() {
     //ArduinoOTA.handle();
     HeartbeatLed::task();
-    Scheduler::HandleAlarms();
+    //Scheduler::HandleAlarms();
 #ifdef HAL_JSON_H_
     HAL_JSON::loop();
 #endif
@@ -140,7 +141,7 @@ void loop() {
 #endif
     
 #ifdef WIFI_MANAGER_WRAPPER_H_
-    WiFiManagerWrapper::Task();
+    //WiFiManagerWrapper::Task();
 #endif
 
     if (Serial.available()) {

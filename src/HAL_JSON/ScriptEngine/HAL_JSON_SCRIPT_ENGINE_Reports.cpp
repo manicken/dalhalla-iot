@@ -42,7 +42,7 @@ namespace HAL_JSON {
 #endif
         }
 
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(DEBUG_PRINT_SCRIPT_ENGINE) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
         void ReportInfo(std::string msg) {
             printf("%s", msg.c_str());
         }

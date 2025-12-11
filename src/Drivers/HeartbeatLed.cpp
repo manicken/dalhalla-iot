@@ -66,6 +66,16 @@ namespace HeartbeatLed
             }
             request->send(200, "text/html", ret);
         });
+        setup();
+    }
+    void setup(unsigned long onInterval, unsigned long offInterval)
+    {
+        HEARTBEATLED_OFF_INTERVAL = offInterval;
+        HEARTBEATLED_ON_INTERVAL = onInterval;
+        setup();
+    }
+    void setup(void)
+    {
         pinMode(HEARTBEATLED_PIN, OUTPUT); // output
         digitalWrite(HEARTBEATLED_PIN, HEARTBEATLED_INACTIVESTATE);
     }

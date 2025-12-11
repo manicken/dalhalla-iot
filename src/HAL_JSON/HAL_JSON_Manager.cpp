@@ -234,7 +234,7 @@ namespace HAL_JSON {
             Device* device = devices[i];
             if (device == nullptr) continue;
             device->begin();
-            yield(); // give time to RTOS and WiFi tasks
+            delay(0); // give time to RTOS and WiFi tasks
         }
     }
 
@@ -245,7 +245,7 @@ namespace HAL_JSON {
             Device* device = devices[i];
             if (device == nullptr) continue;
             device->loop();
-            yield(); // give time to RTOS and WiFi tasks
+            delay(0); // give time to RTOS and WiFi tasks
         }
     }
     /** 
