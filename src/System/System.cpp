@@ -41,6 +41,11 @@
 
 namespace System {
 
+    void Setup()
+    {
+        if (LITTLEFS_BEGIN_FUNC_CALL == true) FSBrowser::fsOK = true; // this call is needed before all access to internal Flash file system
+    }
+
 #if defined(ESP32)
 
 #define INIT_SDMMC_PRINT_INFO
@@ -177,6 +182,7 @@ namespace System {
 
     void initWebServerHandlers(AsyncWebServer& webserver)
     {
+        FSBrowser::setup(webserver);
         webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
             
             if (LittleFS.format()) {

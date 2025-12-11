@@ -18,7 +18,7 @@ app.get('/update', (req, res) => {
 
     // Simulate autoincrement entry ID
     const entryId = Math.floor(Math.random() * 50000) + 1;
-
+    console.log(req.url);
     console.log("[" + new Date().toLocaleString() + "] Received TS update:", req.query);
 
     // ThingSpeak responds with the entry ID as a string

@@ -263,8 +263,8 @@ namespace HAL_JSON {
         const char* splitPos = FindCharReverse(delimiter);
         const char* newEndPos = end;
         if (splitPos == nullptr) {
-            end = start; // this makes the source(this) string empty
-            return ZeroCopyString(start, newEndPos); // return the whole source string as a new ZeroCopyString
+            // leave the source string untouched
+            return ZeroCopyString(); // return empty 
         }
         end = splitPos; // modify source(this)
         return ZeroCopyString(splitPos+1, newEndPos); 
@@ -287,8 +287,8 @@ namespace HAL_JSON {
 
         const char* newEndPos = end;
         if (ContainsPtr(delimiterPtr) == false) {
-            end = start; // this makes the source(this) string empty
-            return ZeroCopyString(start, newEndPos); // return the whole source string as a new ZeroCopyString
+            // leave the source string untouched
+            return ZeroCopyString(); // return empty 
         }
         end = delimiterPtr; // modify source(this)
         return ZeroCopyString(delimiterPtr+1, newEndPos); 

@@ -57,7 +57,6 @@ namespace HAL_JSON {
 
     struct PendingRequest {
         std::string command;
-        //AsyncWebServerRequest* request;
         CommandCallback cb;
     };
 

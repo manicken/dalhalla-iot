@@ -76,16 +76,16 @@ namespace HAL_JSON {
 #endif
         //bool addLastLogEntryToMessage = false;
         bool anyErrors = false;
-        if (zcCommand == HAL_JSON_CMD_EXEC_WRITE_CMD) {
+        if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_WRITE_CMD)) {
             anyErrors = writeCmd(zcStr, message) == false;
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_READ_CMD) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_READ_CMD)) {
             anyErrors = readCmd(zcStr, message) == false;
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_CMD) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_CMD)) {
             anyErrors = execCmd(zcStr, message) == false;
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON)) {
             long startMillis = millis();
             anyErrors = reloadJSON(zcStr, message) == false;
             //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
@@ -93,15 +93,15 @@ namespace HAL_JSON {
             anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
             //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
         }
-        else if (zcCommand == "scripts") {
+        else if (zcCommand.EqualsIC("scripts")) {
             ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
-            if (zcSubCmd == "reload") {
+            if (zcSubCmd.EqualsIC("reload")) {
                 long startMillis = millis();
                 anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
                 //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
-            } else if (zcSubCmd == "stop") {
+            } else if (zcSubCmd.EqualsIC("stop")) {
                 ScriptEngine::ScriptsBlock::running = false;
-            } else if (zcSubCmd == "start") {
+            } else if (zcSubCmd.EqualsIC("start")) {
                 ScriptEngine::ScriptsBlock::running = true;
             } else {
                 anyErrors = true;
@@ -112,14 +112,17 @@ namespace HAL_JSON {
             if (anyErrors == false)
                 message += "\"info\":\"OK\"";
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_GET_AVAILABLE_GPIO_LIST) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_GET_AVAILABLE_GPIO_LIST)) {
             message += GPIO_manager::GetList(zcStr);
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_PRINT_DEVICES) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_DEVICES)) {
             message += Manager::ToString();
         }
-        else if (zcCommand == HAL_JSON_CMD_EXEC_PRINT_LOG_CONTENTS) {
+        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_LOG_CONTENTS)) {
             GlobalLogger.printAllLogs(Serial);
+        }
+        else if (zcCommand.EqualsIC("favicon.ico")) {
+            // just ignore
         }
         else
         {
@@ -212,9 +215,9 @@ namespace HAL_JSON {
         if (params.zcType == HAL_JSON_CMD_EXEC_BOOL_TYPE) {
             uint32_t uintValue = 0;
 
-            if ((params.zcValue == "true") || (params.zcValue == "1")) {
+            if ((params.zcValue.EqualsIC("true")) || (params.zcValue == "1")) {
                 uintValue = 1;
-            } else if ((params.zcValue == "false") || (params.zcValue == "0")) {
+            } else if ((params.zcValue.EqualsIC("false")) || (params.zcValue == "0")) {
                 uintValue = 0;
             } else {
 
@@ -234,7 +237,7 @@ namespace HAL_JSON {
                 message += "\"}";
             }
         }
-        else if (params.zcType == HAL_JSON_CMD_EXEC_UINT32_TYPE) {
+        else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_UINT32_TYPE)) {
             // Convert value to integer
             uint32_t uintValue = 0;
             if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
@@ -253,7 +256,7 @@ namespace HAL_JSON {
                 }
             }
 
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_FLOAT_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_FLOAT_TYPE)) {
             // Convert value to integer
             float floatValue = 0.0f;
             if (params.zcValue.ConvertTo_float(floatValue) == false) {
@@ -275,7 +278,7 @@ namespace HAL_JSON {
                 }
             }
 
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_STRING_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_STRING_TYPE)) {
             //UIDPath uidPath(params.zcUid);  // obsolete
             std::string result;
             HALWriteStringRequestValue strHalValue(params.zcValue, result);
@@ -289,7 +292,7 @@ namespace HAL_JSON {
                 //message += "\"}";
             }
 
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_JSON_STR_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_JSON_STR_TYPE)) {
             //UIDPath uidPath(params.zcUid);  // obsolete
             std::string result;
             HALWriteStringRequestValue strHalValue(params.zcValue, result);
@@ -352,7 +355,7 @@ namespace HAL_JSON {
         }
         HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
 
-        if (params.zcType == HAL_JSON_CMD_EXEC_BOOL_TYPE) {
+        if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_BOOL_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
@@ -361,7 +364,7 @@ namespace HAL_JSON {
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_UINT32_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_UINT32_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
@@ -370,7 +373,7 @@ namespace HAL_JSON {
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.asUInt());
             }
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_FLOAT_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_FLOAT_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
             if (params.zcValue.Length() == 0) {
                 HALValue halValue;
@@ -391,7 +394,7 @@ namespace HAL_JSON {
                     valueStr = std::to_string(halValue.asFloat());
                 }
             }
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_STRING_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_STRING_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);
@@ -403,7 +406,7 @@ namespace HAL_JSON {
                 valueStr += result;
                 valueStr += "\"";
             }
-        } else if (params.zcType == HAL_JSON_CMD_EXEC_JSON_STR_TYPE) {
+        } else if (params.zcType.EqualsIC(HAL_JSON_CMD_EXEC_JSON_STR_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);

@@ -45,6 +45,7 @@ namespace HAL_JSON {
         DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
         if (devFindRes == DeviceFindResult::Success) {
             //ZeroCopyString zcEmpty;
+            
             eventFunc = deviceOut->Get_EventCheck_Function(zcFuncName);
             if (eventFunc != nullptr) {
                 eventCheckDevice = deviceOut;
@@ -53,13 +54,18 @@ namespace HAL_JSON {
                 eventCheckDevice = nullptr; // also set to nullptr
             }
         } else {
+            Serial.printf("\r\nThingSpeakField::SetEventHandler - Device NOT found: '%.*s' (len=%zu), reason: %s\r\n",
+                  (int)(zcStrUidPathAndFuncName.Length()), zcStrUidPathAndFuncName.start,
+                  zcStrUidPathAndFuncName.Length(),
+                  DeviceFindResultToString(devFindRes));
+            // set to nullptr here to clarify the state
             eventFunc = nullptr;
             eventCheckDevice = nullptr;
         }
     }
 
-    void ThingSpeakField::Set(int index, const char* uidPathAndFuncName_cStr) {
-        index = index;
+    void ThingSpeakField::Set(int fieldIndex, const char* uidPathAndFuncName_cStr) {
+        this->index = fieldIndex;
         cdr = new CachedDeviceRead();
         ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
         cdr->Set(zcStrUidPathAndFuncName);
@@ -124,11 +130,9 @@ namespace HAL_JSON {
     }
 
     void ThingSpeak::loop() {
-        // corruption test
-        //Serial.printf("ThingSpeak::loop this=%p vptr=0x%08X fieldCount=%d\n", this,
-        //      (uint32_t) (this ? *((uint32_t*)this) : 0), fieldCount);
-
         if (useOwnTaskLoop == false) return;
+        
+        if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping ThingSpeak task"); }
 
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
@@ -163,10 +167,15 @@ namespace HAL_JSON {
         }
 
         http.begin(wifiClient, urlApi.c_str());
+        http.setTimeout(2000); // set to 2 seconds so WDT would not trigger
                 
         int httpCode = http.GET();
-        if (httpCode > 0) DEBUG_UART.println(F("[OK]\r\n"));
-        else DEBUG_UART.println(F("[FAIL]\r\n"));
+        if (httpCode <= 0) {
+            DEBUG_UART.println(F("ERROR - ThingSpeak post\r\n"));
+        }
+        /*else {
+            DEBUG_UART.println(F("[OK]\r\n"));
+        }*/
 
         http.end();
         delay(0);

@@ -32,10 +32,66 @@
 #include <Adafruit_SSD1306.h>
 #endif
 
+#if defined(ESP32)
+#include <WiFi.h>
+wifi_err_reason_t lastReason = WIFI_REASON_UNSPECIFIED;
+
+void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+    if (event == SYSTEM_EVENT_STA_DISCONNECTED) {
+        lastReason = (wifi_err_reason_t)info.wifi_sta_disconnected.reason;
+        Serial.printf("[ESP32] Disconnect reason: %d\n", lastReason);
+    }
+}
+
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+uint8_t lastReason = 0;
+
+void onWiFiDisconnect(const WiFiEventStationModeDisconnected& event) {
+    lastReason = event.reason;
+    Serial.printf("[ESP8266] Disconnect reason: %d\n", lastReason);
+}
+#endif
+
+void initWiFiEvents() {
+#if defined(ESP32)
+    WiFi.onEvent(WiFiEvent);
+
+#elif defined(ESP8266)
+    static WiFiEventHandler handler;
+    handler = WiFi.onStationModeDisconnected(onWiFiDisconnect);
+#endif
+}
+
+bool isBadCredentials() {
+#if defined(ESP32)
+    return (lastReason == WIFI_REASON_AUTH_FAIL ||
+            /*lastReason == WIFI_REASON_PASSWORD_ERROR ||*/
+            lastReason == WIFI_REASON_HANDSHAKE_TIMEOUT);
+
+#elif defined(ESP8266)
+    // ESP8266 reason codes differ (15 = AUTH_FAIL)
+    return (lastReason == REASON_AUTH_FAIL ||
+            lastReason == REASON_MIC_FAILURE);
+#endif
+}
+
 namespace WiFiManagerWrapper {
 
     WiFiManager wifiManager;
+    /** both flags that the portal is running and also that the wifi connection was lost */
     bool portalRunning = false;
+    unsigned long lastReconnect = 0;
+    unsigned long lastPortalStart = 0;
+
+    const unsigned long RECONNECT_INTERVAL = 10000;   // 10s
+    const unsigned long PORTAL_COOLDOWN    = 600000;  // 10 minutes
+
+    void startPortalNonBlocking() {
+        wifiManager.setConfigPortalBlocking(false);
+        wifiManager.startConfigPortal();
+        portalRunning = true;
+    }
 
 #if defined(USE_DISPLAY)
     bool Setup(Adafruit_SSD1306& display) {
@@ -68,9 +124,7 @@ namespace WiFiManagerWrapper {
         // If not connected, start non-blocking portal immediately
         if (!wifiConnected) {
             Serial.println(F("wifi/status/error/connect")); // send structured error for easy parse
-            wifiManager.setConfigPortalBlocking(false);
-            wifiManager.startConfigPortal();
-            portalRunning = true;
+            startPortalNonBlocking();
         } else {
             Serial.println(F("wifi/status/ok")); // send structured error for easy parse
         }
@@ -87,38 +141,58 @@ namespace WiFiManagerWrapper {
         display.display();
         delay(2000); // allow user to see result
 #endif
+        initWiFiEvents();
 
         return wifiConnected;
     }
 
-
-    void startPortalNonBlocking() {
-        wifiManager.setConfigPortalBlocking(false);
-        wifiManager.startConfigPortal();
-        portalRunning = true;
-    }
-
     void Task() {
-        // Automatic reconnect
-        static unsigned long lastReconnectAttempt = 0;
-        if (WiFi.status() != WL_CONNECTED) {
-            if (millis() - lastReconnectAttempt > 10000) { // every 10 seconds
-                // request reconnect (non-blocking, connection happens in background)
-                if (WiFi.reconnect())
-                    Serial.println("WiFi lost, trying reconnect...");
-                else
-                    Serial.println("WiFi lost, reconnect could not be started...");
-                lastReconnectAttempt = millis();
-                if (portalRunning == false)
-                    startPortalNonBlocking();
-            }
-        } else {
+
+        // ---- WiFi online ----
+        if (WiFi.status() == WL_CONNECTED) {
             if (portalRunning) {
+                Serial.println("WiFi connected, stopping portal...");
                 portalRunning = false;
-                NTP::NTPConnect();
+                // wifiManager.stopConfigPortal(); // only if your WM version supports it
+            }
+            return;
+        }
+
+        // ---- WiFi offline ----
+        if (millis() - lastReconnect < RECONNECT_INTERVAL)
+            return;
+
+        lastReconnect = millis();
+
+        // Try non-blocking reconnect
+        if (WiFi.reconnect()) {
+            Serial.println("Trying WiFi reconnect...");
+        } else {
+            Serial.println("Reconnect could not be started");
+        }
+
+
+        // ---- If credentials are bad, start the portal ----
+        if (isBadCredentials()) {
+
+            // prevent repeated portal spam
+            if (!portalRunning && millis() - lastPortalStart > PORTAL_COOLDOWN) {
+
+                Serial.println("Bad credentials detected, starting portal...");
+                startPortalNonBlocking();
+
+                portalRunning = true;
+                lastPortalStart = millis();
             }
         }
-        if (portalRunning)
-            wifiManager.process();
+        else {
+            // router down? keep retrying indefinitely
+            Serial.println("AP not found or temp issue, retrying...");
+        }
+
+        if (portalRunning) {
+            wifiManager.process(); // non-blocking
+        }
     }
+
 }

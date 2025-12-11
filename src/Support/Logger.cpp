@@ -31,12 +31,51 @@ Logger GlobalLogger;
 
 #define LOGGER_GET_TIME time(nullptr)
 
+//    ██       ██████   ██████      ███████ ███    ██ ████████ ██████  ██    ██ 
+//    ██      ██    ██ ██           ██      ████   ██    ██    ██   ██  ██  ██  
+//    ██      ██    ██ ██   ███     █████   ██ ██  ██    ██    ██████    ████   
+//    ██      ██    ██ ██    ██     ██      ██  ██ ██    ██    ██   ██    ██    
+//    ███████  ██████   ██████      ███████ ██   ████    ██    ██   ██    ██    
+
 LogEntry::LogEntry() : timestamp(0),
       level(Loglevel::Info),
       errorCode(0),
       text(nullptr),
       isCode(true),
       source(nullptr) {}
+
+    bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const 
+    {
+        if (level != lvl) return false;
+        if (isCode != codeFlag) return false;
+
+        if (isCode) {
+            if (errorCode != err) return false;
+        } else {
+            if (message != msg) return false;        // pointer compare, efficient
+        }
+
+        // Compare text (both null or both equal)
+        if (txt == nullptr && text == nullptr) return true;
+        if (txt == nullptr || text == nullptr) return false;
+        return strcmp(text, txt) == 0;
+    }
+    bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr, bool codeFlag) const 
+    {
+        if (level != lvl) return false;
+        if (isCode != codeFlag) return false;
+
+        if (isCode) {
+            if (errorCode != err) return false;
+        } else {
+            if (message != msg) return false;        // pointer compare, efficient
+        }
+
+        // Compare text (both null or both equal)
+        if (zcStr.IsEmpty() && text == nullptr) return true;
+        if (zcStr.IsEmpty() || text == nullptr) return false;
+        return zcStr.Equals(text);
+    }
 
 void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode) {
     timestamp = time;
@@ -46,6 +85,7 @@ void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode) {
     isCode = true;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message) {
     timestamp = time;
@@ -55,6 +95,7 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     isCode = false;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const char* _text) {
     timestamp = time;
@@ -69,6 +110,7 @@ void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const char
     isCode = true;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message, const char* _text) {
     timestamp = time;
@@ -83,6 +125,7 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     isCode = false;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const HAL_JSON::ZeroCopyString& zcStr) {
     timestamp = time;
@@ -96,6 +139,7 @@ void LogEntry::Set(time_t time, Loglevel _level, uint32_t _errorCode, const HAL_
     isCode = true;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _message, const HAL_JSON::ZeroCopyString& zcStr) {
     timestamp = time;
@@ -109,6 +153,7 @@ void LogEntry::Set(time_t time, Loglevel _level, const __FlashStringHelper* _mes
     isCode = false;
     isNew = true;
     source = nullptr;
+    repeatCount = 0;
 }
 LogEntry::~LogEntry() {
     if (text) {
@@ -128,67 +173,105 @@ String LogEntry::MessageToString() const {
     return result;
 }
 
+//    ██       ██████   ██████   ██████  ███████ ██████  
+//    ██      ██    ██ ██       ██       ██      ██   ██ 
+//    ██      ██    ██ ██   ███ ██   ███ █████   ██████  
+//    ██      ██    ██ ██    ██ ██    ██ ██      ██   ██ 
+//    ███████  ██████   ██████   ██████  ███████ ██   ██ 
+
 Logger::Logger() {
 
 }
 
 void Logger::Error(uint32_t code) {
+    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, nullptr, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code);
     advance();
 }
 void Logger::Error(const __FlashStringHelper* msg) {
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, nullptr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg);
     advance();
 }
 void Logger::Error(uint32_t code, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, text, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code, text);
     advance();
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, text, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, text);
     advance();
 }
 void Logger::Error(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, zcStr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, zcStr);
     advance();
 }
+
 void Logger::Info(uint32_t code) {
+    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, nullptr, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code);
     advance();
 }
 void Logger::Info(const __FlashStringHelper* msg) {
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, nullptr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg);
     advance();
 }
 void Logger::Info(uint32_t code, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, text, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code, text);
     advance();
 }
 void Logger::Info(const __FlashStringHelper* msg, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, text, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, text);
     advance();
 }
 void Logger::Info(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, zcStr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, zcStr);
     advance();
 }
+
 void Logger::Warn(uint32_t code) {
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, nullptr, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code);
     advance();
 }
 void Logger::Warn(const __FlashStringHelper* msg) {
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, nullptr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg);
     advance();
 }
 void Logger::Warn(uint32_t code, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, text, true))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code, text);
     advance();
 }
 void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, text, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, text);
     advance();
 }
 void Logger::Warn(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr) {
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, zcStr, false))
+        return;
     buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, zcStr);
     advance();
 }
@@ -205,7 +288,7 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
         if (onlyPrintNew && entry.isNew == false) continue;
         entry.isNew = false;
 
-        char strTime[32]; // Enough for asctime output
+        //char strTime[32]; // Enough for asctime output
         struct tm* timeinfo = localtime(&entry.timestamp);
         
         out.print('[');
@@ -233,6 +316,11 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
             out.print(entry.source);
             out.print(']');
             out.print(' ');
+        }
+        if (entry.repeatCount > 0) {
+            out.print('(');
+            out.print(entry.repeatCount);
+            out.print(')');
         }
 
         if (entry.isCode) {
@@ -269,4 +357,32 @@ const LogEntry& Logger::getLastEntry() const {
     }
     size_t lastIndex = (head + LOG_BUFFER_SIZE - 1) % LOG_BUFFER_SIZE;
     return buffer[lastIndex];
+}
+bool Logger::UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) {
+    if (!wrapped && head == 0) {
+        return false;
+    }
+    size_t lastIndex = (head + LOG_BUFFER_SIZE - 1) % LOG_BUFFER_SIZE;
+    LogEntry& entry = buffer[lastIndex];
+    if (entry.isEqual(lvl, err, msg, txt, codeFlag)) {
+        entry.timestamp = LOGGER_GET_TIME;
+        entry.repeatCount++;
+        entry.isNew = true;
+        return true;
+    }
+    return false;
+}
+bool Logger::UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr, bool codeFlag) {
+    if (!wrapped && head == 0) {
+        return false;
+    }
+    size_t lastIndex = (head + LOG_BUFFER_SIZE - 1) % LOG_BUFFER_SIZE;
+    LogEntry& entry = buffer[lastIndex];
+    if (entry.isEqual(lvl, err, msg, zcStr, codeFlag)) {
+        entry.timestamp = LOGGER_GET_TIME;
+        entry.repeatCount++;
+        entry.isNew = true;
+        return true;
+    }
+    return false;
 }

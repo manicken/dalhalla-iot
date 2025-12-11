@@ -44,39 +44,16 @@ namespace HAL_JSON {
 
         //ZeroCopyString zcUrl(urlStr+1); // +1 removes the leading /
         // Capture request in lambda for later response
-        
         CommandExecutor_LOCK_QUEUE();
         CommandExecutor::g_pending.push({std::string(urlStr + 1), 
             [request](const std::string& response) {
                 if (request->client()->connected()) {
+
                     request->send(200, "application/json", response.c_str());
                 }
             }
         });
         CommandExecutor_UNLOCK_QUEUE();
-
-        /*bool accepted = CommandExecutor::execute(zcUrl, 
-            [request](const std::string& message) {
-                // NOTE: this runs later when the command finishes
-                if (request->client()->connected()) {
-                    request->send(200, "application/json", message.c_str());
-                }
-            }
-        );
-
-        if (!accepted) {
-            GlobalLogger.printAllLogs(Serial, false); // TODO make this print back to request client
-            //request->send(200, "application/json", "{\"error\":\"commandNotAccepted\"}");
-        }*/
-/*
-        std::string message;
-        bool success = CommandExecutor::execute(zcUrl, message);
-        // do something when success == false
-        // maybe add last entry in GlobalLogger
-        if (success == false) {
-            GlobalLogger.printAllLogs(Serial, false); // TODO make this print back to request client
-        }
-        request->send(200, "application/json", message.c_str());*/
     }
 
     void REST::setupRest() {

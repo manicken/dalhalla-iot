@@ -26,6 +26,10 @@
 #include "HAL_JSON/HAL_JSON_ZeroCopyString.h"
 #include "Support/base64.h"
 
+#if defined(ESP32)
+#include <SD_MMC.h>
+#endif
+
 void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
     NTP::NTPConnect();
@@ -74,7 +78,7 @@ void setup() {
 
     DEBUG_UART.println(Info::getResetReasonStr());
 
-    if (LITTLEFS_BEGIN_FUNC_CALL == true) FSBrowser::fsOK = true; // this call is needed before all access to internal Flash file system
+    System::Setup();
 
     MainConfig::begin(webserver);
 
@@ -100,11 +104,7 @@ void setup() {
     Info::startTime = now();
 
     System::initWebServerHandlers(webserver);
-#ifdef FSBROWSER_SYNCED_WS_H_
-    FSBrowser::setup(webserver);
-#else
-    FSBrowser::setup(webserver);
-#endif
+
     Info::setup(webserver);
     HeartbeatLed::setup(webserver);
 #if defined(ESP32)
@@ -129,9 +129,9 @@ void setup() {
 }
 
 void loop() {
-    //ArduinoOTA.handle();
+    ArduinoOTA.handle();
     HeartbeatLed::task();
-    //Scheduler::HandleAlarms();
+    Scheduler::HandleAlarms();
 #ifdef HAL_JSON_H_
     HAL_JSON::loop();
 #endif
@@ -141,7 +141,7 @@ void loop() {
 #endif
     
 #ifdef WIFI_MANAGER_WRAPPER_H_
-    //WiFiManagerWrapper::Task();
+    WiFiManagerWrapper::Task();
 #endif
 
     if (Serial.available()) {

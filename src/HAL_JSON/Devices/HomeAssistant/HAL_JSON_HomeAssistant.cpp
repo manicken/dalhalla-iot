@@ -300,6 +300,7 @@ namespace HAL_JSON {
 
     void HomeAssistant::loop() {
         if (!devices) return;
+        if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping HomeAssistant task"); }
 
         if (mqttClient.connected() == false) {
             

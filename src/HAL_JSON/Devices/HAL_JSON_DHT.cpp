@@ -95,10 +95,12 @@ namespace HAL_JSON {
         if ((now - lastUpdateMs) >= refreshTimeMs) {
             lastUpdateMs = millis();
             TempAndHumidity tempData = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
-            if (tempData.humidity != NAN && tempData.temperature != NAN) {
+            if (!isnan(tempData.humidity) && !isnan(tempData.temperature)) {
                 data = tempData;
                 triggerEvent();
-            } 
+            } else {
+                //Serial.println("could not read DHT sensor");
+            }
         }
     }
 

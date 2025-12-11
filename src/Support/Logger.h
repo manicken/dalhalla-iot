@@ -45,6 +45,8 @@ struct LogEntry {
       const char* source;
       bool isCode;
       bool isNew = false;
+      /** used when the same exact error happens repetitively */
+      uint32_t repeatCount = 0;
       LogEntry();
       void Set(time_t time, Loglevel level, uint32_t errorCode);
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message);
@@ -52,6 +54,9 @@ struct LogEntry {
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message, const char* text);
       void Set(time_t time, Loglevel level, uint32_t errorCode, const HAL_JSON::ZeroCopyString& zcStr);
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message, const HAL_JSON::ZeroCopyString& zcStr);
+
+      bool isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const;
+      bool isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr, bool codeFlag) const;
 
       ~LogEntry();
 
@@ -86,6 +91,8 @@ class Logger {
 
     
     const LogEntry& getLastEntry() const;
+    bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag);
+    bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr, bool codeFlag);
     void setLastEntrySource(const char* src);
 
   private:

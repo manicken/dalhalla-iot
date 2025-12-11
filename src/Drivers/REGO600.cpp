@@ -277,7 +277,7 @@ namespace Drivers {
         if (now - lastRequestMs >= requestTimeoutMs) {
             
             GlobalLogger.Error(F("REGO600 - request timeout"));
-            Serial.println("REGO600 - request timeout");
+            Serial.println("REGO600-req-TiOu");
             SendRequestFrameAndResetRx(); // retry current
         }
 
