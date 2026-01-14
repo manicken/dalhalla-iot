@@ -60,9 +60,9 @@ public:
     virtual HALOperationResult write(const HALValue& val) override;
     virtual HALOperationResult read(HALValue& val) override;
 
-    static HALOperationResult Device_DCServo::exec_fw(Device* device);
-    static HALOperationResult Device_DCServo::exec_bw(Device* device);
-    static HALOperationResult Device_DCServo::exec_stop(Device* device);
+    static HALOperationResult exec_fw(Device* device);
+    static HALOperationResult exec_bw(Device* device);
+    static HALOperationResult exec_stop(Device* device);
 
     virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
     /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
