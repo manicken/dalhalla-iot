@@ -502,7 +502,7 @@ namespace HAL_JSON {
                             anyError = true;
                         }
                     } else {
-                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
                         HALValue halValue;
                         readResult = device->read(halBracketSubscriptValue, halValue);
                         if (readResult != HALOperationResult::Success) {
@@ -519,7 +519,7 @@ namespace HAL_JSON {
                             anyError = true;
                         }
                     } else {
-                        HALValue halBracketSubscriptValue(0); // just need a dummy value
+                        HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
                         HALValue halValue(HALValue::Type::TEST); // unset type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {

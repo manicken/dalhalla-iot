@@ -181,7 +181,7 @@ namespace HAL_JSON {
         }
         else if (zcCmd == "cursor") {
             ZeroCopyString zcXstr = zcData.SplitOffHead('/');
-            int x = 0, y = 0;
+            int32_t x = 0, y = 0;
             zcXstr.ConvertTo_int32(x);
             zcData.ConvertTo_int32(y);
             display->setCursor(x,y);

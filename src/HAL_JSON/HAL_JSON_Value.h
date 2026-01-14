@@ -58,6 +58,7 @@ namespace HAL_JSON {
 
         Type getType() const;
         bool isNumber() const;
+        bool isUintOrInt() const;
         bool isNaN() const;
 
         int32_t asInt() const;

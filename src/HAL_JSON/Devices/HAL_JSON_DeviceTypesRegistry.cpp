@@ -58,6 +58,8 @@
 #include "HAL_JSON_ThingSpeak.h"
 #include "HomeAssistant/HAL_JSON_HomeAssistant.h"
 
+#include "HAL_JSON_DCServo.h"
+
 
 namespace HAL_JSON {
 
@@ -96,6 +98,7 @@ namespace HAL_JSON {
         {"THINGSPEAK", ThingSpeak::RegistryDefine},
         {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
         {"WS2812", WS2812::RegistryDefine},
+        {"DCSERVO", Device_DCServo::RegistryDefine},
         /** mandatory null terminator */
         RegistryTerminatorItem, // Stop for active devices
 

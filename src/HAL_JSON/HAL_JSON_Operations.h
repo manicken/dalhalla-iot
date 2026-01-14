@@ -50,32 +50,35 @@ namespace HAL_JSON {
         ExecutionFailed = 4,       // was OperationFail
         StringRequestParameterError = 5,
         WriteValueNaN = 6,
+        WriteValueNotUintOrInt = 7,
+        InvalidArgument = 8,
+        HardwareFault = 9,
 
         /** script engine specific status */
-        IfConditionTrue = 10,
+        IfConditionTrue = 20,
         /** script engine specific status */
-        IfConditionFalse = 11,
+        IfConditionFalse = 21,
         /** script engine specific error */
-        StackUnderflow = 19,
+        StackUnderflow = 22,
         /** script engine specific error */
-        DivideByZero = 20,
+        DivideByZero = 23,
         /** script engine specific error */
-        StackOverflow = 21,
+        StackOverflow = 24,
         /** script engine specific error */
-        ResultGetFail = 22,
+        ResultGetFail = 25,
         /** script engine specific error */
-        HandlerWasNullPtr = 23,
+        HandlerWasNullPtr = 26,
         /** script engine specific error */
-        HandlerWasDummy = 24,
+        HandlerWasDummy = 27,
         /** script engine specific error, 
          * this should only be fired from 
          * within a handler function 
          * if it's required to be set */
-        ContextWasNullPtr = 25,
+        ContextWasNullPtr = 28,
         /** script engine specific error */
-        BracketOpSubscriptOutOffRange = 26,
+        BracketOpSubscriptOutOffRange = 29,
         /** script engine specific error */
-        BracketOpSubscriptInvalid = 27,
+        BracketOpSubscriptInvalid = 30,
 
         NotSet = 99,
     };

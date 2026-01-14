@@ -39,10 +39,12 @@ void UART2websocket::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
 }
 
 void UART2websocket::setup() {
-#if defined(ESP32)
+#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     UART.begin(19200, SERIAL_8N1, 16, 17);  // Set correct RX/TX pins for UART2
 #elif defined(ESP8266)
     UART.begin(19200, SERIAL_8N1);
+#elif defined(seeed_xiao_esp32c3)
+    UART.begin(19200);
 #endif
     ws.onEvent([this](AsyncWebSocket *s, AsyncWebSocketClient *c, AwsEventType t, void *a, uint8_t *d, size_t l) {
         this->onWsEvent(s, c, t, a, d, l);

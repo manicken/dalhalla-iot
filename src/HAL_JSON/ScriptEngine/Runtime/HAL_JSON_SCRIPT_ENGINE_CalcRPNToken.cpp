@@ -112,7 +112,7 @@ namespace HAL_JSON {
             else { // should never happend
                 std::string msg = expToken.ToString();
                 GlobalLogger.Error(F("fail of converting constant default is set to one"), msg.c_str()); // remainder the string is copied internally here
-                value->set(1); // default one so any divide by zero would not happend
+                value->set((uint32_t)1); // default one so any divide by zero would not happend
             }
 
             context = value;

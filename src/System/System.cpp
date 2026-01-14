@@ -28,7 +28,7 @@
 
 #if defined(ESP8266)
 #include <ESP8266mDNS.h>
-#elif defined(ESP32)
+#elif defined(ESP32) && !defined(seeed_xiao_esp32c3)
 #include <SD_MMC.h>
 #include <ESPmDNS.h>
 #endif
@@ -46,7 +46,7 @@ namespace System {
         if (LITTLEFS_BEGIN_FUNC_CALL == true) FSBrowser::fsOK = true; // this call is needed before all access to internal Flash file system
     }
 
-#if defined(ESP32)
+#if defined(ESP32) && !defined(esp32c3)
 
 #define INIT_SDMMC_PRINT_INFO
 #define INIT_SDMMC_PRINT_DIR
@@ -95,7 +95,7 @@ namespace System {
         }
     }
 #endif
-#if defined(ESP32)
+#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     void Start_MDNS()
     {
         DEBUG_UART.println("\n\n***** STARTING mDNS service ********");
@@ -212,7 +212,7 @@ namespace System {
             }
 
         });
-#if defined(ESP32)
+#if defined(ESP32) && !defined(esp32c3)
         webserver.on("/sdcard_listfiles", [](AsyncWebServerRequest* req) {
             
             //if (SD_MMC.begin("/sdcard", true, false, 20000)) {

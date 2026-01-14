@@ -90,7 +90,7 @@ namespace HAL_JSON {
             ret += ']';
             val.out_value = ret;
         } else if (val.cmd.ValidNumber()) {
-            int index = 0;
+            int32_t index = 0;
             if (val.cmd.ConvertTo_int32(index) == false) {
                 val.out_value = "invalid index not a integer";
                 return HALOperationResult::BracketOpSubscriptInvalid;

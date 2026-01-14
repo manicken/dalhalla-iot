@@ -24,8 +24,9 @@
 #define WIFI_MANAGER_WRAPPER_H_
 
 #define WIFI_MANAGER_AP_PASSWORD "haljson" // to be changed, TODO override this in a secrets.h file that is not included to github
-
+#if !defined(esp32c3)
 #define USE_DISPLAY
+#endif
 
 #if defined(USE_DISPLAY)
 // Display

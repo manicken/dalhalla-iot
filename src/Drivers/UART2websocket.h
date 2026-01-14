@@ -28,10 +28,21 @@
 
 #define UART2WS_BUFFER_SIZE 256
 #define UART2WS_PORT 8080
-#if defined(ESP32)
+#if defined(ESP32) && defined(seeed_xiao_esp32c3)
+#define UART2WS_UART_TO_USE Serial
+#define UART2WS_UART_TYPE HWCDC
+#elif defined(ESP32) && defined(waveshare_esp32c3_nano)
+#define UART2WS_UART_TO_USE Serial1
+#define UART2WS_UART_TYPE HardwareSerial
+#elif defined(ESP32)
 #define UART2WS_UART_TO_USE Serial2
+#define UART2WS_UART_TYPE HardwareSerial
 #elif defined(ESP8266)
 #define UART2WS_UART_TO_USE Serial
+#define UART2WS_UART_TYPE HardwareSerial
+#elif defined(_WIN32) || defined(__linux__)
+#define REGO600_UART_TO_USE Serial
+#define UART2WS_UART_TYPE HardwareSerial
 #endif
 
 class UART2websocket {
@@ -49,7 +60,9 @@ private:
 
     AsyncWebServer server;
     AsyncWebSocket ws;
-    HardwareSerial& UART;
+
+    UART2WS_UART_TYPE& UART;
+
     void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 };
 

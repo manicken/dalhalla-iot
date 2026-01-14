@@ -33,7 +33,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <LittleFS.h>
-#if defined(ESP32)
+#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
 #include <SD_MMC.h>
 #endif
 //#include <AsyncTCP.h>
@@ -84,9 +84,70 @@ namespace FSBrowser {
         Serial.println(msg);
         request->send(500, FPSTR(TEXT_PLAIN), msg + "\r\n");
     }
+    
+    void handleFailsafeUploadPage(AsyncWebServerRequest *r) {
+        r->send(200, "text/html", upload_html);
+    }
+
+    /*void handleFailsafeUploadPage(AsyncWebServerRequest *request) {
+        String upload_html_str = (upload_html);
+        AsyncWebServerResponse *response = request->beginResponse(
+            200, "text/html", upload_html_str
+        );
+        response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response->addHeader("Pragma", "no-cache");
+        response->addHeader("Expires", "-1");
+        request->send(response);
+    }*/
+    File fsUploadFile;
+
+    void handleFileUploadFailsafe(AsyncWebServerRequest *request,
+                                const String &filename,
+                                size_t index,
+                                uint8_t *data,
+                                size_t len,
+                                bool final) {
+        String dir = "/edit";   // your upload directory
+        String dest = "/edit/upload"; // redirect after upload
+
+        // Ensure the directory exists
+        if (!LittleFS.exists(dir)) {
+            LittleFS.mkdir(dir);
+        }
+
+        // Open file on first chunk
+        if (index == 0) {
+            String filePath = dir + "/" + filename;
+            fsUploadFile = LittleFS.open(filePath, "w");
+            if (!fsUploadFile) {
+                Serial.println("Failed to open file for writing");
+                request->send(500, "text/plain", "500: couldn't create file");
+                return;
+            }
+            Serial.print("Upload Start: "); Serial.println(filePath);
+        }
+
+        // Write chunk
+        if (len && fsUploadFile) {
+            fsUploadFile.write(data, len);
+        }
+
+        // Final chunk
+        if (final) {
+            if (fsUploadFile) {
+                fsUploadFile.close();
+                Serial.printf("Upload End: %s, total bytes: %u\n", filename.c_str(), index + len);
+
+                // Redirect client
+                AsyncWebServerResponse *response = request->beginResponse(303, "text/plain", "");
+                response->addHeader("Location", dest);
+                request->send(response);
+            }
+        }
+    }
 
     bool selectFileSystemAndFixPath(String &path) {
-#if defined(ESP32)
+#if defined(ESP32) && !defined(esp32c3)
         if (path.startsWith("/sdcard")) {
             fileSystem = &SD_MMC;
             path = path.substring(sizeof("/sdcard")-1);
@@ -234,10 +295,14 @@ namespace FSBrowser {
 
         srv.on("/status", HTTP_GET, handleStatus);
         srv.on("/list", HTTP_GET, handleFileList);
+        srv.on("/edit/upload", HTTP_GET, handleFailsafeUploadPage);           // if the client requests the upload page
+        srv.on("/edit/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println("send OK"); r->send(200); }, handleFileUploadFailsafe);
+
         srv.on("/edit", HTTP_GET, [](AsyncWebServerRequest *r){ r->send(LittleFS, "/edit/index.htm", "text/html"); });
         srv.on("/edit", HTTP_PUT, handleFileCreate);
         srv.on("/edit", HTTP_DELETE, handleFileDelete);
-        srv.on("/edit/upload", HTTP_POST, [](AsyncWebServerRequest *r){ r->send(200); }, handleFileUpload);
+        srv.on("/upload", HTTP_GET, handleFailsafeUploadPage);
+        srv.on("/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println("send OK"); r->send(200); }, handleFileUploadFailsafe);
         srv.on("/edit", HTTP_POST, [](AsyncWebServerRequest *r){ r->send(200); }, handleFileUpload);
 
         srv.serveStatic("/", LittleFS, "/").setDefaultFile("index.htm");

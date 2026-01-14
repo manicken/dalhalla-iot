@@ -122,10 +122,12 @@ namespace Drivers {
         
 
         uartTxBuffer[0] = 0x81; // constant
-        #if defined(ESP32)
+        #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
         REGO600_UART_TO_USE.begin(19200, SERIAL_8N1, rxPin, txPin); // Set correct RX/TX pins for UART
     #elif defined(ESP8266)
         REGO600_UART_TO_USE.begin(19200, SERIAL_8N1); // note on esp8266 pins are not reconfigurable
+    #elif defined(seeed_xiao_esp32c3)
+        REGO600_UART_TO_USE.begin(19200);
     #endif
     }
 
@@ -444,7 +446,7 @@ namespace Drivers {
         return (uartRxBuffer[1] << 14) + (uartRxBuffer[2] << 7) + uartRxBuffer[3];
     }
 
-    void REGO600::ClearUARTRxBuffer(HardwareSerial& uart, size_t maxDrains) {
+    void REGO600::ClearUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains) {
         size_t count = 0;
         while (uart.available() && count++ < maxDrains) {
             uart.read();

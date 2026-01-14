@@ -107,11 +107,11 @@ void setup() {
 
     Info::setup(webserver);
     HeartbeatLed::setup(webserver);
-#if defined(ESP32)
+#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     System::Start_MDNS();
 #endif
     
-#if defined(ESP32)
+#if defined(ESP32) && !defined(esp32c3)
     File test = SD_MMC.open("/StartTimes.log", "a", true);
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();

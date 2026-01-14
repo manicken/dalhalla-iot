@@ -34,12 +34,21 @@
 #define REGO600_UART_TX_CHKSUM_END_INDEX (REGO600_UART_TX_BUFFER_SIZE-1)
 #define REGO600_UART_RX_BUFFER_SIZE 42 // 42 is the max rx size from REGO600
 
-#if defined(ESP32)
+#if defined(ESP32) && defined(seeed_xiao_esp32c3)
+#define REGO600_UART_TO_USE Serial
+#define REGO600_UART_TYPE HWCDC
+#elif defined(ESP32) && defined(waveshare_esp32c3_nano)
+#define REGO600_UART_TO_USE Serial1
+#define REGO600_UART_TYPE HardwareSerial
+#elif defined(ESP32)
 #define REGO600_UART_TO_USE Serial2
+#define REGO600_UART_TYPE HardwareSerial
 #elif defined(ESP8266)
 #define REGO600_UART_TO_USE Serial
+#define REGO600_UART_TYPE HardwareSerial
 #elif defined(_WIN32) || defined(__linux__)
 #define REGO600_UART_TO_USE Serial
+#define REGO600_UART_TYPE HardwareSerial
 #endif
 
 // 240-270mS is the measured range so 300mS would be safe
@@ -197,6 +206,6 @@ namespace Drivers {
         void RefreshLoop_SendCurrent();
         void RefreshLoop_Continue();
 
-        static void ClearUARTRxBuffer(HardwareSerial& uart, size_t maxDrains = 100);
+        static void ClearUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains = 100);
     };
 }

@@ -32,8 +32,9 @@ namespace HAL_JSON {
 
     namespace GPIO_manager
     {
-    #if defined(ESP8266)
         const gpio_pin available_gpio_list[] {
+    #if defined(ESP8266)
+        
             {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)},  // (reserved for programming) only safe to use as a output
             {1, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::SpecialAtBoot)},  // TXD0 (reserved for programming/UART) only safe to use as a output
             {2, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::SpecialAtBoot)},  // TXD1 (reserved for debug) only safe to use as a output
@@ -50,31 +51,28 @@ namespace HAL_JSON {
             {13, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // SPI MOSI
             {14, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // SPI SCLK
             {15, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // SPI CS/TXD2
-        };
-    #elif defined(ESP32) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
-        const gpio_pin available_gpio_list[] {
+    
+    #elif (defined(ESP32) && defined(ESP32DEV)) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
             {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
             {1, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::OUT, PinMode::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
             {2, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
             {3, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
             {4, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
             {5, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
-    #ifndef ESP32WROVER_E_IE        
+      
             {6, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
             {7, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
             {8, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
             {9, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
             {10, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
             {11, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
-    #endif
+
             {12, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
             {13, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
             {14, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
             {15, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
-    #ifndef ESP32WROVER_E_IE
             {16, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // U2_RXD
-            {17, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // U2_TXD
-    #endif       
+            {17, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // U2_TXD     
             {18, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // VSPI_CLK
             {19, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // VSPI_MISO
             {21, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // I2C_SDA
@@ -90,8 +88,79 @@ namespace HAL_JSON {
             {36, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)}, // ADC1_0/SensVP (input only)
             {39, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)},  // ADC1_3/SensVN (input only)
             {255, 0x00} // terminator item
-            };
+            
+    #elif (defined(ESP32) && defined(ESP32WROVER_E_IE))
+            {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
+            {1, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::OUT, PinMode::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
+            {2, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
+            {3, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
+            {4, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
+            {5, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
+            // GPIO 6-11 are not available on the module they are internally connected to the flash
+            {6, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
+            {7, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
+            {8, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
+            {9, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
+            {10, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
+            {11, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
+ 
+            {12, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
+            {13, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
+            {14, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
+            {15, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
+     
+            {18, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // VSPI_CLK
+            {19, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // VSPI_MISO
+            {21, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // I2C_SDA
+            {22, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // I2C_SCL
+            {23, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // VSPI_MOSI
+            {25, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AOUT)}, // ADC2_8/DAC1 (ADC2 cannot be used together with WiFi)
+            {26, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AOUT)}, // ADC2_9/DAC2 (ADC2 cannot be used together with WiFi)
+            {27, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // ADC2_7/TOUCH7 (ADC2 cannot be used together with WiFi)
+            {32, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)}, // ADC1_4/TOUCH9/XTAL32
+            {33, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)}, // ADC1_5/TOUCH8/XTAL32
+            {34, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)}, // ADC1_6 (input only)
+            {35, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)}, // ADC1_7 (input only)
+            {36, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)}, // ADC1_0/SensVP (input only)
+            {39, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)},  // ADC1_3/SensVN (input only)
+            {255, 0x00} // terminator item
+    #elif (defined(ESP32) && defined(waveshare_esp32c3_nano))
+            {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {1, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {2, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot, PinMode::AIN)}, // strapping pin
+            {3, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {4, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {5, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {6, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {7, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {8, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {9, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // strapping pin
+            {10, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // onboard ws2812 LED
+        //#if ARDUINO_USB_CDC_ON_BOOT || ARDUINO_USB_MODE
+            {18, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // USB_DP
+            {19, MAKE_PIN_MASK_2(PinMode::Reserved, PinMode::SpecialAtBoot)}, // USP_DM
+        //#else
+        //    {18, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // USB_DP
+        //    {19, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // USP_DM
+        //#endif
+            {20, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART RxD
+            {21, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART TxD
+    #elif (defined(ESP32) && defined(seeed_xiao_esp32c3))
+
+            {2, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot, PinMode::AIN)}, // strapping pin
+            {3, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {4, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {5, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {6, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {7, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {8, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {9, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // strapping pin
+            {10, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {20, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART RxD
+            {21, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART TxD
     #endif
+        }; // const gpio_pin available_gpio_list[] {
+
         int available_gpio_list_lenght = -1; // not set yet
         void set_available_gpio_list_length() {
             int len = 0;

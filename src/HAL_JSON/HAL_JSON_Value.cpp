@@ -51,6 +51,9 @@ namespace HAL_JSON {
     bool HALValue::isNumber() const {
         return type == Type::UINT || type == Type::FLOAT || type == Type::INT;
     }
+    bool HALValue::isUintOrInt() const  {
+        return type == Type::UINT || type == Type::INT;
+    }
     bool HALValue::isNaN() const {
         return !isNumber();
     }
