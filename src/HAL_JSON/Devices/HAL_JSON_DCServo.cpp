@@ -44,6 +44,28 @@ namespace HAL_JSON {
         } else {
             pinEndMaxActiveHigh = true; // default
         }
+
+        pinMode(pinForward, OUTPUT);
+        pinMode(pinBackward, OUTPUT);
+
+        if (pinEndMinActiveHigh) {
+            pinMode(pinEndMin, INPUT_PULLDOWN);
+        } else {
+            pinMode(pinEndMin, INPUT_PULLUP);
+        }
+
+        if (pinEndMaxActiveHigh) {
+            pinMode(pinEndMax, INPUT_PULLDOWN);
+        } else {
+            pinMode(pinEndMax, INPUT_PULLUP);
+        }
+    }
+
+    Device_DCServo::~Device_DCServo() {
+        pinMode(pinForward, INPUT); // "free" the pin
+        pinMode(pinBackward, INPUT); // "free" the pin
+        pinMode(pinEndMin, INPUT);
+        pinMode(pinEndMax, INPUT);
     }
 
     bool Device_DCServo::VerifyJSON(const JsonVariant &jsonObj) {

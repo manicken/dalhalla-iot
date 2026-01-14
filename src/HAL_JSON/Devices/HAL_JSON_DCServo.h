@@ -53,6 +53,7 @@ public:
     };
 
     Device_DCServo(const JsonVariant &jsonObj, const char* type);
+    ~Device_DCServo();
 
     virtual void begin() override;
     virtual void loop() override;

@@ -267,12 +267,37 @@ namespace FSBrowser {
         printf("\nhandleFileCreate path:%s\n", path.c_str());
 
         if (!selectFileSystemAndFixPath(path)) return;
-        if (path == "/" || fileSystem->exists(path)) return replyBadRequest(request, "BAD PATH");
+
         
-        File file = fileSystem->open(path, "w");
-        if (!file) return replyServerError(request, "CREATE FAILED");
-        file.close();
-        replyOKWithMsg(request, path.substring(0, path.lastIndexOf('/')));
+        if (path == "/" || fileSystem->exists(path)) return replyBadRequest(request, "BAD PATH");
+        String src = request->arg("src");
+        if (src.isEmpty()) {
+            // No source specified: creation
+            printf("\nhandleFileCreate: %s\n", path);
+            if (path.endsWith("/")) {
+                // Create a folder
+                path.remove(path.length() - 1);
+                if (!fileSystem->mkdir(path)) { return replyServerError(request, "MKDIR FAILED"); }
+                replyOKWithMsg(request, path);
+            } else {
+            
+                File file = fileSystem->open(path, "w");
+                if (!file) return replyServerError(request, "CREATE FAILED");
+                file.close();
+                replyOKWithMsg(request, path.substring(0, path.lastIndexOf('/')));
+            }
+        } else {
+            // Source specified: rename
+            if (src == "/") { return replyBadRequest(request, "BAD SRC"); }
+            if (!fileSystem->exists(src)) { return replyBadRequest(request, "SRC FILE NOT FOUND"); }
+
+            printf("\nhandleFileCreate: %s from %s\n", path, src);
+
+            if (path.endsWith("/")) { path.remove(path.length() - 1); }
+            if (src.endsWith("/")) { src.remove(src.length() - 1); }
+            if (!fileSystem->rename(src, path)) { return replyServerError(request, "RENAME FAILED"); }
+            replyOKWithMsg(request, src.substring(0, src.lastIndexOf('/')));
+        }
     }
 
     void handleFileDelete(AsyncWebServerRequest *request) {
