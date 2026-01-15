@@ -33,6 +33,11 @@
 #include "../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
+#define HAL_JSON_DEVICE_DCSERVO_CMD_FORWARD "fw"
+#define HAL_JSON_DEVICE_DCSERVO_CMD_BACKWARD "bw"
+#define HAL_JSON_DEVICE_DCSERVO_CMD_STOP "stop"
+#define HAL_JSON_DEVICE_DCSERVO_CMD_RESET "reset"
+
 namespace HAL_JSON {
 
 class Device_DCServo : public Device {
@@ -40,7 +45,8 @@ public:
     enum class State : uint32_t {
         Idle,
         MovingToMin,
-        MovingToMax
+        MovingToMax,
+        TimeoutFault
     };
     enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
 
@@ -64,6 +70,7 @@ public:
     static HALOperationResult exec_fw(Device* device);
     static HALOperationResult exec_bw(Device* device);
     static HALOperationResult exec_stop(Device* device);
+    static HALOperationResult exec_reset(Device* device);
 
     virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
     /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
@@ -89,6 +96,10 @@ private:
 
     State state;
     Location location = Location::Unknown;
+
+    uint32_t motionStartMs;
+    uint32_t timeoutMs;
+
 };
 
 } // namespace HAL_JSON

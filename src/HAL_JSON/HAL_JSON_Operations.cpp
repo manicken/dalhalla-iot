@@ -45,6 +45,7 @@ namespace HAL_JSON {
             case HALOperationResult::WriteValueNotUintOrInt: return "WriteValueNotUintOrInt";
             case HALOperationResult::InvalidArgument: return "InvalidArgument";
             case HALOperationResult::HardwareFault: return "HardwareFault";
+            case HALOperationResult::Timeout: return "Timeout";
             case HALOperationResult::NotSet: return "NotSet";
             
             default:

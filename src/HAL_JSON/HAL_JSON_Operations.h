@@ -53,6 +53,7 @@ namespace HAL_JSON {
         WriteValueNotUintOrInt = 7,
         InvalidArgument = 8,
         HardwareFault = 9,
+        Timeout = 10,
 
         /** script engine specific status */
         IfConditionTrue = 20,

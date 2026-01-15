@@ -45,6 +45,13 @@ namespace HAL_JSON {
             pinEndMaxActiveHigh = true; // default
         }
 
+        if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
+            timeoutMs = jsonObj["timeoutMs"].as<uint32_t>();
+        } else {
+            timeoutMs = 10000; // default 10 seconds
+        }
+
+
         pinMode(pinForward, OUTPUT);
         pinMode(pinBackward, OUTPUT);
 
@@ -108,6 +115,13 @@ namespace HAL_JSON {
             anyError = true;
         }
 
+        if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>() == false) {
+            GlobalLogger.Error(F("timeoutMs is not uint32"), uidStr);
+            SET_ERR_LOC("DCServo_VJ_timeoutMs");
+            anyError = true;
+        }
+
+
         return anyError == false;
     }
 
@@ -127,22 +141,36 @@ namespace HAL_JSON {
 
     void Device_DCServo::loop() {
         if (state == State::Idle) return;
-
+        bool moving = false;
         switch (state) {
 
             case State::MovingToMin:
                 if (endMinActive()) {
                     stopMotor();
                     location = Location::Min;
+                    return;
                 }
+                moving = true;
                 break;
 
             case State::MovingToMax:
                 if (endMaxActive()) {
                     stopMotor();
                     location = Location::Max;
+                    return;
                 }
-                break;
+                moving = true;
+                break;;
+        }
+
+        if (moving) {
+            if ((millis() - motionStartMs) > timeoutMs) {
+                stopMotor();
+                state = State::TimeoutFault;
+                location = Location::Unknown;
+                GlobalLogger.Error(F("DCServo motion timeout"), decodeUID(uid).c_str());
+                return;
+            }
         }
     }
 
@@ -163,30 +191,41 @@ namespace HAL_JSON {
         return HALOperationResult::Success;
     }
 
+    HALOperationResult Device_DCServo::exec_reset(Device* device) {
+        auto* d = static_cast<Device_DCServo*>(device);
+        d->state = State::Idle;
+        d->location = Location::Unknown;
+        return HALOperationResult::Success;
+    }
+
+
     Device::Exec_FuncType Device_DCServo::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName == "fw") {
+        if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_FORWARD) {
             return exec_fw;
-        }
-        else if (zcFuncName == "bw") {
+        } else if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_BACKWARD) {
             return exec_bw;
-        }
-        else if (zcFuncName == "stop") {
+        } else if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_STOP) {
             return exec_stop;
-        }
-        else {
+        } else if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_RESET) {
+            return exec_stop;
+        } else {
             return nullptr;
         }
     }
 
     HALOperationResult Device_DCServo::exec(const ZeroCopyString& cmd) {
-        if (cmd == "fw") {
+        if (cmd == HAL_JSON_DEVICE_DCSERVO_CMD_FORWARD) {
             driveForward();
             return HALOperationResult::Success;
-        } else if (cmd == "bw") {
+        } else if (cmd == HAL_JSON_DEVICE_DCSERVO_CMD_BACKWARD) {
             driveBackward();
             return HALOperationResult::Success;
-        } else if (cmd == "stop") {
+        } else if (cmd == HAL_JSON_DEVICE_DCSERVO_CMD_STOP) {
             stopMotor();
+            return HALOperationResult::Success;
+        } else if (cmd == HAL_JSON_DEVICE_DCSERVO_CMD_RESET) {
+            state = State::Idle;
+            location = Location::Unknown;
             return HALOperationResult::Success;
         }
         return HALOperationResult::UnsupportedCommand;
@@ -219,6 +258,9 @@ namespace HAL_JSON {
     }
 
     HALOperationResult Device_DCServo::read(HALValue& val) {
+        if (state == State::TimeoutFault) {
+            return HALOperationResult::Timeout;
+        }
         bool startReached = endMinActive();
         bool stopReached = endMaxActive();
         if (startReached && stopReached) {
@@ -237,27 +279,28 @@ namespace HAL_JSON {
     }
 
     void Device_DCServo::stopMotor() {
-        state = State::Idle;
+        if (state != State::TimeoutFault)
+            state = State::Idle;
         digitalWrite(pinForward, LOW);
         digitalWrite(pinBackward, LOW);
     }
 
     void Device_DCServo::driveForward() {
-        bool stopReached = endMaxActive();
-        if (stopReached) return;
+        if (endMaxActive()) return;
         state = State::MovingToMax;
         location = Location::Unknown;
         digitalWrite(pinBackward, LOW);
         digitalWrite(pinForward, HIGH);
+        motionStartMs = millis();
     }
 
     void Device_DCServo::driveBackward() {
-        bool startReached = endMinActive();
-        if (startReached) return;
+        if (endMinActive()) return;
         state = State::MovingToMin;
         location = Location::Unknown;
         digitalWrite(pinForward, LOW);
         digitalWrite(pinBackward, HIGH);
+        motionStartMs = millis();
     }
 
     bool Device_DCServo::endMinActive() const {
