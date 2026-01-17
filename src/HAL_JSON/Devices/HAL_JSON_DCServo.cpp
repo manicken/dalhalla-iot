@@ -52,20 +52,7 @@ namespace HAL_JSON {
         }
 
 
-        pinMode(pinForward, OUTPUT);
-        pinMode(pinBackward, OUTPUT);
-
-        if (pinEndMinActiveHigh) {
-            pinMode(pinEndMin, INPUT_PULLDOWN);
-        } else {
-            pinMode(pinEndMin, INPUT_PULLUP);
-        }
-
-        if (pinEndMaxActiveHigh) {
-            pinMode(pinEndMax, INPUT_PULLDOWN);
-        } else {
-            pinMode(pinEndMax, INPUT_PULLUP);
-        }
+        
     }
 
     Device_DCServo::~Device_DCServo() {
@@ -133,9 +120,18 @@ namespace HAL_JSON {
         pinMode(pinForward, OUTPUT);
         pinMode(pinBackward, OUTPUT);
 
-        pinMode(pinEndMin, INPUT);
-        pinMode(pinEndMax, INPUT);
+        if (pinEndMinActiveHigh) {
+            pinMode(pinEndMin, INPUT_PULLDOWN);
+        } else {
+            pinMode(pinEndMin, INPUT_PULLUP);
+        }
 
+        if (pinEndMaxActiveHigh) {
+            pinMode(pinEndMax, INPUT_PULLDOWN);
+        } else {
+            pinMode(pinEndMax, INPUT_PULLUP);
+        }
+        reset();
         stopMotor();
     }
 
@@ -193,8 +189,8 @@ namespace HAL_JSON {
 
     HALOperationResult Device_DCServo::exec_reset(Device* device) {
         auto* d = static_cast<Device_DCServo*>(device);
-        d->state = State::Idle;
-        d->location = Location::Unknown;
+        d->reset();
+        d->stopMotor();
         return HALOperationResult::Success;
     }
 
@@ -207,7 +203,7 @@ namespace HAL_JSON {
         } else if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_STOP) {
             return exec_stop;
         } else if (zcFuncName == HAL_JSON_DEVICE_DCSERVO_CMD_RESET) {
-            return exec_stop;
+            return exec_reset;
         } else {
             return nullptr;
         }
@@ -276,6 +272,11 @@ namespace HAL_JSON {
             val = (int32_t)location;
         }
         return HALOperationResult::Success;
+    }
+
+    void Device_DCServo::reset() {
+        state = State::Idle;
+        location = Location::Unknown;
     }
 
     void Device_DCServo::stopMotor() {

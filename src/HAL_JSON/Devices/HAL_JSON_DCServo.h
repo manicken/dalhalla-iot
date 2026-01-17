@@ -79,6 +79,7 @@ public:
     virtual String ToString() override;
 
 private:
+    void reset();
     void stopMotor();
     void driveForward();
     void driveBackward();
