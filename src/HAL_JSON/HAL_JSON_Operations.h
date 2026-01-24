@@ -51,9 +51,10 @@ namespace HAL_JSON {
         StringRequestParameterError = 5,
         WriteValueNaN = 6,
         WriteValueNotUintOrInt = 7,
-        InvalidArgument = 8,
-        HardwareFault = 9,
-        Timeout = 10,
+        WriteValueOutOfRange = 8,
+        InvalidArgument = 9,
+        HardwareFault = 10,
+        Timeout = 11,
 
         /** script engine specific status */
         IfConditionTrue = 20,

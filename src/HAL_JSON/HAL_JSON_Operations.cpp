@@ -43,6 +43,7 @@ namespace HAL_JSON {
             case HALOperationResult::StringRequestParameterError: return "StringRequestParameterError";
             case HALOperationResult::WriteValueNaN: return "WriteValueNaN";
             case HALOperationResult::WriteValueNotUintOrInt: return "WriteValueNotUintOrInt";
+            case HALOperationResult::WriteValueOutOfRange: return "WriteValueOutOfRange";
             case HALOperationResult::InvalidArgument: return "InvalidArgument";
             case HALOperationResult::HardwareFault: return "HardwareFault";
             case HALOperationResult::Timeout: return "Timeout";

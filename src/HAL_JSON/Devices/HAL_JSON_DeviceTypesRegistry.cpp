@@ -59,6 +59,7 @@
 #include "HomeAssistant/HAL_JSON_HomeAssistant.h"
 
 #include "HAL_JSON_DCServo.h"
+#include "HAL_JSON_LEDC_Servo.h"
 
 
 namespace HAL_JSON {
@@ -99,6 +100,9 @@ namespace HAL_JSON {
         {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
         {"WS2812", WS2812::RegistryDefine},
         {"DCSERVO", Device_DCServo::RegistryDefine},
+#if defined(ESP32) || defined(_WIN32)
+        {"LEDC_SERVO", LEDC_Servo::RegistryDefine},
+#endif
         /** mandatory null terminator */
         RegistryTerminatorItem, // Stop for active devices
 

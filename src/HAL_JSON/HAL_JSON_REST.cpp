@@ -42,11 +42,30 @@ namespace HAL_JSON {
             return;
         }
 
-        //ZeroCopyString zcUrl(urlStr+1); // +1 removes the leading /
+        AsyncResponseStream* response = request->beginResponseStream("application/json");
+
+        response->setCode(200);
+
+        // Send headers immediately
+        request->send(response);
+
+        CommandExecutor_LOCK_QUEUE();
+        CommandExecutor::g_pending.push({
+            std::string(request->url().c_str() + 1),
+            [response](const std::string& body) {
+                
+                response->print(body.c_str());
+                //response->flush();
+            }
+        });
+        CommandExecutor_UNLOCK_QUEUE();
+
+        /* this causes random crashes
         // Capture request in lambda for later response
         CommandExecutor_LOCK_QUEUE();
         CommandExecutor::g_pending.push({std::string(urlStr + 1), 
             [request](const std::string& response) {
+
                 if (request->client()->connected()) {
 
                     request->send(200, "application/json", response.c_str());
@@ -54,6 +73,7 @@ namespace HAL_JSON {
             }
         });
         CommandExecutor_UNLOCK_QUEUE();
+        */
     }
 
     void REST::setupRest() {

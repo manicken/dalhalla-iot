@@ -23,6 +23,14 @@
 
 #include "HAL_JSON_PWMAnalogWrite.h"
 
+#if defined(ESP8266)
+    #define AnalogWriteResolution_func analogWriteResolution
+    #define AnalogWriteFrequency_func analogWriteFreq;
+#elif defined(ESP32)
+    #define AnalogWriteResolution_func analogWriteResolution
+    #define AnalogWriteFrequency_func analogWriteFrequency;
+#endif
+
 namespace HAL_JSON {
     
     // ██████  ██     ██ ███    ███      █████  ███    ██  █████  ██       ██████   ██████      ██     ██ ██████  ██ ████████ ███████      ██████ ███████  ██████  
@@ -48,24 +56,32 @@ namespace HAL_JSON {
     PWMAnalogWriteConfig::PWMAnalogWriteConfig(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
-        //PWMAnalogWriteConfig::frequency = jsonObj[HAL_JSON_KEYNAME_PWM_CFG_FREQUENCY];//.as<uint32_t>();
-        //PWMAnalogWriteConfig::resolution = jsonObj[HAL_JSON_KEYNAME_PWM_CFG_RESOLUTION];//.as<uint32_t>();
+
         PWMAnalogWriteConfig::frequency = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PWM_CFG_FREQUENCY, 0);
         PWMAnalogWriteConfig::resolution = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PWM_CFG_RESOLUTION, 0);
 
-#if defined(ESP8266)
-        analogWriteResolution(PWMAnalogWriteConfig::resolution);
-        analogWriteFreq(PWMAnalogWriteConfig::frequency);
-#elif defined(ESP32)        
-        analogWriteResolution(PWMAnalogWriteConfig::resolution);
-        analogWriteFrequency(PWMAnalogWriteConfig::frequency);
-#endif
+        AnalogWriteResolution_func(PWMAnalogWriteConfig::resolution);
+        AnalogWriteFrequency_func(PWMAnalogWriteConfig::frequency);
     }
 
     HALOperationResult PWMAnalogWriteConfig::write(const HALWriteStringRequestValue& value) {
-        // could be supported in the future
-        // for direct set of cfg
-        return HALOperationResult::UnsupportedOperation;
+        ZeroCopyString zcValue = value.value;
+        ZeroCopyString zcCmd = zcValue.SplitOffHead('/');
+        if (zcValue.IsEmpty()) { return HALOperationResult::InvalidArgument; }
+        if (zcValue.ValidUINT() == false) { return HALOperationResult::WriteValueNotUintOrInt; }
+        uint32_t uintValue = 0;
+        zcValue.ConvertTo_uint32(uintValue);
+
+        if (zcCmd == "freq") {
+            PWMAnalogWriteConfig::frequency = uintValue;
+            AnalogWriteFrequency_func(uintValue);
+        } else if (zcCmd == "res") {
+            PWMAnalogWriteConfig::resolution = uintValue;
+            AnalogWriteResolution_func(uintValue);
+        } else {
+            return HALOperationResult::UnsupportedCommand;
+        }
+        return HALOperationResult::Success;
     }
 
     String PWMAnalogWriteConfig::ToString() {
@@ -99,12 +115,11 @@ namespace HAL_JSON {
     PWMAnalogWrite::PWMAnalogWrite(const JsonVariant &jsonObj, const char* type) : Device(type) {
         pin = GetAsUINT32(jsonObj, HAL_JSON_KEYNAME_PIN);// jsonObj[HAL_JSON_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID));
-        //pin = jsonObj[HAL_JSON_KEYNAME_PIN];//.as<uint8_t>();
+
         GPIO_manager::ReservePin(pin);
-        //const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID];//.as<const char*>();
-        //uid = encodeUID(uidStr);
 
         pinMode(pin, OUTPUT); // output
+
     }
 
     PWMAnalogWrite::~PWMAnalogWrite() { pinMode(pin, INPUT); } // input
@@ -122,6 +137,8 @@ namespace HAL_JSON {
         value = val;
         if (inv_out)
             value = getInvValue(value);
+        AnalogWriteResolution_func(PWMAnalogWriteConfig::resolution);
+        AnalogWriteFrequency_func(PWMAnalogWriteConfig::frequency);
         analogWrite(pin, value);
         return HALOperationResult::Success;
     }
