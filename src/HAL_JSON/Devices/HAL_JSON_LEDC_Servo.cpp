@@ -98,7 +98,7 @@ HALOperationResult LEDC_Servo::write(const HALValue& val) {
     return HALOperationResult::Success;
 }
 
-HALOperationResult Template::write(const HALWriteValueByCmd& val) {
+HALOperationResult LEDC_Servo::write(const HALWriteValueByCmd& val) {
     if (val.cmd == "percent") {
 
     } else if (val.cmd == "us") {
