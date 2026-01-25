@@ -25,15 +25,23 @@
 #include "HAL_JSON_template.h"
 #include <Arduino.h>
 
+#define HAL_JSON_LEDC_SERVO_PWM_FREQ 50
+#define HAL_JSON_LEDC_SERVO_PWM_DUTY_US (1000000u / HAL_JSON_LEDC_SERVO_PWM_FREQ)
+
 namespace HAL_JSON {
 
 class LEDC_Servo : public Device {
 private:
     uint8_t pin = 0;
     uint8_t ledcChannel = 0;
-    const int pwmFreq = 50;         // 50 Hz for servo
+    //const int pwmFreq = 50;         // 50 Hz for servo
     const int pwmResolution = 16;   // bits
-    float lastPercent = 0.0f;
+    HALValue lastValue = 0.0f;
+    uint32_t minPulseLength = 1000;
+    uint32_t maxPulseLength = 2000;
+    uint32_t centerPulseLength = 1500;
+
+    bool useNormValue = false; // if percent input is 0.0f-1.0f as 0-100% range and value >= 2 is threated as pulse length in uS
 
 public:
     LEDC_Servo(const JsonVariant &jsonObj, const char* type);
@@ -50,11 +58,13 @@ public:
     void loop() override {}
 
     HALOperationResult write(const HALValue& val) override;
+    HALOperationResult write(const HALWriteValueByCmd& val) override;
 
     String ToString() override;
 
 private:
-    uint32_t percentToDuty(float percent);
+    uint32_t percentToPulseLength_uS(float percent);
+    uint32_t normToPulseLength_uS(float norm);
 };
 
 } // namespace HAL_JSON

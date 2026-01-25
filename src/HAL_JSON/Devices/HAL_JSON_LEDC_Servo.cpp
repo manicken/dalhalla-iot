@@ -33,6 +33,15 @@ LEDC_Servo::LEDC_Servo(const JsonVariant &jsonObj, const char* type)
     uid = encodeUID(uidStr);
     pin = jsonObj["pin"];
     ledcChannel = jsonObj["ledc_ch"];
+    if (jsonObj.containsKey("minPulseLength")) {
+        minPulseLength = jsonObj["minPulseLength"];
+    }
+    if (jsonObj.containsKey("maxPulseLength")) {
+        maxPulseLength = jsonObj["maxPulseLength"];
+    }
+    if (jsonObj.containsKey("centerPulseLength")) {
+        centerPulseLength = jsonObj["centerPulseLength"];
+    }
 }
 
 bool LEDC_Servo::VerifyJSON(const JsonVariant &jsonObj) {
@@ -58,43 +67,78 @@ Device* LEDC_Servo::Create(const JsonVariant &jsonObj, const char* type) {
 
 void LEDC_Servo::begin() {
     // Setup LEDC channel
-    ledcSetup(ledcChannel, pwmFreq, pwmResolution);
+    ledcSetup(ledcChannel, HAL_JSON_LEDC_SERVO_PWM_FREQ, pwmResolution);
     ledcAttachPin(pin, ledcChannel);
-    // Initialize to 0%
-    ledcWrite(ledcChannel, percentToDuty(0.0f));
+    // Initialize to center
+    ledcWrite(ledcChannel, centerPulseLength);
 }
 
 HALOperationResult LEDC_Servo::write(const HALValue& val) {
     if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
     if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-    float pulseUs = 0.0f;
-    float f = val.asFloat();
-    if (f >= 0.0f && f <= 100.0f) {
+    uint32_t pulseUs = 0;
+    int32_t iVal = val.asInt();
+    lastValue = val;
+    if (iVal >= 0 && iVal <= 100) {
         // Treat as percent
-        pulseUs = 1000.0f + f * 10.0f; // 0% -> 1000us, 100% -> 2000us
+        pulseUs = percentToPulseLength_uS(val.asFloat());
     } 
-    else if (f < 0.0f && f > 20000.0f) {
-        return HALOperationResult::WriteValueOutOfRange;
-    }
-    else/* if (f >= 1000.0f && f <= 2000.0f)*/ {
+    else if (iVal > 100 && iVal <= HAL_JSON_LEDC_SERVO_PWM_DUTY_US) {
         // Treat as direct microseconds
-        pulseUs = f;
-    } 
-    /*else {
+        pulseUs = iVal;
+    }
+    else {
         return HALOperationResult::WriteValueOutOfRange;
-    }*/
+    } 
 
-    lastPercent = (pulseUs - 1000.0f) / 10.0f; // store as percent internally
-    uint32_t duty = (uint32_t)((pulseUs / 20000.0f) * 65535.0f); // 50Hz period = 20ms
+    uint32_t duty = (pulseUs * 65535u) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
+
     ledcWrite(ledcChannel, duty);
 
     return HALOperationResult::Success;
 }
 
-uint32_t LEDC_Servo::percentToDuty(float percent) {
-    // Map 0–100% -> 1000–2000 µs
-    float pulseUs = 1000.0f + percent * 10.0f; // 0% -> 1000, 100% -> 2000
-    return (uint32_t)((pulseUs / 20000.0f) * 65535.0f); // 50Hz period = 20ms
+HALOperationResult Template::write(const HALWriteValueByCmd& val) {
+    if (val.cmd == "percent") {
+
+    } else if (val.cmd == "us") {
+        uint32_t pulseUs = val.value.asInt();
+        uint32_t duty = (pulseUs * 65535u) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
+
+        ledcWrite(ledcChannel, duty);
+    } else {
+        HALOperationResult::UnsupportedCommand;
+    }
+    return HALOperationResult::Success;
+}
+
+uint32_t LEDC_Servo::percentToPulseLength_uS(float percent) {
+    if (percent < 50.0f) {
+        // Map 0–50% → min → center
+        return minPulseLength +
+            (percent / 50.0f) * (centerPulseLength - minPulseLength);
+    } else if (percent == 50.0f) {
+        return centerPulseLength;
+    } else {
+        // Map 50–100% → center → max
+        return centerPulseLength +
+            ((percent - 50.0f) / 50.0f) * (maxPulseLength - centerPulseLength);
+    }
+}
+
+uint32_t LEDC_Servo::normToPulseLength_uS(float norm) {
+    norm = constrain(norm, 0.0f, 1.0f);
+
+    if (norm < 0.5f) {
+        return minPulseLength +
+            (norm / 0.5f) * (centerPulseLength - minPulseLength);
+    } else if (norm == 0.5f) {
+        return centerPulseLength;
+    }
+    else {
+        return centerPulseLength +
+            ((norm - 0.5f) / 0.5f) * (maxPulseLength - centerPulseLength);
+    }
 }
 
 String LEDC_Servo::ToString() {
