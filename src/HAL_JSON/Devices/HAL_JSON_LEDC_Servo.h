@@ -25,8 +25,11 @@
 #include "HAL_JSON_template.h"
 #include <Arduino.h>
 
+
 #define HAL_JSON_LEDC_SERVO_PWM_FREQ 50
 #define HAL_JSON_LEDC_SERVO_PWM_DUTY_US (1000000u / HAL_JSON_LEDC_SERVO_PWM_FREQ)
+#define HAL_JSON_LEDC_SERVO_RESOLUTION_BITS 16
+#define HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL ((1U << (HAL_JSON_LEDC_SERVO_RESOLUTION_BITS))-1u)
 
 namespace HAL_JSON {
 
@@ -34,12 +37,15 @@ class LEDC_Servo : public Device {
 private:
     uint8_t pin = 0;
     uint8_t ledcChannel = 0;
-    //const int pwmFreq = 50;         // 50 Hz for servo
-    const int pwmResolution = 16;   // bits
+
     HALValue lastValue = 0.0f;
     uint32_t minPulseLength = 1000;
     uint32_t maxPulseLength = 2000;
     uint32_t centerPulseLength = 1500;
+
+    uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
+    uint32_t lastWriteMs = 0;
+    bool autoOffActive = false;
 
     bool useNormValue = false; // if percent input is 0.0f-1.0f as 0-100% range and value >= 2 is threated as pulse length in uS
 
@@ -55,10 +61,12 @@ public:
     };
 
     void begin() override;
-    void loop() override {}
+    void loop() override;
 
     HALOperationResult write(const HALValue& val) override;
     HALOperationResult write(const HALWriteValueByCmd& val) override;
+
+    HALOperationResult read(HALValue& val) override;
 
     String ToString() override;
 
