@@ -23,6 +23,7 @@
 
 
 #include "HAL_JSON_LEDC_Servo.h"
+#include <math.h>
 
 namespace HAL_JSON {
 
