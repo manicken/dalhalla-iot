@@ -91,8 +91,8 @@ namespace HAL_JSON {
         
         {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
         {"WRITEVAR", ScriptVariableWriteOnlyTest::RegistryDefine},
-        {"REST_VAR", REST_Value::RegistryDefine},
-        {"REST_CMD", REST_Cmd::RegistryDefine},
+        //{"REST_VAR", REST_Value::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
+        //{"REST_CMD", REST_Cmd::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
         {"CONTAINER", DeviceContainer::RegistryDefine},
         {"ARRAY", ScriptArray::RegistryDefine},
 

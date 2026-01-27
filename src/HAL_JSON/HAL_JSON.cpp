@@ -28,7 +28,8 @@
 
 #include "../Support/Logger.h"
 #include "HAL_JSON_Manager.h"
-#include "HAL_JSON_REST.h"
+//#include "HAL_JSON_REST.h"
+#include "HAL_JSON_WebSocketAPI.h"
 #include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
 #include "../Support/Info.h"
 #include "HAL_JSON_CommandExecutor.h"
@@ -36,7 +37,8 @@
 
 namespace HAL_JSON {
     void begin() {
-        HAL_JSON::REST::setupRest();
+        //HAL_JSON::REST::setupRest();
+        HAL_JSON::WebSocketAPI::setup();
         //printf("\nBefore Manager::setupMgr()\n");
         //Info::PrintHeapInfo();
         
@@ -84,5 +86,6 @@ namespace HAL_JSON {
             if (ScriptEngine::ScriptsBlock::running)
                 ScriptEngine::Exec(); // runs the scriptengine
         }
+        WebSocketAPI::loop();
     }
 }

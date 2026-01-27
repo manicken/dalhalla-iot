@@ -45,13 +45,17 @@
 #include "HAL_JSON_Manager.h"
 #include "HAL_JSON_CommandExecutor.h"
 
-#define HAL_JSON_REST_API_PORT 82
+#define HAL_JSON_WEBSOCKET_API_PORT 82
 
 namespace HAL_JSON {
-    class REST {
+    class WebSocketAPI {
     private:
         static AsyncWebServer* asyncWebserver;
+        static AsyncWebSocket* asyncWebSocket;
+        static void GetRootPage_Handler(AsyncWebServerRequest* request);
+        static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
     public:
-        static void setupRest();
+        static void setup();
+        inline static void loop() { asyncWebSocket->cleanupClients(); }
     };
 }

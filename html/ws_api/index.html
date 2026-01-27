@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <style>
+  body { font-family: 'Courier New', monospace; margin: 1em; }
+  input, button { font-family: 'Courier New', monospace; margin: 0.5em 0; display: block; width: 200px; padding: 0.5em; }
+  pre { font-family: 'Courier New', monospace; background: #f0f0f0; padding: 1em; margin-top: 1em; flex: 1; overflow-y: auto; }
+</style>
+<body style="margin:3; height:100vh; display:flex; flex-direction:column;">
+<div style="flex:0 0 auto;">
+  <button onclick="ws.send('reloadcfg');">reload cfg</button>
+  <div style="display:flex; flex-direction:row; gap: 0.5em;">
+    <button onclick="ws.send('printDevices');">Print Devices</button>
+    <button onclick="ws.send('getAvailableGPIOs');">get Available GPIOs</button>
+    <button onclick="ws.send('printlog');">print log</button>
+  </div>
+  <div style="display:flex; flex-direction:row; gap: 0.5em;">
+    <button onclick="ws.send('scripts/reload');">scripts reload</button>
+    <button onclick="ws.send('scripts/stop');">scripts stop</button>
+    <button onclick="ws.send('scripts/start');">scripts start</button>
+  </div>
+  <div style="margin-top:1em;">
+    <input type="text" id="cmd" placeholder="Enter command" style="width:70%;" />
+    <button onclick="sendCmd()">Send</button>
+</div>
+ </div>
+<pre id="log" style="margin:0; margin-top:1em; flex:1 1 auto; overflow-y:auto; background:#f0f0f0; padding:1em; "></pre>
+<script>
+let location_host = location.host;
+if (location_host.endsWith(":82") == false) location_host = location_host + ":82"; 
+let ws = new WebSocket(`ws://${location_host}/ws`);
+ws.onmessage = (evt) => {
+    document.getElementById('log').textContent += evt.data + '\n';
+};
+function sendCmd(){
+    let cmd = document.getElementById('cmd').value;
+    ws.send(cmd);
+}
+document.getElementById('cmd').addEventListener('keydown', (e) => {
+    if (e.key === "Enter") {
+        sendCmd();
+    }
+});
+
+</script>
+</body>
+</html>
