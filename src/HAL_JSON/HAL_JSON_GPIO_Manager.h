@@ -54,13 +54,14 @@
 #define HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_STRING   "string"
 #define HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_HEX      "hex"
 #define HAL_JSON_CMD_EXEC_GPIO_LIST_MODE_BINARY   "binary"
+#define HAL_JSON_GPIO_MGR_PINMODE_TYPE            uint16_t
 
 namespace HAL_JSON {
     namespace GPIO_manager
     {
         
 
-        enum class PinMode : uint8_t {
+        enum class PinMode : HAL_JSON_GPIO_MGR_PINMODE_TYPE {
             Reserved = 0x01,
             SpecialAtBoot = 0x02,
             LOW2BOOT = 0x04,
@@ -68,12 +69,13 @@ namespace HAL_JSON {
             OUT = 0x10,
             IN = 0x20,
             AIN = 0x40,
-            AOUT = 0x80
+            AOUT = 0x80,
+            UNDERSIDE = 0x100,
         };
 
         typedef struct {
             const char* Name;
-            uint8_t mode;
+            HAL_JSON_GPIO_MGR_PINMODE_TYPE mode;
         } PinModeDef;
 
         enum class PrintListMode {
@@ -84,7 +86,7 @@ namespace HAL_JSON {
 
         typedef struct {
             uint8_t pin;
-            uint8_t mode;
+            HAL_JSON_GPIO_MGR_PINMODE_TYPE mode;
         } gpio_pin;
 
         extern const gpio_pin available_gpio_list[];
@@ -95,13 +97,13 @@ namespace HAL_JSON {
         extern int PinModeStrings_length;
         void set_PinModeStrings_length();
 
-        std::string describePinMode(uint8_t mask);
+        std::string describePinMode(HAL_JSON_GPIO_MGR_PINMODE_TYPE mask);
         
-        bool CheckIfPinAvailableAndReserve(uint8_t pin, uint8_t pinMode);
+        bool CheckIfPinAvailableAndReserve(uint8_t pin, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode);
         /** this is a nice function that can be used */
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, uint8_t pinMode);
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, uint8_t pinMode);
-        bool CheckIfPinAvailable(uint8_t pin, uint8_t pinMode);
+        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode);
+        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode);
+        bool CheckIfPinAvailable(uint8_t pin, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode);
         void ClearAllReservations();
         /** it's recommended to call CheckIfPinAvailable prior to using this function,
          * this function is very basic and do only set the actual pin to reserved state, 

@@ -37,7 +37,7 @@
 #if defined(ESP32) && defined(seeed_xiao_esp32c3)
 #define REGO600_UART_TO_USE Serial
 #define REGO600_UART_TYPE HWCDC
-#elif defined(ESP32) && defined(waveshare_esp32c3_nano)
+#elif defined(ESP32) && (defined(waveshare_esp32c3_zero) || defined(waveshare_esp32c6_zero))
 #define REGO600_UART_TO_USE Serial1
 #define REGO600_UART_TYPE HardwareSerial
 #elif defined(ESP32)

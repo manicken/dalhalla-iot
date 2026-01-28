@@ -67,7 +67,13 @@ namespace HeartbeatLed
     #define HEARTBEATLED_INACTIVESTATE HIGH
     #define HEARTBEATLED_DEFAULT_ON_INTERVAL 100
     #define HEARTBEATLED_DEFAULT_OFF_INTERVAL 4000
-    #elif defined(waveshare_esp32c3_nano)
+#elif defined(waveshare_esp32c3_zero)
+    #define HEARTBEATLED_PIN 2
+    #define HEARTBEATLED_ACTIVESTATE LOW
+    #define HEARTBEATLED_INACTIVESTATE HIGH
+    #define HEARTBEATLED_DEFAULT_ON_INTERVAL 100
+    #define HEARTBEATLED_DEFAULT_OFF_INTERVAL 4000
+#elif defined(waveshare_esp32c6_zero)
     #define HEARTBEATLED_PIN 2
     #define HEARTBEATLED_ACTIVESTATE LOW
     #define HEARTBEATLED_INACTIVESTATE HIGH

@@ -23,10 +23,10 @@
 
 #include "HAL_JSON_GPIO_Manager.h"
 
-#define MAKE_PIN_MASK_4(a, b, c, d) (static_cast<uint8_t>(a) | static_cast<uint8_t>(b) | static_cast<uint8_t>(c) | static_cast<uint8_t>(d))
-#define MAKE_PIN_MASK_3(a, b, c)    (static_cast<uint8_t>(a) | static_cast<uint8_t>(b) | static_cast<uint8_t>(c))
-#define MAKE_PIN_MASK_2(a, b)       (static_cast<uint8_t>(a) | static_cast<uint8_t>(b))
-#define MAKE_PIN_MASK_1(a)          (static_cast<uint8_t>(a))
+#define MAKE_PIN_MASK_4(a, b, c, d) (static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(a) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(b) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(c) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(d))
+#define MAKE_PIN_MASK_3(a, b, c)    (static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(a) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(b) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(c))
+#define MAKE_PIN_MASK_2(a, b)       (static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(a) | static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(b))
+#define MAKE_PIN_MASK_1(a)          (static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(a))
 
 namespace HAL_JSON {
 
@@ -52,7 +52,7 @@ namespace HAL_JSON {
             {14, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // SPI SCLK
             {15, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)}, // SPI CS/TXD2
     
-    #elif (defined(ESP32) && defined(ESP32DEV)) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
+    #elif defined(ESP32DEV) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
             {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
             {1, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::OUT, PinMode::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
             {2, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
@@ -89,7 +89,7 @@ namespace HAL_JSON {
             {39, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)},  // ADC1_3/SensVN (input only)
             {255, 0x00} // terminator item
             
-    #elif (defined(ESP32) && defined(ESP32WROVER_E_IE))
+    #elif defined(ESP32WROVER_E_IE)
             {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
             {1, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::OUT, PinMode::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
             {2, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
@@ -124,7 +124,7 @@ namespace HAL_JSON {
             {36, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)}, // ADC1_0/SensVP (input only)
             {39, MAKE_PIN_MASK_2(PinMode::IN, PinMode::AIN)},  // ADC1_3/SensVN (input only)
             {255, 0x00} // terminator item
-    #elif (defined(ESP32) && defined(waveshare_esp32c3_nano))
+    #elif defined(waveshare_esp32c3_zero)
             {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
             {1, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
             {2, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot, PinMode::AIN)}, // strapping pin
@@ -145,7 +145,7 @@ namespace HAL_JSON {
         //#endif
             {20, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART RxD
             {21, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART TxD
-    #elif (defined(ESP32) && defined(seeed_xiao_esp32c3))
+    #elif defined(seeed_xiao_esp32c3)
 
             {2, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot, PinMode::AIN)}, // strapping pin
             {3, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
@@ -158,6 +158,33 @@ namespace HAL_JSON {
             {10, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
             {20, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART RxD
             {21, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART TxD
+    #elif defined(waveshare_esp32c6_zero)
+            {0, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {1, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {2, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::LOW2BOOT, PinMode::SpecialAtBoot, PinMode::AIN)}, // strapping pin
+            {3, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {4, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            {5, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::AIN)},
+            // underside pins 6-9, 12, 13
+            {6, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::UNDERSIDE)},
+            {7, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::UNDERSIDE)},
+            {8, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::UNDERSIDE)}, // onboard ws2812 LED
+            {9, MAKE_PIN_MASK_4(PinMode::OUT, PinMode::HIGH2BOOT, PinMode::SpecialAtBoot, PinMode::UNDERSIDE)}, // strapping pin
+            {12, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::SpecialAtBoot, PinMode::UNDERSIDE)}, // USB_DM
+            {13, MAKE_PIN_MASK_3(PinMode::Reserved, PinMode::SpecialAtBoot, PinMode::UNDERSIDE)}, // USP_DP
+            
+            {14, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {15, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {16, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART TxD
+            {17, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::SpecialAtBoot)}, // flash standard UART RxD
+            {18, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {19, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {20, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {21, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            {22, MAKE_PIN_MASK_2(PinMode::OUT, PinMode::IN)},
+            // underside pin
+            {23, MAKE_PIN_MASK_3(PinMode::OUT, PinMode::IN, PinMode::UNDERSIDE)}, 
+
     #endif
         }; // const gpio_pin available_gpio_list[] {
 
@@ -169,14 +196,15 @@ namespace HAL_JSON {
         }
 
         const PinModeDef PinModeStrings[] = {
-            {"Reserved", static_cast<uint8_t>(PinMode::Reserved)},
-            {"SpecialAtBoot", static_cast<uint8_t>(PinMode::SpecialAtBoot)},
-            {"LOW2BOOT", static_cast<uint8_t>(PinMode::LOW2BOOT)},
-            {"HIGH2BOOT", static_cast<uint8_t>(PinMode::HIGH2BOOT)},
-            {"OUT", static_cast<uint8_t>(PinMode::OUT)},
-            {"IN", static_cast<uint8_t>(PinMode::IN)},
-            {"AIN", static_cast<uint8_t>(PinMode::AIN)},
-            {"AOUT", static_cast<uint8_t>(PinMode::AOUT)},
+            {"Reserved", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::Reserved)},
+            {"SpecialAtBoot", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::SpecialAtBoot)},
+            {"LOW2BOOT", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::LOW2BOOT)},
+            {"HIGH2BOOT", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::HIGH2BOOT)},
+            {"OUT", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::OUT)},
+            {"IN", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::IN)},
+            {"AIN", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::AIN)},
+            {"AOUT", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::AOUT)},
+            {"UNDERSIDE", static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(PinMode::UNDERSIDE)},
             {nullptr, 0} // terminator item
         };
 
@@ -189,7 +217,7 @@ namespace HAL_JSON {
         
         uint8_t* reservedPins = nullptr;
 
-        std::string describePinMode(uint8_t mask) {
+        std::string describePinMode(HAL_JSON_GPIO_MGR_PINMODE_TYPE mask) {
             std::string result;
             int i = 0;
             while (true) {
@@ -204,7 +232,7 @@ namespace HAL_JSON {
             return result.empty() ? "None" : result;
         }
 
-        bool CheckIfPinAvailable(uint8_t pin, uint8_t pinMode) {
+        bool CheckIfPinAvailable(uint8_t pin, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode) {
             for (int i = 0; available_gpio_list[i].pin != 255; i++) {
                 const gpio_pin& pinDef = available_gpio_list[i];
                 if (pinDef.pin != pin) continue;
@@ -225,7 +253,7 @@ namespace HAL_JSON {
             return false;
         }
 
-        bool CheckIfPinAvailableAndReserve(uint8_t pin, uint8_t pinMode) {
+        bool CheckIfPinAvailableAndReserve(uint8_t pin, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode) {
             if (CheckIfPinAvailable(pin, pinMode)) {
                 ReservePin(pin);
                 return true;
@@ -233,18 +261,18 @@ namespace HAL_JSON {
             return false;
         }
 
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, uint8_t pinMode) {
+        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode) {
             if (jsonObj.containsKey(HAL_JSON_KEYNAME_PIN) == false) { GlobalLogger.Error(HAL_JSON_ERR_MISSING_KEY(HAL_JSON_KEYNAME_PIN)); return false; }
             if (jsonObj[HAL_JSON_KEYNAME_PIN].is<uint8_t>() == false)  { GlobalLogger.Error(HAL_JSON_ERR_VALUE_TYPE(HAL_JSON_KEYNAME_PIN)); return false; }
             uint8_t pin = jsonObj[HAL_JSON_KEYNAME_PIN].as<uint8_t>(); 
-            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
+            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(GPIO_manager::PinMode::OUT));
         }
 
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, uint8_t pinMode) {
+        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, HAL_JSON_GPIO_MGR_PINMODE_TYPE pinMode) {
             if (jsonObj.containsKey(NAME) == false) { GlobalLogger.Error(HAL_JSON_ERR_MISSING_KEY(), NAME); return false; }
             if (jsonObj[NAME].is<uint8_t>() == false)  { GlobalLogger.Error(HAL_JSON_ERR_VALUE_TYPE(), NAME); return false; }
             uint8_t pin = jsonObj[NAME].as<uint8_t>(); 
-            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
+            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, static_cast<HAL_JSON_GPIO_MGR_PINMODE_TYPE>(GPIO_manager::PinMode::OUT));
         }
 
         void ClearAllReservations() {
