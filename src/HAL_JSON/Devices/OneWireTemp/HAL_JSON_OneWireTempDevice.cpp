@@ -117,7 +117,7 @@ namespace HAL_JSON {
 
     bool OneWireTempDeviceAtRoot::VerifyJSON(const JsonVariant &jsonObj) {
         if (OneWireTempDevice::VerifyJSON(jsonObj) == false) return false;
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN)));
+        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
     OneWireTempDeviceAtRoot::OneWireTempDeviceAtRoot(const JsonVariant &jsonObj, const char* type) 

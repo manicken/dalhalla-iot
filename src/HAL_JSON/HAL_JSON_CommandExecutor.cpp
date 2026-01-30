@@ -88,9 +88,13 @@ namespace HAL_JSON {
         else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON)) {
             long startMillis = millis();
             anyErrors = reloadJSON(zcStr, message) == false;
+            
             //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
-            startMillis = millis();
-            anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
+            //startMillis = millis();
+            if (anyErrors == false) {
+                
+                anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
+            }
             //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
         }
         else if (zcCommand.EqualsIC("scripts")) {
@@ -167,6 +171,8 @@ namespace HAL_JSON {
     
         if (Manager::ReadJSON(filePath.c_str())) {
             message += "\"info\":\"OK\"";
+            Manager::begin();
+            
             return true;
         } else {
             message += "\"info\":\"FAIL\",";

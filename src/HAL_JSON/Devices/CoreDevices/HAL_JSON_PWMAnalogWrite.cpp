@@ -109,7 +109,7 @@ namespace HAL_JSON {
     }
 
     bool PWMAnalogWrite::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
+        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
     PWMAnalogWrite::PWMAnalogWrite(const JsonVariant &jsonObj, const char* type) : Device(type) {

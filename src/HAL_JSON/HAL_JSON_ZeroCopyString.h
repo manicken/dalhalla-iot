@@ -144,13 +144,14 @@ namespace HAL_JSON {
         bool EqualsIC(const ZeroCopyString& other) const;
         bool EqualsIC(const char* cstr) const;
         bool EqualsICAny(const char* const* candidates) const;
-
+        /** returns true if any valid number: float, integer or unsigned integer */
         bool ValidNumber() const;
         bool ValidUINT() const;
-        bool ConvertTo_uint32(uint32_t& outValue) const;
+        /** try to convert to a uint32_t, note allowMinusSign is only used by ConvertTo_int32 to reuse parsing code to convert into signed int */
+        bool ConvertTo_uint32(uint32_t& outValue, bool allowMinusSign = false) const;
         bool ConvertTo_int32(int32_t& outValue) const;
         bool ConvertTo_float(float& outValue) const;
-        NumberResult ConvertStringToNumber();
+        NumberResult ConvertStringToNumber() const;
 
         char operator[](size_t idx) const;
     };

@@ -34,47 +34,41 @@
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-#include "../../HAL_JSON_CachedDeviceRead.h"
+#include "../../HAL_JSON_CachedDeviceAccess.h"
 #include "HAL_JSON_HA_TopicBasePath.h"
 #include "HAL_JSON_HA_DeviceTypeReg.h"
 
-#define HAL_JSON_HA_SENSOR_DEFAULT_REFRESH_MS 5000
-
 namespace HAL_JSON {
 
-    class Sensor : public Device {
+    class Number : public Device {
 
     private:
         PubSubClient& mqttClient;
-        CachedDeviceRead* cdr;
+        CachedDeviceAccess* cda;
         TopicBasePath topicBasePath;
+        HALValue currentValue;
 
-        uint32_t refreshMs;
-        uint32_t lastMs;
-        bool wasOnline;
     public:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
-        
-        /** called regulary from the main loop */
-        void loop() override;
-        /** called when all hal devices has been loaded */
-        void begin() override;
 
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
+        
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
-
         static constexpr HA_DeviceRegistryDefine RegistryDefine = {
             Create,
             VerifyJSON
         };
-
-        Sensor(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
-        ~Sensor();
+        Number(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        ~Number();
 
 
         String ToString() override;
+    private: 
+        /** send back the current value to Home Assistant to notice user that the value was rejected */
+        void rollbackState();
     };
 }

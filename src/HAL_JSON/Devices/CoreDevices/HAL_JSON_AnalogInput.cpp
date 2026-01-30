@@ -31,7 +31,7 @@ namespace HAL_JSON {
     }
 
     bool AnalogInput::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::IN));
+        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
     }
 
     AnalogInput::AnalogInput(const JsonVariant &jsonObj, const char* type) : Device(type) {

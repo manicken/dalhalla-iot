@@ -207,7 +207,7 @@ namespace HAL_JSON {
             SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_WS2812_VERIFY_JSON);
             return false;
         }
-        if (false == GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN)))) {
+        if (false == GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)))) {
             SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_WS2812_VERIFY_JSON);
             return false;
         }

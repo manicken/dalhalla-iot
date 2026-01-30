@@ -102,11 +102,11 @@ namespace HAL_JSON {
     }
 
     bool I2C_BUS::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sckpin", static_cast<uint8_t>(GPIO_manager::PinMode::OUT))) {
+        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sckpin", static_cast<uint8_t>(GPIO_manager::PinFunc::OUT))) {
             SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
         }
-        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sdapin", static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN))) {
+        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sdapin", static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) {
             SET_ERR_LOC(HAL_JSON_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
         }

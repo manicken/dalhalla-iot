@@ -24,6 +24,12 @@
 
 #include "HAL_JSON_LEDC_Servo.h"
 #include <math.h>
+// need to go hardcore on this stuff as arduino is only for beginners
+#include "driver/ledc.h"
+#include "esp_err.h"
+#include <stdio.h>
+
+#define VERIFY_JSON_SOURCE "LEDC_Servo::VerifyJSON"
 
 namespace HAL_JSON {
 
@@ -34,37 +40,63 @@ LEDC_Servo::LEDC_Servo(const JsonVariant &jsonObj, const char* type)
     uid = encodeUID(uidStr);
     pin = jsonObj["pin"];
     ledcChannel = jsonObj["ledc_ch"];
-    if (jsonObj.containsKey("minPulseLength")) {
-        minPulseLength = jsonObj["minPulseLength"];
+
+    minPulseLength = jsonObj.containsKey("minPulseLength") ? jsonObj["minPulseLength"] : 1000;
+    maxPulseLength = jsonObj.containsKey("maxPulseLength") ? jsonObj["maxPulseLength"] : 2000;
+    startPulseLength = jsonObj.containsKey("startPulseLength") ? jsonObj["startPulseLength"] : 1500;
+    autoOffAfterMs = jsonObj.containsKey("autoOffAfterMs") ? jsonObj["autoOffAfterMs"] : 0;
+    pulseLengthOffset = jsonObj.containsKey("pulseLengthOffset") ? jsonObj["pulseLengthOffset"] : 0;
+
+    // minVal / maxVal optional
+    bool hasMin = ValidateFloat(jsonObj, "minVal");
+    bool hasMax = ValidateFloat(jsonObj, "maxVal");
+
+    if (hasMin && hasMax) {
+        minVal = jsonObj["minVal"].as<float>();
+        maxVal = jsonObj["maxVal"].as<float>();
+        valueType = ServoValueType::Ratio;
+    } else {
+        minVal = NAN; // not used in this mode
+        maxVal = NAN; // not used in this mode
+        valueType = ServoValueType::PulseUS;
     }
-    if (jsonObj.containsKey("maxPulseLength")) {
-        maxPulseLength = jsonObj["maxPulseLength"];
-    }
-    if (jsonObj.containsKey("centerPulseLength")) {
-        centerPulseLength = jsonObj["centerPulseLength"];
-    }
-    if (jsonObj.containsKey("autoOffAfterMs")) {
-        autoOffAfterMs = jsonObj["autoOffAfterMs"];
-    }
-    if (jsonObj.containsKey("useNormValue")) {
-        useNormValue = jsonObj["useNormValue"];
-    }
+
+    Serial.printf("\r\n MinVal:%f\r\n", minVal);
+    Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
+    Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
+    Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
+    Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
 }
 
 bool LEDC_Servo::VerifyJSON(const JsonVariant &jsonObj) {
     bool anyError = false;
     if (!jsonObj.containsKey("pin")) {
         GlobalLogger.Error(F("cfg have no pin"));
-        GlobalLogger.setLastEntrySource("LEDC_Servo::VerifyJSON");
+        GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
         anyError = true;
     }
     if (!jsonObj.containsKey("ledc_ch")) {
         GlobalLogger.Error(F("cfg have no ledc_ch"));
-        GlobalLogger.setLastEntrySource("LEDC_Servo::VerifyJSON");
+        GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
         anyError = true;
     }
-    anyError = GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN))) == false;
+    anyError |= GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) == false;
+    bool hasMin = ValidateFloat(jsonObj, "minVal");
+    bool hasMax = ValidateFloat(jsonObj, "maxVal");
 
+    if (hasMin != hasMax) {
+        GlobalLogger.Error(F("cfg must define both minVal and maxVal"));
+        GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
+        anyError = true;
+    } else if (hasMin && hasMax) {
+        float minVal = jsonObj["minVal"].as<float>();
+        float maxVal = jsonObj["maxVal"].as<float>();
+        if (minVal >= maxVal) {
+            GlobalLogger.Error(F("minVal cannot be greater or equal to maxVal"));
+            GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
+            anyError = true;
+        }
+    }
     return (anyError == false);
 }
 
@@ -72,12 +104,61 @@ Device* LEDC_Servo::Create(const JsonVariant &jsonObj, const char* type) {
     return new LEDC_Servo(jsonObj, type);
 }
 
+LEDC_Servo::~LEDC_Servo() {
+    ledcDetachPin(pin);
+    //ledcWrite(ledcChannel, 0);
+}
+
 void LEDC_Servo::begin() {
+    printf("LEDC_Servo::begin\r\n");
+    
+    // setup LEDC channel hardcore
+     // Configure the timer first
+       /* ledc_timer_config_t timer_conf = {
+            .speed_mode       = LEDC_LOW_SPEED_MODE,  // or HIGH_SPEED_MODE if needed
+            .duty_resolution  = (ledc_timer_bit_t)HAL_JSON_LEDC_SERVO_RESOLUTION_BITS,
+            .timer_num        = (ledc_timer_t)(ledcChannel / 2), // simple mapping
+            .freq_hz          = HAL_JSON_LEDC_SERVO_PWM_FREQ,
+            .clk_cfg          = LEDC_AUTO_CLK
+        };
+
+        esp_err_t err = ledc_timer_config(&timer_conf);
+        if (err != ESP_OK) {
+            printf("ledc_timer_config failed: %d\n", err);
+            
+        }
+
+        // Configure the channel
+        ledc_channel_config_t ch_conf = {
+            .gpio_num       = pin,
+            .speed_mode     = LEDC_LOW_SPEED_MODE,
+            .channel        = ledcChannel,
+            .intr_type      = LEDC_INTR_DISABLE,
+            .timer_sel      = timer_conf.timer_num,
+            .duty           = 0,  // start with zero
+            .hpoint         = 0
+        };
+
+        err = ledc_channel_config(&ch_conf);
+        if (err != ESP_OK) {
+            printf("ledc_channel_config failed: %d\n", err);
+            //return err;
+        }
+
+        // Start the duty at zero
+        ledc_set_duty(ch_conf.speed_mode, ch_conf.channel, 0) ||
+               ledc_update_duty(ch_conf.speed_mode, ch_conf.channel);*/
+    //channels_resolution[chan] = bit_num;
+    //return ledc_get_freq(group,timer);
+
     // Setup LEDC channel
-    ledcSetup(ledcChannel, HAL_JSON_LEDC_SERVO_PWM_FREQ, HAL_JSON_LEDC_SERVO_RESOLUTION_BITS);
+    if (ledcSetup(ledcChannel, HAL_JSON_LEDC_SERVO_PWM_FREQ, HAL_JSON_LEDC_SERVO_RESOLUTION_BITS) == 0) {
+        printf("ledcSetup fail\r\n");
+    } 
     ledcAttachPin(pin, ledcChannel);
     // Initialize to center
-    uint32_t duty = (centerPulseLength * HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
+    uint32_t pulseUs = startPulseLength + pulseLengthOffset;
+    uint32_t duty = (startPulseLength * HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
     ledcWrite(ledcChannel, duty);
 }
 
@@ -93,51 +174,67 @@ void LEDC_Servo::loop() {
 HALOperationResult LEDC_Servo::write(const HALValue& val) {
     if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
     if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+
     uint32_t pulseUs = 0;
-    float fVal = val.asFloat();
-    lastValue = val;
-    if (fVal >= 0 && (useNormValue?(fVal <= 1.0f):(fVal <= 100))) {
-        // Treat as percent
-        if (useNormValue) {
-            pulseUs = normToPulseLength_uS(fVal);
-        } else {
-            pulseUs = percentToPulseLength_uS(fVal);
+    if (valueType == ServoValueType::Ratio) {
+        float fVal = val.asFloat();
+        if (fVal < minVal || fVal > maxVal) {
+            return HALOperationResult::WriteValueOutOfRange;
         }
-    } 
-    else if (fVal >= minPulseLength && fVal <= maxPulseLength) {
-        // Treat as direct microseconds
-        pulseUs = val.asUInt();
+        printf("\r\n LEDC_Servo write fVal:%f\r\n", fVal);
+        pulseUs = ratioValueTypeToPulse(fVal, true);
+    } else if (valueType == ServoValueType::PulseUS) {
+        uint32_t uiVal = val.asUInt();
+        if (uiVal < minPulseLength || uiVal > maxPulseLength) {
+            return HALOperationResult::WriteValueOutOfRange;
+        }
+        pulseUs = uiVal;
+    } else { // should never happend
+        return HALOperationResult::UnsupportedOperation;
     }
-    else {
-        return HALOperationResult::WriteValueOutOfRange;
-    } 
-
+    pulseUs += pulseLengthOffset;
+    printf("\r\n LEDC_Servo write pulseUs:%d\r\n", pulseUs);
+    
     uint32_t duty = (pulseUs * HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
-
+    //Serial.printf("\r\n LEDC_Servo write duty:%d\r\n", duty);
     ledcWrite(ledcChannel, duty);
     if (autoOffAfterMs != 0) {
         autoOffActive = true;
         lastWriteMs = millis();
     }
+    lastValue = val;
 
     return HALOperationResult::Success;
 }
 
-HALOperationResult LEDC_Servo::write(const HALWriteValueByCmd& val) {
-    if (val.cmd == "percent") {
-        return write(val.value);
-    } else if (val.cmd == "us") {
-        uint32_t pulseUs = val.value.asInt();
-        uint32_t duty = (pulseUs * HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
+HALOperationResult LEDC_Servo::write(const HALWriteStringRequestValue& val) {
+    uint32_t pulseUs = 0;
+    ZeroCopyString zcStr = val.value;
+    ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+    if (zcCmd.IsEmpty() || zcStr.IsEmpty() || (zcStr.ValidNumber() == false)) return HALOperationResult::InvalidArgument;
 
-        ledcWrite(ledcChannel, duty);
 
-        if (autoOffAfterMs != 0) {
-            autoOffActive = true;
-            lastWriteMs = millis();
-        }
+    if (zcCmd.EqualsIC("ratio")) {
+        float fVal = 0.0f;
+        zcStr.ConvertTo_float(fVal);
+        //Serial.printf("\r\n LEDC_Servo write fVal:%f\r\n", fVal);
+        pulseUs = pulseUs = ratioValueTypeToPulse(fVal, false);
+    } else if (zcCmd.EqualsIC("pulse")) {
+        uint32_t uiVal = 0;
+        zcStr.ConvertTo_uint32(uiVal);
+        pulseUs = uiVal;
     } else {
-        HALOperationResult::UnsupportedCommand;
+        return HALOperationResult::UnsupportedCommand;
+    }
+    
+   // Serial.printf("\r\n LEDC_Servo write pulseUs:%d\r\n", pulseUs);
+    uint32_t duty = (pulseUs * HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL) / HAL_JSON_LEDC_SERVO_PWM_DUTY_US;
+    //Serial.printf("\r\n LEDC_Servo write duty:%d\r\n", duty);
+    ledcWrite(ledcChannel, duty);
+
+    if (autoOffAfterMs != 0) {
+        autoOffActive = true;
+        lastWriteMs = millis();
     }
     return HALOperationResult::Success;
 }
@@ -145,44 +242,6 @@ HALOperationResult LEDC_Servo::write(const HALWriteValueByCmd& val) {
 HALOperationResult LEDC_Servo::read(HALValue& val) {
     val = lastValue;
     return HALOperationResult::Success;
-}
-
-uint32_t LEDC_Servo::percentToPulseLength_uS(float percent) {
-    constexpr float CENTER_EPS_PERCENT = 0.001f;  // 0.1%
-
-    // center is defined precicely
-    if (fabsf(percent - 50.0f) < CENTER_EPS_PERCENT) {
-        return centerPulseLength;
-    }
-        
-    if (percent < 50.0f) {
-        // Map 0–50% → min → center
-        return minPulseLength +
-            (percent / 50.0f) * (centerPulseLength - minPulseLength);
-    } else {
-        // Map 50–100% → center → max
-        return centerPulseLength +
-            ((percent - 50.0f) / 50.0f) * (maxPulseLength - centerPulseLength);
-    }
-}
-
-uint32_t LEDC_Servo::normToPulseLength_uS(float norm) {
-    constexpr float CENTER_EPS_NORM    = 0.00001f;
-
-    // center is defined precicely
-    if (fabsf(norm - 0.5f) < CENTER_EPS_NORM) {
-        return centerPulseLength;
-    }
-
-    norm = constrain(norm, 0.0f, 1.0f);
-
-    if (norm < 0.5f) {
-        return minPulseLength +
-            (norm / 0.5f) * (centerPulseLength - minPulseLength);
-    } else {
-        return centerPulseLength +
-            ((norm - 0.5f) / 0.5f) * (maxPulseLength - centerPulseLength);
-    }
 }
 
 String LEDC_Servo::ToString() {
@@ -198,6 +257,11 @@ String LEDC_Servo::ToString() {
     ret += ", ledc_ch:";
     ret += std::to_string(ledcChannel).c_str();
     return ret;
+}
+uint32_t LEDC_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {
+    float ratio = (fVal - minVal) / (maxVal - minVal);
+    if (clamp) ratio = constrain(ratio, 0.0f, 1.0f);
+    return minPulseLength + ratio * (maxPulseLength - minPulseLength);
 }
 
 } // namespace HAL_JSON

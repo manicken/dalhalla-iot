@@ -41,7 +41,7 @@
 namespace HAL_JSON {
 
     class Button : public Device {
-       // using Device::Device;
+
     private:
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;

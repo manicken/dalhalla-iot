@@ -73,19 +73,19 @@ namespace HAL_JSON {
 
         bool anyError = false;
 
-        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinForward, static_cast<uint8_t>(GPIO_manager::PinMode::OUT)) == false) {
+        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinForward, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
             SET_ERR_LOC("DCServo_VJ_pinForward");
             anyError = true;
         }
-        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinBackward, static_cast<uint8_t>(GPIO_manager::PinMode::OUT)) == false) {
+        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinBackward, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
             SET_ERR_LOC("DCServo_VJ_pinBackward");
             anyError = true;
         }
-        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinEndMax, static_cast<uint8_t>(GPIO_manager::PinMode::IN)) == false) {
+        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinEndMax, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
             SET_ERR_LOC("DCServo_VJ_pinEndMax");
             anyError = true;
         }
-        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinEndMin, static_cast<uint8_t>(GPIO_manager::PinMode::IN)) == false) {
+        if (GPIO_manager::CheckIfPinAvailableAndReserve(pinEndMin, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
             SET_ERR_LOC("DCServo_VJ_pinEndMin");
             anyError = true;
         }

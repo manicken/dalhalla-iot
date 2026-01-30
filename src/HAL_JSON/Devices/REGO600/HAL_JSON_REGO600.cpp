@@ -104,9 +104,9 @@ namespace HAL_JSON {
         if (!ValidateUINT8(jsonObj,HAL_JSON_KEYNAME_RXPIN)) return false;
         if (!ValidateUINT8(jsonObj,HAL_JSON_KEYNAME_TXPIN)) return false;
         uint8_t rxPin = GetAsUINT8(jsonObj, HAL_JSON_KEYNAME_RXPIN);
-        if (!GPIO_manager::CheckIfPinAvailableAndReserve(rxPin, static_cast<uint8_t>(GPIO_manager::PinMode::IN))) return false;
+        if (!GPIO_manager::CheckIfPinAvailableAndReserve(rxPin, static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) return false;
         uint8_t txPin = GetAsUINT8(jsonObj, HAL_JSON_KEYNAME_TXPIN);
-        if (!GPIO_manager::CheckIfPinAvailableAndReserve(txPin, static_cast<uint8_t>(GPIO_manager::PinMode::OUT))) return false;
+        if (!GPIO_manager::CheckIfPinAvailableAndReserve(txPin, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT))) return false;
         if (!jsonObj.containsKey(HAL_JSON_KEYNAME_ITEMS)) { GlobalLogger.Error(HAL_JSON_ERR_MISSING_KEY(HAL_JSON_KEYNAME_ITEMS)); return false; }
         
         if (jsonObj[HAL_JSON_KEYNAME_ITEMS].is<JsonArray>() == false) {

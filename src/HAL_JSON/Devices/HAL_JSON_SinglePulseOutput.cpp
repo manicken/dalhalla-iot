@@ -30,7 +30,7 @@ namespace HAL_JSON {
     }
 
     bool SinglePulseOutput::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinMode::OUT));
+        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
     SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : Device(type) {

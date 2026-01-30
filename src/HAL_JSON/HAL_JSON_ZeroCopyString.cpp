@@ -454,7 +454,7 @@ namespace HAL_JSON {
         return true;
     }
 
-    bool ZeroCopyString::ConvertTo_uint32(uint32_t& outValue) const {
+    bool ZeroCopyString::ConvertTo_uint32(uint32_t& outValue, bool allowMinusSign/* = false*/) const {
         if (Length() == 0) return false;
 
         const char* p = start;
@@ -483,7 +483,13 @@ namespace HAL_JSON {
         }
 
         // Skip optional '+' or '-' (but remember, we're returning unsigned!)
-        if (p < _end && (*p == '+' || *p == '-')) p++;
+        if (p < _end) {
+            if (*p == '+') p++; // allow plus sign on unsigned value
+            else if (*p == '-') {
+                if (allowMinusSign) p++; // just ignore
+                else return false; // dont allow minus sign as then it's considered signed
+            } 
+        }
 
         uint32_t value = 0;
         while (p < _end) {
@@ -512,7 +518,7 @@ namespace HAL_JSON {
     }
     bool ZeroCopyString::ConvertTo_int32(int32_t& outValue) const {
         uint32_t tempVal = 0;
-        if (ConvertTo_uint32(tempVal) == false) return false;
+        if (ConvertTo_uint32(tempVal, true) == false) return false;
         const char* p = start;
         // Skip leading spaces, and as ConvertTo_uint32 allready verified that the string is correct so far no failsafe checks are needed
         while (*p == ' ') p++;
@@ -575,7 +581,7 @@ namespace HAL_JSON {
         return true;
     }
 
-    NumberResult ZeroCopyString::ConvertStringToNumber() {
+    NumberResult ZeroCopyString::ConvertStringToNumber() const {
         NumberResult result{};
         
         // 1. Check for valid number first

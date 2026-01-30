@@ -24,33 +24,42 @@
 #pragma once
 #include "HAL_JSON_template.h"
 #include <Arduino.h>
-
+#include "driver/ledc.h"
 
 #define HAL_JSON_LEDC_SERVO_PWM_FREQ 50
 #define HAL_JSON_LEDC_SERVO_PWM_DUTY_US (1000000u / HAL_JSON_LEDC_SERVO_PWM_FREQ)
-#define HAL_JSON_LEDC_SERVO_RESOLUTION_BITS 16
+#define HAL_JSON_LEDC_SERVO_RESOLUTION_BITS 12
 #define HAL_JSON_LEDC_SERVO_RESOLUTION_MAX_VAL ((1U << (HAL_JSON_LEDC_SERVO_RESOLUTION_BITS))-1u)
 
 namespace HAL_JSON {
 
 class LEDC_Servo : public Device {
 private:
+    enum class ServoValueType {
+        Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
+        PulseUS,     // raw microseconds
+    };
     uint8_t pin = 0;
-    uint8_t ledcChannel = 0;
+    ledc_channel_t ledcChannel = ledc_channel_t::LEDC_CHANNEL_0;
 
     HALValue lastValue = 0.0f;
     uint32_t minPulseLength = 1000;
     uint32_t maxPulseLength = 2000;
-    uint32_t centerPulseLength = 1500;
+    int32_t pulseLengthOffset = 0;
+
+    uint32_t startPulseLength = 1500;
+
+    ServoValueType valueType = ServoValueType::PulseUS;
+    float minVal;  // min for ratio type
+    float maxVal;  // max for ratio type
 
     uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
     uint32_t lastWriteMs = 0;
     bool autoOffActive = false;
 
-    bool useNormValue = false; // if percent input is 0.0f-1.0f as 0-100% range and value >= 2 is threated as pulse length in uS
-
 public:
     LEDC_Servo(const JsonVariant &jsonObj, const char* type);
+    ~LEDC_Servo();
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(const JsonVariant &jsonObj, const char* type);
@@ -64,15 +73,13 @@ public:
     void loop() override;
 
     HALOperationResult write(const HALValue& val) override;
-    HALOperationResult write(const HALWriteValueByCmd& val) override;
+    HALOperationResult write(const HALWriteStringRequestValue& val) override;
 
     HALOperationResult read(HALValue& val) override;
 
     String ToString() override;
-
 private:
-    uint32_t percentToPulseLength_uS(float percent);
-    uint32_t normToPulseLength_uS(float norm);
+    uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
 };
 
 } // namespace HAL_JSON

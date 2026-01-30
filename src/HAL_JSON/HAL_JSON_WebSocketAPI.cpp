@@ -60,11 +60,53 @@ namespace HAL_JSON {
 <pre id="log" style="margin:0; margin-top:1em; flex:1 1 auto; overflow-y:auto; background:#f0f0f0; padding:1em; "></pre>
 <script>
 let location_host = location.host;
-if (location_host.endsWith(":82") == false) location_host = location_host + ":82"; 
-let ws = new WebSocket(`ws://${location_host}/ws`);
-ws.onmessage = (evt) => { document.getElementById('log').textContent += evt.data + '\n'; };
-function sendCmd(){ ws.send(document.getElementById('cmd').value); }
-document.getElementById('cmd').addEventListener('keydown', (e) => { if (e.key === "Enter") { sendCmd(); } });
+if (!location_host.endsWith(":82")) location_host += ":82";
+
+let ws;
+let reconnectInterval = 2000; // 2 seconds
+
+function connect() {
+    ws = new WebSocket(`ws://${location_host}/ws`);
+
+    ws.onopen = () => {
+        console.log("WebSocket connected");
+        document.getElementById('log').textContent += "Connected\n";
+    };
+
+    ws.onmessage = (evt) => {
+        document.getElementById('log').textContent += evt.data + '\n';
+    };
+
+    ws.onclose = () => {
+        console.log("WebSocket disconnected, retrying in", reconnectInterval, "ms");
+        document.getElementById('log').textContent += "Disconnected, reconnecting...\n";
+        setTimeout(connect, reconnectInterval);
+    };
+
+    ws.onerror = (err) => {
+        console.error("WebSocket error", err);
+        ws.close(); // triggers onclose
+    };
+}
+
+function sendCmd() {
+    const cmd = document.getElementById('cmd').value;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(cmd);
+    } else {
+        console.log("WebSocket not connected, retrying...");
+        document.getElementById('log').textContent += "Not connected, retrying...\n";
+        setTimeout(sendCmd, reconnectInterval);
+    }
+}
+
+// Start connection
+connect();
+
+// Handle Enter key
+document.getElementById('cmd').addEventListener('keydown', (e) => {
+    if (e.key === "Enter") sendCmd();
+});
 </script>
 </body>
 </html>

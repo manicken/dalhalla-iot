@@ -66,7 +66,7 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("DHT model invalid/missing: "), modelStr);
             return false;
         }
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN)));
+        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
     Device* DHT::Create(const JsonVariant &jsonObj, const char* type) {
