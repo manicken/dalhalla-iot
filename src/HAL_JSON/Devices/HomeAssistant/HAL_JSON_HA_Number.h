@@ -69,6 +69,6 @@ namespace HAL_JSON {
         String ToString() override;
     private: 
         /** send back the current value to Home Assistant to notice user that the value was rejected */
-        void rollbackState();
+        void sendCurrentValue();
     };
 }

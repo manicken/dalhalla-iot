@@ -105,10 +105,8 @@ namespace HAL_JSON {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-
-        mqttClient.publish(stateTopicStr, val.toString().c_str());
         currentValue = val;
+        sendCurrentValue();
 
         if (cda != nullptr) {
             return cda->WriteSimple(val);
@@ -135,7 +133,7 @@ namespace HAL_JSON {
                 break;
             default:
                 // send back old value on fail
-                rollbackState();
+                sendCurrentValue();
                 return HALOperationResult::WriteValueNaN;
         }
 
@@ -143,17 +141,15 @@ namespace HAL_JSON {
         if (res == HALOperationResult::Success) {
             //Serial.println("Number exec OK");
             currentValue = valState;
-            
         } else {
             Serial.println("Number exec fail");
-            // send back old value on fail
-            rollbackState();
         }
+        sendCurrentValue();
         return res;
         
     }
 
-    void Number::rollbackState() {
+    void Number::sendCurrentValue() {
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         mqttClient.publish(stateTopicStr, currentValue.toString().c_str());
     }

@@ -90,7 +90,7 @@ namespace HAL_JSON {
          * having ZeroCopyString as writable ref, 
          * as that would be useful when passing it to other parsing functions
          */
-        static bool execute(ZeroCopyString& zcStr, std::string& message);
+        static bool execute(ZeroCopyString& zcStr, CommandCallback cb);
     private:
         struct ReadWriteCmdParameters {
             ZeroCopyString zcType;

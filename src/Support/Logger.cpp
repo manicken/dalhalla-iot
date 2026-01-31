@@ -335,6 +335,60 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
     }
 }
 
+void Logger::printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew) {
+    size_t start = wrapped ? head : 0;
+    size_t count = wrapped ? LOG_BUFFER_SIZE : head;
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t index = (start + i) % LOG_BUFFER_SIZE;
+        LogEntry& entry = buffer[index];
+
+        if (onlyPrintNew && entry.isNew == false) continue;
+        entry.isNew = false;
+
+        // build timestamp prefix
+        struct tm* timeinfo = localtime(&entry.timestamp);
+        char buf[128]; // buffer for one log line
+
+        int len = snprintf(buf, sizeof(buf), "[%02d/%02d %02d:%02d:%02d]",
+            timeinfo->tm_mday, timeinfo->tm_mon+1,
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+        // append level
+        switch (entry.level) {
+            case Loglevel::Info: len += snprintf(buf+len, sizeof(buf)-len, "[INFO] "); break;
+            case Loglevel::Warn: len += snprintf(buf+len, sizeof(buf)-len, "[WARN] "); break;
+            case Loglevel::Error: len += snprintf(buf+len, sizeof(buf)-len, "[ERR] "); break;
+        }
+
+        // append source
+        if (entry.source != nullptr)
+            len += snprintf(buf+len, sizeof(buf)-len, "[%s] ", entry.source);
+
+        // append repeat count
+        if (entry.repeatCount > 0)
+            len += snprintf(buf+len, sizeof(buf)-len, "(%d) ", entry.repeatCount);
+
+        // append message or error code
+        if (entry.isCode)
+            len += snprintf(buf+len, sizeof(buf)-len, "Error Code: 0x%X", entry.errorCode);
+        else
+            len += snprintf(buf+len, sizeof(buf)-len, "%s", entry.message);
+
+        // append optional text
+        if (entry.text != nullptr)
+            len += snprintf(buf+len, sizeof(buf)-len, "%s", entry.text);
+
+        // final newline
+        if (len < sizeof(buf)) buf[len++] = '\n';
+        buf[len] = '\0';
+
+        // send via callback
+        cb(std::string(buf));
+    }
+}
+
+
 void Logger::advance() {
     head = (head + 1) % LOG_BUFFER_SIZE;
     if (head == 0) wrapped = true;

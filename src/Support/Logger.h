@@ -68,7 +68,7 @@ struct LogEntry {
   };
 
 class Logger {
-
+  using LogEntrySendCallback = std::function<void(const std::string& response)>;
     
   public:
     Logger();
@@ -88,7 +88,7 @@ class Logger {
     void Warn(const __FlashStringHelper* msg, const char* text);
     void Warn(const __FlashStringHelper* msg, const HAL_JSON::ZeroCopyString& zcStr);
     void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
-
+    void printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew = false);
     
     const LogEntry& getLastEntry() const;
     bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag);

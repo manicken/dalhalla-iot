@@ -95,9 +95,10 @@ void parseCommand(const char* cmd, bool oneShot) {
     } else if (zcCmdRoot == "help") {
         ParseHelpCommand(zcCmd);            
     } else if (zcCmdRoot == "hal") {
-        std::string message;
-        HAL_JSON::CommandExecutor::execute(zcCmd, message);
-        std::cout << message << "\n";
+        HAL_JSON::CommandExecutor::execute(zcCmd, [](const std::string& response){ 
+            std::cout << response << "\n"; 
+        });
+
     } else if (zcCmdRoot == "expr") {
         exprTestLoad(zcCmd);
     } else if (zcCmdRoot == "loadrules" || zcCmdRoot == "lr") {

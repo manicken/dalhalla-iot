@@ -67,15 +67,8 @@ namespace HAL_JSON {
             CommandExecutor::g_pending.pop();
             CommandExecutor_UNLOCK_QUEUE();
 
-            std::string msg;
             ZeroCopyString zcCmd(pr.command.c_str());
-            bool ok = CommandExecutor::execute(zcCmd, msg);
-
-            if (pr.cb)
-                pr.cb(msg);
-            //if (pr.request->client()->connected()) {
-            //    pr.request->send(ok ? 200 : 500, "application/json", msg.c_str());
-            //}
+            bool ok = CommandExecutor::execute(zcCmd, pr.cb);
         }
 
         long currmillis = millis();

@@ -1,0 +1,1 @@
+#define BUILD_VER_STR "1.0"

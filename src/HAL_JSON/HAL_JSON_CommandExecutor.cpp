@@ -25,12 +25,20 @@
 
 #include "../Support/Logger.h"
 #include "../Support/ConvertHelper.h"
+#include "../BUILD_INFO.h"
+#include "Support/base64.h"
 
 #include "HAL_JSON_Device_GlobalDefines.h"
 
 #include "HAL_JSON_GPIO_Manager.h"
 #include "HAL_JSON_Manager.h"
 #include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
+
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <iostream>
@@ -63,7 +71,9 @@ namespace HAL_JSON {
 #endif
     
     // TODO: refactor this function to send errors to GlobalLogger
-    bool CommandExecutor::execute(ZeroCopyString& zcStr, std::string& message) {
+    bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
+
+        std::string message = "";
         // Example URL: /write/uint32/tempSensor1/255 where tempSensor1 is a uid defined by cfg json
         //std::cout << "zcStr:" << zcStr.ToString() << "\n";
         ZeroCopyString zcCommand = zcStr.SplitOffHead('/');
@@ -76,64 +86,157 @@ namespace HAL_JSON {
 #endif
         //bool addLastLogEntryToMessage = false;
         bool anyErrors = false;
-        if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_WRITE_CMD)) {
-            anyErrors = writeCmd(zcStr, message) == false;
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_READ_CMD)) {
-            anyErrors = readCmd(zcStr, message) == false;
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_CMD)) {
-            anyErrors = execCmd(zcStr, message) == false;
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON)) {
-            long startMillis = millis();
-            anyErrors = reloadJSON(zcStr, message) == false;
-            
-            //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
-            //startMillis = millis();
-            if (anyErrors == false) {
-                
-                anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
+        if (zcCommand.EqualsIC("hal")) {
+            zcCommand = zcStr.SplitOffHead('/');
+            if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_WRITE_CMD)) {
+                anyErrors = writeCmd(zcStr, message) == false;
             }
-            //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
-        }
-        else if (zcCommand.EqualsIC("scripts")) {
-            ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
-            if (zcSubCmd.EqualsIC("reload")) {
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_READ_CMD)) {
+                anyErrors = readCmd(zcStr, message) == false;
+            }
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_CMD)) {
+                anyErrors = execCmd(zcStr, message) == false;
+            }
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_RELOAD_CFG_JSON)) {
                 long startMillis = millis();
-                anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
-                //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
-            } else if (zcSubCmd.EqualsIC("stop")) {
-                ScriptEngine::ScriptsBlock::running = false;
-            } else if (zcSubCmd.EqualsIC("start")) {
-                ScriptEngine::ScriptsBlock::running = true;
-            } else {
-                anyErrors = true;
-                GlobalLogger.Error(F("Unknown scripts subcommand: "), zcSubCmd);
-                //message += "\"error\":\"Unknown scripts subcommand.\"";
-                //message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
+                anyErrors = reloadJSON(zcStr, message) == false;
+                
+                //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
+                //startMillis = millis();
+                if (anyErrors == false) {
+                    
+                    anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
+                }
+                //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
             }
-            if (anyErrors == false)
-                message += "\"info\":\"OK\"";
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_GET_AVAILABLE_GPIO_LIST)) {
-            message += GPIO_manager::GetList(zcStr);
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_DEVICES)) {
-            message += Manager::ToString();
-        }
-        else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_LOG_CONTENTS)) {
-            GlobalLogger.printAllLogs(Serial);
-        }
-        else if (zcCommand.EqualsIC("favicon.ico")) {
-            // just ignore
+            else if (zcCommand.EqualsIC("scripts")) {
+                ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
+                if (zcSubCmd.EqualsIC("reload")) {
+                    long startMillis = millis();
+                    anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
+                    //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
+                } else if (zcSubCmd.EqualsIC("stop")) {
+                    ScriptEngine::ScriptsBlock::running = false;
+                } else if (zcSubCmd.EqualsIC("start")) {
+                    ScriptEngine::ScriptsBlock::running = true;
+                } else {
+                    anyErrors = true;
+                    GlobalLogger.Error(F("Unknown scripts subcommand: "), zcSubCmd);
+                    //message += "\"error\":\"Unknown scripts subcommand.\"";
+                    //message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
+                }
+                if (anyErrors == false)
+                    message += "\"info\":\"OK\"";
+            }
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_GET_AVAILABLE_GPIO_LIST)) {
+                message += GPIO_manager::GetList(zcStr);
+            }
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_DEVICES)) {
+                message += Manager::ToString();
+            }
+            else if (zcCommand.EqualsIC(HAL_JSON_CMD_EXEC_PRINT_LOG_CONTENTS)) {
+
+                if (cb != nullptr) {
+                    GlobalLogger.printAllLogs([cb](const std::string& msg){
+                        cb(msg);
+                    });
+                }
+
+            }
+            else
+            {
+                anyErrors = true;
+                GlobalLogger.Error(F("Unknown HAL command: "), zcCommand);
+            }
+        } else if (zcCommand.EqualsIC("wifi")) {
+            zcCommand = zcStr.SplitOffHead('/');
+
+            if (zcCommand.EqualsIC("scan")) {
+                if (cb != nullptr) {
+                    cb("wifi/scanstart\r\n");
+                }
+                
+                int n = WiFi.scanNetworks();
+                for (int i = 0; i < n; i++) {
+                    String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
+                    int freq = WiFi.channel(i) <= 14 ? 2400 : 5000; // crude 2.4/5 GHz
+                    int rssi = WiFi.RSSI(i);
+                    const char* enc;
+                    switch(WiFi.encryptionType(i)) {
+                        case WIFI_AUTH_OPEN: enc = "OPEN"; break;
+                        case WIFI_AUTH_WEP: enc = "WEP"; break;
+                        case WIFI_AUTH_WPA_PSK: enc = "WPA"; break;
+                        case WIFI_AUTH_WPA2_PSK: enc = "WPA2"; break;
+                        case WIFI_AUTH_WPA_WPA2_PSK: enc = "WPA/WPA2"; break;
+                        case WIFI_AUTH_WPA2_ENTERPRISE: enc = "WPA2-E"; break;
+                        default: enc = "UNK"; break;
+                    }
+                    if (cb != nullptr){
+                        char buffer[256]; // adjust size if needed
+                        std::snprintf(buffer, sizeof(buffer),
+                            "wifi/ssid/%s:%d:%d:%d:%s\r\n",
+                            ssidB64.c_str(), WiFi.channel(i), freq, rssi, enc);
+
+                        std::string msg(buffer);
+                        cb(msg);
+                    }
+                }
+                if (cb != nullptr){
+                    cb("wifi/scanend\r\n");
+                }
+            } else if (zcCommand.EqualsIC("set")) {
+                if (zcStr.CountChar(':') >= 1) {
+                    HAL_JSON::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
+                    char ssid[33] = {0};
+                    char pass[65] = {0};
+                    int ssidLen = b64urlDecode((uint8_t*)ssid, zcSSID.ToString().c_str());
+                    int passLen = b64urlDecode((uint8_t*)pass, zcStr.ToString().c_str());
+                    WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
+                    WiFi.begin(ssid, pass);     // Connects to the AP.
+                    WiFi.setAutoConnect(true);  // ESP32: ensures reconnect on boot. ESP8266: also works.
+                    WiFi.setAutoReconnect(true);// ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
+                    // Optionally wait a few milliseconds to ensure settings are written
+                    delay(1000); 
+                    if (cb != nullptr) {
+                        cb("wifi/set/OK\r\n");
+                    }
+                    // Restart the device so it boots with the saved credentials
+                    ESP.restart();
+                } else {
+                    if (cb != nullptr) {
+                        cb("wifi/set/error/missingparams\r\n");
+                    }
+                }
+            }
+        } else if (zcCommand.EqualsIC("ver")) {
+            message += "\"build_version\":\"";
+            message += BUILD_VER_STR;
+            message += '"';
+        } else if (zcCommand.EqualsIC("help")) {
+            if (zcStr.IsEmpty()) {
+                message += "\"available_root_cmds\":[";
+                message += "\"help\",\"ver\",\"hal\",\"wifi\"";
+                message += ']';
+            } else {
+                zcCommand = zcStr.SplitOffHead('/');
+                message += "\"info\":\"";
+                if (zcCommand.EqualsIC("ver")) {
+                    message += "shows build version, can be used to determine what specific ver a device runs";
+                } else if (zcCommand.EqualsIC("hal")) {
+                    message += "write read exec reloadcfg printdevices scripts printlog getavailablegpios";
+                } else if (zcCommand.EqualsIC("wifi")) {
+                    message += "scan set";
+                } else {
+                    message += "!!!! ERROR NO HELP !!!!";
+                }
+
+                message += '"';
+            }
         }
         else
         {
             anyErrors = true;
-            GlobalLogger.Error(F("Unknown command: "), zcCommand);
-            //message += "\"error\":\"Unknown command.\"";
-            //message += ",\"command\":\""+zcCommand.ToString()+"\"";
+            GlobalLogger.Error(F("Unknown root command: "), zcCommand);
         }
         if (anyErrors) {
 
@@ -142,12 +245,13 @@ namespace HAL_JSON {
                 String lastEntryStr = lastEntry.MessageToString();
                 message += "\"error\":\"";
                 message += lastEntryStr.c_str();
-                message += "\"";
+                message += '"';
             }
         }
         message = "{" + message;
         message += "}";
-        
+        if (cb != nullptr) 
+            cb(message);
         return (anyErrors == false);
     }
     bool CommandExecutor::reloadJSON(ZeroCopyString& zcStr, std::string& message) {

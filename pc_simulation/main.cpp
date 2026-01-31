@@ -44,12 +44,7 @@
 
     #include "test_mqtt.h"
 
-    std::string halJsonRestCallback(const std::string& path) {
-        HAL_JSON::ZeroCopyString zcCmd(path.c_str()+1); // +1 = remove leading /
-        std::string message;
-        HAL_JSON::CommandExecutor::execute(zcCmd, message);
-        return message;
-    }
+
 
     int main(int argc, char* argv[]) {
         int test = 5;

@@ -41,16 +41,17 @@ namespace HAL_JSON {
 </style>
 <body style="margin:3; height:100vh; display:flex; flex-direction:column;">
 <div style="flex:0 0 auto;">
-  <button onclick="ws.send('reloadcfg');">reload cfg</button>
+  <button onclick="ws.send('hal/reloadcfg');">reload cfg</button>
+  <button onclick="ws.send('help');">help</button>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
-    <button onclick="ws.send('printDevices');">Print Devices</button>
-    <button onclick="ws.send('getAvailableGPIOs');">get Available GPIOs</button>
-    <button onclick="ws.send('printlog');">print log</button>
+    <button onclick="ws.send('hal/printDevices');">Print Devices</button>
+    <button onclick="ws.send('hal/getAvailableGPIOs');">get Available GPIOs</button>
+    <button onclick="ws.send('hal/printlog');">print log</button>
   </div>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
-    <button onclick="ws.send('scripts/reload');">scripts reload</button>
-    <button onclick="ws.send('scripts/stop');">scripts stop</button>
-    <button onclick="ws.send('scripts/start');">scripts start</button>
+    <button onclick="ws.send('hal/scripts/reload');">scripts reload</button>
+    <button onclick="ws.send('hal/scripts/stop');">scripts stop</button>
+    <button onclick="ws.send('hal/scripts/start');">scripts start</button>
   </div>
   <div style="margin-top:1em;">
     <input type="text" id="cmd" placeholder="Enter command" style="width:70%;" />
