@@ -68,6 +68,8 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 /**************************************************************************/
 
 void setup() {
+    HAL_JSON::GPIO_manager::triStateAvailablePins();
+
     if (Info::resetReason_is_crash(true)) {
         
         System::failsafeLoop();

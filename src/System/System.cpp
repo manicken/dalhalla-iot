@@ -169,12 +169,17 @@ namespace System {
 
         server->begin();
         Serial.println("\r\nFailsafe HTTP server started");
-
+        unsigned long long failsafeLoopTimeoutMs = 1000*60*10; // 10 Min timeout to avoid stuck in this state in case of a error
+        unsigned long long failsafeLoopTimeoutMs_Start = millis();
+        unsigned long long failsafeLoopTimeoutMs_MaxEnd = failsafeLoopTimeoutMs_Start + failsafeLoopTimeoutMs;
         // --- STEP 4: FAILSAFE LOOP ---
         while (true) {
             ArduinoOTA.handle();    // Required
             HeartbeatLed::task();   // Non-blocking
-            
+
+            if (millis() >= failsafeLoopTimeoutMs_MaxEnd) {
+                ESP.restart();
+            }
             delay(10);              // Prevent WDT reset
         }
     }

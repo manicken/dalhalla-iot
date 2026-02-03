@@ -112,6 +112,8 @@ namespace HAL_JSON {
          * so calling it many times on the same pin do not matter */
         void ReservePin(uint8_t pin);
 
+        void triStateAvailablePins();
+
         std::string GetList(ZeroCopyString& zcMode);
     }
 }

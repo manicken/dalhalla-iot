@@ -168,6 +168,15 @@ namespace HAL_JSON {
     uint8_t GetAsUINT8(const JsonVariant& jsonObj, const char* keyName) {
         return jsonObj[keyName];
     }
+    int32_t GetAsINT32(const JsonVariant& jsonObj, const char* keyName) {
+        return jsonObj[keyName];
+    }
+    int16_t GetAsINT16(const JsonVariant& jsonObj, const char* keyName) {
+        return jsonObj[keyName];
+    }
+    int8_t GetAsINT8(const JsonVariant& jsonObj, const char* keyName) {
+        return jsonObj[keyName];
+    }
     const char* GetAsConstChar(const JsonVariant& jsonObj, const char* keyName) {
         return jsonObj[keyName].as<const char*>();
     }

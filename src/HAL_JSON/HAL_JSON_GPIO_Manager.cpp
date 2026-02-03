@@ -300,6 +300,38 @@ namespace HAL_JSON {
             }
         }
 
+        void triStateAvailablePins() {
+            gpio_config_t io_conf{};
+            io_conf.mode = GPIO_MODE_INPUT;
+            io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+            io_conf.intr_type = GPIO_INTR_DISABLE;
+
+            uint64_t mask = 0;
+
+            for (size_t i = 0; i < sizeof(available_gpio_list)/sizeof(available_gpio_list[0]); ++i) {
+                const auto& g = available_gpio_list[i];
+
+                // Skip pins reserved for boot, flash, JTAG, etc.
+                if (g.mode & MAKE_PIN_MASK_3(
+                                PinFunc::Reserved, 
+                                PinFunc::SpecialAtBoot, 
+                                PinFunc::UARTFLASH/*, 
+                                PinFunc::JTAG*/)) {
+                    continue;
+                }
+
+                mask |= (1ULL << g.pin);
+            }
+
+            io_conf.pin_bit_mask = mask;
+            esp_err_t res = gpio_config(&io_conf);
+            if (res != ESP_OK) {
+                printf("Failed to tri-state GPIO manager pins: %d\n", res);
+            }
+        }
+
+
         std::string GetList(ZeroCopyString& zcMode)
         {
             GPIO_manager::PrintListMode listMode = GPIO_manager::PrintListMode::Hex; // set the default here
