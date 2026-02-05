@@ -138,13 +138,13 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             printf("\r\nWarning %s is not set in json\r\n",HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
         }
 
-        if (jsonObj.containsKey("pinEndMinActiveHigh") && jsonObj["pinEndMinActiveHigh"].is<bool>()) {
-            pinEndMinActiveHigh = jsonObj["pinEndMinActiveHigh"].as<bool>();
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>()) {
+            pinEndMinActiveHigh = jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].as<bool>();
         } else {
             pinEndMinActiveHigh = true; // default
         }
-        if (jsonObj.containsKey("pinEndMaxActiveHigh") && jsonObj["pinEndMaxActiveHigh"].is<bool>()) {
-            pinEndMaxActiveHigh = jsonObj["pinEndMaxActiveHigh"].as<bool>();
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>()) {
+            pinEndMaxActiveHigh = jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].as<bool>();
         } else {
             pinEndMaxActiveHigh = true; // default
         }
@@ -350,8 +350,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
             io_conf.pin_bit_mask = (1ULL << pinMinEndStop);
-            io_conf.pull_up_en   = pinEndMinActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
-            io_conf.pull_down_en = pinEndMinActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
+            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMinActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
+            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMinActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
             gpio_config(&io_conf);
 
             // Attach interrupt handler
@@ -365,8 +365,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
             io_conf.pin_bit_mask = (1ULL << pinMaxEndStop);
-            io_conf.pull_up_en   = pinEndMaxActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
-            io_conf.pull_down_en = pinEndMaxActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
+            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMaxActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
+            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMaxActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
             gpio_config(&io_conf);
 
             gpio_isr_handler_add(pinMaxEndStop, &endstop_isr, (void*)&this->isr_data);
@@ -487,6 +487,20 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return HALOperationResult::Success;
+    }
+
+    HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
+        if (val.cmd == "endstops") {
+            val.out_value += "\"min\":";
+            val.out_value += endMinActive() ? "true":"false";
+            val.out_value += ',';
+            val.out_value += "\"max\":";
+            val.out_value += endMaxActive() ? "true":"false";
+
+            return HALOperationResult::Success;
+        } else {
+            return HALOperationResult::UnsupportedCommand;
+        }
     }
 
     HALOperationResult Actuator::read(HALValue& val) {

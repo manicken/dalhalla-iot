@@ -1,5 +1,5 @@
 #include "HAL_JSON_ButtonInput.h"
-
+#include "../HAL_JSON_WebSocketAPI.h"
 
 namespace HAL_JSON {
 
@@ -13,6 +13,13 @@ bool ButtonInput::VerifyJSON(const JsonVariant &jsonObj) {
     
     return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(
         jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
+}
+
+ButtonInput::~ButtonInput() {
+    if (toggleTarget != nullptr) {
+        delete toggleTarget;
+        toggleTarget = nullptr;
+    }
 }
 
 // Constructor
@@ -35,7 +42,6 @@ ButtonInput::ButtonInput(const JsonVariant &jsonObj, const char* type)
     stableState = digitalRead(pin);
     lastRaw = stableState;
     lastChangeMs = millis();
-    toggleState = false;
 
     // Optional external action target
     if (jsonObj.containsKey("on_press")) {
@@ -66,23 +72,44 @@ void ButtonInput::loop() {
 
         if (pressed) {
             // TEMP toggle
-            toggleState = !toggleState;
 
+            //toggleState = !toggleState;
+            
+            HALValue newVal;
             // Optional: call external device/action
             if (toggleTarget != nullptr) {
-                HALValue val = toggleState ? (uint32_t)1 : (uint32_t)0;
-                toggleTarget->WriteSimple(val);
+                HALValue currValue;
+                HALOperationResult res = toggleTarget->ReadSimple(currValue);
+                if (res != HALOperationResult::Success) {
+                    Serial.printf("[ButtonInput] %s pressed, toggleState could not execute\r\n", decodeUID(uid).c_str());
+                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute");
+                    return;
+                } 
+                newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
+                toggleTarget->WriteSimple(newVal);
+                Serial.printf("[ButtonInput] %s pressed, toggleState=%d\r\n", decodeUID(uid).c_str(), newVal.asUInt());
+                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
+            } else {
+                Serial.printf("[ButtonInput] %s pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
+                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n");
             }
 
-            // Debug
-            Serial.printf("[ButtonInput] %s pressed, toggleState=%d\n", decodeUID(uid).c_str(), toggleState);
         }
     }
 }
 
 // Read: returns the toggle state
 HALOperationResult ButtonInput::read(HALValue &val) {
-    val = (uint32_t)toggleState;
+    if (toggleTarget == nullptr) {
+        return HALOperationResult::DeviceNotFound;
+    }
+    HALValue currValue;
+    HALOperationResult res = toggleTarget->ReadSimple(currValue);
+    if (res != HALOperationResult::Success) {
+        Serial.printf("[ButtonInput] %s pressed, toggleState could not execute", decodeUID(uid).c_str());
+        return res;
+    } 
+    val = currValue;
     return HALOperationResult::Success;
 }
 
@@ -99,10 +126,8 @@ String ButtonInput::ToString() {
 
     ret += DeviceConstStrings::pin;
     ret += std::to_string(pin).c_str();
-    ret += ",";
 
-    ret += DeviceConstStrings::value;
-    ret += std::to_string(toggleState).c_str();
+
     return ret;
 }
 

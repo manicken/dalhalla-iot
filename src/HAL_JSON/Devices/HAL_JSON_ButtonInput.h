@@ -42,6 +42,7 @@ public:
 
     // Constructor
     ButtonInput(const JsonVariant &jsonObj, const char* type);
+    ~ButtonInput();
 
     // DAL interface
     HALOperationResult read(HALValue &val) override;
@@ -59,7 +60,7 @@ private:
     bool lastRaw;           // last raw read
     uint32_t lastChangeMs;  // last change timestamp
 
-    bool toggleState;       // TEMP: internal toggle variable
+    //bool toggleState;       // TEMP: internal toggle variable
     CachedDeviceAccess* toggleTarget; // optional external action
 };
 

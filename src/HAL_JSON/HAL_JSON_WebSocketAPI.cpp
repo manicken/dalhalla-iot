@@ -192,4 +192,28 @@ document.getElementById('cmd').addEventListener('keydown', (e) => {
         asyncWebserver->begin();
         asyncWebSocket->enable(true);
     }
+
+    void WebSocketAPI::SendMessage(std::string &msg) {
+        if (asyncWebSocket->availableForWriteAll()) {
+            asyncWebSocket->textAll(msg.c_str());
+        }
+    }
+    void WebSocketAPI::SendMessage(const char* msg) {
+        if (asyncWebSocket->availableForWriteAll()) {
+            asyncWebSocket->textAll(msg);
+        }
+    }
+/*
+    void WebSocketAPI::SendMessage(const char* fmt, ...) {
+        if (!asyncWebSocket) return;
+
+        va_list args;
+        va_start(args, fmt);
+
+        if (asyncWebSocket->availableForWriteAll()) {
+            asyncWebSocket->printfAll(fmt, args);  // forward var args
+        }
+
+        va_end(args);
+    }*/
 }

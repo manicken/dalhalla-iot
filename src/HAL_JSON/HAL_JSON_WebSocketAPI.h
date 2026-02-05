@@ -54,8 +54,12 @@ namespace HAL_JSON {
         static AsyncWebSocket* asyncWebSocket;
         static void GetRootPage_Handler(AsyncWebServerRequest* request);
         static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+        
     public:
         static void setup();
         inline static void loop() { asyncWebSocket->cleanupClients(); }
+        static void SendMessage(std::string &msg);
+        static void SendMessage(const char* msg);
+        //static void SendMessage(const char* fmt, ...);
     };
 }

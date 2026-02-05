@@ -87,6 +87,8 @@ public:
     virtual HALOperationResult write(const HALValue& val) override;
     virtual HALOperationResult read(HALValue& val) override;
 
+    virtual HALOperationResult read(const HALReadStringRequestValue& val);
+
     static HALOperationResult exec_drive_to_min(Device* device);
     static HALOperationResult exec_drive_to_max(Device* device);
     static HALOperationResult exec_stop(Device* device);
