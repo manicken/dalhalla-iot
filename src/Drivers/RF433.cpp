@@ -87,26 +87,36 @@ namespace RF433
         return value;
     }
 
-    uint32_t decode5AlphaNumericTo4byteId(const std::string& id) {
-        if (id.length() != 4) return 0; // Handle error or return special value
+    uint32_t decode5AlphaNumericTo4byteId(const char* idStr)
+    {
+        size_t len = strlen(idStr);
+        if (len > 4) return 0;
 
         auto charToValue = [](char c) -> int {
-            if (c >= '0' && c <= '9') return c - '0';                // 0–9 → 0–9
-            if (c >= 'a' && c <= 'z') return c - 'a' + 10;           // a–z → 10–35
-            if (c >= 'A' && c <= 'Z') return c - 'A' + 36;           // A–Z → 36–61
-            if (c == ' ') return 62;                                 // space → 62
-            return -1; // Invalid
+            if (c >= '0' && c <= '9') return c - '0';
+            if (c >= 'a' && c <= 'z') return c - 'a' + 10;
+            if (c >= 'A' && c <= 'Z') return c - 'A' + 36;
+            if (c == ' ') return 62;
+            return -1;
         };
 
         uint32_t result = 0;
-        for (char c : id) {
-            int val = charToValue(c);
-            if (val == -1) return 0; // or handle invalid character
+
+        // left-pad with spaces
+        for (size_t i = len; i < 4; i++) {
+            result = (result << 6) | 62;
+        }
+
+        // encode actual chars
+        for (size_t i = 0; i < len; i++) {
+            int val = charToValue(idStr[i]);
+            if (val < 0) return 0;
             result = (result << 6) | val;
         }
 
-        return result;
+        return result; // always 24 bits
     }
+
 
     //  ███████ ██ ██   ██ ███████ ██████       ██████  ██████  ██████  ███████ 
     //  ██      ██  ██ ██  ██      ██   ██     ██      ██    ██ ██   ██ ██      
@@ -348,17 +358,34 @@ namespace RF433
         RF433_LC_LONG = HAL_JSON::GetAsUINT32(jsonObj, "pl_long", RF433_LC_LONG);//.as<uint32_t>();
         RF433_LC_REPEATS = HAL_JSON::GetAsUINT32(jsonObj, "pl_repeats", RF433_LC_REPEATS);//.as<uint32_t>();
     }
+    void SerialPrintBits(uint32_t value, uint8_t bitCount = 32)
+    {
+        for (int i = bitCount - 1; i >= 0; i--) {
+            Serial.print((value >> i) & 1);
+            if (i % 4 == 0) Serial.print(' '); // optional grouping
+        }
+        Serial.println();
+    }
     uint32_t Get433_LC_Data(const JsonVariant &jsonObj) {
         uint32_t data = 0;
         if (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_HEXID)){
             data = RF433::GetAsciiHexValue(HAL_JSON::GetAsConstChar(jsonObj, "hexid"), 6);
+            //Serial.println("hexid type");
         } else if (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_ALPHA_NUMERIC_ID)) {
-            data = RF433::decode5AlphaNumericTo4byteId(HAL_JSON::GetAsConstChar(jsonObj, "anid"));
+            const char* anidStr = HAL_JSON::GetAsConstChar(jsonObj, "anid");
+            data = RF433::decode5AlphaNumericTo4byteId(anidStr);
+            //Serial.println("anid type");
         } else {
+            //Serial.println("no type");
             data = 0; // this will never happen if VerifyJSON is used beforehand
         }
-        data &= 0xFFFFFF00; // mask out msb of unit id
+        //Serial.println("raw data:");
+        //SerialPrintBits(data, 32);
+        data <<= 8; // shift 24-bit ID into bits 8–31
+        data &= 0xFFFFFF00; // mask to ensure they are correct
         data |= 0x80; // constant bit of unit id
+        //Serial.println("data with const bit set:");
+        //SerialPrintBits(data, 32);
         // 0x40 constant bit of unit id
         if (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_GRP_BTN) && HAL_JSON::IsUINT32(jsonObj,HAL_JSON_KEYNAME_TX433_GRP_BTN)) {
             uint32_t grp_btn = HAL_JSON::GetAsUINT32(jsonObj,HAL_JSON_KEYNAME_TX433_GRP_BTN);
@@ -419,8 +446,12 @@ namespace RF433
     bool VerifyLC_JSON(const JsonVariant &jsonObj) {
         if (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_HEXID)) {
             if (HAL_JSON::ValidateJsonStringField_noContains(jsonObj, HAL_JSON_KEYNAME_TX433_HEXID) == false) return false;
+            const char * hexidStr = HAL_JSON::GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_HEXID);
+            if (strlen(hexidStr) != 6) { GlobalLogger.Error(F("error hexid lenght != 6")); GlobalLogger.setLastEntrySource("TX433 VJ");  return false; }
         } else if (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_ALPHA_NUMERIC_ID)) {
             if (HAL_JSON::ValidateJsonStringField_noContains(jsonObj, HAL_JSON_KEYNAME_TX433_ALPHA_NUMERIC_ID) == false) return false;
+            const char * hexidStr = HAL_JSON::GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_ALPHA_NUMERIC_ID);
+            if (strlen(hexidStr) > 4) { GlobalLogger.Error(F("error anid lenght > 4")); GlobalLogger.setLastEntrySource("TX433 VJ");  return false; }
         } else {
             GlobalLogger.Error(F("TX433unit - LC - no unit id defined"));
             return false;

@@ -37,12 +37,18 @@ namespace HAL_JSON {
         uid = encodeUID(uidStr);
         const char* modelStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_MODEL);
         
-        if (CharArray::equalsIgnoreCase(modelStr, "lc"))
+        if (CharArray::equalsIgnoreCase(modelStr, "lc")) {
             staticData = RF433::Get433_LC_Data(jsonObj);
-        else if (CharArray::equalsIgnoreCase(modelStr, "sfc"))
+            model = TX433_MODEL::LearningCode;
+        }
+        else if (CharArray::equalsIgnoreCase(modelStr, "sfc")) {
             staticData = RF433::Get433_SFC_Data(jsonObj);
-        else if (CharArray::equalsIgnoreCase(modelStr, "afc"))
+            model = TX433_MODEL::FixedCode;
+        }
+        else if (CharArray::equalsIgnoreCase(modelStr, "afc")) {
             staticData = RF433::Get433_AFC_Data(jsonObj);
+            model = TX433_MODEL::FixedCode;
+        }
         //else this will never happen if VerifyJSON is used beforehand
 
         fixedState = (jsonObj.containsKey(HAL_JSON_KEYNAME_TX433_STATE) && IsUINT32(jsonObj,HAL_JSON_KEYNAME_TX433_STATE));

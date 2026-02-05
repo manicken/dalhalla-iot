@@ -66,7 +66,7 @@ namespace HAL_JSON {
                 unitCount++;
             }
             // second pass create units(devices)
-            units = new (std::nothrow) Device*[unitCount](); /*TX433unit*/
+            units = new Device*[unitCount](); /*TX433unit*/
             uint32_t index = 0;
             for (int i=0;i<_unitCount;i++) {
                 if (validUnits[i] == false) continue;
@@ -97,6 +97,7 @@ namespace HAL_JSON {
     HALOperationResult TX433::write(const HALWriteStringRequestValue &val) {
         RF433::init(pin); // this only sets the pin and set the pin to output
         std::string stdStrCmd = val.value.ToString();
+        
         RF433::DecodeFromJSON(stdStrCmd); // TODO make this function take ZeroCopyString as argument, even thu it's copied internally
         // TODO better error check from DecodeFromJSON
         return HALOperationResult::Success;
