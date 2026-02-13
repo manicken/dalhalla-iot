@@ -34,7 +34,7 @@ namespace HAL_JSON {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }
     
-    Button::Button(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type) {
+    Button::Button(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
         const char* deviceId_cStr = jsonObjRoot["deviceId"];
@@ -53,9 +53,7 @@ namespace HAL_JSON {
         }
         //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
 
-        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, cfgTopic_cStr, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
-        delete[] cfgTopic_cStr;
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
 
         //lastMs = millis()-refreshMs; // force a direct update after start
     }

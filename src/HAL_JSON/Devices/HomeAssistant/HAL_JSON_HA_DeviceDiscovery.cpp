@@ -25,6 +25,7 @@
 #include "HAL_JSON_HA_Constants.h"
 #include "../../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
+#include "../../../System/DeviceUID.h"
 #include <cstdarg> // variadic
 
 
@@ -32,15 +33,16 @@ namespace HAL_JSON
 {
 
     const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
-        const char* cfgFormatStr = "homeassistant/%s/" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%s_%s/config";
-        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceId_cStr, uid_cStr);
+        const char* cfgFormatStr = "homeassistant/%s/%012llX_" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%s_%s/config";
+        uint64_t deviceUID = getDeviceUID();
+        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
         ddTopicLength++;
         char* topicStr = new char[ddTopicLength];
-        snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, deviceId_cStr, uid_cStr);
+        snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
         return topicStr;
     }
 
-    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* cfgTopic_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
+    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
@@ -54,7 +56,10 @@ namespace HAL_JSON
         dryRunPSC.write('}'); // end of json object
 
         // second real send 
+        const char* cfgTopic_cStr = GetDiscoveryCfgTopic(deviceId_cStr, type_cStr, uid_cStr);
         mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
+        delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
+
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
         if (jsonObjGlobal.isNull() == false)

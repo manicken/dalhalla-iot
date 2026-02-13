@@ -36,7 +36,7 @@ namespace HAL_JSON {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Number::Number(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type) {
+    Number::Number(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
         const char* deviceId_cStr = jsonObjRoot["deviceId"];
@@ -55,9 +55,8 @@ namespace HAL_JSON {
             cda = nullptr;
         }
 
-        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, cfgTopic_cStr, jsonObj, jsonObjGlobal, topicBasePath, Number::SendDeviceDiscovery);
-        delete[] cfgTopic_cStr;
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, jsonObjGlobal, topicBasePath, Number::SendDeviceDiscovery);
+        
     }
     Number::~Number() {
         delete cda;

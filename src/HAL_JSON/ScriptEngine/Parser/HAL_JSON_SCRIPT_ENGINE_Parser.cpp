@@ -35,11 +35,12 @@
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Conditions.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Parser_Actions.h"
 
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-#include <LittleFS_ext.h>
-#else
+#if defined(ESP32) || defined(ESP8266)
 #include "../../../Support/LittleFS_ext.h"
+#else
+#include <LittleFS_ext.h>
 #endif
+
 #include "../../../Support/MeasureTime.h"
 
 namespace HAL_JSON {

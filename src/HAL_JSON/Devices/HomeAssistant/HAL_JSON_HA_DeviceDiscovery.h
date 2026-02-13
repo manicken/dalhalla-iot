@@ -37,7 +37,7 @@ namespace HAL_JSON
 
     class HA_DeviceDiscovery {
     public:
-        static void SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* cfgTopic_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter = nullptr);
+        static void SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter = nullptr);
         static void SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath);
         /** note this return a owned ptr so it need delete[] when done with */
         static const char* GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr);

@@ -22,7 +22,7 @@
 */
 
 #include "WiFiManager.h"
-#include "WifiManagerWrapper.h"
+#include "WiFiManagerWrapper.h"
 #include "../Support/NTP.h"
 
 #if defined(USE_DISPLAY)

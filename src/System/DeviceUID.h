@@ -1,0 +1,42 @@
+/*
+  Dalhalla IoT — JSON-configured HAL/DAL + Script Engine
+  HAL = Hardware Abstraction Layer
+  DAL = Device Abstraction Layer
+
+  Provides IoT firmware building blocks for home automation and smart sensors.
+
+  Copyright (C) 2025 Jannik Svensson
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or 
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+#include <cstdint>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns 48-bit device UID packed in uint64_t (upper 16 bits zero)
+uint64_t getDeviceUID();
+
+/** Converts the UID to a 12-character hex string (stack-only), 
+ * can be used as a example how it should be converted 
+ * as it's preffered to convert the uid value directly using a "bigger" sprintf
+ */
+void uidToHex(uint64_t uid, char* buffer); // buffer must be at least 13 bytes
+
+#ifdef __cplusplus
+}
+#endif
