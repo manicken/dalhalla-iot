@@ -145,12 +145,41 @@ namespace HAL_JSON {
 
         // wrap in a ZeroCopyString for neat functions
         ZeroCopyString zcTopic(topic);
-
-        ZeroCopyString zcStart = zcTopic.SplitOffHead('/');
-        if (zcStart == HAL_JSON_HA_DD_CFG_ROOT_TOPIC) {
+        const char* zcStartFirstDelimiter = zcTopic.FindChar('/');
+        if (zcStartFirstDelimiter == nullptr) {
+            // no point continue on either code path as then topic is not valid
+            // in either case
+            return;
+        }
+        ZeroCopyString zcStart = zcTopic.GetHead(zcStartFirstDelimiter);
+        if (zcStart.NotEmpty() && zcStart == HAL_JSON_HA_DD_CFG_ROOT_TOPIC) {
+            // see HAL_JSON_HA_DD_CFG_TOPIC_FORMAT for the formatstr
+            const char* format = HAL_JSON_HA_DD_CFG_TOPIC_FORMAT;
+            zcTopic.start = zcStartFirstDelimiter+1;
+            if (zcTopic.IsEmpty()) { return; } // error incorrect topic string
             ZeroCopyString zcType = zcTopic.SplitOffHead('/');
+            if (zcTopic.IsEmpty() || zcType.IsEmpty()) { return; } // error incorrect topic string
             ZeroCopyString zcUID = zcTopic.SplitOffHead('/');
+            if (zcUID.IsEmpty()) { return; } // error incorrect topic string
+            if (zcUID.MoveStartAfter('_') == false) { // immutable framework id (HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME)
+                return; // error incorrect topic string
+            } 
+            if (zcUID.MoveStartAfter('_') == false) { // immutable device UID
+                return; // error incorrect topic string
+            } 
+            ZeroCopyString zcDeviceID = zcUID.SplitOffHead('_'); // mutable device ID, used to sort IDENTIFY entities in HA
+            if (zcDeviceID.IsEmpty() || zcUID.IsEmpty()) {
+                return; // error incorrect topic string
+            }
+            if (zcDeviceID.Equals(deviceID.c_str()) == false) {
+                // deviceID have changed remove item
+                mqttClient.publish(topic, "");  // empty retained
+                return;
+            }
+
+            // now zcUID is the actual HA device entity UID
             HAL_UID uid = encodeUID(zcUID);
+            if (uid.NotSet() || uid.Invalid()) { return; }
             // cleanup process
             // Iterate over all devices
             for (int i = 0; i < deviceCount; i++) {

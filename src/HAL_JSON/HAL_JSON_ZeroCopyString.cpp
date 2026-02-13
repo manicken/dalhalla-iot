@@ -294,6 +294,94 @@ namespace HAL_JSON {
         return ZeroCopyString(delimiterPtr+1, newEndPos); 
     }
 
+    bool ZeroCopyString::MoveStartAfter(char delimiter) {
+        if (!start || start >= end) return false;
+        
+        const char* splitPos = FindChar(delimiter);
+
+        if (splitPos == nullptr) {
+            //start = end; // this makes the source(this) string empty
+            return false;
+        }
+        start = splitPos + 1;
+        return true;
+    }
+
+    bool ZeroCopyString::MoveEndBefore(char delimiter) {
+        if (!start || start >= end) return false;
+        
+        const char* splitPos = FindCharReverse(delimiter);
+
+        if (splitPos == nullptr) {
+            // leave the source string untouched
+            return false;
+        }
+        end = splitPos; // modify source(this)
+        return true;
+    }
+
+    bool ZeroCopyString::MoveStartAfter(const char* delimiterPtr) {
+        if (!start || start >= end) return false;
+
+        if (ContainsPtr(delimiterPtr) == false) {
+            //start = end; // this makes the source(this) string empty
+            return false;
+        }
+        start = delimiterPtr + 1;
+        return true;
+    }
+
+    bool ZeroCopyString::MoveEndBefore(const char* delimiterPtr) {
+        if (!start || start >= end) return false;
+
+        if (ContainsPtr(delimiterPtr) == false) {
+            // leave the source string untouched
+            return false;
+        }
+        end = delimiterPtr; // modify source(this)
+        return true;
+    }
+
+    ZeroCopyString ZeroCopyString::GetHead(char delimiter) const {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        
+        const char* splitPos = FindChar(delimiter);
+        if (splitPos == nullptr) {
+            
+            return ZeroCopyString(start, end);
+        }
+        return ZeroCopyString(start, splitPos);
+    }
+
+    ZeroCopyString ZeroCopyString::GetTail(char delimiter) const {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        
+        const char* splitPos = FindCharReverse(delimiter);
+        if (splitPos == nullptr) {
+            return ZeroCopyString(); // return empty 
+        }
+        return ZeroCopyString(splitPos+1, end); 
+    }
+
+    ZeroCopyString ZeroCopyString::GetHead(const char* delimiterPtr) const {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+
+        if (ContainsPtr(delimiterPtr) == false) {
+            return ZeroCopyString(start, end);
+        }
+        return ZeroCopyString(start, delimiterPtr);
+    }
+
+    ZeroCopyString ZeroCopyString::GetTail(const char* delimiterPtr) const {
+        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+
+        if (ContainsPtr(delimiterPtr) == false) {
+            return ZeroCopyString(); // return empty 
+        }
+
+        return ZeroCopyString(delimiterPtr+1, end); 
+    }
+
     bool ZeroCopyString::Equals(const ZeroCopyString& other) const {
         size_t len1 = Length();
         size_t len2 = other.Length();

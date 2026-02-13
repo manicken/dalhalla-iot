@@ -138,6 +138,20 @@ namespace HAL_JSON {
         ZeroCopyString SplitOffTail(char delimiter);
         ZeroCopyString SplitOffHead(const char* delimiterPtr);
         ZeroCopyString SplitOffTail(const char* delimiterPtr);
+        bool MoveStartAfter(char delimiter);
+        bool MoveEndBefore(char delimiter);
+        bool MoveStartAfter(const char* delimiterPtr);
+        bool MoveEndBefore(const char* delimiterPtr);
+        
+        /** just get the substring until the delimiter without changing the original */
+        ZeroCopyString GetHead(char delimiter) const;
+        /** just get the substring from the delimiterPtr to the end without changing the original */
+        ZeroCopyString GetTail(char delimiter) const;
+        /** just get the substring until the delimiter without changing the original */
+        ZeroCopyString GetHead(const char* delimiterPtr) const;
+        /** just get the substring from the delimiterPtr to the end without changing the original */
+        ZeroCopyString GetTail(const char* delimiterPtr) const;
+
 
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;
