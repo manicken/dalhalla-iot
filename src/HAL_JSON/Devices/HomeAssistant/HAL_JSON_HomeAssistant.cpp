@@ -28,6 +28,7 @@
 #include <WiFi.h>
 #include <Arduino.h>
 #include "HAL_JSON_HA_Constants.h"
+#include "HAL_JSON_HA_DeviceDiscovery.h"
 
 namespace HAL_JSON {
 
@@ -93,7 +94,10 @@ namespace HAL_JSON {
         mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
             this->mqttCallback(t, p, l);
         });
-        
+        // temporary subscribe to config topic to begin of cleanup of stale devices
+        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
+        mqttClient.subscribe(cfgTopic_cStr);
+        delete[] cfgTopic_cStr;
     }
 
     void HomeAssistant::Connect() {
@@ -141,6 +145,27 @@ namespace HAL_JSON {
 
         // wrap in a ZeroCopyString for neat functions
         ZeroCopyString zcTopic(topic);
+
+        ZeroCopyString zcStart = zcTopic.SplitOffHead('/');
+        if (zcStart == HAL_JSON_HA_DD_CFG_ROOT_TOPIC) {
+            ZeroCopyString zcType = zcTopic.SplitOffHead('/');
+            ZeroCopyString zcUID = zcTopic.SplitOffHead('/');
+            HAL_UID uid = encodeUID(zcUID);
+            // cleanup process
+            // Iterate over all devices
+            for (int i = 0; i < deviceCount; i++) {
+                Device* dev = devices[i];
+                if (uid != dev->uid) continue;
+                if (zcType != dev->GetType()) continue;
+                // found device just return
+                return;
+                
+            }
+            // did not find device
+            // Remove stale entity
+            mqttClient.publish(topic, "");  // empty retained
+            return;
+        }
 
         // find the lastSlash
         const char* lastSlash = zcTopic.FindCharReverse('/');

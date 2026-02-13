@@ -27,6 +27,8 @@
 #include "HAL_JSON_HA_TopicBasePath.h"
 #include "../../HAL_JSON_ZeroCopyString.h"
 
+#define HAL_JSON_HA_DD_CFG_ROOT_TOPIC "homeassistant"
+
 namespace HAL_JSON
 {
     typedef void (*HADiscoveryWriteFn)(

@@ -33,7 +33,7 @@ namespace HAL_JSON
 {
 
     const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
-        const char* cfgFormatStr = "homeassistant/%s/%012llX_" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%s_%s/config";
+        const char* cfgFormatStr = HAL_JSON_HA_DD_CFG_ROOT_TOPIC "/%s/%012llX_" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%s_%s/config";
         uint64_t deviceUID = getDeviceUID();
         int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
         ddTopicLength++;
