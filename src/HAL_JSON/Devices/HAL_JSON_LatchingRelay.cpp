@@ -450,7 +450,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             driveToReset();
             return HALOperationResult::Success;
         } else if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_OPEN || cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
-            driveToSet;
+            driveToSet();
             return HALOperationResult::Success;
         } else if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_STOP) {
             stopDrive();
