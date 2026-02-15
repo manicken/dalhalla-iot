@@ -62,6 +62,8 @@ namespace HAL_JSON {
 
 class Actuator : public Device {
 public:
+    static void IRAM_ATTR endstop_isr(void* arg);
+
     enum class State : uint32_t {
         Idle,
         MovingToMin,

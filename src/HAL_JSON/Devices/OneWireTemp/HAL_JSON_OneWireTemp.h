@@ -26,6 +26,8 @@
  * the only purpose of this file is to make the OneWireTemp include into Device registry much easier
  */
 
+#define HAL_JSON_DEVICE_ONEWIRE_TEMPERATURE_SENSORS
+
 #include "HAL_JSON_OneWireTempGroup.h"
 #include "HAL_JSON_OneWireTempBus.h"
 #include "HAL_JSON_OneWireTempDevice.h"

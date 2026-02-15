@@ -80,15 +80,16 @@ namespace HAL_JSON {
 #endif
         {"PWM_AW", PWMAnalogWrite::RegistryDefine},
         {"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine},
-
+#if defined(HAL_JSON_DEVICE_ONEWIRE_TEMPERATURE_SENSORS)
         {"1WTG", OneWireTempGroup::RegistryDefine},
         {"1WTB", OneWireTempBusAtRoot::RegistryDefine},
         {"1WTD", OneWireTempDeviceAtRoot::RegistryDefine},
-
+#endif
         {"DHT", DHT::RegistryDefine},
         {"TX433", TX433::RegistryDefine},
+#if defined(HAL_JSON_DEVICE_REGO600_HEATPUMP_CONTROLLER)
         {"REGO600", REGO600::RegistryDefine},
-
+#endif
         {"I2C", I2C_BUS::RegistryDefine},
         
         {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},

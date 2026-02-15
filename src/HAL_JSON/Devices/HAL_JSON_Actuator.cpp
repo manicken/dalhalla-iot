@@ -84,7 +84,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 #endif
     }
 
-    void IRAM_ATTR endstop_isr(void* arg) {
+    void IRAM_ATTR Actuator::endstop_isr(void* arg) {
         Actuator::ISR_DATA* isr_data = static_cast<Actuator::ISR_DATA*>(arg);
 
         // Immediate motor kill

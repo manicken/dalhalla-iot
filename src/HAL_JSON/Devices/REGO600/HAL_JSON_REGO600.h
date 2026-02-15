@@ -23,6 +23,8 @@
 
 #pragma once
 
+#define HAL_JSON_DEVICE_REGO600_HEATPUMP_CONTROLLER
+
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
