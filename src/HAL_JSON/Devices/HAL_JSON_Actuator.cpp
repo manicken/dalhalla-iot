@@ -211,18 +211,18 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // Check for invalid configs
         if (hbridge_mode_ab_exor || hbridge_mode_open_close_exor) {
             GlobalLogger.Error(F("Incomplete H-Bridge pin config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_HBridge");
+            SET_ERR_LOC("ACTUATOR_VJ_HBridge");
             anyError = true;
         }
         if (dir_enable_mode_exor) {
             GlobalLogger.Error(F("Incomplete Dir/Enable pin config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_DirEnable");
+            SET_ERR_LOC("ACTUATOR_VJ_DirEnable");
             anyError = true;
         }
         bool hbridge_invalid = hbridge_mode_ab && hbridge_mode_open_close;
         if (hbridge_invalid) {
             GlobalLogger.Error(F("Both h-bridge pin config options cannot be used at the same time"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_HBridge");
+            SET_ERR_LOC("ACTUATOR_VJ_HBridge");
             anyError = true;
         }
         bool any_hbridge_active = (hbridge_mode_ab || hbridge_mode_open_close) && !hbridge_invalid;
@@ -257,7 +257,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             }
         } else {
             GlobalLogger.Error(F("Ambiguous or invalid motor driver config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_AmbiguousMode");
+            SET_ERR_LOC("ACTUATOR_VJ_AmbiguousMode");
             anyError = true;
         }
 
