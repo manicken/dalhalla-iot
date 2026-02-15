@@ -61,6 +61,7 @@
 #include "HAL_JSON_Actuator.h"
 #include "HAL_JSON_LEDC_Servo.h"
 #include "HAL_JSON_ButtonInput.h"
+#include "HAL_JSON_LatchingRelay.h"
 
 
 namespace HAL_JSON {
@@ -101,6 +102,7 @@ namespace HAL_JSON {
         {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
         {"WS2812", WS2812::RegistryDefine},
         {"ACTUATOR", Actuator::RegistryDefine},
+        {"RELAY_LATCHING", LatchingRelay::RegistryDefine},
         {"BUTTON", ButtonInput::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
         {"LEDC_SERVO", LEDC_Servo::RegistryDefine},

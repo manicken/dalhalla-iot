@@ -34,41 +34,41 @@
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
 // for raw h-bridge control using forward and backward pins
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A        "pinA"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B        "pinB"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN     "pinOpen"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE    "pinClose"
 // for dir/enable/(optional break) pin mode
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR      "pinDir"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE   "pinEnable"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_BREAK    "pinBreak"
 
 // 
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP "pinMinEndStop"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP "pinMaxEndStop"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH "pinMinEndStopActiveHigh"
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH "pinMaxEndStopActiveHigh"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP "pinMinEndStop"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP "pinMaxEndStop"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH "pinMinEndStopActiveHigh"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH "pinMaxEndStopActiveHigh"
 
-#define HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS "timeoutMs"
 
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_OPEN   "open"
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_CLOSE  "close"
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MIN "toMin"
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MAX "toMax"
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_STOP   "stop"
-#define HAL_JSON_DEVICE_ACTUATOR_CMD_RESET  "reset"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_OPEN   "open"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_CLOSE  "close"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MIN "toMin"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MAX "toMax"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_STOP   "stop"
+#define HAL_JSON_DEVICE_LATCHING_RELAY_CMD_RESET  "reset"
 
 namespace HAL_JSON {
 
-class Actuator : public Device {
+class LatchingRelay : public Device {
 public:
     enum class State : uint32_t {
         Idle,
-        MovingToMin,
-        MovingToMax,
+        DrivingReset,
+        DrivingSet,
         TimeoutFault
     };
-    enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
+    enum class Location : int32_t { Unknown = -1, Reset = 0, Set = 1 };
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(const JsonVariant &jsonObj, const char* type);
@@ -78,8 +78,8 @@ public:
         VerifyJSON
     };
 
-    Actuator(const JsonVariant &jsonObj, const char* type);
-    ~Actuator();
+    LatchingRelay(const JsonVariant &jsonObj, const char* type);
+    ~LatchingRelay();
 
     void setup();
     virtual void loop() override;
@@ -89,10 +89,10 @@ public:
 
     virtual HALOperationResult read(const HALReadStringRequestValue& val);
 
-    static HALOperationResult exec_drive_to_min(Device* device);
-    static HALOperationResult exec_drive_to_max(Device* device);
+    static HALOperationResult exec_drive_to_reset(Device* device);
+    static HALOperationResult exec_drive_to_set(Device* device);
     static HALOperationResult exec_stop(Device* device);
-    static HALOperationResult exec_reset(Device* device);
+    static HALOperationResult exec_resetMode(Device* device);
 
     virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
     /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
@@ -103,25 +103,25 @@ public:
 private:
     union DrivePins {
         struct { gpio_num_t a, b; } hbridge;
-        struct { gpio_num_t dir, enable; } diren;
+        struct { gpio_num_t data, enable; } data_enable;
     };
     enum class DriveMode : uint8_t {
-        HBridge,      // forward / backward
-        DirEnable     // dir + enable
+        HBridge,      // set / reset
+        DataEnable     // Data + Enable
     };
     enum class GpioRegType {
         Set,
         Clear
     };
 
-    void reset();
+    void resetMode();
     void stopDrive();
-    void driveToMin();
-    void driveToMax();
-    bool endMinActive() const;
-    bool endMaxActive() const;
+    void driveToReset();
+    void driveToSet();
+    bool resetActive() const;
+    bool setActive() const;
 
-    void disableEndstopInterrupts();
+    void disableFeedbackSignalInterrupts();
     void configureISRData(gpio_num_t& somePin, GpioRegType regType);
 
 public:
@@ -143,11 +143,11 @@ private:
     DrivePins pins;
     DriveMode mode;
 
-    gpio_num_t pinMinEndStop;
-    gpio_num_t pinMaxEndStop;
+    gpio_num_t pinFeedbackReset;
+    gpio_num_t pinFeedbackSet;
 
-    bool pinEndMinActiveHigh;
-    bool pinEndMaxActiveHigh;
+    bool pinFeedbackResetActiveHigh;
+    bool pinFeedbackSetActiveHigh;
 
     uint32_t motionStartMs;
     uint32_t timeoutMs;

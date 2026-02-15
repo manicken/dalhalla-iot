@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_Actuator.h"
+#include "HAL_JSON_LatchingRelay.h"
 
 namespace HAL_JSON {
 #if !defined(esp32c3) && !defined(esp32c6)
@@ -52,7 +52,7 @@ namespace HAL_JSON {
 
 #endif
 
-void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
+void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data.handled = false;
         isr_data.driveOn = true;
         isr_data.gpio_currentPin = somePin;
@@ -85,7 +85,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     void IRAM_ATTR endstop_isr(void* arg) {
-        Actuator::ISR_DATA* isr_data = static_cast<Actuator::ISR_DATA*>(arg);
+        LatchingRelay::ISR_DATA* isr_data = static_cast<LatchingRelay::ISR_DATA*>(arg);
 
         // Immediate motor kill
         // Minimal ISR: just write precomputed register and mask
@@ -101,7 +101,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : Device(type), state(State::Idle) {
+    LatchingRelay::LatchingRelay(const JsonVariant &jsonObj, const char* type) : Device(type), state(State::Idle) {
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
         const char* uidStr = GetAsConstChar(jsonObj,HAL_JSON_KEYNAME_UID);
@@ -109,44 +109,44 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
         // as we allready verified in VerifyJSON that the pin cfg is absolutely explicit defined
         // we only need to check any of the pins to exist to determine the mode
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_A)) {
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A)) {
             // H-bridge mode raw a/b pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
+            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
+            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
             mode = DriveMode::HBridge;
-        } else if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN)) {
+        } else if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN)) {
             // H-bridge mode open/close pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
+            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
+            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
             mode = DriveMode::HBridge;
-        } else if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR)) {
-            pins.diren.dir = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-            pins.diren.enable = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
-            mode = DriveMode::DirEnable;
+        } else if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR)) {
+            pins.data_enable.data = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
+            pins.data_enable.enable = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
+            mode = DriveMode::DataEnable;
         } 
         // reserved for future modes
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP)) {
-            pinMinEndStop = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP)) {
+            pinFeedbackReset = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
         } else {
-            pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
+            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
+            printf("\r\nWarning %s is not set in json\r\n",HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
         }
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP)) {
-            pinMaxEndStop = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP)) {
+            pinFeedbackSet = (gpio_num_t)GetAsUINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
         } else {
-            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
+            pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
+            printf("\r\nWarning %s is not set in json\r\n",HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
         }
 
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinEndMinActiveHigh = jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].as<bool>();
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>()) {
+            pinFeedbackResetActiveHigh = jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].as<bool>();
         } else {
-            pinEndMinActiveHigh = true; // default
+            pinFeedbackResetActiveHigh = true; // default
         }
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinEndMaxActiveHigh = jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].as<bool>();
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>()) {
+            pinFeedbackSetActiveHigh = jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].as<bool>();
         } else {
-            pinEndMaxActiveHigh = true; // default
+            pinFeedbackSetActiveHigh = true; // default
         }
 
         if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
@@ -158,20 +158,20 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         setup();
     }
 
-    Actuator::~Actuator() {
+    LatchingRelay::~LatchingRelay() {
         // FREE all used pins by setting them to INPUTS
         uint64_t mask = 0;
 
         if (mode == DriveMode::HBridge) {
             mask |= (1ULL << pins.hbridge.a);
             mask |= (1ULL << pins.hbridge.b);
-        } else if (mode == DriveMode::DirEnable) {
-            mask |= (1ULL << pins.diren.dir);
-            mask |= (1ULL << pins.diren.enable);
+        } else if (mode == DriveMode::DataEnable) {
+            mask |= (1ULL << pins.data_enable.data);
+            mask |= (1ULL << pins.data_enable.enable);
         }
 
-        mask |= (1ULL << pinMinEndStop);
-        mask |= (1ULL << pinMaxEndStop);
+        mask |= (1ULL << pinFeedbackReset);
+        mask |= (1ULL << pinFeedbackSet);
 
         if (mask == 0) return;  // nothing to configure
 
@@ -188,15 +188,15 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    bool Actuator::VerifyJSON(const JsonVariant &jsonObj) {
+    bool LatchingRelay::VerifyJSON(const JsonVariant &jsonObj) {
         bool anyError = false;
 
-        bool have_pin_hbridge_a = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-        bool have_pin_hbridge_b = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
-        bool have_pin_hbridge_open = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-        bool have_pin_hbridge_close = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
-        bool have_pin_dir = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-        bool have_pin_enable = jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
+        bool have_pin_hbridge_a = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
+        bool have_pin_hbridge_b = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
+        bool have_pin_hbridge_open = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
+        bool have_pin_hbridge_close = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
+        bool have_pin_dir = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
+        bool have_pin_enable = jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
 
         bool hbridge_mode_ab = have_pin_hbridge_a && have_pin_hbridge_b;
         bool hbridge_mode_ab_exor = have_pin_hbridge_a ^ have_pin_hbridge_b;
@@ -211,18 +211,18 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // Check for invalid configs
         if (hbridge_mode_ab_exor || hbridge_mode_open_close_exor) {
             GlobalLogger.Error(F("Incomplete H-Bridge pin config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_HBridge");
+            SET_ERR_LOC("LatchingRelay_VJ_HBridge");
             anyError = true;
         }
         if (dir_enable_mode_exor) {
             GlobalLogger.Error(F("Incomplete Dir/Enable pin config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_DirEnable");
+            SET_ERR_LOC("LatchingRelay_VJ_DirEnable");
             anyError = true;
         }
         bool hbridge_invalid = hbridge_mode_ab && hbridge_mode_open_close;
         if (hbridge_invalid) {
             GlobalLogger.Error(F("Both h-bridge pin config options cannot be used at the same time"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_HBridge");
+            SET_ERR_LOC("LatchingRelay_VJ_HBridge");
             anyError = true;
         }
         bool any_hbridge_active = (hbridge_mode_ab || hbridge_mode_open_close) && !hbridge_invalid;
@@ -238,11 +238,11 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             // this defines a valid mode
             //mode = DriveMode::HBridge;
             if (hbridge_mode_ab) {
-                pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-                pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
+                pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
+                pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
             } else if (hbridge_mode_open_close) {
-                pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-                pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
+                pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
+                pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
             } 
             // reserverved for more modes in the future
             // could have open/close to make more sense in door/fluid operations
@@ -250,81 +250,81 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         } else if (!any_hbridge_active && dir_enable_mode) {
             // this defines a valid mode
             //mode = DriveMode::DirEnable;
-            pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-            pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
-            if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK)) {
-                pin_dir_enable_break = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK);
+            pin_a_open_dir = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
+            pin_b_close_enable = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
+            if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_BREAK)) {
+                pin_dir_enable_break = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_BREAK);
             }
         } else {
             GlobalLogger.Error(F("Ambiguous or invalid motor driver config"), uidStr);
-            SET_ERR_LOC("DCServo_VJ_AmbiguousMode");
+            SET_ERR_LOC("LatchingRelay_VJ_AmbiguousMode");
             anyError = true;
         }
 
         if ((pin_a_open_dir != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_a_open_dir, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_a_open_dir");
+            SET_ERR_LOC("LatchingRelay_VJ_pin_a_open_dir");
             anyError = true;
         }
         if ((pin_b_close_enable != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_b_close_enable, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_b_close_enable");
+            SET_ERR_LOC("LatchingRelay_VJ_pin_b_close_enable");
             anyError = true;
         }
         if ((pin_dir_enable_break != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_dir_enable_break, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_dir_enable_break");
+            SET_ERR_LOC("LatchingRelay_VJ_pin_dir_enable_break");
             anyError = true;
         }
 
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP)) {
-            int32_t pin_min_endstop = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP)) {
+            int32_t pin_min_endstop = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
             if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_min_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("Actuator_VJ_" HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
+                SET_ERR_LOC("LatchingRelay_VJ_" HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
                 anyError = true;
             }
         }
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP)) {
-            int32_t pin_max_endstop = GetAsINT32(jsonObj, HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP)) {
+            int32_t pin_max_endstop = GetAsINT32(jsonObj, HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
             if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_max_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("Actuator_VJ_" HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
+                SET_ERR_LOC("LatchingRelay_VJ_" HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
                 anyError = true;
             }
         }
         
 
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
+            GlobalLogger.Error(F(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
+            SET_ERR_LOC("LatchingRelay_VJ_" HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH);
             anyError = true;
         }
 
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
+            GlobalLogger.Error(F(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
+            SET_ERR_LOC("LatchingRelay_VJ_" HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH);
             anyError = true;
         }
 
-        if (jsonObj.containsKey(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS) && jsonObj[HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS].is<uint32_t>() == false) {
-            GlobalLogger.Error(F(HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS " is not uint32"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" HAL_JSON_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS);
+        if (jsonObj.containsKey(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS) && jsonObj[HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS].is<uint32_t>() == false) {
+            GlobalLogger.Error(F(HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS " is not uint32"), uidStr);
+            SET_ERR_LOC("LatchingRelay_VJ_" HAL_JSON_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS);
             anyError = true;
         }
 
         return anyError == false;
     }
 
-    Device* Actuator::Create(const JsonVariant &jsonObj, const char* type) {
-        return new Actuator(jsonObj, type);
+    Device* LatchingRelay::Create(const JsonVariant &jsonObj, const char* type) {
+        return new LatchingRelay(jsonObj, type);
     }
 
-    void Actuator::setup() {
+    void LatchingRelay::setup() {
 
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
 
-        if (mode == DriveMode::DirEnable) {
+        if (mode == DriveMode::DataEnable) {
             gpio_config_t io_conf{};
             io_conf.intr_type = GPIO_INTR_DISABLE;
             io_conf.mode = GPIO_MODE_OUTPUT;
-            io_conf.pin_bit_mask = (1ULL << pins.diren.dir) | (1ULL << pins.diren.enable);
+            io_conf.pin_bit_mask = (1ULL << pins.data_enable.data) | (1ULL << pins.data_enable.enable);
             io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
             io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
             gpio_config(&io_conf);
@@ -343,39 +343,39 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // --------------------------
         // Configure endstop pins
         // --------------------------
-        if (pinMinEndStop != GPIO_NUM_NC) {
+        if (pinFeedbackReset != GPIO_NUM_NC) {
             gpio_config_t io_conf{};
-            io_conf.intr_type = pinEndMinActiveHigh
+            io_conf.intr_type = pinFeedbackResetActiveHigh
                                 ? GPIO_INTR_POSEDGE
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
-            io_conf.pin_bit_mask = (1ULL << pinMinEndStop);
+            io_conf.pin_bit_mask = (1ULL << pinFeedbackReset);
             io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMinActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
             io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMinActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
             gpio_config(&io_conf);
 
             // Attach interrupt handler
-            gpio_isr_handler_add(pinMinEndStop, &endstop_isr, (void*)&this->isr_data);
+            gpio_isr_handler_add(pinFeedbackReset, &endstop_isr, (void*)&this->isr_data);
         }
 
-        if (pinMaxEndStop != GPIO_NUM_NC) {
+        if (pinFeedbackSet != GPIO_NUM_NC) {
             gpio_config_t io_conf{};
-            io_conf.intr_type = pinEndMaxActiveHigh
+            io_conf.intr_type = pinFeedbackSetActiveHigh
                                 ? GPIO_INTR_POSEDGE
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
-            io_conf.pin_bit_mask = (1ULL << pinMaxEndStop);
+            io_conf.pin_bit_mask = (1ULL << pinFeedbackSet);
             io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMaxActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
             io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMaxActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
             gpio_config(&io_conf);
 
-            gpio_isr_handler_add(pinMaxEndStop, &endstop_isr, (void*)&this->isr_data);
+            gpio_isr_handler_add(pinFeedbackSet, &endstop_isr, (void*)&this->isr_data);
         }
-        reset();
+        driveToReset();
         stopDrive();
     }
 
-    void Actuator::loop() {
+    void LatchingRelay::loop() {
         if (state == State::Idle) return;
         if (state == State::TimeoutFault) return;
         if (isr_data.handled) {
@@ -385,10 +385,10 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
                 stopDrive(); // if for some reason the ISR missed it
                 printf("\r\nWarning - ISR have not turned off the motor.\r\n");
             }
-            if (state == State::MovingToMin) {
-                isr_data.location = Location::Min;
-            } else if (state == State::MovingToMax) {
-                isr_data.location = Location::Max;
+            if (state == State::DrivingReset) {
+                isr_data.location = Location::Reset;
+            } else if (state == State::DrivingSet) {
+                isr_data.location = Location::Set;
             }
             state = State::Idle;
             
@@ -406,57 +406,57 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     
 
-    HALOperationResult Actuator::exec_drive_to_min(Device* device) {
-        static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
-        static_cast<Actuator*>(device)->driveToMin(); // direct call no vtable
+    HALOperationResult LatchingRelay::exec_drive_to_reset(Device* device) {
+        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
+        static_cast<LatchingRelay*>(device)->driveToReset(); // direct call no vtable
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_drive_to_max(Device* device) {
-        static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
-        static_cast<Actuator*>(device)->driveToMax(); // direct call no vtable
+    HALOperationResult LatchingRelay::exec_drive_to_set(Device* device) {
+        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
+        static_cast<LatchingRelay*>(device)->driveToSet(); // direct call no vtable
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_stop(Device* device) {
-        static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
+    HALOperationResult LatchingRelay::exec_stop(Device* device) {
+        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_reset(Device* device) {
-        auto* d = static_cast<Actuator*>(device);
-        d->reset();
+    HALOperationResult LatchingRelay::exec_resetMode(Device* device) {
+        auto* d = static_cast<LatchingRelay*>(device);
+        d->driveToReset();
         d->stopDrive();
         return HALOperationResult::Success;
     }
 
 
-    Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_CLOSE || zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MIN) {
-            return exec_drive_to_min;
-        } else if (zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_OPEN || zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MAX) {
-            return exec_drive_to_max;
-        } else if (zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_STOP) {
+    Device::Exec_FuncType LatchingRelay::GetExec_Function(ZeroCopyString& zcFuncName) {
+        if (zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_CLOSE || zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MIN) {
+            return exec_drive_to_reset;
+        } else if (zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_OPEN || zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
+            return exec_drive_to_set;
+        } else if (zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_STOP) {
             return exec_stop;
-        } else if (zcFuncName == HAL_JSON_DEVICE_ACTUATOR_CMD_RESET) {
-            return exec_reset;
+        } else if (zcFuncName == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_RESET) {
+            return exec_resetMode;
         } else {
             return nullptr;
         }
     }
 
-    HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        if (cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_CLOSE || cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MIN) {
-            driveToMin();
+    HALOperationResult LatchingRelay::exec(const ZeroCopyString& cmd) {
+        if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_CLOSE || cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MIN) {
+            driveToReset();
             return HALOperationResult::Success;
-        } else if (cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_OPEN || cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_TO_MAX) {
-            driveToMax();
+        } else if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_OPEN || cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
+            driveToSet;
             return HALOperationResult::Success;
-        } else if (cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_STOP) {
+        } else if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_STOP) {
             stopDrive();
             return HALOperationResult::Success;
-        } else if (cmd == HAL_JSON_DEVICE_ACTUATOR_CMD_RESET) {
-            reset();
+        } else if (cmd == HAL_JSON_DEVICE_LATCHING_RELAY_CMD_RESET) {
+            resetMode();
             stopDrive();
             return HALOperationResult::Success;
         }
@@ -464,7 +464,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
 
-    HALOperationResult Actuator::write(const HALValue& val) {
+    HALOperationResult LatchingRelay::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
@@ -481,21 +481,21 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         stopDrive();
 
         if (v == 0) {
-            driveToMin();
+            driveToReset();
         } else {
-            driveToMax();
+            driveToSet();
         }
 
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
+    HALOperationResult LatchingRelay::read(const HALReadStringRequestValue& val) {
         if (val.cmd == "endstops") {
             val.out_value += "\"min\":";
-            val.out_value += endMinActive() ? "true":"false";
+            val.out_value += resetActive() ? "true":"false";
             val.out_value += ',';
             val.out_value += "\"max\":";
-            val.out_value += endMaxActive() ? "true":"false";
+            val.out_value += setActive() ? "true":"false";
 
             return HALOperationResult::Success;
         } else {
@@ -503,12 +503,12 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    HALOperationResult Actuator::read(HALValue& val) {
+    HALOperationResult LatchingRelay::read(HALValue& val) {
         if (state == State::TimeoutFault) {
             return HALOperationResult::Timeout;
         }
-        bool startReached = endMinActive();
-        bool stopReached = endMaxActive();
+        bool startReached = resetActive();
+        bool stopReached = setActive();
         if (startReached && stopReached) {
             return HALOperationResult::HardwareFault;
         }
@@ -524,115 +524,115 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    void Actuator::reset() {
+    void LatchingRelay::resetMode() {
         state = State::Idle;
         isr_data.location = Location::Unknown;
     }
 
-    void Actuator::disableEndstopInterrupts() {
-        if (pinMinEndStop != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_disable(pinMinEndStop);
+    void LatchingRelay::disableFeedbackSignalInterrupts() {
+        if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
+            gpio_intr_disable(pinFeedbackReset);
         }
-        if (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_disable(pinMaxEndStop);
+        if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
+            gpio_intr_disable(pinFeedbackSet);
         }
     }
 
     
 
 
-    void Actuator::stopDrive() {
+    void LatchingRelay::stopDrive() {
         if (state != State::TimeoutFault)
             state = State::Idle;
         motionStartMs = 0;
-        disableEndstopInterrupts();
+        disableFeedbackSignalInterrupts();
 
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.a, 0);
             gpio_set_level(pins.hbridge.b, 0);
-        } else if (mode == DriveMode::DirEnable) {
-            gpio_set_level(pins.diren.enable, 0);
+        } else if (mode == DriveMode::DataEnable) {
+            gpio_set_level(pins.data_enable.enable, 0);
         }
     }
 
-    void Actuator::driveToMin() {
-        if (endMinActive()) return;
-        disableEndstopInterrupts();
-        state = State::MovingToMin;
+    void LatchingRelay::driveToReset() {
+        if (resetActive()) return;
+        disableFeedbackSignalInterrupts();
+        state = State::DrivingReset;
         isr_data.location = Location::Unknown;
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.b, 0);
             gpio_set_level(pins.hbridge.a, 1);            
             configureISRData(pins.hbridge.a, GpioRegType::Clear);
-        } else if (mode == DriveMode::DirEnable) {
-            gpio_set_level(pins.diren.dir, 0);
-            gpio_set_level(pins.diren.enable, 1);
-            configureISRData(pins.diren.enable, GpioRegType::Clear);
+        } else if (mode == DriveMode::DataEnable) {
+            gpio_set_level(pins.data_enable.data, 0);
+            gpio_set_level(pins.data_enable.enable, 1);
+            configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
         motionStartMs = millis();
         //gpio_intr_disable(pinMaxEndStop); allready disabled in disableEndstopInterrupts
-        if (pinMinEndStop != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_enable(pinMinEndStop);
+        if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
+            gpio_intr_enable(pinFeedbackReset);
         }
     }
 
-    void Actuator::driveToMax() {
-        if (endMaxActive()) return;
-        disableEndstopInterrupts();
-        state = State::MovingToMax;
+    void LatchingRelay::driveToSet() {
+        if (setActive()) return;
+        disableFeedbackSignalInterrupts();
+        state = State::DrivingSet;
         isr_data.location = Location::Unknown;
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.a, 0);
             gpio_set_level(pins.hbridge.b, 1);
             configureISRData(pins.hbridge.b, GpioRegType::Clear);
-        } else if (mode == DriveMode::DirEnable) {
-            gpio_set_level(pins.diren.dir, 0);
-            gpio_set_level(pins.diren.enable, 1);
-            configureISRData(pins.diren.enable, GpioRegType::Clear);
+        } else if (mode == DriveMode::DataEnable) {
+            gpio_set_level(pins.data_enable.data, 0);
+            gpio_set_level(pins.data_enable.enable, 1);
+            configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
         motionStartMs = millis();
         // gpio_intr_disable(pinMinEndStop); allready disabled in disableEndstopInterrupts
-        if (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_enable(pinMaxEndStop);
+        if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
+            gpio_intr_enable(pinFeedbackSet);
         }
     }
 
     
 
-    bool Actuator::endMinActive() const {
+    bool LatchingRelay::resetActive() const {
         // 1) Physical pin says active
-        int level = (pinMinEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMinEndStop):0;
-        bool pinActive = pinEndMinActiveHigh ? (level == 1) : (level == 0);
+        int level = (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackReset):0;
+        bool pinActive = pinFeedbackResetActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
             return true;
         }
 
         // 2) Latched ISR confirmation
-        if (isr_data.location == Location::Min) {
+        if (isr_data.location == Location::Reset) {
             return true;
         }
 
         return false;
     }
 
-    bool Actuator::endMaxActive() const {
+    bool LatchingRelay::setActive() const {
         // 1) Physical pin says active
-        int level = (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMaxEndStop):0;
-        bool pinActive = pinEndMaxActiveHigh ? (level == 1) : (level == 0);
+        int level = (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackSet):0;
+        bool pinActive = pinFeedbackSetActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
             return true;
         }
         // 2) Latched ISR confirmation
-        if (isr_data.location == Location::Max) {
+        if (isr_data.location == Location::Set) {
             return true;
         }
 
         return false;
     }
 
-    String Actuator::ToString() {
+    String LatchingRelay::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -648,22 +648,22 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             ret += ',';
             ret += "\"pin b\":";
             ret += std::to_string(pins.hbridge.b).c_str();
-        } else if (mode == DriveMode::DirEnable) {
-            ret += "\"mode\":\"dir_enable\"";
+        } else if (mode == DriveMode::DataEnable) {
+            ret += "\"mode\":\"data_enable\"";
             ret += ',';
             ret += "\"pin dir\":";
-            ret += std::to_string(pins.diren.dir).c_str();
+            ret += std::to_string(pins.data_enable.data).c_str();
             ret += ',';
             ret += "\"pin enable\":";
-            ret += std::to_string(pins.diren.enable).c_str();
+            ret += std::to_string(pins.data_enable.enable).c_str();
         }
         
         ret += ',';
         ret += "\"pinEndMin\":";
-        ret += std::to_string(pinMinEndStop).c_str();
+        ret += std::to_string(pinFeedbackReset).c_str();
         ret += ',';
         ret += "\"pinEndMax\":";
-        ret += std::to_string(pinMaxEndStop).c_str();
+        ret += std::to_string(pinFeedbackSet).c_str();
         return ret;
     }
 
