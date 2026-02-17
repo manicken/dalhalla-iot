@@ -245,7 +245,10 @@ namespace System {
             int *ptr = nullptr; // Null pointer
             *ptr = 42;          // Dereference the null pointer (causes a crash)
         });
-
+        webserver.on("/enableOTA", [](AsyncWebServerRequest* req) {
+            req->send(200, CONSTSTR::htmlContentType_TextPlain, "ArduinoOTA is now guarranteed to work");
+            ArduinoOTA.begin();
+        });
         /*
         webserver.onNotFound([](AsyncWebServerRequest* req) {                              // If the client requests any URI
             String uri = req->uri();

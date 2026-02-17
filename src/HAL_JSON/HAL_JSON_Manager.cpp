@@ -199,11 +199,14 @@ namespace HAL_JSON {
             GlobalLogger.Error(F("ReadJSON - error could not load json file: "),path);
             return false;
         }
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(ESP8266) || defined(ESP32)
+        size_t jsonDocBufferSize = (size_t)((float)fileSize * 2.0f);
+#elif defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         size_t jsonDocBufferSize = fileSize * 10; // very safe mem
 #else
         size_t jsonDocBufferSize = (size_t)((float)fileSize * 1.5f);
 #endif
+        //size_t requiredSize = measureJson((JsonVariantConst)jsonBuffer);
         DynamicJsonDocument jsonDoc(jsonDocBufferSize);
         DeserializationError error = deserializeJson(jsonDoc, jsonBuffer);
         if (error)

@@ -201,6 +201,13 @@ uint64_t reverseBytes(uint64_t value) {
 
 void srv_handle_info(AsyncWebServerRequest* req)
 {
+    String srv_return_msg = getESP_info();
+    req->send(200, "text/html", srv_return_msg);
+    //server.sendContent(srv_return_msg);
+
+    //server.sendContent("");
+}
+String getESP_info() {
     uint32_t ideSize = ESP.getFlashChipSize();
 #if defined(ESP8266)
     uint32_t realSize = ESP.getFlashChipRealSize();
@@ -208,38 +215,38 @@ void srv_handle_info(AsyncWebServerRequest* req)
     uint32_t realSize = ideSize;
 #endif
     FlashMode_t ideMode = ESP.getFlashChipMode();
-    String srv_return_msg = "";
+    String infoMsg = "";
 
-    srv_return_msg.concat(F("<!DOCTYPE html PUBLIC\"ISO/IEC 15445:2000//DTD HTML//EN\"><html><head><title></title></head><body>"));
+    infoMsg.concat(F("<!DOCTYPE html PUBLIC\"ISO/IEC 15445:2000//DTD HTML//EN\"><html><head><title></title></head><body>"));
 #if defined(ESP8266)
     srv_return_msg.concat(F("<br>Flash real id:   ")); srv_return_msg.concat(ESP.getFlashChipId());
 #elif defined(ESP32)
-    srv_return_msg.concat(F("<br>Flash real id:  (ESP32 don't have this function)"));
+    infoMsg.concat(F("<br>Flash real id:  (ESP32 don't have this function)"));
 #endif
     uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
     String hostString = String(macAddrBigEndian & 0xFFFFFF,HEX);
     hostString.toUpperCase();
-    srv_return_msg.concat(F("<br>Chip short id:   "));srv_return_msg.concat(WIFI_CHIPID_PREFIX); srv_return_msg.concat(hostString);
+    infoMsg.concat(F("<br>Chip short id:   "));infoMsg.concat(WIFI_CHIPID_PREFIX); infoMsg.concat(hostString);
 
-    srv_return_msg.concat(F("<br>Flash real size: ")); srv_return_msg.concat(realSize);
+    infoMsg.concat(F("<br>Flash real size: ")); infoMsg.concat(realSize);
 
-    srv_return_msg.concat(F("<br>Flash ide  size: ")); srv_return_msg.concat(ideSize);
-    srv_return_msg.concat(F("<br>Flash ide speed: ")); srv_return_msg.concat(ESP.getFlashChipSpeed());
-    srv_return_msg.concat(F("<br>Flash ide mode:  ")); srv_return_msg.concat((ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+    infoMsg.concat(F("<br>Flash ide  size: ")); infoMsg.concat(ideSize);
+    infoMsg.concat(F("<br>Flash ide speed: ")); infoMsg.concat(ESP.getFlashChipSpeed());
+    infoMsg.concat(F("<br>Flash ide mode:  ")); infoMsg.concat((ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
     if(ideSize != realSize)
     {
-        srv_return_msg.concat(F("<br>Flash Chip configuration wrong!\r\n"));
+        infoMsg.concat(F("<br>Flash Chip configuration wrong!\r\n"));
     }
     else
     {
-        srv_return_msg.concat(F("<br>Flash Chip configuration ok.\r\n"));
+        infoMsg.concat(F("<br>Flash Chip configuration ok.\r\n"));
     }
 #if defined(ESP8266)
     srv_return_msg.concat(F("<br> ESP8266 Chip id = ")); srv_return_msg.concat(ESP.getChipId());
 #endif
-    srv_return_msg.concat(F("<br><br>"));
+    infoMsg.concat(F("<br><br>"));
     if (LITTLEFS_BEGIN_FUNC_CALL) {
-        srv_return_msg.concat(F("<br>LittleFS mounted OK"));
+        infoMsg.concat(F("<br>LittleFS mounted OK"));
 #if defined(ESP8266)
         FSInfo fsi;
         if (LittleFS.info(fsi)) {
@@ -252,24 +259,21 @@ void srv_handle_info(AsyncWebServerRequest* req)
         }
         else
 #elif defined(ESP32)
-        srv_return_msg.concat(F("<br>LittleFS totalBytes = ")); srv_return_msg.concat(LittleFS.totalBytes());
-        srv_return_msg.concat(F("<br>LittleFS usedBytes = ")); srv_return_msg.concat(LittleFS.usedBytes()); 
+        infoMsg.concat(F("<br>LittleFS totalBytes = ")); infoMsg.concat(LittleFS.totalBytes());
+        infoMsg.concat(F("<br>LittleFS usedBytes = ")); infoMsg.concat(LittleFS.usedBytes()); 
 #else
             srv_return_msg.concat(F("<br>LittleFS info not implemented"));
 #endif
 
-        srv_return_msg.concat("<br><br>Files:<br>");
+        infoMsg.concat("<br><br>Files:<br>");
         
         //LittleFS_ext::listDir(DEBUG_UART,"/", 0);
-        LittleFS_ext::listDir(srv_return_msg, true, "/", 0);
+        LittleFS_ext::listDir(infoMsg, true, "/", 0);
     }
     else
-        srv_return_msg.concat(F("<br>LittleFS Fail to mount"));
+        infoMsg.concat(F("<br>LittleFS Fail to mount"));
 
-    srv_return_msg.concat(F("</body></html>"));
-    req->send(200, "text/html", srv_return_msg);
-    //server.sendContent(srv_return_msg);
-
-    //server.sendContent("");
+    infoMsg.concat(F("</body></html>"));
+    return infoMsg;
 }
 }

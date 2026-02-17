@@ -33,6 +33,7 @@
 #include "HAL_JSON_GPIO_Manager.h"
 #include "HAL_JSON_Manager.h"
 #include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
+#include "../Support/Info.h"
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -206,6 +207,23 @@ namespace HAL_JSON {
                     if (cb != nullptr) {
                         cb("wifi/set/error/missingparams\r\n");
                     }
+                }
+            }
+        } else if (zcCommand.EqualsIC("system")) {
+            zcCommand = zcStr.SplitOffHead('/');
+            if (zcCommand.EqualsIC("info")) {
+                if (cb != nullptr) {
+                    String infoMsg = Info::getESP_info();
+                    cb(infoMsg.c_str());
+                }
+            } else if (zcCommand.EqualsIC("reset") || zcCommand.EqualsIC("restart")) {
+                if (cb != nullptr) {
+                    cb("the system will now restart");
+                }
+                ESP.restart();
+            } else {
+                if (cb != nullptr) {
+                    cb("error system sub command not found");
                 }
             }
         } else if (zcCommand.EqualsIC("ver")) {

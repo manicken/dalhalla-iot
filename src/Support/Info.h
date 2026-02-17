@@ -63,6 +63,7 @@ namespace Info
     extern time_t startTime;
 
     void printESP_info(void);
+    String getESP_info();
     void srv_handle_info(AsyncWebServerRequest *req);
     
     bool resetReason_is_crash();
