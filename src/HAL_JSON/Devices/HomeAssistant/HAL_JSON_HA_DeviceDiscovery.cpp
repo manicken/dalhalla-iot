@@ -58,6 +58,7 @@ namespace HAL_JSON
         // second real send 
         const char* cfgTopic_cStr = GetDiscoveryCfgTopic(deviceId_cStr, type_cStr, uid_cStr);
         mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
+        GlobalLogger.Info(F("sent discovery:"), cfgTopic_cStr);
         delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
 
         mqtt.write('{'); // start of json object

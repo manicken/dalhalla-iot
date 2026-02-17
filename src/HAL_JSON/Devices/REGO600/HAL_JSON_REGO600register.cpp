@@ -70,14 +70,16 @@ namespace HAL_JSON {
     }
 
     HALOperationResult REGO600register::read(HALValue& val) {
-        if (valueType == ValueType::FLOAT)
-            val = (float)((float)value / 10.0f);
+        if (valueType == ValueType::FLOAT) {
+            int16_t raw = static_cast<int16_t>(value & 0xFFFF);
+            val.set(raw * 0.1f);
+        }
         else if (valueType == ValueType::BOOL)
             val = (uint32_t)((value > 0)?1:0);
         else if (valueType == ValueType::UINT)
             val = value;
         else if (valueType == ValueType::INT)
-            val = (int32_t)value;
+            val.set(static_cast<int16_t>(value & 0xFFFF));
         else {
             return HALOperationResult::ExecutionFailed; // should not happen
         }

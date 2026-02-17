@@ -48,6 +48,7 @@ namespace HAL_JSON {
             ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
             cdr = new CachedDeviceRead();
             if (cdr->Set(zcSrcDeviceUidStr) == false) {
+                // emit errors inside so no reporting is needed here unless one need to specific
                 delete cdr;
                 cdr = nullptr;
             }

@@ -47,12 +47,13 @@ namespace HAL_JSON {
         void* context;                  // context for handler (device, HALValue*, or subread)
         ReadHandler handler;            // function to call for reading
         void (*deleter)(void* context); // optional deleter for owned context
-
+        bool SetBracketAccess(const char* bracketPos, ZeroCopyString zcStrUidPathAndFuncName);
     public:
         // Construct from UID/path string
         //CachedDeviceRead(const char* uidPathAndFuncName);
         CachedDeviceRead();
         //CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName); prevent usage that could lead to uncertain states
+        /** emit errors inside so no reporting is needed here unless one need to specific */
         bool Set(ZeroCopyString zcStrUidPathAndFuncName);
 
         // Execute the read

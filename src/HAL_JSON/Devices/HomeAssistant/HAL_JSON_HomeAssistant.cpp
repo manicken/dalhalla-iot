@@ -173,6 +173,7 @@ namespace HAL_JSON {
             }
             if (zcDeviceID.Equals(deviceID.c_str()) == false) {
                 // deviceID have changed remove item
+                GlobalLogger.Info(F("removed stale device bc deviceID change/removed"), topic);
                 mqttClient.publish(topic, "");  // empty retained
                 return;
             }
@@ -192,6 +193,7 @@ namespace HAL_JSON {
             }
             // did not find device
             // Remove stale entity
+            GlobalLogger.Info(F("removed stale device bc uid change/removed"), topic);
             mqttClient.publish(topic, "");  // empty retained
             return;
         }

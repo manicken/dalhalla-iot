@@ -100,43 +100,7 @@ namespace HAL_JSON {
 
         const char* bracketPos = zcStrUidPathAndFuncName.FindChar('[');
         if (bracketPos) {
-            // Bracket read
-            ZeroCopyString inner(bracketPos + 1, zcStrUidPathAndFuncName.end - 1);
-            zcStrUidPathAndFuncName.end = bracketPos;
-            ZeroCopyString zcUid = zcStrUidPathAndFuncName.SplitOffHead('#');
-            UIDPath uid(zcUid);
-            Device* outDevice = nullptr;
-            DeviceFindResult res = Manager::findDevice(uid, outDevice);
-            if (res != DeviceFindResult::Success) {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid);
-                GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));
-                handler = &CachedDeviceRead::Handler_Invalid;
-                return false;
-            }
-
-            Device::BracketOpRead_FuncType bracketFunc = outDevice->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
-            
-            if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
-                handler = &CachedDeviceRead::Handler_Invalid;
-                return false;
-            }
-
-            CachedDeviceRead* subOperand = new CachedDeviceRead();
-            if (subOperand->Set(inner) == false) {
-                // error is reported in the set above
-                delete subOperand;
-                handler = &CachedDeviceRead::Handler_Invalid;
-                return false;
-            }
-            
-
-            auto* ctx = new BracketContext{outDevice, bracketFunc, subOperand};
-
-            context = ctx;
-            handler = &CachedDeviceRead::Handler_Bracket;
-            deleter = ScriptEngine::DeleteAs<BracketContext>;
-            return true;
+            return SetBracketAccess(bracketPos, zcStrUidPathAndFuncName);
         }
 
         // Funcname or plain read
@@ -181,6 +145,46 @@ namespace HAL_JSON {
         // Fallback device read
         context = outDevice;
         handler = &CachedDeviceRead::Handler_Device;
+        return true;
+    }
+
+    bool CachedDeviceRead::SetBracketAccess(const char* bracketPos, ZeroCopyString zcStrUidPathAndFuncName) {
+        // Bracket read
+        ZeroCopyString inner(bracketPos + 1, zcStrUidPathAndFuncName.end - 1);
+        zcStrUidPathAndFuncName.end = bracketPos;
+        ZeroCopyString zcUid = zcStrUidPathAndFuncName.SplitOffHead('#');
+        UIDPath uid(zcUid);
+        Device* outDevice = nullptr;
+        DeviceFindResult res = Manager::findDevice(uid, outDevice);
+        if (res != DeviceFindResult::Success) {
+            GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid);
+            GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));
+            handler = &CachedDeviceRead::Handler_Invalid;
+            return false;
+        }
+
+        Device::BracketOpRead_FuncType bracketFunc = outDevice->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
+        
+        if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
+            GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
+            handler = &CachedDeviceRead::Handler_Invalid;
+            return false;
+        }
+
+        CachedDeviceRead* subOperand = new CachedDeviceRead();
+        if (subOperand->Set(inner) == false) {
+            // error is reported in the set above
+            delete subOperand;
+            handler = &CachedDeviceRead::Handler_Invalid;
+            return false;
+        }
+        
+
+        auto* ctx = new BracketContext{outDevice, bracketFunc, subOperand};
+
+        context = ctx;
+        handler = &CachedDeviceRead::Handler_Bracket;
+        deleter = ScriptEngine::DeleteAs<BracketContext>;
         return true;
     }
 
