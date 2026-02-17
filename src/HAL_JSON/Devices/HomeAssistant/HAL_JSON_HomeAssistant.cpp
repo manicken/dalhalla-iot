@@ -363,7 +363,7 @@ namespace HAL_JSON {
             unsigned long now = millis();
             if (now - lastReconnectAttempt >= reconnectInterval) {
                 lastReconnectAttempt = now;
-                Serial.println("HASS - MQTT connection is down, trying to reconnect");
+                GlobalLogger.Info(F("HASS - MQTT connection is down, trying to reconnect"));
                 Connect();
             }
             return;

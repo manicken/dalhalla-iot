@@ -107,21 +107,28 @@ namespace HAL_JSON {
             return;
         }
         lastMs = now;
+        //GlobalLogger.Info(F("Sensor::loop() exec"));
 
         HALValue val;
         HALOperationResult res = cdr->ReadSimple(val);
         if (res == HALOperationResult::Success) {
+            //GlobalLogger.Info(F("Sensor::loop() exec Success"));
             if (!wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
                 mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
+                GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to active"));
                 wasOnline = true;
             }
             const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+
             mqttClient.publish(stateTopicStr, val.toString().c_str());
+           // GlobalLogger.Info(F("Sensor::loop() exec Success sent to topic: "), stateTopicStr);
         } else {
+            GlobalLogger.Info(F("Sensor::loop() exec fail"));
             if (wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
                 mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
+                GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to inactive"));
                 wasOnline = false;
             }
         }
