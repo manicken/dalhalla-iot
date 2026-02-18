@@ -115,21 +115,31 @@ namespace HAL_JSON {
             //GlobalLogger.Info(F("Sensor::loop() exec Success"));
             if (!wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
-                GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to active"));
-                wasOnline = true;
+                bool success = mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
+                if (success) {
+                    // this will make the availability update secure and non deadlock
+                    GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to active"));
+                    wasOnline = true;
+                }
+                
             }
             const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-
+            // if the following fails then it will try again next update
+            // could implement a try again mechanism but that would require 
+            // refactor to make the code DRY
             mqttClient.publish(stateTopicStr, val.toString().c_str());
            // GlobalLogger.Info(F("Sensor::loop() exec Success sent to topic: "), stateTopicStr);
         } else {
             GlobalLogger.Info(F("Sensor::loop() exec fail"));
             if (wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
-                GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to inactive"));
-                wasOnline = false;
+                bool success = mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
+                
+                if (success) {
+                    // this will make the availability update secure and non deadlock
+                    GlobalLogger.Info(F("Sensor::loop() exec Success availability changed to inactive"));
+                    wasOnline = false;
+                }
             }
         }
     }
@@ -149,8 +159,7 @@ namespace HAL_JSON {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
             const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
-            wasOnline = true;
+            wasOnline = mqttClient.publish(availabilityTopicStr, HAL_JSON_HOME_ASSISTANT_AVAILABILITY_ONLINE);
         }
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         mqttClient.publish(stateTopicStr, val.toString().c_str());
