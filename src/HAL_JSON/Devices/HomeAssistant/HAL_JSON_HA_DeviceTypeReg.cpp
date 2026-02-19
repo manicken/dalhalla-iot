@@ -32,6 +32,7 @@
 // Available Home Assistant device-endpoint-entities types here
 #include "HAL_JSON_HA_DeviceContainer.h"
 #include "HAL_JSON_HA_Sensor.h"
+#include "HAL_JSON_HA_BinarySensor.h"
 #include "HAL_JSON_HA_Switch.h"
 #include "HAL_JSON_HA_Button.h"
 #include "HAL_JSON_HA_Number.h"
@@ -44,6 +45,7 @@ namespace HAL_JSON {
 
     constexpr HA_DeviceRegistryItem HA_DeviceRegistry[] = {
         {"sensor",    Sensor::RegistryDefine},
+        {"binary_sensor",  BinarySensor::RegistryDefine},
         {"switch",    Switch::RegistryDefine},
         {"button",    Button::RegistryDefine},
         {"number",    Number::RegistryDefine},
