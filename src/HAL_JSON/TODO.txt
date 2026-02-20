@@ -3,21 +3,7 @@
 ██ ████ ██ ███████      ██ ██    ██ ██████         ██    ██    ██ ██   ██ ██    ██ 
 ██  ██  ██ ██   ██ ██   ██ ██    ██ ██   ██        ██    ██    ██ ██   ██ ██    ██ 
 ██      ██ ██   ██  █████   ██████  ██   ██        ██     ██████  ██████   ██████  
-                                                                                   
 
-fix ReadAndParseScriptFile and ParseScript
-so that they can be reused for both:
-Validate
-and
-LoadScript
-
-but as validate have some validate functions
-that should not be executed while LoadScript
-then there need to be separate functions that somehow share the functionality
-
-think a callback that takes a TokenArray as parameter can be used
-so the basic load/needed fixes are allways present
-such as newline fix and comment removal
 
 
 ████████  ██████  ██████   ██████  
@@ -26,17 +12,44 @@ such as newline fix and comment removal
    ██    ██    ██ ██   ██ ██    ██ 
    ██     ██████  ██████   ██████  
 
+
+
+implement so that GlobalLogger includes a websocket server, so that if any client is connected then the log gets automatically printed 
+
+
+██       ██████  ██     ██     ██████  ██████  ██  ██████  ██████  ██ ████████ ██    ██     ████████  ██████  ██████   ██████  
+██      ██    ██ ██     ██     ██   ██ ██   ██ ██ ██    ██ ██   ██ ██    ██     ██  ██         ██    ██    ██ ██   ██ ██    ██ 
+██      ██    ██ ██  █  ██     ██████  ██████  ██ ██    ██ ██████  ██    ██      ████          ██    ██    ██ ██   ██ ██    ██ 
+██      ██    ██ ██ ███ ██     ██      ██   ██ ██ ██    ██ ██   ██ ██    ██       ██           ██    ██    ██ ██   ██ ██    ██ 
+███████  ██████   ███ ███      ██      ██   ██ ██  ██████  ██   ██ ██    ██       ██           ██     ██████  ██████   ██████  
+
+Convert all JSON validation errors to use an error code system for improved memory efficiency.
+Note: This is partially implemented—currently, F("") strings are used, which keeps the string data in flash memory, so the tradeoff is extra used flash memory.
+also in "high end" targets const char* can safely be used
+
+change GPIO_manager into a "static" class namespace so that we can hide functions/variables 
+
+TCP2UART bridge device
+WEBSOCKET2UART bridge device
+
+analog/digital muxing of pins 
+should be done with a root devie that then in turn control the muxing, that way i keep my GPIO_manager as is
+
+
 make the rules/scripts file loader aware of comments such as // and /* */
 to save ram usage while loading rules/scripts
 
 maybe the json cfg file could also use this principe then it would be possible to have real comments in the json cfg files
 
-
 maybe make rule tokenizer and pre fixin such as comment removing + newline fixin is in separeate file
 
+██████   ██████  ███    ██ ███████ 
+██   ██ ██    ██ ████   ██ ██      
+██   ██ ██    ██ ██ ██  ██ █████   
+██   ██ ██    ██ ██  ██ ██ ██      
+██████   ██████  ██   ████ ███████ 
 
-
-implement so that GlobalLogger includes a websocket server, so that if any client is connected then the log gets automatically printed 
+WS2812 neostrip led
 
 test TX433
 test REGO600
@@ -47,34 +60,6 @@ think this is done?
 Refactor CommandExecutor so that all errors is added to GlobalLogger instead of the message which 
 should only be used when values are read
 all commands that execute without any problems just returns true
-
-██       ██████  ██     ██     ██████  ██████  ██  ██████  ██████  ██ ████████ ██    ██     ████████  ██████  ██████   ██████  
-██      ██    ██ ██     ██     ██   ██ ██   ██ ██ ██    ██ ██   ██ ██    ██     ██  ██         ██    ██    ██ ██   ██ ██    ██ 
-██      ██    ██ ██  █  ██     ██████  ██████  ██ ██    ██ ██████  ██    ██      ████          ██    ██    ██ ██   ██ ██    ██ 
-██      ██    ██ ██ ███ ██     ██      ██   ██ ██ ██    ██ ██   ██ ██    ██       ██           ██    ██    ██ ██   ██ ██    ██ 
-███████  ██████   ███ ███      ██      ██   ██ ██  ██████  ██   ██ ██    ██       ██           ██     ██████  ██████   ██████  
-
-Convert all JSON validation errors to use an error code system for improved memory efficiency.
-Note: This is partially implemented—currently, F("") strings are used, which keeps the string data in flash memory, so the tradeoff is extra used flash memory.
-
-change GPIO_manager into a "static" class namespace so that we can hide functions/variables 
-
-
-
-TCP2UART bridge
-WEBSOCKET2UART bridge
-
-WS2812 neostrip led
-
-analog/digital muxing of pins
-
-
-██████   ██████  ███    ██ ███████ 
-██   ██ ██    ██ ████   ██ ██      
-██   ██ ██    ██ ██ ██  ██ █████   
-██   ██ ██    ██ ██  ██ ██ ██      
-██████   ██████  ██   ████ ███████ 
-
 
 implement a global defines that can be switched on/off
   #define HAL_JSON_VALIDATE_FAIL_OPERATION continue

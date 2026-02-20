@@ -73,7 +73,7 @@ namespace HAL_JSON {
         using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
-        using EventCheck_FuncType = bool (*)(Device* device, uint32_t& lastSeen);
+        using EventCheck_FuncType = bool (*)(void* context);
 
         Device(const char* type);
         virtual ~Device();
