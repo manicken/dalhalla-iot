@@ -37,12 +37,8 @@
 
 
 namespace HAL_JSON {
-    /* obsolete
-    enum class UIDPathMaxLength : uint8_t {
-        One,
-        Many
-    };
-    */
+    
+
 
     enum class DeviceFindResult {
         Success,
@@ -55,10 +51,10 @@ namespace HAL_JSON {
     };
     const char* DeviceFindResultToString(DeviceFindResult res);
 
-    //typedef bool (*ReadToHALValue_FuncType)(HAL_JSON::Device*, HALValue&);
     
 
     class Device {
+        
     protected:
         Device() = delete;
         Device(Device&) = delete;
@@ -73,7 +69,32 @@ namespace HAL_JSON {
         using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
-        using EventCheck_FuncType = bool (*)(void* context);
+        
+
+        class DeviceEvent {
+        public:
+            template<typename T>
+            static void DeleteAs(void* ptr) {
+                delete static_cast<T*>(ptr);
+            }
+            using CheckFn  = bool (*)(void*);
+            using DeleteFn = void (*)(void*);
+
+        private:
+            CheckFn checkFn;
+            DeleteFn deleteFn;
+            void* context;
+        public:
+            DeviceEvent() = delete;
+            DeviceEvent(DeviceEvent&) = delete;
+            DeviceEvent(CheckFn checkFn, DeleteFn deleteFn, void* context);
+
+            ~DeviceEvent();
+
+            inline bool CheckForEvent() {
+                return checkFn(context);
+            }
+        };
 
         Device(const char* type);
         virtual ~Device();
@@ -98,7 +119,7 @@ namespace HAL_JSON {
         virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
         virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
 
-        virtual EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString& zcFuncName);
+        virtual HALOperationResult Get_DeviceEvent(ZeroCopyString& zcFuncName, Device::DeviceEvent** deviceEventOut);
         //virtual HALOperationResult EventCheck(uint32_t lastSeen);
         
         

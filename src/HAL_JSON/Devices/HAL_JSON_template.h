@@ -33,9 +33,14 @@
 #include "../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
-namespace HAL_JSON {
+#include "../HAL_JSON_SimpleEventDevice.h" // uncomment this to use SimpleEventDevice it defines HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE internally
 
+namespace HAL_JSON {
+#if defined(HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE)
+    class Template : public SimpleEventDevice {
+#else
     class Template : public Device {
+#endif
     private:
         uint8_t pin = 0; // if pin would be used
 
@@ -67,9 +72,6 @@ namespace HAL_JSON {
 
         BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
         BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
-        EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString& zcFuncName) override;
-        static bool EventCheck_Function(void* context);
 
         HALValue* GetValueDirectAccessPtr() override;
         /** called regulary from the main loop */

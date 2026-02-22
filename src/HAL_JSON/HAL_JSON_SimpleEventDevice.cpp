@@ -25,19 +25,28 @@
 
 namespace HAL_JSON
 {
-    bool SimpleEventDevice::EventCheck(Device* dev, uint32_t& lastSeen) {
-        auto* d = static_cast<SimpleEventDevice*>(dev);
-        if (d->eventCounter != lastSeen) {
-            lastSeen = d->eventCounter; // update to current
+    SimpleEventDevice::Context::Context(uint32_t& _current) : current(_current) { }
+
+    bool SimpleEventDevice::EventCheck(void* context) {
+        SimpleEventDevice::Context* ctx = static_cast<SimpleEventDevice::Context*>(context);
+        if (ctx->current != ctx->lastSeen) {
+            ctx->lastSeen = ctx->current; // update to current
             return true;
         }
         return false;
     }
 
-    Device::EventCheck_FuncType SimpleEventDevice::Get_EventCheck_Function(ZeroCopyString&)
+    HALOperationResult SimpleEventDevice::Get_DeviceEvent(ZeroCopyString& zcStrFuncName, DeviceEvent** deviceEventOut)
     {
-        //return &SimpleEventDevice::EventCheck;
-        return nullptr;
+        if (deviceEventOut != nullptr) {
+            *deviceEventOut = new DeviceEvent(
+                                    SimpleEventDevice::EventCheck, 
+                                    &DeviceEvent::DeleteAs<SimpleEventDevice::Context>, 
+                                    new SimpleEventDevice::Context(eventCounter));
+        }
+        // return Success even if deviceEventOut == nullptr 
+        // this is used to test if a device support events without allocating a DeviceEvent instance
+        return HALOperationResult::Success; 
     }
 
 } // namespace HAL_JSON

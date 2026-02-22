@@ -25,17 +25,27 @@
 #include <cstdint>
 #include "HAL_JSON_Device.h"
 
+#define HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE
+
 namespace HAL_JSON
 {
     class SimpleEventDevice : public Device {
+    public:
+        struct Context {
+            uint32_t lastSeen;
+            uint32_t& current;
+            Context(uint32_t& current);
+        };
+
     protected:
-        uint32_t eventCounter = 0;      // private to event devices only
+        uint32_t eventCounter;      // private to event devices only
 
     public:
-        SimpleEventDevice(const char* type) : Device(type) {}
-        static bool EventCheck(Device* dev, uint32_t& lastSeen);
-        EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString&) override;
 
+
+        SimpleEventDevice(const char* type) : Device(type) {}
+        static bool EventCheck(void* context);
+        HALOperationResult Get_DeviceEvent(ZeroCopyString& zcStrFuncName, DeviceEvent** deviceEvent) override;
     
         inline void triggerEvent() {
             ++eventCounter;

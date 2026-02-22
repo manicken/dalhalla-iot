@@ -37,6 +37,22 @@
 
 namespace HAL_JSON {
 
+    bool DeviceEventDefault(void* context) {
+         GlobalLogger.Error(F("DeviceEventDefault triggered"));
+        return false;
+    }
+    Device::DeviceEvent::DeviceEvent(CheckFn _checkFn, DeleteFn _deleteFn, void* context) : checkFn(checkFn), deleteFn(_deleteFn), context(context) {
+        if (_checkFn == nullptr || _deleteFn == nullptr || context == nullptr ) {
+            this->checkFn = DeviceEventDefault;
+            GlobalLogger.Error(F("DeviceEvent using DeviceEventDefault"));
+        }
+    }
+    Device::DeviceEvent::~DeviceEvent() {
+        if (deleteFn && context) {
+            deleteFn(context);
+        }
+    }
+
     const char* DeviceFindResultToString(DeviceFindResult res) {
         switch (res)
         {
@@ -114,10 +130,8 @@ namespace HAL_JSON {
     Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
 
-    Device::EventCheck_FuncType Device::Get_EventCheck_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    HALOperationResult Device::Get_DeviceEvent(ZeroCopyString& zcFuncName, Device::DeviceEvent** deviceEventOut) { return HALOperationResult::DeviceEventsNotSupported; }
 
-    
-    
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 
     bool Device::DisabledInJson(const JsonVariant& jsonObj) {

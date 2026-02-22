@@ -25,21 +25,11 @@
 
 namespace HAL_JSON {
 
-    Device::EventCheck_FuncType Template::Get_EventCheck_Function(ZeroCopyString& zcFuncName) {
-        //if (zcFuncName.EqualsIC("loopDone")) return Template::EventCheck_Function;
-        // add more sub-event functions here if needed
-        return nullptr;
-    }
-    
-    bool Template::EventCheck_Function(void* context) {
-
-        //Template* tDev = static_cast<Template*>(device);
-        //return value < tDev->loopDoneCounter;
-        return true;
-    }
-
-    
+#if defined(HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE)
+    Template::Template(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
+#else
     Template::Template(const JsonVariant &jsonObj, const char* type) : Device(type) {
+#endif
 
     }
 
@@ -73,6 +63,9 @@ namespace HAL_JSON {
     HALOperationResult Template::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+#if defined(HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE)
+        triggerEvent(); // can also be triggered from anywhere else
+#endif
         return HALOperationResult::UnsupportedOperation;
     };
     HALOperationResult Template::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }

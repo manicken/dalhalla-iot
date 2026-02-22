@@ -48,6 +48,7 @@ namespace HAL_JSON {
         PubSubClient& mqttClient;
         CachedDeviceRead* cdr;
         TopicBasePath topicBasePath;
+        DeviceEvent* deviceEvent;
 
         uint32_t refreshMs;
         uint32_t lastMs;

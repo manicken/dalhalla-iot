@@ -25,7 +25,7 @@
 
 namespace HAL_JSON {
     
-    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
         const char* uidStr = jsonObj[HAL_JSON_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 
@@ -76,7 +76,11 @@ namespace HAL_JSON {
         }
         delete[] validItems;
         refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0); // default to zero, note here REGO600 constructor will calculate minimum based on registerItemCount
-        rego600 = new Drivers::REGO600(rxPin, txPin, requestList, registerItemCount, refreshTimeMs);
+        unsigned long requestDelayMs = 10;
+        if (jsonObj.containsKey("requestDelayMs") && jsonObj["requestDelayMs"].is<unsigned long>()) {
+            requestDelayMs = jsonObj["requestDelayMs"].as<unsigned long>();
+        }
+        rego600 = new Drivers::REGO600(rxPin, txPin, requestList, registerItemCount, refreshTimeMs, requestDelayMs);
     }
 
     REGO600::~REGO600() {
@@ -102,6 +106,9 @@ namespace HAL_JSON {
     }
     void REGO600::loop() {
         rego600->loop();
+        if (rego600->RefreshLoopDone()) { // one hit flag check and clear if set
+            triggerEvent();
+        }
     }
 
     bool REGO600::VerifyJSON(const JsonVariant &jsonObj) {

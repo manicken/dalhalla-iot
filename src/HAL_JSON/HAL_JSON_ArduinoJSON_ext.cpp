@@ -41,7 +41,7 @@ namespace HAL_JSON {
         }
         return JsonVariant(); // null
     }
-
+/*
     bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName) {
         if (!jsonObj.containsKey(keyName)) {
             GlobalLogger.Error(HAL_JSON_ERR_MISSING_STRING_VALUE_KEY, keyName);
@@ -56,6 +56,29 @@ namespace HAL_JSON {
             GlobalLogger.Error(HAL_JSON_ERR_STRING_EMPTY, keyName);
             return false;
         }
+        return true;
+    }*/
+
+    bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName)
+    {
+        JsonVariant v = jsonObj[keyName];
+
+        if (v.isNull()) {
+            GlobalLogger.Error(HAL_JSON_ERR_MISSING_STRING_VALUE_KEY, keyName);
+            return false;
+        }
+
+        if (!v.is<const char*>()) {
+            GlobalLogger.Error(HAL_JSON_ERR_VALUE_TYPE_NOT_STRING, keyName);
+            return false;
+        }
+
+        const char* val = v.as<const char*>();
+        if (val == nullptr || *val == '\0') {
+            GlobalLogger.Error(HAL_JSON_ERR_STRING_EMPTY, keyName);
+            return false;
+        }
+
         return true;
     }
 

@@ -42,8 +42,8 @@ namespace HAL_JSON {
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, "uid");
         uid = encodeUID(uidStr);
+        
         const char* deviceId_cStr = jsonObjRoot["deviceId"];
-  
         topicBasePath.Set(deviceId_cStr, uidStr);
 
         if (ValidateJsonStringField(jsonObj, "source")) {
@@ -67,21 +67,89 @@ namespace HAL_JSON {
         lastMs = millis()-refreshMs; // force a direct update after start
     }
     Sensor::~Sensor() {
+        delete deviceEvent;
         delete cdr;
     }
 
-    bool Sensor::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
+    bool Sensor::VerifyJSON(const JsonVariant &jsonObj)
+    {
+        bool anyError = false;
+
+        if (!ValidateJsonStringField(jsonObj, "uid")) {
+            SET_ERR_LOC("HA_SENSOR_VJ"); // can be set here because ValidateJsonStringField uses GlobalLogger on error
+            anyError = true;
+        }
+
+        if (!ValidateJsonStringField(jsonObj, "name")) {
+            SET_ERR_LOC("HA_SENSOR_VJ"); // can be set here because ValidateJsonStringField uses GlobalLogger on error
+            anyError = true;
+        }
+
+        bool haveRefreshMs = ParseRefreshTimeMs(jsonObj, 0) != 0;
+        bool haveSource = false;
+        bool haveEventSource = false;
+
+        ZeroCopyString zcSrcDeviceUidStr;
+
+        // ---- SOURCE (optional now) ----
         if (ValidateJsonStringField(jsonObj, "source")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+            zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
+
             CachedDeviceRead cdr;
-            if (cdr.Set(zcSrcDeviceUidStr) == false) {
+            if (!cdr.Set(zcSrcDeviceUidStr)) {
+                GlobalLogger.Error(F("source device error"), zcSrcDeviceUidStr);
                 SET_ERR_LOC("HA_SENSOR_VJ");
-                return false;
+                anyError = true;
+            } else {
+                haveSource = true;
             }
         }
-        return true;
+
+        // ---- EVENT SOURCE ----
+        if (ValidateJsonStringField(jsonObj, "eventSource")) {
+
+            if (!haveSource) {
+                // eventSource without source makes no sense
+                GlobalLogger.Error(F("eventSource without source defined"));
+                SET_ERR_LOC("HA_SENSOR_VJ");
+                anyError = true;
+            } else {
+                ZeroCopyString zcEvtDeviceUidStr = GetAsConstChar(jsonObj, "eventSource");
+
+                HALOperationResult res =
+                    Manager::ValidateDeviceEvent(zcEvtDeviceUidStr);
+
+                if (res != HALOperationResult::Success) {
+                    GlobalLogger.Error(F("eventSource error"));
+                    SET_ERR_LOC(HALOperationResultToString(res));
+                    anyError = true;
+                } else {
+                    haveEventSource = true;
+                }
+            }
+        }
+
+        // ---- refreshTime requires source ----
+        if (haveRefreshMs && !haveSource) {
+            GlobalLogger.Error(F("haveRefreshMs without source"));
+            SET_ERR_LOC("HA_SENSOR_VJ");
+            anyError = true;
+        }
+
+        // ---- Scenario B: source only, no refreshTime, no eventSource ----
+        if (haveSource && !haveRefreshMs && !haveEventSource) {
+
+            HALOperationResult res =
+                Manager::ValidateDeviceEvent(zcSrcDeviceUidStr);
+
+            if (res != HALOperationResult::Success) {
+                GlobalLogger.Error(F("source without events do not work without refreshTime or eventSource"));
+                SET_ERR_LOC(HALOperationResultToString(res));
+                anyError = true;
+            }
+        }
+
+        return !anyError;
     }
 
     Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {

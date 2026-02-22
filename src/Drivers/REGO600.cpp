@@ -165,14 +165,6 @@ namespace Drivers {
             response.text = new char[20](); // 3 digit error code + space + 6 char date + space + 8 char time + null terminator
         }
     }
-    bool REGO600::Request::CalcAndCompareChecksum(uint8_t* buff) {
-        uint8_t chksum = 0;
-        uint32_t length = info.size-1;
-        for (int i = 1 ; i < length; i++) {
-            chksum ^= buff[i];
-        }
-        return chksum == buff[length];
-    }
     bool REGO600::Request::ValidateAndSetFromBuffer(uint8_t* buff) {
         if (info.type == RequestType::Value && response.value) {
             // 1. Extract the 16-bit raw value (7-bit packing)
@@ -276,17 +268,22 @@ namespace Drivers {
     //  ██   ██ ██      ██    ██ ██    ██ ██    ██ ████  ██ ████  ██ 
     //  ██   ██ ███████  ██████   ██████   ██████   ██████   ██████  
 
-    REGO600::REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t _refreshTimeMs) : 
+    REGO600::REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t _refreshTimeMs, unsigned long requestDelayMs) : 
         refreshLoopList(refreshLoopList), 
         refreshLoopCount(refreshLoopCount),
         refreshTimeMs(_refreshTimeMs)
     {
+
         uint32_t minRefreshTimeMs = refreshLoopCount * REGO600_DRIVER_READ_REGISTER_TIME_MS_ON_STATE;
         // subtract min from wanted to get total refresh time
         refreshTimeMs -= minRefreshTimeMs; 
         // ensure it's at least minRefreshTimeMs
         if (refreshTimeMs < minRefreshTimeMs) refreshTimeMs = minRefreshTimeMs; 
         
+        if (requestDelayMs < 10) { // minimum safe
+            requestDelayMs = 10;
+        }
+        pendingRequestDelayMs = requestDelayMs;
 
         uartTxBuffer[0] = 0x81; // constant
         #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
@@ -351,8 +348,8 @@ namespace Drivers {
         }
         mode = manualRequest_Mode;
         //const CmdVsResponseSize* info = getCmdInfo(uartTxBuffer[1]);
-        
-        SendRequestFrameAndResetRx();
+        ScheduleNextRequest();
+        //SendRequestFrameAndResetRx(); // ManualRequest_PrepareAndSend
         return true;
     }
 
@@ -398,7 +395,8 @@ namespace Drivers {
         CalcAndSetTxChecksum();
        //const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
         currentExpectedRxLength = req->info.size;
-        SendRequestFrameAndResetRx();
+        ScheduleNextRequest();
+        //SendRequestFrameAndResetRx(); // RefreshLoop_SendCurrent
     }
 
     void REGO600::RefreshLoop_Restart() {
@@ -426,166 +424,99 @@ namespace Drivers {
         refreshLoopDone = false;
         return true;
     }
-    #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
-    void REGO600::loop() {
 
-        if (requestInProgress == false) { 
-            //  here we just take care of any glitches and receive garbage data if any
-            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-            //if (mode != RequestMode::RefreshLoop) { return; }
-            if (refreshLoopList == nullptr) { return; }
-            unsigned long now = millis();
-            if (now - lastUpdateMs >= refreshTimeMs) {
-                //HAL_JSON::WebSocketAPI::SendMessage("RefreshLoop_Restart"); // just to see that this worked
-                RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
-            }
-            return; // usually dont expect a response directly
+    void REGO600::RxDone_RefreshLoop() {
+        if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+            DebugErrorMessage("refreshLoopList RX - invalid value ");
+            SendRequestFrameAndResetRx(); // retry @ RefreshLoop value error
+            return;
         }
-        unsigned long now = millis();
-        if ((now - lastRequestMs) >= requestTimeoutMs) {
-            //DebugErrorMessage("REGO600-req-TiOu");
-            GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
+        
+        if (manualRequest_Pending) {
+            manualRequest_Pending = false;
+            if (ManualRequest_PrepareAndSend() == true) {
+                return;
+            }
+        }
+        RefreshLoop_Continue();
+    }
+    void REGO600::RxDone_LCD() {
+        uint8_t tmp[20];
+
+        if (!ConvertAsciiHexToBytes(&uartRxBuffer[1], 40, tmp, 20)) {
+            DebugErrorMessage("LCD data corruption detected - discarding frame");
+            SendRequestFrameAndResetRx(); // retry @ LCD data error
+            return;
+        }
+
+        memcpy(&readLCD_Text[readLCD_RowIndex*20], tmp, 20);
+        
+        if (readLCD_RowIndex == 3) { // this was the last row
             
-            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-            SendRequestFrameAndResetRx(); // retry current
-        }
-
-        uint32_t failsafeReadCount = 0;
-        while (REGO600_UART_TO_USE.available() && failsafeReadCount++ < REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-            lastRequestMs = millis(); // update on every rx
-            if (uartRxBufferIndex < REGO600_UART_RX_BUFFER_SIZE) {
-                uartRxBuffer[uartRxBufferIndex++] = REGO600_UART_TO_USE.read();
-                if (uartRxBufferIndex == currentExpectedRxLength) {
-                    FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // flush remaining garbage if any
-                    if (uartRxBuffer[0] != 0x01) {
-                        DebugErrorMessage("RX done - start byte mismatch");
-                        
-                        //RefreshLoop_SendCurrent(); // retry
-                        SendRequestFrameAndResetRx(); // retry
-                        return;
-                    }
-                    // RX is done
-                    if (mode == RequestMode::RefreshLoop) {
-                        
-                        if (refreshLoopList[refreshLoopIndex]->CalcAndCompareChecksum(uartRxBuffer) == false) {
-                            DebugErrorMessage("refreshLoopList RX - Checksum error");
-                            
-                            //RefreshLoop_SendCurrent(); // retry
-                            SendRequestFrameAndResetRx(); // retry
-                            return;
-                        }
-                        if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
-                            DebugErrorMessage("refreshLoopList RX - invalid value ");
-                            
-                            //RefreshLoop_SendCurrent(); // retry
-                            SendRequestFrameAndResetRx(); // retry
-                            return;
-                        }
-                        
-                        if (manualRequest_Pending) {
-                            manualRequest_Pending = false;
-                            if (ManualRequest_PrepareAndSend() == true) {
-                                return;
-                            }
-                        }
-                        RefreshLoop_Continue();
-
-                    } else if (mode == RequestMode::Lcd) {
-
-                        uint8_t tmp[20];
-
-                        if (!ConvertAsciiHexToBytes(&uartRxBuffer[1], 40, tmp, 20)) {
-                            DebugErrorMessage("LCD data corruption detected - discarding frame");
-                            SendRequestFrameAndResetRx(); // retry
-                            return;
-                        }
-
-                        memcpy(&readLCD_Text[readLCD_RowIndex*20], tmp, 20);
-                        
-                        if (readLCD_RowIndex == 3) { // this was the last row
-                            
-                            // execute a callback here
-                            if (manualRequest_Callback != nullptr) {
-                                manualRequest_Callback(readLCD_Text, manualRequest_Mode);
-                            } else {
-                                DebugErrorMessage("LCD - mReqCB not set");
-                            }
-
-                            mode = RequestMode::RefreshLoop;
-                            manualRequest_Mode = RequestMode::RefreshLoop;
-                            RefreshLoop_Continue();
-                        } else {
-                            readLCD_RowIndex++;
-                            uartTxBuffer[4] = readLCD_RowIndex;
-                            uartTxBuffer[8] = readLCD_RowIndex;
-                            SendRequestFrameAndResetRx();
-                        }
-                    } else if (mode == RequestMode::FrontPanelLeds) {
-                        if (uartRxBuffer[3] == 0x01) { 
-                            readFrontPanelLeds_Data |= 0x01;
-                        }
-                        if (readFrontPanelLedsIndex != 4) {
-                            readFrontPanelLedsIndex++;
-                            readFrontPanelLeds_Data <<= 1; // shift data to the right
-                            uartTxBuffer[4] = readFrontPanelLedsIndex + 0x12;
-                            uartTxBuffer[8] = readFrontPanelLedsIndex + 0x12;
-                            SendRequestFrameAndResetRx();
-                        } else {
-                            
-                            if (manualRequest_Callback != nullptr) {
-                                manualRequest_Callback(&readFrontPanelLeds_Data, manualRequest_Mode);
-                            } else {
-                                DebugErrorMessage("FP - mReqCB not set");
-                            }
-                            mode = RequestMode::RefreshLoop;
-                            manualRequest_Mode = RequestMode::RefreshLoop;
-                            RefreshLoop_Continue();
-                        }
-                    } else if (mode == RequestMode::OneTime) {
-                        
-                        if (manualRequest_Callback != nullptr) {
-
-
-                            // only set here, there is no point setting the data if there are no receiver
-                            // actually making the request in the first place when
-                            // the callback is not set is actually pointless
-                            if (manualRequest->CalcAndCompareChecksum(uartRxBuffer) == false) {
-                                // try the request again
-                                DebugErrorMessage("manualReq RX - Checksum error");
-                                SendRequestFrameAndResetRx();
-                                return;
-                            }
-                            if (manualRequest->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
-                                // try the request again
-                                DebugErrorMessage("manualReq RX - ValidateAndSetFromBuffer error");
-                                SendRequestFrameAndResetRx();
-                                return;
-                            }
-                            //Request* request = manuallyRequest.release();
-                            manualRequest_Callback(manualRequest.get(), manualRequest_Mode);
-                            //delete request;
-                        }
-                        else {
-                            //manuallyRequest.reset(); // free the current data
-                            DebugErrorMessage("OT - mReqCB not set");
-                        }
-                        manualRequest.reset(); // free the current data
-                        mode = RequestMode::RefreshLoop;
-                        manualRequest_Mode = RequestMode::RefreshLoop;
-                        RefreshLoop_Continue();
-                    }
-                    return; // now we can return here
-                }
+            // execute a callback here
+            if (manualRequest_Callback != nullptr) {
+                manualRequest_Callback(readLCD_Text, manualRequest_Mode);
             } else {
-                requestInProgress = false; // to make the remaining data reads faster, if any 
-                mode = RequestMode::RefreshLoop;
-                FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-                DebugErrorMessage("uartRxBuffer full");
+                DebugErrorMessage("LCD - mReqCB not set");
             }
+
+            mode = RequestMode::RefreshLoop;
+            manualRequest_Mode = RequestMode::RefreshLoop;
+            RefreshLoop_Continue();
+        } else {
+            readLCD_RowIndex++;
+            uartTxBuffer[4] = readLCD_RowIndex;
+            uartTxBuffer[8] = readLCD_RowIndex;
+            ScheduleNextRequest();
+            //SendRequestFrameAndResetRx(); // LCD continue
         }
-        if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-            DebugErrorMessage("read failsafe overflow");
+    }
+    void REGO600::RxDone_FrontPanelLeds() {
+        if (uartRxBuffer[3] == 0x01) { 
+            readFrontPanelLeds_Data |= 0x01;
         }
+        if (readFrontPanelLedsIndex != 4) {
+            readFrontPanelLedsIndex++;
+            readFrontPanelLeds_Data <<= 1; // shift data to the right
+            uartTxBuffer[4] = readFrontPanelLedsIndex + 0x12;
+            uartTxBuffer[8] = readFrontPanelLedsIndex + 0x12;
+            ScheduleNextRequest();
+            //SendRequestFrameAndResetRx(); // FrontPanelLeds continue
+        } else {
+            
+            if (manualRequest_Callback != nullptr) {
+                manualRequest_Callback(&readFrontPanelLeds_Data, manualRequest_Mode);
+            } else {
+                DebugErrorMessage("FP - mReqCB not set");
+            }
+            mode = RequestMode::RefreshLoop;
+            manualRequest_Mode = RequestMode::RefreshLoop;
+            RefreshLoop_Continue();
+        }
+    }
+    void REGO600::RxDone_OneTime() {
+        if (manualRequest_Callback != nullptr) {
+            // only set here, there is no point setting the data if there are no receiver
+            // actually making the request in the first place when
+            // the callback is not set is actually pointless
+            if (manualRequest->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+                // try the request again
+                DebugErrorMessage("manualReq RX - ValidateAndSetFromBuffer error");
+                SendRequestFrameAndResetRx(); // retry @ OneTime value error
+                return;
+            }
+            //Request* request = manuallyRequest.release();
+            manualRequest_Callback(manualRequest.get(), manualRequest_Mode);
+            //delete request;
+        }
+        else {
+            //manuallyRequest.reset(); // free the current data
+            DebugErrorMessage("OT - mReqCB not set");
+        }
+        manualRequest.reset(); // free the current data
+        mode = RequestMode::RefreshLoop;
+        manualRequest_Mode = RequestMode::RefreshLoop;
+        RefreshLoop_Continue();
     }
 
     void REGO600::SendRequestFrameAndResetRx() {
@@ -593,19 +524,6 @@ namespace Drivers {
         uartRxBufferIndex = 0;
         requestInProgress = true;
         REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
-    }
-
-    void REGO600::SendReq(uint16_t address) {
-        SetRequestAddr(address);
-        CalcAndSetTxChecksum();
-        SendRequestFrameAndResetRx();
-    }
-
-    void REGO600::Send(uint16_t address, uint16_t data) {
-        SetRequestAddr(address);
-        SetRequestData(data);
-        CalcAndSetTxChecksum();
-        SendRequestFrameAndResetRx();
     }
 
     void REGO600::SetRequestAddr(uint16_t address) {
@@ -631,6 +549,20 @@ namespace Drivers {
         uartTxBuffer[8] = chksum;
     }
 
+    bool REGO600::CalcAndCompareRxDataChecksum() {
+        uint8_t chksum = 0;
+
+        const uint32_t checksumIndex = currentExpectedRxLength - 1;
+        const uint32_t lastDataIndex = checksumIndex - 1;
+
+        for (uint32_t i = 1; i <= lastDataIndex; ++i)
+        {
+            chksum ^= uartRxBuffer[i];
+        }
+
+        return chksum == uartRxBuffer[checksumIndex];
+    }
+
     uint16_t REGO600::GetValueFromUartRxBuff() {
         return (uartRxBuffer[1] << 14) + (uartRxBuffer[2] << 7) + uartRxBuffer[3];
     }
@@ -639,6 +571,95 @@ namespace Drivers {
         size_t count = 0;
         while (uart.available() && count++ < maxDrains) {
             uart.read();
+        }
+    }
+    void REGO600::ScheduleNextRequest() {
+        pendingRequestLastTime = millis();
+        pendingRequest = true;
+        requestInProgress = true;
+    }
+
+    #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
+    void REGO600::loop() {
+
+        { // making now into a separate scope for nicer code
+            unsigned long now = millis();
+            if (pendingRequest && (now - pendingRequestLastTime) > pendingRequestDelayMs) {
+                pendingRequest = false;
+                SendRequestFrameAndResetRx();
+            }
+        }
+
+        if (requestInProgress == false) { 
+            //  here we just take care of any glitches and receive garbage data if any
+            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
+            //if (mode != RequestMode::RefreshLoop) { return; }
+            if (refreshLoopList == nullptr) { return; }
+            unsigned long now = millis();
+            if (now - lastUpdateMs >= refreshTimeMs) {
+                //HAL_JSON::WebSocketAPI::SendMessage("RefreshLoop_Restart"); // just to see that this worked
+                RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
+            }
+            return; // usually dont expect a response directly
+        }
+        
+
+        uint32_t failsafeReadCount = 0;
+        while (REGO600_UART_TO_USE.available() && failsafeReadCount++ < REGO600_UART_RX_MAX_FAILSAFECOUNT) {
+            lastRequestMs = millis(); // update on every rx
+            if (uartRxBufferIndex < REGO600_UART_RX_BUFFER_SIZE) {
+                uartRxBuffer[uartRxBufferIndex++] = REGO600_UART_TO_USE.read();
+                if (uartRxBufferIndex == currentExpectedRxLength) {
+
+                    FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // allways flush remaining garbage if any
+
+                    if (uartRxBuffer[0] != 0x01) {
+                        DebugErrorMessage("RX done - start byte mismatch");
+                        SendRequestFrameAndResetRx(); // retry @ start byte error
+                        return;
+                    }
+
+                    if (CalcAndCompareRxDataChecksum() == false) {
+                        // try the request again
+                        DebugErrorMessage("manualReq RX - Checksum error");
+                        SendRequestFrameAndResetRx(); // retry @ checksum error
+                        return;
+                    }
+                    // RX is done
+                    if (mode == RequestMode::RefreshLoop) {
+                        RxDone_RefreshLoop();           
+                    } else if (mode == RequestMode::Lcd) {
+                        RxDone_LCD();
+                    } else if (mode == RequestMode::FrontPanelLeds) {
+                        RxDone_FrontPanelLeds();
+                    } else if (mode == RequestMode::OneTime) {
+                        RxDone_OneTime();
+                    }
+                    lastRequestMs = millis();
+                    return; // now we can return here
+                }
+            } else {
+                requestInProgress = false; // to make the remaining data reads faster, if any 
+                mode = RequestMode::RefreshLoop;
+                FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
+                DebugErrorMessage("uartRxBuffer full");
+            }
+            lastRequestMs = millis();
+        }
+        // Timeout check after possible any rx
+        { // making now into a separate scope for nicer code
+            unsigned long now = millis();
+            if ((now - lastRequestMs) >= requestTimeoutMs) {
+                //DebugErrorMessage("REGO600-req-TiOu");
+                GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
+                HAL_JSON::WebSocketAPI::SendMessage("REGO600-request-timeout");
+                
+                FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
+                SendRequestFrameAndResetRx(); // retry @ timeout
+            }
+            if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
+                DebugErrorMessage("read failsafe overflow");
+            }
         }
     }
 }

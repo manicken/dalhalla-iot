@@ -52,21 +52,31 @@ namespace HAL_JSON {
 
     struct ThingSpeakField {
         int index;
-        uint32_t valueChangedCounter;
-        Device* eventCheckDevice;
-        Device::EventCheck_FuncType eventFunc;
+        Device::DeviceEvent* deviceEvent;
         CachedDeviceRead* cdr;
+        bool dataReady = false;
+        bool sendAllInSync = false;
 
         ThingSpeakField();
+        ~ThingSpeakField();
 
-        void Set(int index, const char* uidPathAndFuncName_cStr);
+        void Set(int index, const char* uidPathAndFuncName_cStr, bool _sendAllInSync = false);
         
         void SetEventHandler(ZeroCopyString zcStrUidPathAndFuncName);
 
         inline bool DataReady() {
-            if (eventFunc == nullptr || eventCheckDevice == nullptr) return true; // allways return true if no event device
-            //return eventFunc(eventCheckDevice, valueChangedCounter);
-            return false;
+            if (sendAllInSync) {
+                if (dataReady) return true;
+                else if (deviceEvent == nullptr) { dataReady = true; }
+                else if (deviceEvent->CheckForEvent()) {  dataReady = true; }
+                return false;
+            } else {
+                if (deviceEvent == nullptr) return true; // allways ready 
+                return deviceEvent->CheckForEvent();
+            }
+        }
+        inline void ClearDataReady() {
+            dataReady = false;
         }
     };
 

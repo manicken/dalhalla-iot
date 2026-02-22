@@ -139,7 +139,6 @@ namespace Drivers {
              */
             Request(const OpCodeInfo& _info, const RegoLookupEntry& _def, HAL_JSON::HALValue& externalValue);
             bool ValidateAndSetFromBuffer(uint8_t* buff);
-            bool CalcAndCompareChecksum(uint8_t* buff);
 
             std::string ToString();
 
@@ -168,10 +167,15 @@ namespace Drivers {
 
         REGO600() = delete;
         REGO600(REGO600&) = delete;
-        REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t refreshTimeMs);
+        REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t refreshTimeMs, unsigned long requestDelayMs);
         ~REGO600();
         void begin();
         void loop();
+
+        void RxDone_RefreshLoop();
+        void RxDone_LCD();
+        void RxDone_FrontPanelLeds();
+        void RxDone_OneTime();
         /** please note that this uses std::unique_ptr 
          * to ensure that the created object (Request) is moved into this function
          * and to make sure that it can be deleted internally */
@@ -219,12 +223,17 @@ namespace Drivers {
 
         void SetRequestAddr(uint16_t address);
         void SetRequestData(uint16_t data);
-        void SendReq(uint16_t address);
-        void Send(uint16_t address, uint16_t data);
+        
+        /** used to create a delay before execute SendRequestFrameAndResetRx */
+        bool pendingRequest = false;
+        unsigned long pendingRequestLastTime = 0;
+        unsigned long pendingRequestDelayMs = 50;
+        void ScheduleNextRequest();
         void SendRequestFrameAndResetRx();
-        //void SendNextRequest();
-        void StartSendOneRegisterReadRequest(uint16_t address);
+
         void CalcAndSetTxChecksum();
+        bool CalcAndCompareRxDataChecksum();
+
         uint16_t GetValueFromUartRxBuff();
 
         void RefreshLoop_Restart();

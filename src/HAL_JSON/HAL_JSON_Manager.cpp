@@ -180,6 +180,60 @@ namespace HAL_JSON {
         path.reset(); // ensure to be at root level
         return Device::findInArray(devices, deviceCount, path, nullptr, outDevice);
     }
+    /*
+    HALOperationResult Manager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut) {
+        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('@');
+        UIDPath uidPath(zcStrUidPathAndFuncName);
+        Device* deviceOut = nullptr;
+        DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
+
+        if (devFindRes != DeviceFindResult::Success) {
+            if (deviceEventOut) {
+                *deviceEventOut = nullptr;
+            }
+            return HALOperationResult::DeviceNotFound;
+        }
+
+        Device::DeviceEvent* deviceEventTemp = nullptr;
+        HALOperationResult res = deviceOut->Get_DeviceEvent(zcFuncName, &deviceEventTemp);
+
+        if (res != HALOperationResult::Success) {
+            if (deviceEventOut) {
+                *deviceEventOut = nullptr;
+            }
+            return res;
+        }
+
+        // Success case
+        if (deviceEventOut) {
+            *deviceEventOut = deviceEventTemp;   // transfer ownership
+        } else {
+            delete deviceEventTemp;             // test mode → auto delete
+        }
+
+        return HALOperationResult::Success;
+    }*/
+    HALOperationResult Manager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut)
+    {
+        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
+        UIDPath uidPath(zcStrUidPathAndFuncName);
+
+        Device* deviceOut = nullptr;
+        DeviceFindResult findRes = Manager::findDevice(uidPath, deviceOut);
+
+        if (findRes != DeviceFindResult::Success) {
+            if (deviceEventOut) {
+                *deviceEventOut = nullptr;
+            }
+            return HALOperationResult::DeviceNotFound;
+        }
+
+        // Forward directly to device
+        return deviceOut->Get_DeviceEvent(zcFuncName, deviceEventOut);
+    }
+    HALOperationResult Manager::ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName) {
+        return GetDeviceEvent(zcStrUidPathAndFuncName, nullptr);
+    }
 
     bool Manager::ReadJSON(const char* path) {
         if (path == nullptr) {

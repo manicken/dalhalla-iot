@@ -48,6 +48,8 @@ namespace HAL_JSON {
             case HALOperationResult::HardwareFault: return "HardwareFault";
             case HALOperationResult::Timeout: return "Timeout";
             case HALOperationResult::NotSet: return "NotSet";
+            case HALOperationResult::DeviceEventsNotSupported: return "DeviceEventsNotSupported";
+            case HALOperationResult::DeviceEventByNameNotFound: return "DeviceEventByNameNotFound";
             
             default:
                 printf("unknown HALOperationResult: %d\n", (int)result);

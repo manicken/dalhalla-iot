@@ -78,6 +78,11 @@ namespace HAL_JSON {
 
         // Device operations
         static DeviceFindResult findDevice(UIDPath& path, Device*& outDevice);
+        /** get the device event struct if the source device supports events, otherwise it returns nullptr, 
+         * a special note the consumer MUST delete the DeviceEvent when done with it i.e using delete eventDevice
+         */
+        static HALOperationResult GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut);
+        static HALOperationResult ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName);
 
         // Maintenance
         static void loop();

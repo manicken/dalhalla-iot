@@ -35,10 +35,11 @@
 #include "HAL_JSON_REGO600register.h"
 #include "../../../Drivers/REGO600.h"
 #include "../HAL_JSON_DeviceTypesRegistry.h"
+#include "../../HAL_JSON_SimpleEventDevice.h"
 
 namespace HAL_JSON {
 
-    class REGO600 : public Device {
+    class REGO600 : public SimpleEventDevice {
     private:
         uint32_t refreshTimeMs = 0;
         uint8_t rxPin = 0;

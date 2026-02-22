@@ -55,6 +55,8 @@ namespace HAL_JSON {
         InvalidArgument = 9,
         HardwareFault = 10,
         Timeout = 11,
+        DeviceEventsNotSupported = 12,
+        DeviceEventByNameNotFound = 13,
 
         /** script engine specific status */
         IfConditionTrue = 20,

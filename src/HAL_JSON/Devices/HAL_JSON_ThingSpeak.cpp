@@ -33,43 +33,23 @@ namespace HAL_JSON {
 
     ThingSpeakField::ThingSpeakField() :
         index(0), 
-        valueChangedCounter(0),
-        eventFunc(nullptr),
-        eventCheckDevice(nullptr),
         cdr(nullptr) {}
 
-    void ThingSpeakField::SetEventHandler(ZeroCopyString zcStrUidPathAndFuncName) {
-        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
-        UIDPath uidPath(zcStrUidPathAndFuncName);
-        Device* deviceOut = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
-        if (devFindRes == DeviceFindResult::Success) {
-            //ZeroCopyString zcEmpty;
-            
-            eventFunc = deviceOut->Get_EventCheck_Function(zcFuncName);
-            if (eventFunc != nullptr) {
-                eventCheckDevice = deviceOut;
-                valueChangedCounter = 0;
-            } else {
-                eventCheckDevice = nullptr; // also set to nullptr
-            }
-        } else {
-            Serial.printf("\r\nThingSpeakField::SetEventHandler - Device NOT found: '%.*s' (len=%zu), reason: %s\r\n",
-                  (int)(zcStrUidPathAndFuncName.Length()), zcStrUidPathAndFuncName.start,
-                  zcStrUidPathAndFuncName.Length(),
-                  DeviceFindResultToString(devFindRes));
-            // set to nullptr here to clarify the state
-            eventFunc = nullptr;
-            eventCheckDevice = nullptr;
+    ThingSpeakField::~ThingSpeakField() {
+        if (deviceEvent != nullptr) {
+            delete deviceEvent;
         }
     }
 
-    void ThingSpeakField::Set(int fieldIndex, const char* uidPathAndFuncName_cStr) {
+    void ThingSpeakField::Set(int fieldIndex, const char* uidPathAndFuncName_cStr, bool _sendAllInSync) {
+        this->sendAllInSync = _sendAllInSync;
         this->index = fieldIndex;
         cdr = new CachedDeviceRead();
         ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
-        cdr->Set(zcStrUidPathAndFuncName);
-        SetEventHandler(zcStrUidPathAndFuncName);
+        if (cdr->Set(zcStrUidPathAndFuncName)) {
+            Manager::GetDeviceEvent(zcStrUidPathAndFuncName, &deviceEvent);
+        }
+        
     }
 
 
@@ -149,6 +129,7 @@ namespace HAL_JSON {
         urlApi += API_KEY;
         for (int i=0;i<fieldCount;i++) {
             ThingSpeakField& field = fields[i];
+            
             if (field.DataReady() == false) continue; // skip values that have not currently been changed
             HALValue val;
             HALOperationResult hres = field.cdr->ReadSimple(val);
