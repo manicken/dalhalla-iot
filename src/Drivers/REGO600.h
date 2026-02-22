@@ -23,11 +23,12 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <Arduino.h> // TODO remove dependency of Arduino framework
 #include <ArduinoJson.h>
 #include <memory>
 //#include <ESPAsyncWebServer.h>
 #include "../Support/ConvertHelper.h"
+#include "../HAL_JSON/HAL_JSON_Value.h"
 
 #define REGO600_UART_TX_CHKSUM_START_INDEX 2
 #define REGO600_UART_TX_BUFFER_SIZE 9 // allways 9 in size
@@ -65,12 +66,20 @@ namespace Drivers {
     public:
 
         enum class RequestType {
-                Value,
-                Text,
-                ErrorLogItem,
-                WriteConfirm,
-                NotSet
-            };
+            Value,
+            Text,
+            ErrorLogItem,
+            WriteConfirm,
+            NotSet
+        };
+
+        enum class ValueType {
+            Unset,
+            Bool,
+            Unsigned,
+            Signed,
+            Float
+        };
         
         // theese are the only available op-codes (verified by rom-dump)
         enum class OpCodes : uint8_t {
@@ -89,34 +98,50 @@ namespace Drivers {
             NotSet = 0xFF
         };
 
-        struct CmdVsResponseSize {
+        struct OpCodeInfo {
             OpCodes opcode;
             uint32_t size;
             RequestType type;
         };
+
+        union ValueLimit {
+            uint16_t u16;
+            int16_t  s16;
+        };
+
+        struct RegoLookupEntry {
+            const char* name;
+            uint16_t address;
+            //REGO600::OpCodes opcode; this is determined by if it's read/write and set elsewhere
+            ValueLimit minVal;      // including minimum
+            ValueLimit maxVal;      // including maximum
+            ValueType valueType;       
+            float multiplier;    //  for example 0.1 @ temperatures
+        };
+        static const RegoLookupEntry* SystemRegisterTableLockup(const char* name);
+        // Declaration of the fallback entry
+        static const RegoLookupEntry ManualRawEntry;
         
         struct Request {
             
-
-            const CmdVsResponseSize& info;
-            //const uint32_t opcode;
-            const uint16_t address;
-            //const Request::Type type;
+            const OpCodeInfo& info;
+            const RegoLookupEntry& def;
 
             union Response { // type name this so that it can be passed
-                uint32_t* value;
+                HAL_JSON::HALValue* value;
                 char* text;
             } response;
 
             Request() = delete;
-            /**  */
-            Request(uint32_t opcode, uint16_t address);
+            Request(const OpCodeInfo& _info, const RegoLookupEntry& _def);
             /** externalValue is a non-owning pointer to external data. 
              * Do not delete; must remain valid during Request's lifetime.
              */
-            Request(uint32_t opcode, uint16_t address, uint32_t& externalValue);
-            void SetFromBuffer(uint8_t* buff);
+            Request(const OpCodeInfo& _info, const RegoLookupEntry& _def, HAL_JSON::HALValue& externalValue);
+            bool ValidateAndSetFromBuffer(uint8_t* buff);
             bool CalcAndCompareChecksum(uint8_t* buff);
+
+            std::string ToString();
 
             ~Request();
 
@@ -154,7 +179,7 @@ namespace Drivers {
         void RequestWholeLCD(RequestCallback cb);
         void RequestFrontPanelLeds(RequestCallback cb);
 
-        static const CmdVsResponseSize& getCmdInfo(uint8_t opcode);
+        static const OpCodeInfo& getCmdInfo(uint8_t opcode);
         /** this is a "latching flag"/"one-shot flag", i.e. if read and was true it automatically resets the internal flag to false */
         bool RefreshLoopDone();
     private:
@@ -165,8 +190,8 @@ namespace Drivers {
         size_t currentExpectedRxLength = 0;
         
         uint32_t refreshTimeMs = 5000; // this needs to calculated depending on how many items in refreshLoopList (max items is 17 -> 17*0.2 = 3.4 sec) but also what the json cfg have
-        uint32_t requestTimeoutMs = 10000;
-        uint32_t lastUpdateMs = 0;
+        unsigned long requestTimeoutMs = 1000;
+        unsigned long lastUpdateMs = 0;
         uint32_t lastRequestMs = 0;
         Request* const* refreshLoopList; // a const pointer to a list of mutable Request object pointers
         const int refreshLoopCount;
@@ -206,6 +231,8 @@ namespace Drivers {
         void RefreshLoop_SendCurrent();
         void RefreshLoop_Continue();
 
-        static void ClearUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains = 100);
+        static void FlushCleanUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains = 100);
+
+        static void DebugErrorMessage(const char* msg);
     };
 }

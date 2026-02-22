@@ -69,7 +69,7 @@ namespace HAL_JSON {
         BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
 
         EventCheck_FuncType Get_EventCheck_Function(ZeroCopyString& zcFuncName) override;
-        static bool EventCheck_Function(Device* device, uint32_t& value);
+        static bool EventCheck_Function(void* context);
 
         HALValue* GetValueDirectAccessPtr() override;
         /** called regulary from the main loop */

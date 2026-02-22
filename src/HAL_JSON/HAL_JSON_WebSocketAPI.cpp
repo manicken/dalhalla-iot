@@ -203,6 +203,15 @@ document.getElementById('cmd').addEventListener('keydown', (e) => {
             asyncWebSocket->textAll(msg);
         }
     }
+    void WebSocketAPI::SendMessage(const char* source, const char* msg) {
+        if (asyncWebSocket->availableForWriteAll()) {
+            std::string msgStr;
+            msgStr.reserve(strlen(source) + strlen(msg) + 2);
+            msgStr.append(source);
+            msgStr.append(msg);
+            asyncWebSocket->textAll(msg);
+        }
+    }
 /*
     void WebSocketAPI::SendMessage(const char* fmt, ...) {
         if (!asyncWebSocket) return;

@@ -57,16 +57,20 @@ namespace HAL_JSON {
             if (validItems[i] == false) continue;
             const JsonVariant& item = items[i];
             REGO600register* itemReg = new REGO600register(item, nullptr);
-            
-            const char* opcodeStr = GetAsConstChar(item, HAL_JSON_KEYNAME_REGO600_OPCODE);
-            const char* addressStr = GetAsConstChar(item, HAL_JSON_KEYNAME_REGO600_ADDRESS);
 
-            uint32_t opcode = std::strtoul(opcodeStr, nullptr, 16);
-            uint16_t address = std::strtoul(addressStr, nullptr, 16);
- 
+            const char* regName = GetAsConstChar(item, "regname");
+            const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
+            if (regName == nullptr) {
+                GlobalLogger.Error(F("regName not found"));
+            }
             // here value is passed by ref so that REGO600 driver can access and change the value,
             // that makes REGO600register read function can then get the correct value
-            requestList[index] = new Drivers::REGO600::Request(opcode, address, itemReg->value);
+            const Drivers::REGO600::OpCodeInfo& info = Drivers::REGO600::getCmdInfo(0x02); // system registers only
+            requestList[index] = new Drivers::REGO600::Request(
+                info, 
+                (entry != nullptr) ? *entry : Drivers::REGO600::ManualRawEntry, // should not be needed
+                itemReg->value
+            );
             registerItems[index] = itemReg;
             index++;
         }
@@ -151,7 +155,7 @@ namespace HAL_JSON {
             ret += ",\"opcode\":\"";
             ret += Convert::toHex((uint8_t)requestList[i]->info.opcode).c_str();
             ret += "\",\"addr\":\"";
-            ret += Convert::toHex(requestList[i]->address).c_str();
+            ret += Convert::toHex(requestList[i]->def.address).c_str();
             ret += "\",";
             ret += registerItems[i]->ToString();
             ret += "}";

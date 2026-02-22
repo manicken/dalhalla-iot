@@ -23,10 +23,57 @@
 
 #include "REGO600.h"
 
+#include "../HAL_JSON/HAL_JSON_WebSocketAPI.h"
+
+#define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
 namespace Drivers {
 
+    static inline bool HexCharToNibble(uint8_t c, uint8_t& nibble)
+    {
+        if (c >= '0' && c <= '9') {
+            nibble = c - '0';
+            return true;
+        }
+        if (c >= 'A' && c <= 'F') {
+            nibble = c - 'A' + 10;
+            return true;
+        }
+        return false;
+    }
+
+    bool ConvertAsciiHexToBytes(const uint8_t* src,
+                                size_t hexLen,
+                                uint8_t* dst,
+                                size_t dstLen)
+    {
+        // hexLen måste vara jämnt och matcha dstLen
+        if ((hexLen % 2) != 0 || (hexLen / 2) != dstLen)
+            return false;
+
+        for (size_t i = 0; i < dstLen; ++i)
+        {
+            uint8_t high, low;
+
+            if (!HexCharToNibble(src[i*2], high))
+                return false;
+
+            if (!HexCharToNibble(src[i*2 + 1], low))
+                return false;
+
+            dst[i] = (high << 4) | low;
+        }
+
+        return true;
+    }
+
+    void REGO600::DebugErrorMessage(const char* msg) {
+        printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        HAL_JSON::WebSocketAPI::SendMessage(DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        GlobalLogger.Error(F(DRIVERS_REGO600_ERROR_BASE_STR), msg);
+    }
+
     //const size_t CmdVsResponseSizeTable_Count = 12;
-    const REGO600::CmdVsResponseSize CmdVsResponseSizeTable[] = {
+    const REGO600::OpCodeInfo OpCodeInfoTable[] = {
         {REGO600::OpCodes::NotSet,              0,  REGO600::RequestType::NotSet},
         {REGO600::OpCodes::ReadFrontPanel,      5,  REGO600::RequestType::Value}, // Read from front panel (keyboard+leds) {reg 09FF+xx}
         {REGO600::OpCodes::WriteFrontPanel,     1,  REGO600::RequestType::WriteConfirm}, // Write to front panel (keyboard+leds) {reg 09FF+xx}
@@ -41,21 +88,73 @@ namespace Drivers {
         {REGO600::OpCodes::ReadPrevError,       42, REGO600::RequestType::ErrorLogItem}, // Read previous error line (prev from last reading) [4100/01]
         {REGO600::OpCodes::ReadRegoVersion,     5,  REGO600::RequestType::Value} // Read rego version {constant 0258 = 600 ?Rego 600?}
     };
-    const REGO600::CmdVsResponseSize& REGO600::getCmdInfo(uint8_t opcode) {
+    const REGO600::OpCodeInfo& REGO600::getCmdInfo(uint8_t opcode) {
 
-        for (const auto& entry : CmdVsResponseSizeTable) {
+        for (const auto& entry : OpCodeInfoTable) {
             if (static_cast<uint8_t>(entry.opcode) == opcode) {
                 return entry;
             }
         }
-        return CmdVsResponseSizeTable[0]; // Not found
+        return OpCodeInfoTable[0]; // Not found
     }
 
-    REGO600::Request::Request(uint32_t opcode, uint16_t address, uint32_t& externalValue) : address(address), info(getCmdInfo(opcode)) {
+    // Tabellen placeras lämpligen i Flash (PROGMEM på ESP)
+    const REGO600::RegoLookupEntry SystemRegisterTable[] = {
+        // Namn,   Adr,    Opcode,                Min,    Max,   Signed, Multiplier
+        // temperature sensor registers
+        {"GT1",  0x0209,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Radiator return (GT1)
+        {"GT2",  0x020A,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Outdoor (GT2)
+        {"GT3",  0x020B,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Hot water (GT3)
+        {"GT4",  0x020C,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Forward (GT4)
+        {"GT5",  0x020D,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Room (GT5)
+        {"GT6",  0x020E,  {.s16 = 10},  {.s16 = 1500},  REGO600::ValueType::Float,  0.1f}, // Compressor (GT6) 
+        {"GT8",  0x020F,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid out (GT8)
+        {"GT9",  0x0210,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid in (GT9)
+        {"GT10", 0x0211,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid in (GT10)
+        {"GT11", 0x0212,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid out (GT11)
+        {"GT3x", 0x0213,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // External hot water (GT3x)
+        // state registers
+        {"P3",    0x01FD, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Ground loop pump [P3]
+        {"COMP",  0x01FE, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Compresor
+        {"EL3",   0x01FF, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 3kW
+        {"EL6",   0x0200, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 6kW
+        {"P1",    0x0203, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Radiator pump [P1]
+        {"P2",    0x0204, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Heat carrier pump [P2]
+        {"VXV",   0x0205, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Tree-way valve [VXV]
+        {"ALARM", 0x0206, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Alarm
+
+        /** terminator element should allways be last and present */
+        {nullptr, 0, 0, 0, REGO600::ValueType::Unset, 0.0f}
+    };
+    const REGO600::RegoLookupEntry REGO600::ManualRawEntry = {
+        "MANUAL", 
+        0x0000,
+        {.u16 = 0}, 
+        {.u16 = 0xFFFF}, 
+        REGO600::ValueType::Unsigned,
+        1.0f
+    };
+    const REGO600::RegoLookupEntry* REGO600::SystemRegisterTableLockup(const char* name) {
+        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
+            if (strcasecmp(SystemRegisterTable[i].name, name) == 0) {
+                return &SystemRegisterTable[i];
+            }
+        }
+        return nullptr;
+    }
+
+    // Constructor for linked values here the type is allways Value
+    REGO600::Request::Request(const OpCodeInfo& _info, const RegoLookupEntry& _def, HAL_JSON::HALValue& externalValue) 
+        : info(_info), 
+        def(_def)
+    {
         response.value = &externalValue;
     }
 
-    REGO600::Request::Request(uint32_t opcode, uint16_t address) : address(address), info(getCmdInfo(opcode)) {
+    REGO600::Request::Request(const OpCodeInfo& _info, const RegoLookupEntry& _def) 
+        : info(_info), 
+          def(_def)
+    {
         if (info.type == RequestType::Text) {
             response.text = new char[21](); // 20 characters + null terminator
         }
@@ -74,14 +173,63 @@ namespace Drivers {
         }
         return chksum == buff[length];
     }
-    void REGO600::Request::SetFromBuffer(uint8_t* buff) {
+    bool REGO600::Request::ValidateAndSetFromBuffer(uint8_t* buff) {
         if (info.type == RequestType::Value && response.value) {
-            *response.value = (buff[1] << 14) + (buff[2] << 7) + buff[3];
+            // 1. Extract the 16-bit raw value (7-bit packing)
+            uint16_t rawValue = (buff[1] << 14) + (buff[2] << 7) + buff[3];
+            
+            // 2. Perform Type-Aware Validation
+            switch (def.valueType) {
+                case ValueType::Signed: {
+                    int16_t sVal = static_cast<int16_t>(rawValue);
+                    if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
+                        response.value->set((int32_t)(sVal*def.multiplier));
+                    } else {
+                        DebugErrorMessage("skipped Signed value because out of range");
+                        return false;
+                    }
+                    break;
+                }
+                case ValueType::Bool:
+                    if (rawValue == 0 || rawValue == 1) {
+                        response.value->set((uint32_t)rawValue);
+                    } else {
+                        DebugErrorMessage("skipped Bool value because out of range");
+                        return false;
+                    }
+                    break;
+                case ValueType::Unsigned:
+                    if (rawValue >= def.minVal.u16 && rawValue <= def.maxVal.u16) {
+                        response.value->set((uint32_t)(rawValue*def.multiplier));
+                    } else {
+                        DebugErrorMessage("skipped Unsigned value because out of range");
+                        return false;
+                    }
+                    break;
+                case ValueType::Float: { 
+                    int16_t sVal = static_cast<int16_t>(rawValue);
+                    if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
+                        response.value->set(sVal*def.multiplier);
+                    } else {
+                        DebugErrorMessage("skipped Float value because out of range");
+                        return false;
+                    }
+                    break;
+                }
+                default: 
+                    break; // to avoid making infinite request loop on unset type entities
+            }
 
         } else if (info.type == RequestType::Text) {
-            for (int bi=1,ti=0;ti<20;bi+=2,ti++) {
-                response.text[ti] = buff[bi]*16 + buff[bi+1];
+            uint8_t tmp[20];
+
+            if (!ConvertAsciiHexToBytes(&buff[1], 40, tmp, 20)) {
+                DebugErrorMessage("LCD data corruption detected - discarding frame");
+                return false;
             }
+
+            memcpy(response.text, tmp, 20);
+            response.text[20] = '\0';
         } else if (info.type == RequestType::ErrorLogItem) {
             
             uint32_t code = buff[1]*16 + buff[2];
@@ -94,13 +242,32 @@ namespace Drivers {
             for (int bi=3,ti=4;ti<20;bi+=2,ti++) {
                 response.text[ti] = buff[bi]*16 + buff[bi+1];
             }
+            
         } // there are currently no more types right now
+
+        return true;
     }
     REGO600::Request::~Request() {
         // delete owning
         if ((info.type == RequestType::Text || info.type == RequestType::ErrorLogItem) && response.text != nullptr) {
             delete[] response.text;
         }
+    }
+    std::string REGO600::Request::ToString() {
+        std::string str = "";
+        str += "info.op: " + std::to_string((int)info.opcode);
+        str += ", info.size: " + std::to_string((int)info.size);
+        str += ", def.name: " + std::string(def.name);
+        str += ", def.address: " + std::to_string(def.address);
+        if (def.valueType == ValueType::Signed || def.valueType == ValueType::Float) {
+            str += ", def.minVal.s16: " + std::to_string(def.minVal.s16);
+            str += ", def.maxVal.s16: " + std::to_string(def.maxVal.s16);
+        } else {
+            str += ", def.minVal.u16: " + std::to_string(def.minVal.u16);
+            str += ", def.maxVal.u16: " + std::to_string(def.maxVal.u16);
+        }
+
+        return str;
     }
 
     //  ██████  ███████  ██████   ██████   ██████   ██████   ██████  
@@ -141,7 +308,7 @@ namespace Drivers {
     }
 
     void REGO600::begin() {
-        ClearUARTRxBuffer(REGO600_UART_TO_USE, 260); // failsafe and also a quick way to determine if there are any hardware problems (it gets logged to GlobalLogger)
+        FlushCleanUARTRxBuffer(REGO600_UART_TO_USE, 260); // failsafe and also a quick way to determine if there are any hardware problems (it gets logged to GlobalLogger)
         RefreshLoop_Restart();
     }
 
@@ -176,7 +343,7 @@ namespace Drivers {
         } else if (manualRequest_Mode == RequestMode::OneTime && manualRequest != nullptr) {
             uartTxBuffer[1] = (uint8_t)manualRequest->info.opcode;
             currentExpectedRxLength = manualRequest->info.size;
-            SetRequestAddr(manualRequest->address);
+            SetRequestAddr(manualRequest->def.address);
             CalcAndSetTxChecksum();
             
         } else {
@@ -194,8 +361,7 @@ namespace Drivers {
             return; // no point if cb for some reason is nullptr
         }
         if (mode != RequestMode::RefreshLoop) { 
-            GlobalLogger.Error(F("manual request allready in progress"));
-            Serial.println("manual request allready in progress");
+            DebugErrorMessage("OTReq - manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -207,8 +373,7 @@ namespace Drivers {
     void REGO600::RequestWholeLCD(RequestCallback cb) {
         if (cb == nullptr) return; // no point if cb for some reason is nullptr
         if (mode != RequestMode::RefreshLoop) { 
-            GlobalLogger.Error(F("manual request allready in progress"));
-            Serial.println("manual request allready in progress");
+            DebugErrorMessage("ReqLCD - manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -216,8 +381,7 @@ namespace Drivers {
     }
     void REGO600::RequestFrontPanelLeds(RequestCallback cb) {
         if (mode != RequestMode::RefreshLoop) { 
-            GlobalLogger.Error(F("manual request allready in progress"));
-            Serial.println("manual request allready in progress");
+            DebugErrorMessage("manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
@@ -226,9 +390,11 @@ namespace Drivers {
 
     void REGO600::RefreshLoop_SendCurrent() {
         Request* req = refreshLoopList[refreshLoopIndex];
+        //std::string reqDebugStr = req->ToString();
+        //HAL_JSON::WebSocketAPI::SendMessage(reqDebugStr);
 
         uartTxBuffer[1] = (uint8_t)req->info.opcode;
-        SetRequestAddr(req->address);
+        SetRequestAddr(req->def.address);
         CalcAndSetTxChecksum();
        //const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
         currentExpectedRxLength = req->info.size;
@@ -242,7 +408,7 @@ namespace Drivers {
     }
 
     void REGO600::RefreshLoop_Continue() {
-        if (refreshLoopIndex != refreshLoopCount-1) {
+        if (refreshLoopIndex < (refreshLoopCount-1)) {
             refreshLoopIndex++;
             RefreshLoop_SendCurrent();
         } else {
@@ -262,43 +428,60 @@ namespace Drivers {
     }
     #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
     void REGO600::loop() {
-        uint32_t now = millis();
 
         if (requestInProgress == false) { 
             //  here we just take care of any glitches and receive garbage data if any
-            ClearUARTRxBuffer(REGO600_UART_TO_USE);
+            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
             //if (mode != RequestMode::RefreshLoop) { return; }
             if (refreshLoopList == nullptr) { return; }
-
+            unsigned long now = millis();
             if (now - lastUpdateMs >= refreshTimeMs) {
+                //HAL_JSON::WebSocketAPI::SendMessage("RefreshLoop_Restart"); // just to see that this worked
                 RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
             }
             return; // usually dont expect a response directly
         }
-
-        if (now - lastRequestMs >= requestTimeoutMs) {
+        unsigned long now = millis();
+        if ((now - lastRequestMs) >= requestTimeoutMs) {
+            //DebugErrorMessage("REGO600-req-TiOu");
+            GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
             
-            GlobalLogger.Error(F("REGO600 - request timeout"));
-            Serial.println("REGO600-req-TiOu");
+            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
             SendRequestFrameAndResetRx(); // retry current
         }
 
         uint32_t failsafeReadCount = 0;
         while (REGO600_UART_TO_USE.available() && failsafeReadCount++ < REGO600_UART_RX_MAX_FAILSAFECOUNT) {
+            lastRequestMs = millis(); // update on every rx
             if (uartRxBufferIndex < REGO600_UART_RX_BUFFER_SIZE) {
                 uartRxBuffer[uartRxBufferIndex++] = REGO600_UART_TO_USE.read();
                 if (uartRxBufferIndex == currentExpectedRxLength) {
-                    ClearUARTRxBuffer(REGO600_UART_TO_USE);
+                    FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // flush remaining garbage if any
+                    if (uartRxBuffer[0] != 0x01) {
+                        DebugErrorMessage("RX done - start byte mismatch");
+                        
+                        //RefreshLoop_SendCurrent(); // retry
+                        SendRequestFrameAndResetRx(); // retry
+                        return;
+                    }
                     // RX is done
                     if (mode == RequestMode::RefreshLoop) {
+                        
                         if (refreshLoopList[refreshLoopIndex]->CalcAndCompareChecksum(uartRxBuffer) == false) {
-                            GlobalLogger.Error(F("refreshLoopList RX - Checksum error"));
-                            Serial.println("refreshLoopList RX - Checksum error");
+                            DebugErrorMessage("refreshLoopList RX - Checksum error");
                             
-                            RefreshLoop_SendCurrent(); // retry
+                            //RefreshLoop_SendCurrent(); // retry
+                            SendRequestFrameAndResetRx(); // retry
                             return;
                         }
-                        refreshLoopList[refreshLoopIndex]->SetFromBuffer(uartRxBuffer);
+                        if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+                            DebugErrorMessage("refreshLoopList RX - invalid value ");
+                            
+                            //RefreshLoop_SendCurrent(); // retry
+                            SendRequestFrameAndResetRx(); // retry
+                            return;
+                        }
+                        
                         if (manualRequest_Pending) {
                             manualRequest_Pending = false;
                             if (ManualRequest_PrepareAndSend() == true) {
@@ -308,17 +491,24 @@ namespace Drivers {
                         RefreshLoop_Continue();
 
                     } else if (mode == RequestMode::Lcd) {
-                        for (int bi=1,ti=0;ti<20;bi+=2,ti++) {
-                            readLCD_Text[ti+readLCD_RowIndex*20] = uartRxBuffer[bi]*16 + uartRxBuffer[bi+1];
+
+                        uint8_t tmp[20];
+
+                        if (!ConvertAsciiHexToBytes(&uartRxBuffer[1], 40, tmp, 20)) {
+                            DebugErrorMessage("LCD data corruption detected - discarding frame");
+                            SendRequestFrameAndResetRx(); // retry
+                            return;
                         }
+
+                        memcpy(&readLCD_Text[readLCD_RowIndex*20], tmp, 20);
+                        
                         if (readLCD_RowIndex == 3) { // this was the last row
                             
                             // execute a callback here
                             if (manualRequest_Callback != nullptr) {
                                 manualRequest_Callback(readLCD_Text, manualRequest_Mode);
                             } else {
-                                GlobalLogger.Error(F("LCD - mReqCB not set"));
-                                Serial.println("LCD - mReqCB not set");
+                                DebugErrorMessage("LCD - mReqCB not set");
                             }
 
                             mode = RequestMode::RefreshLoop;
@@ -345,8 +535,7 @@ namespace Drivers {
                             if (manualRequest_Callback != nullptr) {
                                 manualRequest_Callback(&readFrontPanelLeds_Data, manualRequest_Mode);
                             } else {
-                                GlobalLogger.Error(F("FP - mReqCB not set"));
-                                Serial.println("FP - mReqCB not set");
+                                DebugErrorMessage("FP - mReqCB not set");
                             }
                             mode = RequestMode::RefreshLoop;
                             manualRequest_Mode = RequestMode::RefreshLoop;
@@ -362,20 +551,23 @@ namespace Drivers {
                             // the callback is not set is actually pointless
                             if (manualRequest->CalcAndCompareChecksum(uartRxBuffer) == false) {
                                 // try the request again
-                                GlobalLogger.Error(F("manualReq RX - Checksum error"));
-                                Serial.println("manualReq RX - Checksum error");
+                                DebugErrorMessage("manualReq RX - Checksum error");
                                 SendRequestFrameAndResetRx();
                                 return;
                             }
-                            manualRequest->SetFromBuffer(uartRxBuffer); 
+                            if (manualRequest->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+                                // try the request again
+                                DebugErrorMessage("manualReq RX - ValidateAndSetFromBuffer error");
+                                SendRequestFrameAndResetRx();
+                                return;
+                            }
                             //Request* request = manuallyRequest.release();
                             manualRequest_Callback(manualRequest.get(), manualRequest_Mode);
                             //delete request;
                         }
                         else {
                             //manuallyRequest.reset(); // free the current data
-                            GlobalLogger.Error(F("OT - mReqCB not set"));
-                            Serial.println("OT - mReqCB not set");
+                            DebugErrorMessage("OT - mReqCB not set");
                         }
                         manualRequest.reset(); // free the current data
                         mode = RequestMode::RefreshLoop;
@@ -387,15 +579,12 @@ namespace Drivers {
             } else {
                 requestInProgress = false; // to make the remaining data reads faster, if any 
                 mode = RequestMode::RefreshLoop;
-                ClearUARTRxBuffer(REGO600_UART_TO_USE);
-                GlobalLogger.Error(F("REGO600 - uartRxBuffer full"));
-                Serial.println("REGO600 - uartRxBuffer full");
-                //if (this->ws.count() > 0) this->ws.textAll("{\"error\":\"uartRxBuffer full\"}\n");
+                FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
+                DebugErrorMessage("uartRxBuffer full");
             }
         }
         if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-            GlobalLogger.Error(F("REGO600 - read failsafe overflow"));
-            Serial.println("REGO600 - read failsafe overflow");
+            DebugErrorMessage("read failsafe overflow");
         }
     }
 
@@ -446,11 +635,10 @@ namespace Drivers {
         return (uartRxBuffer[1] << 14) + (uartRxBuffer[2] << 7) + uartRxBuffer[3];
     }
 
-    void REGO600::ClearUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains) {
+    void REGO600::FlushCleanUARTRxBuffer(REGO600_UART_TYPE& uart, size_t maxDrains) {
         size_t count = 0;
         while (uart.available() && count++ < maxDrains) {
             uart.read();
         }
-        //GlobalLogger.Error(F("REGO600 - ClearUARTRxBuffer overflow"));
     }
 }

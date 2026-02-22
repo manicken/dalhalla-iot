@@ -36,7 +36,8 @@ namespace HAL_JSON
 
     Device::EventCheck_FuncType SimpleEventDevice::Get_EventCheck_Function(ZeroCopyString&)
     {
-        return &SimpleEventDevice::EventCheck;
+        //return &SimpleEventDevice::EventCheck;
+        return nullptr;
     }
 
 } // namespace HAL_JSON

@@ -65,7 +65,8 @@ namespace HAL_JSON {
 
         inline bool DataReady() {
             if (eventFunc == nullptr || eventCheckDevice == nullptr) return true; // allways return true if no event device
-            return eventFunc(eventCheckDevice, valueChangedCounter);
+            //return eventFunc(eventCheckDevice, valueChangedCounter);
+            return false;
         }
     };
 
