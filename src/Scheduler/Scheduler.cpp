@@ -33,7 +33,7 @@
 
 #include "Scheduler.h"
 
-#include "HAL_JSON/Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "DALHAL/Support/DALHAL_ArduinoJSON_ext.h"
 
 AsStringParameter::AsStringParameter(const JsonVariant& json):OnTickExtParameters(0,1)
 {
@@ -139,8 +139,8 @@ namespace Scheduler
         if (json.containsKey("disabled") == true) return;
         //if (json["enabled"] == false) return;
 
-        if (HAL_JSON::ValidateJsonStringField(json, "mode") == false) return;
-        const char* mode = HAL_JSON::GetAsConstChar(json, "mode");
+        if (DALHAL::ValidateJsonStringField(json, "mode") == false) return;
+        const char* mode = DALHAL::GetAsConstChar(json, "mode");
         if (strcasecmp(mode, "timer") == 0) // timer repeat only
         {
             JsonBaseVars vars = GetJsonBaseVars(json);
@@ -194,14 +194,14 @@ namespace Scheduler
         else if (strcasecmp(mode, "explicit") == 0)
         {
             if (json.containsKey("func") == false) return;
-            const char* funcName = HAL_JSON::GetAsConstChar(json,"func");
+            const char* funcName = DALHAL::GetAsConstChar(json,"func");
             tmElements_t tm;
-            tm.Year = HAL_JSON::GetAsUINT32(json,"Y", 0);
-            tm.Month = HAL_JSON::GetAsUINT32(json,"M", 0);
-            tm.Day = HAL_JSON::GetAsUINT32(json,"d", 0 );
-            tm.Hour = HAL_JSON::GetAsUINT32(json,"h", 0);
-            tm.Minute = HAL_JSON::GetAsUINT32(json,"m", 0);
-            tm.Second = HAL_JSON::GetAsUINT32(json,"s", 0);
+            tm.Year = DALHAL::GetAsUINT32(json,"Y", 0);
+            tm.Month = DALHAL::GetAsUINT32(json,"M", 0);
+            tm.Day = DALHAL::GetAsUINT32(json,"d", 0 );
+            tm.Hour = DALHAL::GetAsUINT32(json,"h", 0);
+            tm.Minute = DALHAL::GetAsUINT32(json,"m", 0);
+            tm.Second = DALHAL::GetAsUINT32(json,"s", 0);
             time_t dateTime = makeTime(tm);
             if(json.containsKey("params")) {
                 //JsonVariant jsonVar = json["params"].as<JsonVariant>();
@@ -234,10 +234,10 @@ namespace Scheduler
     {
         if (json.containsKey("func") == false) return {nullptr,0,0,0};
 
-        return {HAL_JSON::GetAsConstChar(json, "func"),
-                static_cast<int>(HAL_JSON::GetAsUINT32(json,"h",0)),
-                static_cast<int>(HAL_JSON::GetAsUINT32(json,"m",0)),
-                static_cast<int>(HAL_JSON::GetAsUINT32(json,"s",0))};
+        return {DALHAL::GetAsConstChar(json, "func"),
+                static_cast<int>(DALHAL::GetAsUINT32(json,"h",0)),
+                static_cast<int>(DALHAL::GetAsUINT32(json,"m",0)),
+                static_cast<int>(DALHAL::GetAsUINT32(json,"s",0))};
     }
 
     timeDayOfWeek_t GetTimerAlarmsDOW(std::string sDOW) // short for: short DOW

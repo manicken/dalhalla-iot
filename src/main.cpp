@@ -23,7 +23,7 @@
 
 #include "main.h"
 
-#include "HAL_JSON/Core/Types/HAL_JSON_ZeroCopyString.h"
+#include "DALHAL/Core/Types/DALHAL_ZeroCopyString.h"
 
 
 #if defined(ESP32)
@@ -41,16 +41,16 @@ void Timer_SyncTime() {
     setTime(now2.Hour+1, now2.Minute, now2.Second, now2.Day, now2.Month, year);
 }
 
-#if defined(HAL_JSON_H_)
+#if defined(DALHAL_H_)
 void Alarm_SendToHalCmdExec(const OnTickExtParameters *param)
 {
     DEBUG_UART.println("Alarm_SendToHalCmdExec");
     const AsStringParameter* casted_param = static_cast<const AsStringParameter*>(param);
     if (casted_param != nullptr)
     {
-        HAL_JSON::ZeroCopyString zcCmd(casted_param->str.c_str());
+        DALHAL::ZeroCopyString zcCmd(casted_param->str.c_str());
         //std::string dummy;
-        HAL_JSON::CommandExecutor::execute(zcCmd,nullptr);
+        DALHAL::CommandExecutor::execute(zcCmd,nullptr);
     }
 }
 #endif
@@ -58,7 +58,7 @@ void Alarm_SendToHalCmdExec(const OnTickExtParameters *param)
 Scheduler::NameToFunction nameToFunctionList[] = {
 //   name         , onTick            , onTickExt
     {"ntp_sync"   , &Timer_SyncTime   , nullptr           }
-#if defined(HAL_JSON_H_)
+#if defined(DALHAL_H_)
     ,{"halcmd"     , nullptr           , &Alarm_SendToHalCmdExec}
 #endif
 };
@@ -68,7 +68,7 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 /**************************************************************************/
 
 void setup() {
-    HAL_JSON::GPIO_manager::triStateAvailablePins();
+    DALHAL::GPIO_manager::triStateAvailablePins();
 
     if (Info::resetReason_is_crash(true)) {
         
@@ -121,8 +121,8 @@ void setup() {
     test.close();
 #endif
 
-#ifdef HAL_JSON_H_
-    HAL_JSON::begin();
+#ifdef DALHAL_H_
+    DALHAL::begin();
 #endif
     webserver.begin();
 
@@ -136,8 +136,8 @@ void loop() {
     ArduinoOTA.handle();
     HeartbeatLed::task();
     Scheduler::HandleAlarms();
-#ifdef HAL_JSON_H_
-    HAL_JSON::loop();
+#ifdef DALHAL_H_
+    DALHAL::loop();
 #endif
     
 #if defined(ESP8266)

@@ -28,12 +28,12 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
-#include "../src/HAL_JSON/Types/HAL_JSON_ZeroCopyString.h"
-#include "../src/HAL_JSON/HAL_JSON_CommandExecutor.h"
-#include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Parser.h"
-#include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"
-#include "../src/HAL_JSON/ScriptEngine/Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
-#include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
+#include "../src/DALHAL/Types/DALHAL_ZeroCopyString.h"
+#include "../src/DALHAL/DALHAL_CommandExecutor.h"
+#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser.h"
+#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h"
+#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
+#include "../src/DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
 
 extern std::atomic<bool> running;
 

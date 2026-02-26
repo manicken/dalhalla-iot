@@ -31,21 +31,21 @@
 #include <windows.h>
 #endif
 
-#include "HAL_JSON_REST.h"
+#include "DALHAL_REST.h"
 
 //using namespace httplib;
 #ifdef _WIN32
 static httplib::Server server;
 #endif
 
-namespace HAL_JSON {
+namespace DALHAL {
 
     // Define the static server
-    HAL_JSON_REST_CB REST::callback;  // define the static member here
+    DALHAL_REST_CB REST::callback;  // define the static member here
 #ifdef _WIN32
     httplib::Server REST::server;
 #endif
-    void REST::setup(HAL_JSON_REST_CB cb) {
+    void REST::setup(DALHAL_REST_CB cb) {
         
         REST::callback = cb;
 #ifdef _WIN32
@@ -63,9 +63,9 @@ namespace HAL_JSON {
         }
         std::cout << "Winsock initialized.\n";
 
-        int port = server.bind_to_port("0.0.0.0", HAL_JSON_REST_API_PORT);
+        int port = server.bind_to_port("0.0.0.0", DALHAL_REST_API_PORT);
         if (port > 0) {
-            std::cout << "*** REST API server started on port " << HAL_JSON_REST_API_PORT << "\n";
+            std::cout << "*** REST API server started on port " << DALHAL_REST_API_PORT << "\n";
             std::cout << "*** can be accessed by http://localhost:82 \n";
             std::thread serverThread([]() {
                 server.listen_after_bind();

@@ -31,18 +31,18 @@
 #include <functional>
 #include <string>
 
-#define HAL_JSON_REST_API_PORT 82
+#define DALHAL_REST_API_PORT 82
 
-using HAL_JSON_REST_CB = std::function<std::string(const std::string&)>;
+using DALHAL_REST_CB = std::function<std::string(const std::string&)>;
 
-namespace HAL_JSON {
+namespace DALHAL {
     class REST {
     private:
 #ifdef _WIN32
         static httplib::Server server;
 #endif
-        static HAL_JSON_REST_CB callback;
+        static DALHAL_REST_CB callback;
     public:
-        static void setup(HAL_JSON_REST_CB cb);
+        static void setup(DALHAL_REST_CB cb);
     };
 }

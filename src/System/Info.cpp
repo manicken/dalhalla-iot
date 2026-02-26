@@ -24,7 +24,7 @@
 #include "Info.h"
 
 #include "System.h"
-#include "../HAL_JSON/Support/ConvertHelper.h"
+#include "../DALHAL/Support/ConvertHelper.h"
 
 namespace Info
 {

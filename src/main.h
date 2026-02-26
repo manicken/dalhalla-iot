@@ -36,7 +36,7 @@
 #include <WiFi.h>
 #endif
 
-#include "HAL_JSON/Support/HAL_JSON_Logger.h"
+#include "DALHAL/Support/DALHAL_Logger.h"
 
 // OTA
 #include "System/OTA.h"
@@ -73,16 +73,16 @@
 #include <ESPmDNS.h>
 #endif
 
-#include "HAL_JSON/HAL_JSON.h"
-#ifdef HAL_JSON_H_
-#include "HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
+#include "DALHAL/DALHAL.h"
+#ifdef DALHAL_H_
+#include "DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
 #endif
 
-#include "HAL_JSON/API/HAL_JSON_CommandExecutor.h"
+#include "DALHAL/API/DALHAL_CommandExecutor.h"
 
 #include "System/WiFiManagerWrapper.h"
 #include "System/System.h"
-#include "HAL_JSON/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
+#include "DALHAL/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
 
 #include "esp_task_wdt.h"
 

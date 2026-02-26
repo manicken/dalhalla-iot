@@ -88,7 +88,7 @@ Scripts interact with devices via their UIDs, as defined in the JSON configurati
 ## File Handling & Configuration Reload
 
 - **Web-based file management** via FSBrowser for editing config and scripts.
-- `CommandExecutor` (`HAL_JSON_CommandExecutor.cpp`) handles:
+- `CommandExecutor` (`DALHAL_CommandExecutor.cpp`) handles:
   - Config/script reload
   - Device commands
   - External access via REST

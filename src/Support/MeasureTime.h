@@ -1,6 +1,6 @@
 #pragma once
 
-//#define HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
+//#define DALHAL_SCRIPT_ENGINE_PARSER_DEBUG_TIMES
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <chrono>
@@ -14,7 +14,7 @@ do { \
     std::chrono::duration<double, std::milli> _mt_duration = _mt_end - _mt_start; \
     std::cout << message << _mt_duration.count() << " ms\n"; \
 } while (0)
-#elif defined(HAL_JSON_SCRIPT_ENGINE_PARSER_DEBUG_TIMES)
+#elif defined(DALHAL_SCRIPT_ENGINE_PARSER_DEBUG_TIMES)
 #include <Arduino.h>
 #define MEASURE_TIME(message, block) \
 do { \

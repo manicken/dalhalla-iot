@@ -68,7 +68,7 @@ SRC = \
     ./ports/IPAddress/IPAddress.cpp \
 	$(wildcard ./stubs/PrintStream/*.cpp) \
     ../lib/PubSubClient/src/PubSubClient.cpp \
-	./ports/HAL_JSON_REST/HAL_JSON_REST.cpp \
+	./ports/DALHAL_REST/DALHAL_REST.cpp \
 	$(wildcard *.cpp) \
 	./ports/Ticker/Ticker.cpp \
 	./ports/LittleFS/LittleFS.cpp \
@@ -84,26 +84,26 @@ SRC = \
 	./stubs/Adafruit_SSD1306/Adafruit_SSD1306.cpp \
 	../src/Drivers/REGO600.cpp \
 	../src/Drivers/RF433.cpp \
-	$(wildcard ../src/HAL_JSON/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/CoreDevices/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/Display_SSD1306/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/OneWireTemp/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/REGO600/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/RF433/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/Script/*.cpp) \
-	$(wildcard ../src/HAL_JSON/Devices/HomeAssistant/*.cpp) \
-	$(wildcard ../src/HAL_JSON/ScriptEngine/*.cpp) \
-	$(wildcard ../src/HAL_JSON/ScriptEngine/Parser/*.cpp) \
-	$(wildcard ../src/HAL_JSON/ScriptEngine/Runtime/*.cpp) \
+	$(wildcard ../src/DALHAL/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/CoreDevices/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/Display_SSD1306/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/OneWireTemp/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/REGO600/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/RF433/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/Script/*.cpp) \
+	$(wildcard ../src/DALHAL/Devices/HomeAssistant/*.cpp) \
+	$(wildcard ../src/DALHAL/ScriptEngine/*.cpp) \
+	$(wildcard ../src/DALHAL/ScriptEngine/Parser/*.cpp) \
+	$(wildcard ../src/DALHAL/ScriptEngine/Runtime/*.cpp) \
 	../src/Support/CharArrayHelpers.cpp \
 	../src/Support/Logger.cpp \
 	../src/Support/ConvertHelper.cpp
 
 # Files to exclude (webserver-related)
 EXCLUDE_SRC = \
-	../src/HAL_JSON/HAL_JSON_REST.cpp \
-	../src/HAL_JSON/HAL_JSON.cpp
+	../src/DALHAL/DALHAL_REST.cpp \
+	../src/DALHAL/DALHAL.cpp
 	
 # Remove excluded files from SRC
 SRC := $(filter-out $(EXCLUDE_SRC), $(SRC))

@@ -1,0 +1,124 @@
+is it possible to make it so that if i write a expression: 
+l1 && l2 && l3
+become: [l1 l2 && l3 &&] 
+
+note also that i plan to mainly use direct function pointers instead of needing a type check
+for every item
+
+here is the ground structure that will be used:
+(it's heavly optimized for speed, as bare metal as possible without using assembly)
+
+struct CalcRPNTokens {
+	CalcRPNToken* items;
+    int itemCount;
+};
+
+// global stack (without push and pop for faster access) and without checks as the stack do allways contain the right number of objects
+RPNStack<CalcRPNTokens> calcRPNstack;
+
+struct RPNToken {
+	DALHAL_NOCOPY_NOMOVE(RPNToken);
+
+	HALOperationResult (*handler)(void* context);
+	void* context;
+	Deleter deleter; // is used in the constructor and is set using template statement DeleteAs<someType>
+
+	RPNToken();
+	~RPNToken();
+};
+
+that way i can have functions like
+(pseudo code)
+
+static HALOperationResult Push(void* context) {
+	calcRPNstack.items[calcRPNstack.sp++] = static_cast<CalcRPNTokens>(context);
+	return HALOperationResult::Success;
+}
+static HALOperationResult LogicAnd(void* context) {
+	CalcRPNTokens& lht = calcRPNstack.items[--calcRPNstack.sp];
+	// here we can check if item return false and then shortcircuit return early
+	// else just get the next item
+	CalcRPNTokens& rht = calcRPNstack.items[--calcRPNstack.sp];
+	// check again
+	// return result
+	
+	return HALOperationResult::Success;
+}
+
+static HALOperationResult LogicOr(void* context) {
+	CalcRPNTokens& lht = calcRPNstack.items[--calcRPNstack.sp];
+	// here we can check if item return false and then shortcircuit return early
+	// else just get the next item
+	CalcRPNTokens& rht = calcRPNstack.items[--calcRPNstack.sp];
+	// check again
+	// return result
+	
+	return HALOperationResult::Success;
+}
+
+// just simple setup for example
+// dont care about expire and such things
+// it's just a example
+
+void loadFromTokens(Tokens& tokens)
+{
+	int count = 3;
+	RPNToken* rpnTokens = new RPNToken[count];
+	
+	// the following will be read from tokens input in a for loop
+	// but flatten it here for a better view of the structures
+	rpnTokens[0].handler = Push;
+	rpnTokens[0].context = new CalcRPNTokens(tokens); // this will consume tokens using internal index counter
+	rpnTokens[0].deleter = DeleteAs<CalcRPNTokens>;
+	rpnTokens[1].handler = Push;
+	rpnTokens[1].context = new CalcRPNTokens(tokens); // this will consume tokens using internal index counter
+	rpnTokens[1].deleter = DeleteAs<CalcRPNTokens>;
+	
+	rpnTokens[2].handler = LogicAnd; // defined which one to use from input tokens
+	rpnTokens[2].context = nullptr; // not needed here
+	rpnTokens[2].deleter = nullptr; // not needed here as context is 'unset'
+	
+	// then just loop them
+	HALOperationResult result;
+	for(int i=0;i<count;i++)
+	{
+	    // no null check here as it should allways be set
+		// but for debug builds it can be checked for safetly
+		result = rpnTokens[i].handler(rpnTokens[i].context);
+		// check here for shortcircuit handling
+	}
+}
+
+to handle nested logic operations like
+l1 && (l2 || l3)
+
+we can just utilize the fact that a rpnToken can take any context including a array of RPNToken
+RPNToken* rpnTokens
+then the handler is just set to a function that handle it as a array of RPNToken:s 
+and the deleter should also be set to the correct type
+
+
+
+so basically 
+we need to handle the following situations:
+
+a || b && c // this will generate subRPN containing b && c
+
+(a || b) && c // this will generate subRPN containing a || b
+
+a && (b || c) // this will generate subRPN containing b || c
+
+a || b || c // here all are the same operators and can be just a flat RPN
+
+a && b && c // here all are the same operators and can be just a flat RPN
+
+i understand that the following:
+( a > 1 ) && ( b < 5 || c == 6 || d != 5 ) 
+will be (with that code):
+[[a > 1] [[[b < 5] [c == 6] ||] [d != 5] ||] &&]
+instead of simpler(flatter):
+[[a > 1] [[b < 5] [c == 6] || [d != 5] ||] &&]
+
+is it worth it to change the code so that if
+logic operands that occurs in the same parenthesis
+are all the same it could be a flatter output instead

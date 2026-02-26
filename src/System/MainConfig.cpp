@@ -22,8 +22,8 @@
 */
 
 #include "MainConfig.h"
-#include "../HAL_JSON/Support/ConvertHelper.h"
-#include "HAL_JSON/Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../DALHAL/Support/ConvertHelper.h"
+#include "DALHAL/Support/DALHAL_ArduinoJSON_ext.h"
 
 namespace MainConfig {
 
@@ -66,7 +66,7 @@ namespace MainConfig {
             return false;
         }
         if (jsonDoc.containsKey("mDNSname")) {
-            if (HAL_JSON::IsConstChar(jsonDoc,"mDNSname") == false) {
+            if (DALHAL::IsConstChar(jsonDoc,"mDNSname") == false) {
                 SetDefault_mDNS_name();
             }
             else {

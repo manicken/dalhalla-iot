@@ -31,13 +31,13 @@
     #include <stack>
     #include <string_view>
 
-    #include "../src/HAL_JSON/Core/HAL_JSON_Manager.h"
-    #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
+    #include "../src/DALHAL/Core/DALHAL_Manager.h"
+    #include "../src/DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-    #include "ports/HAL_JSON_REST/HAL_JSON_REST.h"
+    #include "ports/DALHAL_REST/DALHAL_REST.h"
 #endif
-    #include "../src/HAL_JSON/Support/ConvertHelper.h"
-    #include "../src/HAL_JSON/Core/Types/HAL_JSON_ZeroCopyString.h"
+    #include "../src/DALHAL/Support/ConvertHelper.h"
+    #include "../src/DALHAL/Core/Types/DALHAL_ZeroCopyString.h"
     #include <ArduinoJson.h>
     #include "commandLoop.h"
 
@@ -60,34 +60,34 @@
         if (argc > 1) {
             // one shot tests
             parseCommand(argv[1], true); // true mean one short test
-            HAL_JSON::Manager::CleanUp();
+            DALHAL::Manager::CleanUp();
             return 0;
         }
         
         std::cout << "\n****** Starting REST api server:\n";
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-        HAL_JSON::REST::setup(halJsonRestCallback); // this will start the server
+        DALHAL::REST::setup(halJsonRestCallback); // this will start the server
 #endif
-        std::cout << "\n****** Init HAL_JSON Manager\n";
-        HAL_JSON::Manager::setupMgr();
-        HAL_JSON::ScriptEngine::ValidateAndLoadAllActiveScripts();
+        std::cout << "\n****** Init DALHAL Manager\n";
+        DALHAL::Manager::setupMgr();
+        DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
         std::cout << "\n****** Starting commandLoop thread\n";
         std::thread cmdThread(commandLoop); // start command input thread from commandLoop that is in commandLoop.h
         test_mqtt::setup();
         long lastmillis = 0;
         while (running) { // running is in commandLoop.h
-            HAL_JSON::Manager::loop();
+            DALHAL::Manager::loop();
             long currmillis = millis();
             if (currmillis-lastmillis > 100) {
                 lastmillis = currmillis;
-                if (HAL_JSON::ScriptEngine::ScriptsBlock::running)
-                    HAL_JSON::ScriptEngine::Exec(); // runs the scriptengine
+                if (DALHAL::ScriptEngine::ScriptsBlock::running)
+                    DALHAL::ScriptEngine::Exec(); // runs the scriptengine
             }
             test_mqtt::loop();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         cmdThread.join(); // wait for command thread to finish
         std::cout << "Exited cleanly.\n" << std::flush;
-        HAL_JSON::Manager::CleanUp();
+        DALHAL::Manager::CleanUp();
         return 0;
     }

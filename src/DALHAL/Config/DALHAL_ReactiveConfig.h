@@ -1,0 +1,70 @@
+/*
+  Dalhalla IoT — JSON-configured HAL/DAL + Script Engine
+  HAL = Hardware Abstraction Layer
+  DAL = Device Abstraction Layer
+
+  Provides IoT firmware building blocks for home automation and smart sensors.
+
+  Copyright (C) 2025 Jannik Svensson
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or 
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
+#define DALHAL_REACTIVE_FEATURE_NONE           0x00000000
+#define DALHAL_REACTIVE_FEATURE_VALUE_CHANGE   0x00000001
+#define DALHAL_REACTIVE_FEATURE_STATE_CHANGE   0x00000002
+/* when the read function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_READ           0x00000004
+/* when the write function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_WRITE          0x00000008
+/* when the bracket read function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_BRACKET_READ   0x00000010
+/* when the bracket write function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_BRACKET_WRITE  0x00000020
+/* when the exec function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_EXEC           0x00000010 
+#define DALHAL_REACTIVE_FEATURE_TIMEOUT        0x00010000
+#define DALHAL_REACTIVE_FEATURE_WRITE_ERROR    0x00020000
+#define DALHAL_REACTIVE_FEATURE_READ_ERROR     0x00040000
+#define DALHAL_REACTIVE_FEATURE_EXEC_ERROR     0x00080000
+
+// easy copy/paste template
+#define DALHAL_REACTIVE_CFG_ (DALHAL_REACTIVE_FEATURE_NONE)
+
+#define DALHAL_REACTIVE_CFG_SCRIPT_VARIABLE       (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_DIGITAL_INPUT         (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_DIGITAL_OUTPUT        (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_SINGLE_PULSE_OUTPUT   (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_ANALOG_INPUT          (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_PWM_ANALOG_WRITE      (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_ONE_WIRE_TEMP_GROUP   (DALHAL_REACTIVE_FEATURE_NONE)
+#define DALHAL_REACTIVE_CFG_ONE_WIRE_TEMP_BUS     (DALHAL_REACTIVE_FEATURE_NONE)
+#define DALHAL_REACTIVE_CFG_ONE_WIRE_TEMP_DEVICE  (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_DHT                   (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_TX433                 (DALHAL_REACTIVE_FEATURE_WRITE)
+#define DALHAL_REACTIVE_CFG_TX433_UNIT            (DALHAL_REACTIVE_FEATURE_WRITE)
+#define DALHAL_REACTIVE_CFG_REGO600               (DALHAL_REACTIVE_FEATURE_READ | DALHAL_REACTIVE_FEATURE_WRITE)
+#define DALHAL_REACTIVE_CFG_REGO600_REGISTRY_ITEM (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_I2C                   (DALHAL_REACTIVE_FEATURE_READ | DALHAL_REACTIVE_FEATURE_WRITE)
+#define DALHAL_REACTIVE_CFG_CONSTVAR              (DALHAL_REACTIVE_FEATURE_READ)
+/* only a development test device, that is used when testing write only functionality */
+#define DALHAL_REACTIVE_CFG_WRITEVAR              (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE)
+#define DALHAL_REACTIVE_CFG_CONTAINER             (DALHAL_REACTIVE_FEATURE_NONE)
+#define DALHAL_REACTIVE_CFG_ARRAY                 (DALHAL_REACTIVE_FEATURE_BRACKET_READ | DALHAL_REACTIVE_FEATURE_BRACKET_WRITE)
+#define DALHAL_REACTIVE_CFG_THINGSPEAK            (DALHAL_REACTIVE_FEATURE_EXEC)
+#define DALHAL_REACTIVE_CFG_HOMEASSISTANT         (DALHAL_REACTIVE_FEATURE_NONE)
+#define DALHAL_REACTIVE_CFG_WS2812                (DALHAL_REACTIVE_FEATURE_WRITE)
+#define DALHAL_REACTIVE_CFG_ACTUATOR              (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
+#define DALHAL_REACTIVE_CFG_RELAY_LATCHING        (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
+#define DALHAL_REACTIVE_CFG_BUTTON                (DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
+#define DALHAL_REACTIVE_CFG_LEDC_SERVO            (DALHAL_REACTIVE_FEATURE_WRITE)
