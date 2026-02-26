@@ -1,4 +1,8 @@
-# Dalhalla-IO – Modular IoT Framework
+# Dalhalla-IoT – Modular IoT Framework
+
+## Updates
+
+
 
 ## Overview
 
@@ -93,20 +97,27 @@ Scripts interact with devices via their UIDs, as defined in the JSON configurati
   - Device commands
   - External access via REST
 
-### REST API (Port 82)
+### Websocket (port 82)/Serial(UART) API
+Please note that the old REST API has been deprecated because its synchronous structure is incompatible with AsyncWebServer. In the future, it might be possible to make it work using the standard synchronous WebServer.
+
+However the new Websocket API is accessed on <deviceIP>:82/ws but <deviceIP>:82 provides a simple built in GUI for basic needs
 
 | Endpoint | Description |
 |-----------|-------------|
-| `/reloadcfg` | Reload HAL configuration |
-| `/scripts/reload` | Reload scripts |
-| `/scripts/start` | Start script execution |
-| `/scripts/stop` | Stop scripts |
-| `/getAvailableGPIOs` | List GPIOs |
-| `/printDevices` | Print all devices |
-| `/printLog` | Show system log |
-| `/exec/<device_uid>` | Execute command on device |
-| `/read/<type>/<device_uid>/<cmd>` | Read from device |
-| `/write/<type>/<device_uid>/<value>` | Write to device |
+| `hal/reloadcfg` | Reload HAL configuration |
+| `hal/scripts/reload` | Reload scripts |
+| `hal/scripts/start` | Start script execution |
+| `hal/scripts/stop` | Stop scripts |
+| `hal/getAvailableGPIOs` | List GPIOs |
+| `hal/printDevices` | Print all devices |
+| `hal/printLog` | Show system log |
+| `hal/exec/<device_uid>` | Execute command on device |
+| `hal/read/<type>/<device_uid>/<cmd>` | Read from device |
+| `hal/write/<type>/<device_uid>/<value>` | Write to device |
+| `system/info` | Get System Info |
+| `system/reset` or `system/restart` | Execute a system restart |
+| `ver` | gets build version, is not currently not updated regulary as the software is still in major development |
+| `help` | Show some built in basic help |
 
 **Types:** `bool`, `uint`, `float`, `string`, `json`  
 **Device-specific commands:** e.g. read `temp` from DHT sensor.
