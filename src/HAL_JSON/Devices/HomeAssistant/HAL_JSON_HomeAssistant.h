@@ -27,16 +27,16 @@
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
+
+#include "../../Core/HAL_JSON_Device.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
+
 #include "HAL_JSON_HA_Constants.h"
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#include "../HAL_JSON_DeviceTypesRegistry.h"
+
 
 
 #define HAL_JSON_HOME_ASSISTANT_DEFAULT_PORT 1883

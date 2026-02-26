@@ -22,10 +22,12 @@
 */
 
 #pragma once
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_CachedDeviceAccess.h"
-#include "../HAL_JSON_GPIO_Manager.h"
+#include "../Core/HAL_JSON_Device.h"
+#include "HAL_JSON_DeviceTypesRegistry.h"
+#include "../Core/HAL_JSON_CachedDeviceAccess.h"
+#include "../Core/HAL_JSON_GPIO_Manager.h"
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 namespace HAL_JSON {
 

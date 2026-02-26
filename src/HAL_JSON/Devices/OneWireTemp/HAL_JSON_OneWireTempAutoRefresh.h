@@ -27,12 +27,6 @@
 #include <Arduino.h> // Needed for String class
 #include <functional>
 
-#include "../../../Support/Logger.h"
-#include "../../../Support/ConvertHelper.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-
 #define HAL_JSON_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS 1000
 #define HAL_JSON_ONE_WIRE_TEMP_CONVERSION_TIME_MS 1000
 

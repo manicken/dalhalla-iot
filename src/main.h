@@ -36,7 +36,7 @@
 #include <WiFi.h>
 #endif
 
-#include "Support/Logger.h"
+#include "HAL_JSON/Support/HAL_JSON_Logger.h"
 
 // OTA
 #include "System/OTA.h"
@@ -60,7 +60,7 @@
 #include <TimeAlarms.h>
 #include "Scheduler/Scheduler.h"
 
-#include "Support/Info.h"
+#include "System/Info.h"
 
 #include "Support/Time_ext.h"
 
@@ -78,12 +78,11 @@
 #include "HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
 #endif
 
-#include "HAL_JSON/HAL_JSON_CommandExecutor.h"
+#include "HAL_JSON/API/HAL_JSON_CommandExecutor.h"
 
 #include "System/WiFiManagerWrapper.h"
 #include "System/System.h"
-#include "Support/ConstantStrings.h"
-#include "Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
+#include "HAL_JSON/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
 
 #include "esp_task_wdt.h"
 

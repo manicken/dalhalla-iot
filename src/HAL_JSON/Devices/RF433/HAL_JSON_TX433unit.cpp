@@ -23,6 +23,12 @@
 
 #include "HAL_JSON_TX433unit.h"
 
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+
+#include "../../Support/ConvertHelper.h"
+
 namespace HAL_JSON {
 
     bool TX433unit::VerifyFC_JSON(const JsonVariant &jsonObj) {
@@ -37,15 +43,15 @@ namespace HAL_JSON {
         uid = encodeUID(uidStr);
         const char* modelStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_MODEL);
         
-        if (CharArray::equalsIgnoreCase(modelStr, "lc")) {
+        if (strcasecmp(modelStr, "lc") == 0) {
             staticData = RF433::Get433_LC_Data(jsonObj);
             model = TX433_MODEL::LearningCode;
         }
-        else if (CharArray::equalsIgnoreCase(modelStr, "sfc")) {
+        else if (strcasecmp(modelStr, "sfc") == 0) {
             staticData = RF433::Get433_SFC_Data(jsonObj);
             model = TX433_MODEL::FixedCode;
         }
-        else if (CharArray::equalsIgnoreCase(modelStr, "afc")) {
+        else if (strcasecmp(modelStr, "afc") == 0) {
             staticData = RF433::Get433_AFC_Data(jsonObj);
             model = TX433_MODEL::FixedCode;
         }
@@ -60,11 +66,11 @@ namespace HAL_JSON {
 
         const char* modelStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_TX433_MODEL);
 
-        if (CharArray::equalsIgnoreCase(modelStr, "lc")) {
+        if (strcasecmp(modelStr, "lc") == 0) {
             if (!RF433::VerifyLC_JSON(jsonObj)) return false;
-        } else if (CharArray::equalsIgnoreCase(modelStr, "sfc")) {
+        } else if (strcasecmp(modelStr, "sfc") == 0) {
            if (!VerifyFC_JSON(jsonObj)) return false;
-        } else if (CharArray::equalsIgnoreCase(modelStr, "afc")) {
+        } else if (strcasecmp(modelStr, "afc") == 0) {
            if (!VerifyFC_JSON(jsonObj)) return false;
         } else {
             GlobalLogger.Error(F("TX433unit - invalid model type: "),modelStr);

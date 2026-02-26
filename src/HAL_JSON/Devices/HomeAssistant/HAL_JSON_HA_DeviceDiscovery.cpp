@@ -23,7 +23,9 @@
 
 #include "HAL_JSON_HA_DeviceDiscovery.h"
 #include "HAL_JSON_HA_Constants.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Core/Types/HAL_JSON_ZeroCopyString.h"
+#include "../../Support/HAL_JSON_Logger.h"
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 #include "../../../System/DeviceUID.h"
 #include <cstdarg> // variadic

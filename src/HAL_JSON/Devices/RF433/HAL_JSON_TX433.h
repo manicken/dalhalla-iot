@@ -27,12 +27,13 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
+
+#include "../../Core/HAL_JSON_Device.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
+
 
 #include "HAL_JSON_TX433unit.h"
-#include "../HAL_JSON_DeviceTypesRegistry.h"
+
 
 #define HAL_JSON_KEYNAME_TX433_UNITS "units"
 

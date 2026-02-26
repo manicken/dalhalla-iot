@@ -27,10 +27,10 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../HAL_JSON_Value.h"
-#include "../HAL_JSON_Device.h"
+#include "../Core/Types/HAL_JSON_Value.h"
+#include "../Core/HAL_JSON_Device.h"
 
-#include "../HAL_JSON_Device_GlobalDefines.h"
+#include "../Core/HAL_JSON_JSON_Config_Defines.h"
 
 
 namespace HAL_JSON {

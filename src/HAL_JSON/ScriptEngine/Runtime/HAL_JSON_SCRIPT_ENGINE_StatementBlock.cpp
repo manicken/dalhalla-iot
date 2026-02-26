@@ -23,8 +23,8 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
-#include "../../HAL_JSON_Device.h"
-#include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
+#include "../../Core/HAL_JSON_Device.h"
+#include "../../Support/HAL_JSON_DeleterTemplate.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
 #include "HAL_JSON_SCRIPT_ENGINE_ActionStatement.h"

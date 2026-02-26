@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download All Files as ZIP</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script>
+    // Global device IP variable
+    const deviceIP = "192.168.x.x";  // Replace with the actual device IP
+
+    // Function to fetch the list of files and directories from a specified directory
+    async function fetchFileList(dir) {
+      const response = await fetch(`http://${deviceIP}/list?dir=${dir}`);
+      const files = await response.json();
+      return files;
+    }
+
+    // Function to download a single file as binary and add it to the ZIP archive
+    async function fetchFile(filePath) {
+      const response = await fetch(`http://${deviceIP}${filePath}`);
+      const fileBlob = await response.blob();  // Get file content as a Blob
+      return { filePath, fileBlob };
+    }
+
+    // Function to recursively download files from a directory (including subdirectories)
+    async function fetchFilesFromDir(dir, zip, baseDir) {
+      const files = await fetchFileList(dir);
+
+      // Process files and add them to the ZIP
+      const fetchPromises = files.map(async item => {
+        const filePath = `${dir}/${item.name}`;
+        console.log("filePath:" + filePath)
+        //const zipPath = `${baseDir}/${item.name}`;  // Preserve directory structure in the zip
+        //console.log("zipPath:" + zipPath)
+        
+        if (item.type === "file") {
+          // If it's a file, download it and add to ZIP with the correct directory structure
+          const { fileBlob } = await fetchFile(filePath);
+          zip.file(filePath.substring(1), fileBlob);  // Add file to the ZIP archive, preserving structure
+        } else if (item.type === "dir") {
+          // If it's a directory, recurse into it
+          await fetchFilesFromDir(filePath, zip, baseDir);
+        }
+      });
+
+      // Wait for all fetch operations (files and subdirectories) to finish
+      await Promise.all(fetchPromises);
+    }
+
+    // Function to zip all files and initiate the download of the ZIP file
+    async function downloadAllFilesAsZip(dir) {
+      const zip = new JSZip();
+      
+      // Recursively fetch files from the root directory and its subdirectories
+      await fetchFilesFromDir(dir, zip, dir);
+
+      // Generate the zip file
+      zip.generateAsync({ type: "blob" })
+        .then(function(content) {
+          // Create a link element and trigger a download
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(content);
+          link.download = "all_files.zip";  // The name of the downloaded file
+          link.click();
+        })
+        .catch(function(error) {
+          console.error('Error creating ZIP file:', error);
+        });
+    }
+  </script>
+</head>
+<body>
+  <h1>Download All Files as ZIP</h1>
+  <button onclick="downloadAllFilesAsZip('/LittleFS')">Download All Files from /LittleFS</button>
+</body>
+</html>

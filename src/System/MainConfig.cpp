@@ -22,6 +22,8 @@
 */
 
 #include "MainConfig.h"
+#include "../HAL_JSON/Support/ConvertHelper.h"
+#include "HAL_JSON/Support/HAL_JSON_ArduinoJSON_ext.h"
 
 namespace MainConfig {
 

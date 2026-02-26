@@ -22,7 +22,8 @@
 */
 
 #pragma once
-#include "HAL_JSON_template.h"
+#include "../Core/HAL_JSON_Device.h"
+#include "HAL_JSON_DeviceTypesRegistry.h"
 #include <Arduino.h>
 #include "driver/ledc.h"
 

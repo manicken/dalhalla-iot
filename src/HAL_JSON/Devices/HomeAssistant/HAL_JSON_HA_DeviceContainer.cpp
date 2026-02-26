@@ -20,9 +20,9 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-#include "../../../Support/Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Support/HAL_JSON_Logger.h"
 #include "HAL_JSON_HA_DeviceContainer.h"
 #include "HAL_JSON_HomeAssistant.h"
 #include "HAL_JSON_HA_DeviceTypeReg.h"

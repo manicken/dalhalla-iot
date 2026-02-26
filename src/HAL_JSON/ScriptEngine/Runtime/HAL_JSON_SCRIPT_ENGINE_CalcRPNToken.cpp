@@ -23,8 +23,10 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_CalcRPNToken.h"
 #include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
-#include "../../HAL_JSON_CachedDeviceRead.h"
-#include "../../HAL_JSON_Device.h"
+#include "../../Core/HAL_JSON_CachedDeviceRead.h"
+#include "../../Core/HAL_JSON_Device.h"
+#include "../../Core/HAL_JSON_Manager.h"
+#include "../../Support/HAL_JSON_Logger.h"
 
 #define HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 

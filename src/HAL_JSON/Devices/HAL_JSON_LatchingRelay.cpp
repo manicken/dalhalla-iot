@@ -23,6 +23,10 @@
 
 #include "HAL_JSON_LatchingRelay.h"
 
+#include "../Support/HAL_JSON_Logger.h"
+#include "../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../Support/HAL_JSON_ArduinoJSON_ext.h"
+
 namespace HAL_JSON {
 #if !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {

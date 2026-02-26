@@ -23,11 +23,10 @@
 
 #include "HAL_JSON_Display_SSD1306.h"
 
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-#include "../../../Support/CharArrayHelpers.h"
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_Device.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 

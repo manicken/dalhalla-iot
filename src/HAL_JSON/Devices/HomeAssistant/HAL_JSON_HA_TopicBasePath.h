@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../../HAL_JSON_ZeroCopyString.h"
+#include "../../Core/Types/HAL_JSON_ZeroCopyString.h"
 
 namespace HAL_JSON {
 

@@ -23,8 +23,8 @@
 
 #pragma once
 #include <Arduino.h>
-#include "../../HAL_JSON_Device.h" // HALOperationResult
-#include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
+#include "../../Core/HAL_JSON_Device.h" // HALOperationResult
+#include "../../Support/HAL_JSON_DeleterTemplate.h"
 #include "HAL_JSON_SCRIPT_ENGINE_LogicExecNode.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Parser_Expressions.h"

@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../../HAL_JSON_Device.h"
+#include "../../Core/HAL_JSON_Device.h"
 #include <PubSubClient.h>
 
 namespace HAL_JSON {

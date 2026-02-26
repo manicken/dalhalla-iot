@@ -23,6 +23,11 @@
 
 #include "HAL_JSON_I2C_BUS.h"
 #include "HAL_JSON_I2C_BUS_DeviceTypeReg.h"
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+
+#include "../../Support/ConvertHelper.h"
 
 namespace HAL_JSON {
 

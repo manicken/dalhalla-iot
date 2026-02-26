@@ -26,6 +26,9 @@
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 #include "HAL_JSON_HA_Constants.h"
 
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
@@ -37,7 +40,7 @@ namespace HAL_JSON {
     }
     
     Number::Number(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
-        const char* uidStr = GetAsConstChar(jsonObj, "uid");
+        const char* uidStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         const char* deviceId_cStr = jsonObjRoot["deviceId"];
 

@@ -22,7 +22,7 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_RPNStack.h"
-#include "../../HAL_JSON_Value.h"
+#include "../../Core/Types/HAL_JSON_Value.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

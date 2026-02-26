@@ -26,12 +26,8 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../../Support/CharArrayHelpers.h"
-#include "../../../Support/ConvertHelper.h"
+
+#include "../../Core/HAL_JSON_Device.h"
 
 
 namespace HAL_JSON {

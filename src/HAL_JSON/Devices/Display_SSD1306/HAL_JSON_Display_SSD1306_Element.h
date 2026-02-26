@@ -27,10 +27,9 @@
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
-#include "../../HAL_JSON_CachedDeviceAccess.h"
+
+#include "../../Core/HAL_JSON_Device.h"
+#include "../../Core/HAL_JSON_CachedDeviceAccess.h"
 
 namespace HAL_JSON {
 

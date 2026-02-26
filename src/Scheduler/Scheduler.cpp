@@ -33,7 +33,7 @@
 
 #include "Scheduler.h"
 
-#include "Support/ConstantStrings.h"
+#include "HAL_JSON/Support/HAL_JSON_ArduinoJSON_ext.h"
 
 AsStringParameter::AsStringParameter(const JsonVariant& json):OnTickExtParameters(0,1)
 {
@@ -141,7 +141,7 @@ namespace Scheduler
 
         if (HAL_JSON::ValidateJsonStringField(json, "mode") == false) return;
         const char* mode = HAL_JSON::GetAsConstChar(json, "mode");
-        if (CharArray::equalsIgnoreCase(mode, "timer")) // timer repeat only
+        if (strcasecmp(mode, "timer") == 0) // timer repeat only
         {
             JsonBaseVars vars = GetJsonBaseVars(json);
             if (vars.funcName == nullptr) return;
@@ -157,7 +157,7 @@ namespace Scheduler
             //DEBUG_UART.printf("added timer repeat %d:%d:%d  now:%s   Scheduler->read(id):%s   Scheduler->getNextTrigger():%s   Scheduler->getNextTrigger(id):%s\r\n", vars.h, vars.m, vars.s, Time_ext::GetTimeAsString(now()).c_str(), Time_ext::GetTimeAsString(Scheduler->read(id)).c_str() , Time_ext::GetTimeAsString(Scheduler->getNextTrigger()).c_str(), Time_ext::GetTimeAsString(Scheduler->getNextTrigger(id)).c_str());
         
         }
-        else if (CharArray::equalsIgnoreCase(mode, "daily"))
+        else if (strcasecmp(mode, "daily") == 0)
         {
             JsonBaseVars vars = GetJsonBaseVars(json);
             if (vars.funcName == nullptr) return;
@@ -174,7 +174,7 @@ namespace Scheduler
             //DEBUG_UART.printf("added timer daily %d:%d:%d  now:%s   Scheduler->read(id):%s   Scheduler->getNextTrigger():%s   Scheduler->getNextTrigger(id):%s\r\n", vars.h, vars.m, vars.s, Time_ext::GetTimeAsString(now()), Time_ext::GetTimeAsString(Scheduler->read(id)) , Time_ext::GetTimeAsString(Scheduler->getNextTrigger()), Time_ext::GetTimeAsString(Scheduler->getNextTrigger(id)));
         
         }
-        else if (CharArray::equalsIgnoreCase(mode, "weekly"))
+        else if (strcasecmp(mode, "weekly") == 0)
         {
             JsonBaseVars vars = GetJsonBaseVars(json);
             if (vars.funcName == nullptr) return;
@@ -191,7 +191,7 @@ namespace Scheduler
             }
             //DEBUG_UART.println("added alarm weekly");
         }
-        else if (CharArray::equalsIgnoreCase(mode, "explicit"))
+        else if (strcasecmp(mode, "explicit") == 0)
         {
             if (json.containsKey("func") == false) return;
             const char* funcName = HAL_JSON::GetAsConstChar(json,"func");
@@ -217,14 +217,14 @@ namespace Scheduler
 
     OnTick_t GetFunction(const char* name) {
         for (int i = 0; i < FuncCount; i++) {
-            if (CharArray::equalsIgnoreCase(nameToFuncList[i].name, name))
+            if (strcasecmp(nameToFuncList[i].name, name) == 0)
                 return nameToFuncList[i].onTick;
         }
         return nullptr;
     }
     OnTickExt_t GetFunctionExt(const char* name) {
         for (int i = 0; i < FuncCount; i++) {
-            if (CharArray::equalsIgnoreCase(nameToFuncList[i].name, name))
+            if (strcasecmp(nameToFuncList[i].name, name) == 0)
                 return nameToFuncList[i].onTickExt;
         }
         return nullptr;
@@ -288,13 +288,13 @@ namespace Scheduler
         
         srv.on(SCHEDULER_URL_REFRESH, [](AsyncWebServerRequest *req) {
         if (LoadJson(SCHEDULER_CFG_FILE_PATH))
-            req->send(200,CONSTSTR::htmlContentType_TextPlain, F("schedule ld OK"));
+            req->send(200,"text/plain", F("schedule ld OK"));
         else
-            req->send(200,CONSTSTR::htmlContentType_TextPlain, F("schedule ld err"));
+            req->send(200,"text/plain", F("schedule ld err"));
         });
         srv.on(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS, [](AsyncWebServerRequest *req) {
             std::string ret = std::to_string(dtNBR_ALARMS);
-            req->send(200, CONSTSTR::htmlContentType_TextPlain, ret.c_str());
+            req->send(200,"text/plain", ret.c_str());
         });
         srv.on(SCHEDULER_URL_GET_FUNCTION_NAMES, [](AsyncWebServerRequest *req) {
 
@@ -306,11 +306,11 @@ namespace Scheduler
                 if (i < (FuncCount-1)) jsonStr += ",";
             }
             jsonStr += "}";
-            req->send(200,CONSTSTR::htmlContentType_TextPlain, jsonStr.c_str());
+            req->send(200,"text/plain", jsonStr.c_str());
         });
         srv.on(SCHEDULER_URL_GET_SHORT_DOWS, [](AsyncWebServerRequest *req) {
             std::string ret = GetShortFormDowListAsJson();
-            req->send(200,CONSTSTR::htmlContentType_TextPlain, ret.c_str());
+            req->send(200,"text/plain", ret.c_str());
         });
         srv.on(SCHEDULER_URL_GET_TIME, [](AsyncWebServerRequest *req) {
             std::string nowstr = "{\n\"now\":\"" + Time_ext::GetTimeAsString(now()) + "\",\n";

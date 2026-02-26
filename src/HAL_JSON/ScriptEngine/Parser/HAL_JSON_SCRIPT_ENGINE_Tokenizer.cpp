@@ -23,7 +23,7 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
 
-#include "../../HAL_JSON_ZeroCopyString.h"
+#include "../../Core/Types/HAL_JSON_ZeroCopyString.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Token.h"
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 

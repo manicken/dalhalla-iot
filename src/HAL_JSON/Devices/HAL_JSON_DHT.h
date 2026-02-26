@@ -29,12 +29,11 @@
 #include <ArduinoJson.h>
 #include <DHTesp.h>
 
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_SimpleEventDevice.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
+#include "../Core/HAL_JSON_Device.h"
+#include "../Core/HAL_JSON_SimpleEventDevice.h"
+
+
 
 #define HAL_JSON_KEYNAME_DHT_MODEL          "model"
 // DHT models

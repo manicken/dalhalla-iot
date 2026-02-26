@@ -25,7 +25,7 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include "HAL_JSON_HA_TopicBasePath.h"
-#include "../../HAL_JSON_ZeroCopyString.h"
+
 
 #define HAL_JSON_HA_DD_CFG_ROOT_TOPIC "homeassistant"
 #define HAL_JSON_HA_DD_CFG_TOPIC_FORMAT HAL_JSON_HA_DD_CFG_ROOT_TOPIC "/%s/" HAL_JSON_DEVICES_HOME_ASSISTANT_ROOTNAME "_%012llX_%s_%s/config"

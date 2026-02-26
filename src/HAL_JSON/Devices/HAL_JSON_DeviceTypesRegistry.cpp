@@ -70,8 +70,14 @@ namespace HAL_JSON {
     constexpr DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
 
     constexpr DeviceRegistryItem DeviceRegistry[] = {
-        {"VAR", ScriptVariable::RegistryDefine},
 
+         /** ---------------- Script-backed Devices ---------------- */
+        {"VAR", ScriptVariable::RegistryDefine},
+        {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
+        {"WRITEVAR", ScriptVariableWriteOnlyTest::RegistryDefine}, // only a development test device, that is used when testing write only functionality
+        {"ARRAY", ScriptArray::RegistryDefine},
+
+        /** ---------------- Core Devices ---------------- */
         {"DIN", DigitalInput::RegistryDefine},
         {"DOUT", DigitalOutput::RegistryDefine},
         {"DPOUT", SinglePulseOutput::RegistryDefine},
@@ -80,34 +86,47 @@ namespace HAL_JSON {
 #endif
         {"PWM_AW", PWMAnalogWrite::RegistryDefine},
         {"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine},
+
+        /** ---------------- OneWire / Sensors ---------------- */
 #if defined(HAL_JSON_DEVICE_ONEWIRE_TEMPERATURE_SENSORS)
         {"1WTG", OneWireTempGroup::RegistryDefine},
         {"1WTB", OneWireTempBusAtRoot::RegistryDefine},
         {"1WTD", OneWireTempDeviceAtRoot::RegistryDefine},
 #endif
+        /** ---------------- Other / Sensors ---------------- */
         {"DHT", DHT::RegistryDefine},
+
+        /** ---------------- RF / Communication ---------------- */
         {"TX433", TX433::RegistryDefine},
 #if defined(HAL_JSON_DEVICE_REGO600_HEATPUMP_CONTROLLER)
         {"REGO600", REGO600::RegistryDefine},
 #endif
         {"I2C", I2C_BUS::RegistryDefine},
+
+        /** ---------------- Lights ---------------- */
+        {"WS2812", WS2812::RegistryDefine},
         
-        {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
-        {"WRITEVAR", ScriptVariableWriteOnlyTest::RegistryDefine},
+        /** -------------- Virtual Devices --------- */
         //{"REST_VAR", REST_Value::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
         //{"REST_CMD", REST_Cmd::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
-        {"CONTAINER", DeviceContainer::RegistryDefine},
-        {"ARRAY", ScriptArray::RegistryDefine},
 
+        /** ---------------- Device Containers ---------------- */
+        {"CONTAINER", DeviceContainer::RegistryDefine},
+        
+        /** ---------------- External / Cloud / API Devices ---------------- */
         {"THINGSPEAK", ThingSpeak::RegistryDefine},
         {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
-        {"WS2812", WS2812::RegistryDefine},
+        
+        /** ---------------- Actuators / Outputs ---------------- */
         {"ACTUATOR", Actuator::RegistryDefine},
         {"RELAY_LATCHING", LatchingRelay::RegistryDefine},
-        {"BUTTON", ButtonInput::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
         {"LEDC_SERVO", LEDC_Servo::RegistryDefine},
 #endif
+
+        /** ---------------- Inputs ---------------- */
+        {"BUTTON", ButtonInput::RegistryDefine},
+
         /** mandatory null terminator */
         RegistryTerminatorItem, // Stop for active devices
 

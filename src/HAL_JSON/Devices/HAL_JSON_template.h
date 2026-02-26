@@ -27,13 +27,19 @@
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
+
+#include "../Core/HAL_JSON_Device.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
+#define HAL_JSON_DEVICE_REACTIVE_NONE 0
+#define HAL_JSON_DEVICE_REACTIVE_SIMPLE 1
+#define HAL_JSON_DEVICE_REACTIVE_ADVANCED 2
+
+#define HAL_JSON_DEVICE_REACTIVE_TEMPLATE HAL_JSON_DEVICE_REACTIVE_NONE
+
+#if defined(HAL_JSON_DEVICE_REACTIVE_TEMPLATE) && (HAL_JSON_DEVICE_REACTIVE_TEMPLATE == HAL_JSON_DEVICE_REACTIVE_SIMPLE)
 #include "../HAL_JSON_SimpleEventDevice.h" // uncomment this to use SimpleEventDevice it defines HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE internally
+#endif
 
 namespace HAL_JSON {
 #if defined(HAL_JSON_DEVICE_SIMPLE_EVENT_DEVICE)

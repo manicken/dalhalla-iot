@@ -23,7 +23,7 @@
 
 #include "main.h"
 
-#include "HAL_JSON/HAL_JSON_ZeroCopyString.h"
+#include "HAL_JSON/Core/Types/HAL_JSON_ZeroCopyString.h"
 
 
 #if defined(ESP32)
@@ -147,16 +147,6 @@ void loop() {
 #ifdef WIFI_MANAGER_WRAPPER_H_
     WiFiManagerWrapper::Task();
 #endif
-
-    if (Serial.available()) {
-        String cmd = Serial.readStringUntil('\n');
-        cmd.trim();
-        HAL_JSON::ZeroCopyString zcStrCmd(cmd.c_str());
-
-        HAL_JSON::CommandExecutor::execute(zcStrCmd, [](const std::string& msg){ 
-            printf("%s\r\n", msg.c_str());
-        });
-    }
 }
 
 #if defined(USE_DISPLAY)

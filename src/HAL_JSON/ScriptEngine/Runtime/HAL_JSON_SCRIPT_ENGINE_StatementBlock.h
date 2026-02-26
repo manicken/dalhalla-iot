@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../HAL_JSON_SCRIPT_ENGINE_Support.h" // Deleter
+#include "../../Support/HAL_JSON_DeleterTemplate.h" // Deleter
 #include "HAL_JSON_SCRIPT_ENGINE_IfStatement.h"
 
 namespace HAL_JSON {

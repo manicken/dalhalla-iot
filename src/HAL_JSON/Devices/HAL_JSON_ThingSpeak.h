@@ -27,11 +27,9 @@
 
 #include <string>
 #include <ArduinoJson.h>
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
-#include "../HAL_JSON_CachedDeviceRead.h"
+
+#include "../Core/HAL_JSON_CachedDeviceRead.h"
+#include "../Core/HAL_JSON_Device.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
 #if defined(ESP8266)
@@ -43,7 +41,7 @@
 #include <HTTPClient.h>
 #endif
 
-#include "../HAL_JSON_SimpleEventDevice.h"
+#include "../Core/HAL_JSON_SimpleEventDevice.h"
 
 #define DALHALLA_THINGSPEAK_MAX_FIELDS 8
 #define HAL_JSON_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS 60*1000

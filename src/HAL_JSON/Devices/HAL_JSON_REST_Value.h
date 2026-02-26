@@ -31,11 +31,7 @@
 #include <string>
 
 #include <Arduino.h> // Needed for String class
-
-#include "../../Support/Logger.h"
-#include "../HAL_JSON_Device.h"
-#include "../HAL_JSON_Device_GlobalDefines.h"
-#include "../HAL_JSON_ArduinoJSON_ext.h"
+#include "../Core/HAL_JSON_Device.h"
 #include "HAL_JSON_DeviceTypesRegistry.h"
 
 namespace HAL_JSON {

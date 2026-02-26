@@ -26,13 +26,13 @@
 
 #include <stdlib.h>
 
-#include "../Support/Logger.h"
-#include "HAL_JSON_Manager.h"
-//#include "HAL_JSON_REST.h"
-#include "HAL_JSON_WebSocketAPI.h"
+#include "Support/HAL_JSON_Logger.h"
+#include "Core/HAL_JSON_Manager.h"
+#include "API/HAL_JSON_API.h"
+
 #include "ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
-#include "../Support/Info.h"
-#include "HAL_JSON_CommandExecutor.h"
+#include "../System/Info.h"
+
 #include "HAL_JSON.h"
 
 namespace HAL_JSON {
@@ -56,7 +56,7 @@ namespace HAL_JSON {
     long lastmillis = 0;
     void loop() {
 
-        // process REST queue
+        // process Async Requests queue
         while (true) {
             CommandExecutor_LOCK_QUEUE();
             if (CommandExecutor::g_pending.empty()) {
@@ -80,5 +80,6 @@ namespace HAL_JSON {
                 ScriptEngine::Exec(); // runs the scriptengine
         }
         WebSocketAPI::loop();
+        SerialAPI::loop();
     }
 }

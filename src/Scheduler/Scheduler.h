@@ -31,8 +31,7 @@
 #include "Support/LittleFS_ext.h"
 #include "Support/Time_ext.h"
 #include "Support/NTP.h"
-#include "HAL_JSON/HAL_JSON_ArduinoJSON_ext.h"
-#include "Support/CharArrayHelpers.h"
+
 
 #if defined(ESP8266)
 //#include <ESP8266WebServer.h>

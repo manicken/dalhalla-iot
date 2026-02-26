@@ -28,6 +28,8 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 #include <stdio.h>
+#include "../Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../Support/HAL_JSON_Logger.h"
 
 #define VERIFY_JSON_SOURCE "LEDC_Servo::VerifyJSON"
 

@@ -24,7 +24,7 @@
 #include "System.h"
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include "Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
+#include "HAL_JSON/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
 
 #if defined(ESP8266)
 #include <ESP8266mDNS.h>
@@ -32,8 +32,6 @@
 #include <SD_MMC.h>
 #include <ESPmDNS.h>
 #endif
-
-#include "../Support/ConstantStrings.h"
 
 #include "System/MainConfig.h"
 #include "OTA.h"
@@ -223,7 +221,7 @@ namespace System {
             //if (SD_MMC.begin("/sdcard", true, false, 20000)) {
                 File root = SD_MMC.open("/");
                 if (!root) {
-                    req->send(200, CONSTSTR::htmlContentType_TextPlain, "error while open sd card again");
+                    req->send(200, "text/plain", "error while open sd card again");
                     return;
                 }
 
@@ -236,17 +234,17 @@ namespace System {
                     ret.concat(", Dir:"); ret.concat(file.isDirectory()?"true":"false");
                     ret.concat("\n");
                 }
-                req->send(200, CONSTSTR::htmlContentType_TextPlain, ret.c_str());
+                req->send(200, "text/plain", ret.c_str());
         // }else {webserver.send(200, CONSTSTR::htmlContentType_TextPlain, "could not open sd card a second time");}
         });
 #endif
         webserver.on("/crashTest", [](AsyncWebServerRequest* req) {
-            req->send(200, CONSTSTR::htmlContentType_TextPlain, "The system will now crash!!!, and luckily go into failsafe OTA upload mode.");
+            req->send(200, "text/plain", "The system will now crash!!!, and luckily go into failsafe OTA upload mode.");
             int *ptr = nullptr; // Null pointer
             *ptr = 42;          // Dereference the null pointer (causes a crash)
         });
         webserver.on("/enableOTA", [](AsyncWebServerRequest* req) {
-            req->send(200, CONSTSTR::htmlContentType_TextPlain, "ArduinoOTA is now guarranteed to work");
+            req->send(200, "text/plain", "ArduinoOTA is now guarranteed to work");
             ArduinoOTA.begin();
         });
         /*

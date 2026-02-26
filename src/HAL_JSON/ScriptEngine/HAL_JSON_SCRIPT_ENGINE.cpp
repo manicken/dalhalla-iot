@@ -24,7 +24,7 @@
 #include "HAL_JSON_SCRIPT_ENGINE.h"
 
 #include "HAL_JSON_SCRIPT_ENGINE_Reports.h"
-#include "HAL_JSON_SCRIPT_ENGINE_Support.h"
+#include "../Support/HAL_JSON_DeleterTemplate.h"
 
 #include "Runtime/HAL_JSON_SCRIPT_ENGINE_StatementBlock.h"
 #include "Runtime/HAL_JSON_SCRIPT_ENGINE_Script.h"
@@ -32,6 +32,8 @@
 #include "Parser/HAL_JSON_SCRIPT_ENGINE_Tokenizer.h"
 #include "Parser/HAL_JSON_SCRIPT_ENGINE_Parser.h"
 #include "Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
+
+#include "../Support/HAL_JSON_Logger.h"
 
 
 #if defined(_WIN32) || defined(__linux__)

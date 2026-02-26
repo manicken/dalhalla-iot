@@ -31,15 +31,14 @@
     #include <stack>
     #include <string_view>
 
-    #include "../src/HAL_JSON/HAL_JSON_Manager.h"
+    #include "../src/HAL_JSON/Core/HAL_JSON_Manager.h"
     #include "../src/HAL_JSON/ScriptEngine/HAL_JSON_SCRIPT_ENGINE.h"
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
     #include "ports/HAL_JSON_REST/HAL_JSON_REST.h"
 #endif
-    #include "../src/Support/ConvertHelper.h"
-    #include "../src/Support/CharArrayHelpers.h"
-    #include "../src/HAL_JSON/HAL_JSON_ZeroCopyString.h"
-     #include <ArduinoJson.h>
+    #include "../src/HAL_JSON/Support/ConvertHelper.h"
+    #include "../src/HAL_JSON/Core/Types/HAL_JSON_ZeroCopyString.h"
+    #include <ArduinoJson.h>
     #include "commandLoop.h"
 
     #include "test_mqtt.h"

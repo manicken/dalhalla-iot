@@ -23,6 +23,11 @@
 
 #include "HAL_JSON_ThingSpeak.h"
 
+#include "../Core/HAL_JSON_Manager.h"
+#include "../Support/HAL_JSON_Logger.h"
+#include "../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../Support/HAL_JSON_ArduinoJSON_ext.h"
+
 #if __has_include("../../../secrets/thingspeak_test_server.h")
 #include "../../../secrets/thingspeak_test_server.h"
 #endif

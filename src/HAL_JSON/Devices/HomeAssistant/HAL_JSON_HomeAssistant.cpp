@@ -21,14 +21,18 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "HAL_JSON_HomeAssistant.h"
-#include "HAL_JSON_HA_DeviceTypeReg.h"
-#include "../../HAL_JSON_ArduinoJSON_ext.h"
-#include "HAL_JSON_HA_TopicBasePath.h"
 #include <WiFi.h>
 #include <Arduino.h>
+
+#include "HAL_JSON_HomeAssistant.h"
+#include "HAL_JSON_HA_DeviceTypeReg.h"
+#include "HAL_JSON_HA_TopicBasePath.h"
 #include "HAL_JSON_HA_Constants.h"
 #include "HAL_JSON_HA_DeviceDiscovery.h"
+
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 

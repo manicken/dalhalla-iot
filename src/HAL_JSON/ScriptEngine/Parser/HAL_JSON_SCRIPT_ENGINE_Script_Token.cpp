@@ -23,6 +23,8 @@
 
 #include "HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
 
+#include "../../Support/HAL_JSON_Logger.h"
+
 namespace HAL_JSON {
     namespace ScriptEngine {
 

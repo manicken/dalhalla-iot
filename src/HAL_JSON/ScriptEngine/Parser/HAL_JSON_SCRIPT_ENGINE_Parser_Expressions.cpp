@@ -28,6 +28,8 @@
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
+#include "../../Support/HAL_JSON_Logger.h"
+
 namespace HAL_JSON {
     namespace ScriptEngine {
 

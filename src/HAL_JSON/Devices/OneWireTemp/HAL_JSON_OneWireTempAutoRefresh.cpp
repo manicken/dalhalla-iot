@@ -23,6 +23,10 @@
 
 #include "HAL_JSON_OneWireTempAutoRefresh.h"
 
+#include "../../Support/HAL_JSON_Logger.h"
+
+#include "../../Core/HAL_JSON_Device.h"
+
 namespace HAL_JSON {
 
     OneWireTempAutoRefresh::OneWireTempAutoRefresh(std::function<void()> _requestTemperatures, std::function<void()> _readAll, uint32_t _refreshTimeMs)

@@ -24,9 +24,9 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../HAL_JSON_SCRIPT_ENGINE_Support.h"
+#include "../../Support/HAL_JSON_DeleterTemplate.h"
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Script_Token.h"
-#include "../../HAL_JSON_Value.h"
+#include "../../Core/Types/HAL_JSON_Value.h"
 
 namespace HAL_JSON {
     namespace ScriptEngine {

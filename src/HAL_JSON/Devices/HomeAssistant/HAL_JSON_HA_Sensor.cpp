@@ -26,6 +26,11 @@
 #include "HAL_JSON_HA_CountingPubSubClient.h"
 #include "HAL_JSON_HA_Constants.h"
 
+#include "../../Core/HAL_JSON_Manager.h"
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+
 namespace HAL_JSON {
 
 
@@ -40,7 +45,7 @@ namespace HAL_JSON {
     }
     
     Sensor::Sensor(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
-        const char* uidStr = GetAsConstChar(jsonObj, "uid");
+        const char* uidStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_UID);
         uid = encodeUID(uidStr);
         
         const char* deviceId_cStr = jsonObjRoot["deviceId"];
@@ -86,12 +91,12 @@ namespace HAL_JSON {
         }
 
         bool haveRefreshMs = ParseRefreshTimeMs(jsonObj, 0) != 0;
-        bool haveSource = false;
+        bool haveValueSource = false;
         bool haveEventSource = false;
 
         ZeroCopyString zcSrcDeviceUidStr;
 
-        // ---- SOURCE (optional now) ----
+        // ---- SOURCE (optional) ----
         if (ValidateJsonStringField(jsonObj, "source")) {
             zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
 
@@ -101,16 +106,16 @@ namespace HAL_JSON {
                 SET_ERR_LOC("HA_SENSOR_VJ");
                 anyError = true;
             } else {
-                haveSource = true;
+                haveValueSource = true;
             }
         }
 
-        // ---- EVENT SOURCE ----
+        // ---- EVENT SOURCE (optional but not without "value"-source) ----
         if (ValidateJsonStringField(jsonObj, "eventSource")) {
 
-            if (!haveSource) {
+            if (!haveValueSource) {
                 // eventSource without source makes no sense
-                GlobalLogger.Error(F("eventSource without source defined"));
+                GlobalLogger.Error(F("eventSource without 'value'-source defined"));
                 SET_ERR_LOC("HA_SENSOR_VJ");
                 anyError = true;
             } else {
@@ -130,14 +135,14 @@ namespace HAL_JSON {
         }
 
         // ---- refreshTime requires source ----
-        if (haveRefreshMs && !haveSource) {
+        if (haveRefreshMs && !haveValueSource) {
             GlobalLogger.Error(F("haveRefreshMs without source"));
             SET_ERR_LOC("HA_SENSOR_VJ");
             anyError = true;
         }
 
         // ---- Scenario B: source only, no refreshTime, no eventSource ----
-        if (haveSource && !haveRefreshMs && !haveEventSource) {
+        if (haveValueSource && !haveRefreshMs && !haveEventSource) {
 
             HALOperationResult res =
                 Manager::ValidateDeviceEvent(zcSrcDeviceUidStr);

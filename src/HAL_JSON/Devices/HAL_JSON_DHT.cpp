@@ -22,15 +22,19 @@
 */
 
 #include "HAL_JSON_DHT.h"
+#include <strings.h>
+#include "../Support/HAL_JSON_Logger.h"
+#include "../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../Support/HAL_JSON_ArduinoJSON_ext.h"
 
 namespace HAL_JSON {
 
     bool DHT::isValidDHTModel(const char* modelStr) {
-        return
-            CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT11)  ||
-            CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT22)  ||
-            CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_AM2302) ||
-            CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03);
+        return 
+            (strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT11) == 0)  ||
+            (strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT22) == 0) ||
+            (strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_AM2302) == 0) ||
+            (strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03) == 0);
     }
 
     DHT::DHT(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
@@ -45,13 +49,13 @@ namespace HAL_JSON {
         //const char* modelStr = jsonObj[HAL_JSON_KEYNAME_DHT_MODEL].as<const char*>();
         const char* modelStr = GetAsConstChar(jsonObj, HAL_JSON_KEYNAME_DHT_MODEL);
         DHTesp::DHT_MODEL_t model = DHTesp::DHT_MODEL_t::AUTO_DETECT; // auto detect will not be used but we can use it as a default here;
-        if (CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT11))
+        if ((strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT11) == 0))
             model = DHTesp::DHT_MODEL_t::DHT11;
-        else if (CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT22))
+        else if ((strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_DHT22) == 0))
             model = DHTesp::DHT_MODEL_t::DHT22;
-        else if (CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_AM2302))
+        else if ((strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_AM2302) == 0))
             model = DHTesp::DHT_MODEL_t::AM2302;
-        else if (CharArray::equalsIgnoreCase(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03))
+        else if ((strcasecmp(modelStr, HAL_JSON_TYPE_DHT_MODEL_RHT03) == 0))
             model = DHTesp::DHT_MODEL_t::RHT03;
         dht.setup(pin,model);
         lastUpdateMs = millis()-refreshTimeMs; // direct update

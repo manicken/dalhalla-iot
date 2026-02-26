@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include "../../HAL_JSON_Device.h" // HALOperationResult
-#include "../HAL_JSON_SCRIPT_ENGINE_Support.h" // Deleter
+#include "../../Core/HAL_JSON_Device.h" // HALOperationResult
+#include "../../Support/HAL_JSON_DeleterTemplate.h" // Deleter
 #include "../Parser/HAL_JSON_SCRIPT_ENGINE_Expression_Token.h" // ExpressionTokens, ExpressionToken
 
 namespace HAL_JSON {

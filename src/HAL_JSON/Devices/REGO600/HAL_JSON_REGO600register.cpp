@@ -22,7 +22,11 @@
 */
 
 #include "HAL_JSON_REGO600register.h"
-#include "../../../Drivers/REGO600.h"
+#include "../../Drivers/REGO600.h"
+
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
 
 namespace HAL_JSON {
     

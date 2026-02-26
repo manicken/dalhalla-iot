@@ -22,7 +22,7 @@
 */
 
 #include "HAL_JSON_SCRIPT_ENGINE_Script.h"
-
+#include "../../Support/HAL_JSON_Logger.h"
 
 #define HAL_JSON_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 

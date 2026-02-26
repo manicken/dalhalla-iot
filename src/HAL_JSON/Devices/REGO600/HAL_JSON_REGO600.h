@@ -28,14 +28,15 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../../../Support/Logger.h"
-#include "../../HAL_JSON_Device.h"
-#include "../../HAL_JSON_Device_GlobalDefines.h"
+
+#include "../../Core/HAL_JSON_Device.h"
+#include "../HAL_JSON_DeviceTypesRegistry.h"
+#include "../../Core/HAL_JSON_SimpleEventDevice.h"
+
 
 #include "HAL_JSON_REGO600register.h"
-#include "../../../Drivers/REGO600.h"
-#include "../HAL_JSON_DeviceTypesRegistry.h"
-#include "../../HAL_JSON_SimpleEventDevice.h"
+#include "../../Drivers/REGO600.h"
+
 
 namespace HAL_JSON {
 

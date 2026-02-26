@@ -23,6 +23,10 @@
 
 #include "HAL_JSON_PWMAnalogWrite.h"
 
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+
 #if defined(ESP8266)
     #define AnalogWriteResolution_func analogWriteResolution
     #define AnalogWriteFrequency_func analogWriteFreq;

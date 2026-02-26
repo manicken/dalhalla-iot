@@ -23,6 +23,10 @@
 
 #include "HAL_JSON_ScriptVariableWriteOnlyTest.h"
 
+#include "../../Support/HAL_JSON_Logger.h"
+#include "../../Core/HAL_JSON_JSON_Config_Defines.h"
+#include "../../Support/HAL_JSON_ArduinoJSON_ext.h"
+
 namespace HAL_JSON {
     
     ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type) : Device(type) {
