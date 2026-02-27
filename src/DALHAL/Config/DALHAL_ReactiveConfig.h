@@ -20,19 +20,23 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
+
 #define DALHAL_REACTIVE_FEATURE_NONE           0x00000000
 #define DALHAL_REACTIVE_FEATURE_VALUE_CHANGE   0x00000001
 #define DALHAL_REACTIVE_FEATURE_STATE_CHANGE   0x00000002
+
 /* when the read function have executed successfully */
-#define DALHAL_REACTIVE_FEATURE_READ           0x00000004
+#define DALHAL_REACTIVE_FEATURE_READ           0x00000010
 /* when the write function have executed successfully */
-#define DALHAL_REACTIVE_FEATURE_WRITE          0x00000008
-/* when the bracket read function have executed successfully */
-#define DALHAL_REACTIVE_FEATURE_BRACKET_READ   0x00000010
-/* when the bracket write function have executed successfully */
-#define DALHAL_REACTIVE_FEATURE_BRACKET_WRITE  0x00000020
+#define DALHAL_REACTIVE_FEATURE_WRITE          0x00000020
 /* when the exec function have executed successfully */
-#define DALHAL_REACTIVE_FEATURE_EXEC           0x00000010 
+#define DALHAL_REACTIVE_FEATURE_EXEC           0x00000040
+/* when the bracket read function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_BRACKET_READ   0x00000100
+/* when the bracket write function have executed successfully */
+#define DALHAL_REACTIVE_FEATURE_BRACKET_WRITE  0x00000200
+
+
 #define DALHAL_REACTIVE_FEATURE_TIMEOUT        0x00010000
 #define DALHAL_REACTIVE_FEATURE_WRITE_ERROR    0x00020000
 #define DALHAL_REACTIVE_FEATURE_READ_ERROR     0x00040000
@@ -68,3 +72,18 @@
 #define DALHAL_REACTIVE_CFG_RELAY_LATCHING        (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
 #define DALHAL_REACTIVE_CFG_BUTTON                (DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
 #define DALHAL_REACTIVE_CFG_LEDC_SERVO            (DALHAL_REACTIVE_FEATURE_WRITE)
+
+#define REACTIVE_ENTRY_VALUE_CHANGE(CLASS_NAME) { "value_change", &CLASS_NAME::value_change, DALHAL_REACTIVE_FEATURE_VALUE_CHANGE },
+#define REACTIVE_ENTRY_STATE_CHANGE(CLASS_NAME) { "state_change", &CLASS_NAME::stateChangeCounter, DALHAL_REACTIVE_FEATURE_STATE_CHANGE },
+#define REACTIVE_ENTRY_WRITE(CLASS_NAME)        { "write",        &CLASS_NAME::writeCounter,      DALHAL_REACTIVE_FEATURE_WRITE },
+#define REACTIVE_ENTRY_READ(CLASS_NAME)         { "read",         &CLASS_NAME::readCounter,       DALHAL_REACTIVE_FEATURE_READ },
+#define REACTIVE_ENTRY_EXEC(CLASS_NAME)         { "exec",         &CLASS_NAME::execCounter,       DALHAL_REACTIVE_FEATURE_EXEC },
+
+
+#define HAS_REACTIVE(name, feature) (DALHAL_REACTIVE_CFG_##name & DALHAL_REACTIVE_FEATURE_##feature)
+
+void test() {
+#if (HAS_REACTIVE(FAN, WRITE))
+
+#endif
+}

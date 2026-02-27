@@ -28,8 +28,8 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../Core/DALHAL_CachedDeviceRead.h"
-#include "../Core/DALHAL_Device.h"
+#include "../Core/Device/DALHAL_CachedDeviceRead.h"
+#include "../Core/Device/DALHAL_Device.h"
 #include "DALHAL_DeviceTypesRegistry.h"
 
 #if defined(ESP8266)
@@ -41,7 +41,7 @@
 #include <HTTPClient.h>
 #endif
 
-#include "../Core/DALHAL_SimpleEventDevice.h"
+#include "../Core/Reactive/DALHAL_SimpleEventDevice.h"
 
 #define DALHAL_THINGSPEAK_MAX_FIELDS 8
 #define DALHAL_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS 60*1000

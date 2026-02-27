@@ -30,8 +30,8 @@
 #include <DHTesp.h>
 
 #include "DALHAL_DeviceTypesRegistry.h"
-#include "../Core/DALHAL_Device.h"
-#include "../Core/DALHAL_SimpleEventDevice.h"
+#include "../Core/Device/DALHAL_Device.h"
+#include "../Core/Reactive/DALHAL_SimpleEventDevice.h"
 
 
 

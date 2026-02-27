@@ -28,7 +28,7 @@
 #include <ArduinoJson.h>
 #include <stdlib.h>
 
-#include "Types/DALHAL_ZeroCopyString.h"
+#include "../Types/DALHAL_ZeroCopyString.h"
 
 /*
     this file is only intended to manage which functions that are assigned to a specific GPIO pin

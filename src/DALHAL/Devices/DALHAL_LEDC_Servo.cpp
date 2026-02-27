@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include "../Support/DALHAL_ArduinoJSON_ext.h"
 #include "../Support/DALHAL_Logger.h"
+#include "../Core/Manager/DALHAL_GPIO_Manager.h"
 
 #define VERIFY_JSON_SOURCE "LEDC_Servo::VerifyJSON"
 

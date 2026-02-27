@@ -21,30 +21,25 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_Manager.h"
+#include "DALHAL_DeviceManager.h"
 
-#include "DALHAL_JSON_Config_Defines.h"
-#include "../Devices/DALHAL_DeviceTypesRegistry.h"
+#include "../Device/DALHAL_JSON_Config_Defines.h"
+#include "../../Devices/DALHAL_DeviceTypesRegistry.h"
 
-#include "../Support/DALHAL_Logger.h"
-#include "../Support/DALHAL_ArduinoJSON_ext.h"
+#include "../../Support/DALHAL_Logger.h"
+#include "../../Support/DALHAL_ArduinoJSON_ext.h"
+#include "DALHAL_GPIO_Manager.h"
 
 namespace DALHAL {
 
-    Device** Manager::devices = nullptr;
-    int Manager::deviceCount = 0;
-    //int Manager::reloadVersion = 0;
-    bool Manager::reloadQueued = false;
+    Device** DeviceManager::devices = nullptr;
+    int DeviceManager::deviceCount = 0;
     
-    int Manager::DeviceCount() {
+    int DeviceManager::DeviceCount() {
         return deviceCount;
     }
 
-   /* int* Manager::ReloadVersionPtr() {
-        return &reloadVersion;
-    }*/
-
-    bool Manager::setupMgr() {
+    bool DeviceManager::setupMgr() {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()+1) == false) { // remove the leading /
 #else
@@ -58,7 +53,7 @@ namespace DALHAL {
         return true;
     }
 
-    std::string Manager::ToString() {
+    std::string DeviceManager::ToString() {
         std::string ret;
         ret += "\"deviceCount\":" + std::to_string(deviceCount); 
         ret += ",\"devices\":[";
@@ -72,7 +67,7 @@ namespace DALHAL {
         return ret;
     }
 
-    Device* Manager::CreateDeviceFromJSON(const JsonVariant &jsonObj) {
+    Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant &jsonObj) {
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
         const DeviceRegistryItem& regItem = GetDeviceRegistryItem(type);
         if (regItem.typeName == nullptr) {
@@ -87,7 +82,7 @@ namespace DALHAL {
         }
         return regItem.def.Create_Function(jsonObj, regItem.typeName);
     }
-    bool Manager::VerifyDeviceJson(const JsonVariant &jsonObj) {
+    bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         
         if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_TYPE)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
@@ -109,11 +104,11 @@ namespace DALHAL {
 
     }
 
-    void Manager::CleanUp() {
+    void DeviceManager::CleanUp() {
         //printf("\n&&&&&&&&&&&&&&&&&&&&&&&& CLEANUP OF LOADED DEVICES &&&&&&&&&&&&&&&&&&&&&&\n");
         // cleanup of prev device list if existent
         if (devices != nullptr) {
-            for (int i=0;i<DALHAL::Manager::deviceCount;i++) {
+            for (int i=0;i<DALHAL::DeviceManager::deviceCount;i++) {
                 if (devices[i] != nullptr) {
                     delete devices[i];
                     devices[i] = nullptr;
@@ -122,10 +117,10 @@ namespace DALHAL {
             delete[] devices;
             devices = nullptr;
         }
-        DALHAL::Manager::deviceCount = 0;
+        DALHAL::DeviceManager::deviceCount = 0;
     }
 
-    bool Manager::ParseJSON(const JsonArray &jsonArray) {
+    bool DeviceManager::ParseJSON(const JsonArray &jsonArray) {
         //Serial.println("PArse json thianasoidnoasidnasoidnsaiodnsaodinasdoiandoisandiosndoiasnd");
         uint32_t deviceCount = 0;
         int arraySize = jsonArray.size();
@@ -165,7 +160,7 @@ namespace DALHAL {
             return false;
         }
         printf("\nOK\n");
-        DALHAL::Manager::deviceCount = deviceCount;
+        DALHAL::DeviceManager::deviceCount = deviceCount;
 
         GPIO_manager::ClearAllReservations(); 
         // Second pass: actually create and store devices
@@ -182,16 +177,16 @@ namespace DALHAL {
         return true;
     }
 
-    DeviceFindResult Manager::findDevice(UIDPath& path, Device*& outDevice) {
+    DeviceFindResult DeviceManager::findDevice(UIDPath& path, Device*& outDevice) {
         path.reset(); // ensure to be at root level
         return Device::findInArray(devices, deviceCount, path, nullptr, outDevice);
     }
     /*
-    HALOperationResult Manager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut) {
+    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut) {
         ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('@');
         UIDPath uidPath(zcStrUidPathAndFuncName);
         Device* deviceOut = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, deviceOut);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, deviceOut);
 
         if (devFindRes != DeviceFindResult::Success) {
             if (deviceEventOut) {
@@ -219,13 +214,13 @@ namespace DALHAL {
 
         return HALOperationResult::Success;
     }*/
-    HALOperationResult Manager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut)
+    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut)
     {
         ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
         UIDPath uidPath(zcStrUidPathAndFuncName);
 
         Device* deviceOut = nullptr;
-        DeviceFindResult findRes = Manager::findDevice(uidPath, deviceOut);
+        DeviceFindResult findRes = DeviceManager::findDevice(uidPath, deviceOut);
 
         if (findRes != DeviceFindResult::Success) {
             if (deviceEventOut) {
@@ -237,11 +232,11 @@ namespace DALHAL {
         // Forward directly to device
         return deviceOut->Get_DeviceEvent(zcFuncName, deviceEventOut);
     }
-    HALOperationResult Manager::ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName) {
+    HALOperationResult DeviceManager::ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName) {
         return GetDeviceEvent(zcStrUidPathAndFuncName, nullptr);
     }
 
-    bool Manager::ReadJSON(const char* path) {
+    bool DeviceManager::ReadJSON(const char* path) {
         if (path == nullptr) {
             GlobalLogger.Error(F("ReadJSON - path cannot be empty "));
             return false;
@@ -292,7 +287,7 @@ namespace DALHAL {
 
         return parseOk;
     }
-    void Manager::begin() {
+    void DeviceManager::begin() {
         for (int i=0;i<deviceCount;i++) {
             Device* device = devices[i];
             if (device == nullptr) continue;
@@ -301,7 +296,7 @@ namespace DALHAL {
         }
     }
 
-    void Manager::loop() {
+    void DeviceManager::loop() {
         if ((devices == nullptr) || (deviceCount == 0)) return;
 
         for (int i=0;i<deviceCount;i++) {
@@ -316,12 +311,12 @@ namespace DALHAL {
      * it's just to check that everything is correct
      * in the future it could be a real TEST function
     */
-    /*void Manager::TEST() {
+    /*void DeviceManager::TEST() {
 
         ZeroCopyString zcPath = "1WTG";
         UIDPath path(zcPath);
         Device* device = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(path, device);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(path, device);
         if (devFindRes != DeviceFindResult::Success) {
             std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes))+": " + zcPath.ToString() + "\"";
             Serial.println(msg.c_str());
@@ -340,7 +335,7 @@ namespace DALHAL {
         ZeroCopyString zcPath2 = "1WTG:D2";
         UIDPath path2(zcPath2);
         Device* device2 = nullptr;
-        DeviceFindResult devFindRes2 = Manager::findDevice(path2, device2);
+        DeviceFindResult devFindRes2 = DeviceManager::findDevice(path2, device2);
         if (devFindRes2 != DeviceFindResult::Success) {
             std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes2))+": " + zcPath2.ToString() + "\"";
             Serial.println(msg.c_str());

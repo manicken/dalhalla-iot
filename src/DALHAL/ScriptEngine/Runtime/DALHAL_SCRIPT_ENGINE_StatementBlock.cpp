@@ -23,7 +23,7 @@
 
 #include "DALHAL_SCRIPT_ENGINE_StatementBlock.h"
 #include "DALHAL_SCRIPT_ENGINE_IfStatement.h"
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 #include "../../Support/DALHAL_DeleterTemplate.h"
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
 #include "DALHAL_SCRIPT_ENGINE_IfStatement.h"

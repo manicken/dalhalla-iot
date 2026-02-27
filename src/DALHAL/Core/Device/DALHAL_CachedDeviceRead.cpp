@@ -22,12 +22,12 @@
 */
 
 #include "DALHAL_CachedDeviceRead.h"
-#include "../Support/DALHAL_DeleterTemplate.h"
+#include "../../Support/DALHAL_DeleterTemplate.h"
 
-#include "../Support/DALHAL_Logger.h"
-#include "Types/DALHAL_UID_Path.h"
+#include "../../Support/DALHAL_Logger.h"
+#include "../Types/DALHAL_UID_Path.h"
 
-#include "DALHAL_Manager.h"
+#include "../Manager/DALHAL_DeviceManager.h"
 
 namespace DALHAL {
 
@@ -113,7 +113,7 @@ namespace DALHAL {
         ZeroCopyString& funcName = zcStrUidPathAndFuncName;
         UIDPath uid(operandName);
         Device* outDevice = nullptr;
-        DeviceFindResult res =  Manager::findDevice(uid, outDevice);
+        DeviceFindResult res =  DeviceManager::findDevice(uid, outDevice);
         if (res != DeviceFindResult::Success) {
             GlobalLogger.Error(F("CachedDeviceRead - could not find source device: "), operandName.ToString().c_str());
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));
@@ -160,7 +160,7 @@ namespace DALHAL {
         ZeroCopyString zcUid = zcStrUidPathAndFuncName.SplitOffHead('#');
         UIDPath uid(zcUid);
         Device* outDevice = nullptr;
-        DeviceFindResult res = Manager::findDevice(uid, outDevice);
+        DeviceFindResult res = DeviceManager::findDevice(uid, outDevice);
         if (res != DeviceFindResult::Success) {
             GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device: "), zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(res));

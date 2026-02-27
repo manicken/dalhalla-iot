@@ -23,10 +23,11 @@
 
 #include "DALHAL_ThingSpeak.h"
 
-#include "../Core/DALHAL_Manager.h"
+#include "../Core/Manager/DALHAL_DeviceManager.h"
 #include "../Support/DALHAL_Logger.h"
-#include "../Core/DALHAL_JSON_Config_Defines.h"
+#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../Support/DALHAL_ArduinoJSON_ext.h"
+
 
 #if __has_include("../../../secrets/thingspeak_test_server.h")
 #include "../../../secrets/thingspeak_test_server.h"
@@ -52,7 +53,7 @@ namespace DALHAL {
         cdr = new CachedDeviceRead();
         ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
         if (cdr->Set(zcStrUidPathAndFuncName)) {
-            Manager::GetDeviceEvent(zcStrUidPathAndFuncName, &deviceEvent);
+            DeviceManager::GetDeviceEvent(zcStrUidPathAndFuncName, &deviceEvent);
         }
         
     }

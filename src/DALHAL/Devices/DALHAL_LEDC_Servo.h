@@ -22,7 +22,7 @@
 */
 
 #pragma once
-#include "../Core/DALHAL_Device.h"
+#include "../Core/Device/DALHAL_Device.h"
 #include "DALHAL_DeviceTypesRegistry.h"
 #include <Arduino.h>
 #include "driver/ledc.h"

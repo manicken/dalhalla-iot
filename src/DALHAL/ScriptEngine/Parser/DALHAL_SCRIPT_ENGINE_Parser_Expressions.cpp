@@ -30,6 +30,10 @@
 
 #include "../../Support/DALHAL_Logger.h"
 
+#include "../../Core/Types/DALHAL_UID_Path.h"
+#include "../../Core/Manager/DALHAL_DeviceManager.h"
+#include "../../Support/DALHAL_DeleterTemplate.h"
+
 namespace DALHAL {
     namespace ScriptEngine {
 
@@ -476,7 +480,7 @@ namespace DALHAL {
             }
 
             UIDPath path(varOperand);
-            DeviceFindResult devFindRes = Manager::findDevice(path, outInfo.device);
+            DeviceFindResult devFindRes = DeviceManager::findDevice(path, outInfo.device);
             if (devFindRes != DeviceFindResult::Success) {
                 std::string msg = varOperand.ToString();
                 msg += " because: " + std::string(DeviceFindResultToString(devFindRes));

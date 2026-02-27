@@ -23,10 +23,10 @@
 
 #include "DALHAL_CachedDeviceAccess.h"
 
-#include "../Support/DALHAL_Logger.h"
-#include "Types/DALHAL_UID_Path.h"
+#include "../../Support/DALHAL_Logger.h"
+#include "../Types/DALHAL_UID_Path.h"
 
-#include "DALHAL_Manager.h"
+#include "../Manager/DALHAL_DeviceManager.h"
 
 namespace DALHAL {
 
@@ -71,7 +71,7 @@ namespace DALHAL {
         ZeroCopyString& zcStrFuncName = zcStrUidPathAndFuncName;
 
         UIDPath uidPath(zcStrUidPath);
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
         if (devFindRes != DeviceFindResult::Success) {
             

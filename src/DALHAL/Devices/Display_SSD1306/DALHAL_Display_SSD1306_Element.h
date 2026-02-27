@@ -28,8 +28,8 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/DALHAL_Device.h"
-#include "../../Core/DALHAL_CachedDeviceAccess.h"
+#include "../../Core/Device/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_CachedDeviceAccess.h"
 
 namespace DALHAL {
 

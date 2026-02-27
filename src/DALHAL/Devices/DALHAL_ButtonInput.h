@@ -22,10 +22,10 @@
 */
 
 #pragma once
-#include "../Core/DALHAL_Device.h"
+#include "../Core/Device/DALHAL_Device.h"
 #include "DALHAL_DeviceTypesRegistry.h"
-#include "../Core/DALHAL_CachedDeviceAccess.h"
-#include "../Core/DALHAL_GPIO_Manager.h"
+#include "../Core/Device/DALHAL_CachedDeviceAccess.h"
+#include "../Core/Manager/DALHAL_GPIO_Manager.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 

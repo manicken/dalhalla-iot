@@ -103,7 +103,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         exprTestLoad(zcCmd);
     } else if (zcCmdRoot == "loadrules" || zcCmdRoot == "lr") {
         if (oneShot) {
-            DALHAL::Manager::setupMgr();
+            DALHAL::DeviceManager::setupMgr();
         }
         DALHAL::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
         std::cout << "using rule set file:" << zcFilePath.ToString() << "\n";
@@ -122,7 +122,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "Parse time: " << duration.count() << " ms\n";
     } else if (zcCmdRoot == "ldex") {
         if (oneShot) {
-            //DALHAL::Manager::setup(); // could use this later on
+            //DALHAL::DeviceManager::setup(); // could use this later on
         }
         auto start = std::chrono::high_resolution_clock::now();
         DALHAL::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
@@ -135,7 +135,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "Parse time: " << duration.count() << " ms\n";
     } else if (zcCmdRoot == "ldac") {
         if (oneShot) {
-            //DALHAL::Manager::setup(); // could use this later on
+            //DALHAL::DeviceManager::setup(); // could use this later on
         }
         auto start = std::chrono::high_resolution_clock::now();
         DALHAL::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
@@ -150,7 +150,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
-        DALHAL::Manager::setupMgr();
+        DALHAL::DeviceManager::setupMgr();
         DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
@@ -160,7 +160,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
-        DALHAL::Manager::setupMgr();
+        DALHAL::DeviceManager::setupMgr();
         DALHAL::ScriptEngine::ScriptsToLoad scriptsToLoad;
         DALHAL::ScriptEngine::ValidateAllActiveScripts(scriptsToLoad);
         auto end = std::chrono::high_resolution_clock::now();
@@ -169,7 +169,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "Parse time: " << duration.count() << " ms\n";
     } else if (zcCmdRoot == "ldcfg") {
         auto start = std::chrono::high_resolution_clock::now();
-        DALHAL::Manager::setupMgr();
+        DALHAL::DeviceManager::setupMgr();
         
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;

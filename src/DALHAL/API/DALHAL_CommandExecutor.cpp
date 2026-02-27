@@ -28,10 +28,10 @@
 #include "../../BUILD_INFO.h"
 #include "../Support/base64.h"
 
-#include "../Core/DALHAL_JSON_Config_Defines.h"
+#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
 
-#include "../Core/DALHAL_GPIO_Manager.h"
-#include "../Core/DALHAL_Manager.h"
+#include "../Core/Manager/DALHAL_GPIO_Manager.h"
+#include "../Core/Manager/DALHAL_DeviceManager.h"
 #include "../ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
 #include "../../System/Info.h"
 
@@ -133,7 +133,7 @@ namespace DALHAL {
                 message += GPIO_manager::GetList(zcStr);
             }
             else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_PRINT_DEVICES)) {
-                message += Manager::ToString();
+                message += DeviceManager::ToString();
             }
             else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS)) {
 
@@ -291,9 +291,9 @@ namespace DALHAL {
         std::cout << "Reload cfg json: " << filePath << std::endl;  
 #endif
     
-        if (Manager::ReadJSON(filePath.c_str())) {
+        if (DeviceManager::ReadJSON(filePath.c_str())) {
             message += "\"info\":\"OK\"";
-            Manager::begin();
+            DeviceManager::begin();
             
             return true;
         } else {
@@ -323,7 +323,7 @@ namespace DALHAL {
         // check if device exists
         UIDPath uidPath(params.zcUid);
         Device* outDevice = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, outDevice);
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
@@ -473,7 +473,7 @@ namespace DALHAL {
         // check if device exists
         UIDPath uidPath(params.zcUid);
         Device* outDevice = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, outDevice);
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
@@ -576,7 +576,7 @@ namespace DALHAL {
         // first check if device exists
         UIDPath uidPath(zcPath);
         Device* outDevice = nullptr;
-        DeviceFindResult devFindRes = Manager::findDevice(uidPath, outDevice);
+        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, outDevice);
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), zcPath);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));

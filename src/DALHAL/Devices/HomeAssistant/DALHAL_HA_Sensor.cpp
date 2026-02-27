@@ -26,9 +26,9 @@
 #include "DALHAL_HA_CountingPubSubClient.h"
 #include "DALHAL_HA_Constants.h"
 
-#include "../../Core/DALHAL_Manager.h"
+#include "../../Core/Manager/DALHAL_DeviceManager.h"
 #include "../../Support/DALHAL_Logger.h"
-#include "../../Core/DALHAL_JSON_Config_Defines.h"
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../../Support/DALHAL_ArduinoJSON_ext.h"
 
 namespace DALHAL {
@@ -122,7 +122,7 @@ namespace DALHAL {
                 ZeroCopyString zcEvtDeviceUidStr = GetAsConstChar(jsonObj, "eventSource");
 
                 HALOperationResult res =
-                    Manager::ValidateDeviceEvent(zcEvtDeviceUidStr);
+                    DeviceManager::ValidateDeviceEvent(zcEvtDeviceUidStr);
 
                 if (res != HALOperationResult::Success) {
                     GlobalLogger.Error(F("eventSource error"));
@@ -145,7 +145,7 @@ namespace DALHAL {
         if (haveValueSource && !haveRefreshMs && !haveEventSource) {
 
             HALOperationResult res =
-                Manager::ValidateDeviceEvent(zcSrcDeviceUidStr);
+                DeviceManager::ValidateDeviceEvent(zcSrcDeviceUidStr);
 
             if (res != HALOperationResult::Success) {
                 GlobalLogger.Error(F("source without events do not work without refreshTime or eventSource"));

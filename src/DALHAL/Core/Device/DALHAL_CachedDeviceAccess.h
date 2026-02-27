@@ -30,8 +30,8 @@
 #include <stdlib.h>
 
 #include "DALHAL_Device.h"
-#include "Types/DALHAL_Value.h"
-#include "Types/DALHAL_ZeroCopyString.h"
+#include "../Types/DALHAL_Value.h"
+#include "../Types/DALHAL_ZeroCopyString.h"
 
 namespace DALHAL {
 

@@ -20,7 +20,7 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include "../../Core/DALHAL_JSON_Config_Defines.h"
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../../Support/DALHAL_ArduinoJSON_ext.h"
 #include "../../Support/DALHAL_Logger.h"
 #include "DALHAL_HA_DeviceContainer.h"

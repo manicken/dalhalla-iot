@@ -26,7 +26,7 @@
 #include <string>
 
 #include "DALHAL_Value.h"
-#include "DALHAL_UID_Path.h"
+#include "DALHAL_ZeroCopyString.h"
 
 namespace DALHAL {
 

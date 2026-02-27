@@ -28,7 +28,7 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 #include "../CoreDevices/DALHAL_I2C_BUS_DeviceTypeReg.h"
 
 #include <Wire.h>

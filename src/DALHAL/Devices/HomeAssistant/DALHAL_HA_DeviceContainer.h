@@ -28,7 +28,7 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 
 #include <PubSubClient.h>
 #include "DALHAL_HA_DeviceTypeReg.h"

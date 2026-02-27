@@ -25,7 +25,7 @@
 
 #include <Arduino.h>
 #include "../../Core/Types/DALHAL_Value.h"
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 
 #include "../../Support/DALHAL_DeleterTemplate.h"
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h"  //contains the instance of halValueStack

@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include "Support/DALHAL_Logger.h"
-#include "Core/DALHAL_Manager.h"
+#include "Core/Manager/DALHAL_DeviceManager.h"
 #include "API/DALHAL_API.h"
 
 #include "ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
@@ -39,10 +39,10 @@ namespace DALHAL {
     void begin() {
         //DALHAL::REST::setupRest();
         DALHAL::WebSocketAPI::setup();
-        //printf("\nBefore Manager::setupMgr()\n");
+        //printf("\nBefore DeviceManager::setupMgr()\n");
         //Info::PrintHeapInfo();
         
-        if (Manager::setupMgr() == false)
+        if (DeviceManager::setupMgr() == false)
             return;
         //printf("\nBefore ScriptEngine::ValidateAndLoadAllActiveScripts\n");
         //Info::PrintHeapInfo();
@@ -74,7 +74,7 @@ namespace DALHAL {
         long currmillis = millis();
         if (currmillis-lastmillis > 100) {
             lastmillis = currmillis;
-            Manager::loop();
+            DeviceManager::loop();
             
             if (ScriptEngine::ScriptsBlock::running)
                 ScriptEngine::Exec(); // runs the scriptengine

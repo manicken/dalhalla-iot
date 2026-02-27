@@ -25,7 +25,7 @@
 
 #include "../../Support/DALHAL_Logger.h"
 
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 
 namespace DALHAL {
 

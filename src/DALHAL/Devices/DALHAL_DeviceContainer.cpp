@@ -22,9 +22,9 @@
 */
 
 #include "DALHAL_DeviceContainer.h"
-#include "../Core/DALHAL_Manager.h"
+#include "../Core/Manager/DALHAL_DeviceManager.h"
 #include "../Support/DALHAL_Logger.h"
-#include "../Core/DALHAL_JSON_Config_Defines.h"
+#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../Support/DALHAL_ArduinoJSON_ext.h"
 
 namespace DALHAL {
@@ -51,7 +51,7 @@ namespace DALHAL {
             JsonVariant jsonItem = jsonArray[i];
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-            bool valid = Manager::VerifyDeviceJson(jsonItem);
+            bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
             validDevices[i] = valid;
             deviceCountTmp++;
         }
@@ -78,7 +78,7 @@ namespace DALHAL {
         for (int i=0;i<arraySize;i++) {
             JsonVariant jsonItem = jsonArray[i];
             if (validDevices[i] == false) continue;
-            devices[index++] = Manager::CreateDeviceFromJSON(jsonItem);
+            devices[index++] = DeviceManager::CreateDeviceFromJSON(jsonItem);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -108,7 +108,7 @@ namespace DALHAL {
             const JsonVariant& jsonItem = items[i];
             if (IsConstChar(jsonItem) == true) { continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
-            bool valid = Manager::VerifyDeviceJson(jsonItem);
+            bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
             if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
         }
         return true;

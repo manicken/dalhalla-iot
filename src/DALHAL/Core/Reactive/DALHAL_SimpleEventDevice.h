@@ -23,7 +23,7 @@
 #pragma once
 
 #include <cstdint>
-#include "DALHAL_Device.h"
+#include "../Device/DALHAL_Device.h"
 
 #define DALHAL_DEVICE_SIMPLE_EVENT_DEVICE
 

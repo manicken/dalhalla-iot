@@ -28,9 +28,9 @@
 
 #include <ArduinoJson.h>
 #include "../Core/Types/DALHAL_Value.h"
-#include "../Core/DALHAL_Device.h"
+#include "../Core/Device/DALHAL_Device.h"
 
-#include "../Core/DALHAL_JSON_Config_Defines.h"
+#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
 
 
 namespace DALHAL {

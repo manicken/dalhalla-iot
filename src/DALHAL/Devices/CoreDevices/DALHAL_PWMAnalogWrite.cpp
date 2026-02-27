@@ -24,8 +24,9 @@
 #include "DALHAL_PWMAnalogWrite.h"
 
 #include "../../Support/DALHAL_Logger.h"
-#include "../../Core/DALHAL_JSON_Config_Defines.h"
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../../Support/DALHAL_ArduinoJSON_ext.h"
+#include "../../Core/Manager/DALHAL_GPIO_Manager.h"
 
 #if defined(ESP8266)
     #define AnalogWriteResolution_func analogWriteResolution

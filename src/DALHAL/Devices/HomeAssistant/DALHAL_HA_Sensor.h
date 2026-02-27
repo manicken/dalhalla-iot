@@ -28,11 +28,11 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/DALHAL_Device.h"
+#include "../../Core/Device/DALHAL_Device.h"
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-#include "../../Core/DALHAL_CachedDeviceRead.h"
+#include "../../Core/Device/DALHAL_CachedDeviceRead.h"
 #include "DALHAL_HA_TopicBasePath.h"
 #include "DALHAL_HA_DeviceTypeReg.h"
 

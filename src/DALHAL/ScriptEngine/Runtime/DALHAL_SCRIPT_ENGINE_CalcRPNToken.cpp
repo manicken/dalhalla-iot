@@ -23,9 +23,9 @@
 
 #include "DALHAL_SCRIPT_ENGINE_CalcRPNToken.h"
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
-#include "../../Core/DALHAL_CachedDeviceRead.h"
-#include "../../Core/DALHAL_Device.h"
-#include "../../Core/DALHAL_Manager.h"
+#include "../../Core/Device/DALHAL_CachedDeviceRead.h"
+#include "../../Core/Device/DALHAL_Device.h"
+#include "../../Core/Manager/DALHAL_DeviceManager.h"
 #include "../../Support/DALHAL_Logger.h"
 
 #define DALHAL_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
@@ -62,7 +62,7 @@ namespace DALHAL {
                 ZeroCopyString varOperand = funcName.SplitOffHead('#');
                 UIDPath uidPath(varOperand);
                 Device* device = nullptr;
-                DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
+                DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
                 if (devFindRes != DeviceFindResult::Success) { // failsafe
                     printf("@CalcRPNToken - CachedDeviceAccess - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
@@ -82,7 +82,7 @@ namespace DALHAL {
                 //printf("\nCalcRPNToken - non bracket non funcname accessor\n");
                 UIDPath uidPath(expToken);
                 Device* device = nullptr;
-                DeviceFindResult devFindRes = Manager::findDevice(uidPath, device);
+                DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
                 if (devFindRes != DeviceFindResult::Success) {  // failsafe
                     printf("\nCalcRPNToken - @non bracket non funcname accessor - %d:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());

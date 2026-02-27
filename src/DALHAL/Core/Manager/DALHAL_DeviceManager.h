@@ -29,15 +29,15 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #if defined(ESP32) || defined(ESP8266)
-#include "../../Support/LittleFS_ext.h"
+#include "../../../Support/LittleFS_ext.h"
 #else
 #include <LittleFS_ext.h>
 #endif
 #include <string>
-#include "Types/DALHAL_Value.h"
-#include "Types/DALHAL_UID_Path.h"
-#include "Types/DALHAL_Operations.h"
-#include "DALHAL_Device.h"
+#include "../Types/DALHAL_Value.h"
+#include "../Types/DALHAL_UID_Path.h"
+#include "../Types/DALHAL_Operations.h"
+#include "../Device/DALHAL_Device.h"
 
 
 
@@ -46,23 +46,17 @@
 #define DALHAL_CONFIG_JSON_FILE            F(DALHAL_ROOT_URL "/cfg.json")
 
 namespace DALHAL {
-    class Manager {
+    class DeviceManager {
     private:
         static Device** devices;
         static int deviceCount;
-        
-        
-        
-        static int reloadVersion;
 
     public:
         static Device* CreateDeviceFromJSON(const JsonVariant& json);
         static bool VerifyDeviceJson(const JsonVariant& jsonObj);
-        
-        static bool reloadQueued;// = false;
+
         // getters
         static int DeviceCount();
-        static int* ReloadVersionPtr();
         // init
         /** calls the begin function on all loaded hal devices */
         static void begin();

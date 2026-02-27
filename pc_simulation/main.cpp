@@ -31,7 +31,7 @@
     #include <stack>
     #include <string_view>
 
-    #include "../src/DALHAL/Core/DALHAL_Manager.h"
+    #include "../src/DALHAL/Core/Manager/DALHAL_DeviceManager.h"
     #include "../src/DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
     #include "ports/DALHAL_REST/DALHAL_REST.h"
@@ -60,7 +60,7 @@
         if (argc > 1) {
             // one shot tests
             parseCommand(argv[1], true); // true mean one short test
-            DALHAL::Manager::CleanUp();
+            DALHAL::DeviceManager::CleanUp();
             return 0;
         }
         
@@ -69,14 +69,14 @@
         DALHAL::REST::setup(halJsonRestCallback); // this will start the server
 #endif
         std::cout << "\n****** Init DALHAL Manager\n";
-        DALHAL::Manager::setupMgr();
+        DALHAL::DeviceManager::setupMgr();
         DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
         std::cout << "\n****** Starting commandLoop thread\n";
         std::thread cmdThread(commandLoop); // start command input thread from commandLoop that is in commandLoop.h
         test_mqtt::setup();
         long lastmillis = 0;
         while (running) { // running is in commandLoop.h
-            DALHAL::Manager::loop();
+            DALHAL::DeviceManager::loop();
             long currmillis = millis();
             if (currmillis-lastmillis > 100) {
                 lastmillis = currmillis;
@@ -88,6 +88,6 @@
         }
         cmdThread.join(); // wait for command thread to finish
         std::cout << "Exited cleanly.\n" << std::flush;
-        DALHAL::Manager::CleanUp();
+        DALHAL::DeviceManager::CleanUp();
         return 0;
     }

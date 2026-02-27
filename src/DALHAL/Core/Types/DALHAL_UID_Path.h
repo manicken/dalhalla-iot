@@ -59,7 +59,7 @@ namespace DALHAL {
         UIDPath(UIDPath&& other) = delete; // Move constructor
         UIDPath& operator=(UIDPath&& other) = delete; // Move assignment
         /** Ideally, the program should be designed to avoid needing this function. 
-         * but the only place where it should be used is at start of Manager::findDevice 
+         * but the only place where it should be used is at start of DeviceManager::findDevice 
          * that way we never need to check it while using other functions
          */
         bool empty() const;

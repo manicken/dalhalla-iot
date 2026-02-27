@@ -35,6 +35,14 @@
 
 #include "../Support/DALHAL_Logger.h"
 
+#include <LittleFS.h>
+
+#if defined(ESP32) || defined(ESP8266)
+#include "../../Support/LittleFS_ext.h"
+#else
+#include <LittleFS_ext.h>
+#endif
+
 
 #if defined(_WIN32) || defined(__linux__)
 #define SCRIPTS_DIRECTORY   "scripts/"

@@ -24,10 +24,11 @@
 #include "DALHAL_I2C_BUS.h"
 #include "DALHAL_I2C_BUS_DeviceTypeReg.h"
 #include "../../Support/DALHAL_Logger.h"
-#include "../../Core/DALHAL_JSON_Config_Defines.h"
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
 #include "../../Support/DALHAL_ArduinoJSON_ext.h"
 
 #include "../../Support/ConvertHelper.h"
+#include "../../Core/Manager/DALHAL_GPIO_Manager.h"
 
 namespace DALHAL {
 

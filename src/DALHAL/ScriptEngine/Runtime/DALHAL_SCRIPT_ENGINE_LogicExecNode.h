@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../../Core/DALHAL_Device.h" // HALOperationResult
+#include "../../Core/Device/DALHAL_Device.h" // HALOperationResult
 #include "../../Support/DALHAL_DeleterTemplate.h" // Deleter
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h" // ExpressionTokens, ExpressionToken
 

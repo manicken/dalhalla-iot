@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_Device.h"
-#include "../Support/DALHAL_Logger.h"
+#include "../../Support/DALHAL_Logger.h"
 #include "DALHAL_JSON_Config_Defines.h"
 
 //#define PRINT_FAIL_OPERATION_DEBUG_MESSAGE

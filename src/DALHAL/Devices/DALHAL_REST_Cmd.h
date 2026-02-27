@@ -29,7 +29,7 @@
 #include <string>
 
 #include <Arduino.h> // Needed for String class
-#include "../Core/DALHAL_Device.h"
+#include "../Core/Device/DALHAL_Device.h"
 #include "DALHAL_DeviceTypesRegistry.h"
 
 namespace DALHAL {
