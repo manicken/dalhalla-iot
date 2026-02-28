@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_templateReactive.h"
-#include "../Config/DALHAL_ReactiveConfig.h"
+#include "../../Config/DALHAL_ReactiveConfig.h"
 
 namespace DALHAL {
 

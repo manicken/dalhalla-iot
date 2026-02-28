@@ -23,9 +23,9 @@
 
 #pragma once
 
-#include "../Core/Device/DALHAL_Device.h"
-#include "../Core/Reactive/DALHAL_Reactive.h"
-#include "../Config/DALHAL_ReactiveConfig.h"
+#include "../../Core/Device/DALHAL_Device.h"
+#include "../../Core/Reactive/DALHAL_Reactive.h"
+#include "../../Config/DALHAL_ReactiveConfig.h"
 
 namespace DALHAL {
 

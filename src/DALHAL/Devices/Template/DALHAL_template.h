@@ -28,10 +28,10 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../Core/Device/DALHAL_Device.h"
-#include "DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../../Core/Device/DALHAL_Device.h"
+#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
-#include "../Config/DALHAL_ReactiveConfig.h"
+#include "../../Config/DALHAL_ReactiveConfig.h"
 #if USING_REACTIVE(TEMPLATE)
 #include "DALHAL_templateReactive.h"
 using TemplateDeviceBase = DALHAL::Template_Reactive;

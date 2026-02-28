@@ -22,10 +22,10 @@
 */
 
 #include "DALHAL_template.h"
-#include "../Support/DALHAL_Logger.h"
-#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../Core/Manager/DALHAL_GPIO_Manager.h"
+#include "../../Support/DALHAL_Logger.h"
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include "../../Support/DALHAL_ArduinoJSON_ext.h"
+#include "../../Core/Manager/DALHAL_GPIO_Manager.h"
 
 namespace DALHAL {
 
