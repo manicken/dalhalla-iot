@@ -50,7 +50,7 @@ namespace DALHAL {
         return Convert::HexToBytes(romIdStr, nullptr, 8);
     }
 
-    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
+    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         const char* romIdStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
@@ -89,7 +89,7 @@ namespace DALHAL {
         }
         if (updateVal) {
             value = tempVal;
-            triggerEvent(); // actually a async event trigger
+            //triggerEvent(); // actually a async event trigger
         }
     }
     

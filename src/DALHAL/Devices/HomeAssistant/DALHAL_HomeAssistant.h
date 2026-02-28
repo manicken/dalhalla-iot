@@ -31,7 +31,7 @@
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
-#include "DALHAL_HA_Constants.h"
+#include "Core/DALHAL_HA_Constants.h"
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>

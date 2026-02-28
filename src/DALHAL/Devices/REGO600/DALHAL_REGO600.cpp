@@ -33,7 +33,7 @@
 
 namespace DALHAL {
     
-    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
+    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : Device(type) {
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 
@@ -115,7 +115,7 @@ namespace DALHAL {
     void REGO600::loop() {
         rego600->loop();
         if (rego600->RefreshLoopDone()) { // one hit flag check and clear if set
-            triggerEvent();
+            //triggerEvent();
         }
     }
 

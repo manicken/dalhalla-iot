@@ -31,11 +31,11 @@
 
 // Available Home Assistant device-endpoint-entities types here
 #include "DALHAL_HA_DeviceContainer.h"
-#include "DALHAL_HA_Sensor.h"
-#include "DALHAL_HA_BinarySensor.h"
-#include "DALHAL_HA_Switch.h"
-#include "DALHAL_HA_Button.h"
-#include "DALHAL_HA_Number.h"
+#include "Entities/DALHAL_HA_Sensor.h"
+#include "Entities/DALHAL_HA_BinarySensor.h"
+#include "Entities/DALHAL_HA_Switch.h"
+#include "Entities/DALHAL_HA_Button.h"
+#include "Entities/DALHAL_HA_Number.h"
 
 
 namespace DALHAL {

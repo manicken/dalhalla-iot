@@ -31,7 +31,6 @@
 
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-#include "../../Core/Reactive/DALHAL_SimpleEventDevice.h"
 
 
 #include "DALHAL_REGO600register.h"
@@ -40,7 +39,7 @@
 
 namespace DALHAL {
 
-    class REGO600 : public SimpleEventDevice {
+    class REGO600 : public Device {
     private:
         uint32_t refreshTimeMs = 0;
         uint8_t rxPin = 0;

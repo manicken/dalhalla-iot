@@ -33,7 +33,6 @@
 
 #include "../../../Core/Device/DALHAL_Device.h"
 #include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-#include "../../../Core/Reactive/DALHAL_SimpleEventDevice.h"
 
 #include "DALHAL_OneWireTempAutoRefresh.h"
 
@@ -55,7 +54,7 @@ namespace DALHAL {
         };
     } OneWireAddress;
 
-    class OneWireTempDevice : public SimpleEventDevice {
+    class OneWireTempDevice : public Device {
         
     public:
         OneWireAddress romid;

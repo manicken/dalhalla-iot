@@ -29,11 +29,7 @@
 
 namespace DALHAL {
 
-#if defined(DALHAL_DEVICE_SIMPLE_EVENT_DEVICE)
-    Template::Template(const JsonVariant &jsonObj, const char* type) : SimpleEventDevice(type) {
-#else
-    Template::Template(const JsonVariant &jsonObj, const char* type) : Device(type) {
-#endif
+    Template::Template(const JsonVariant &jsonObj, const char* type) : TemplateDeviceBase(type) {
 
     }
 
@@ -67,8 +63,8 @@ namespace DALHAL {
     HALOperationResult Template::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-#if defined(DALHAL_DEVICE_SIMPLE_EVENT_DEVICE)
-        triggerEvent(); // can also be triggered from anywhere else
+#if HAS_REACTIVE(TEMPLATE, WRITE)
+       // triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     };

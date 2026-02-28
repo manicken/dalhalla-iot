@@ -31,22 +31,16 @@
 #include "../Core/Device/DALHAL_Device.h"
 #include "DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
-#define DALHAL_DEVICE_REACTIVE_NONE 0
-#define DALHAL_DEVICE_REACTIVE_SIMPLE 1
-#define DALHAL_DEVICE_REACTIVE_ADVANCED 2
-
-#define DALHAL_DEVICE_REACTIVE_TEMPLATE DALHAL_DEVICE_REACTIVE_NONE
-
-#if defined(DALHAL_DEVICE_REACTIVE_TEMPLATE) && (DALHAL_DEVICE_REACTIVE_TEMPLATE == DALHAL_DEVICE_REACTIVE_SIMPLE)
-#include "../DALHAL_SimpleEventDevice.h" // uncomment this to use SimpleEventDevice it defines DALHAL_DEVICE_SIMPLE_EVENT_DEVICE internally
+#include "../Config/DALHAL_ReactiveConfig.h"
+#if USING_REACTIVE(TEMPLATE)
+#include "DALHAL_templateReactive.h"
+using TemplateDeviceBase = DALHAL::Template_Reactive;
+#else
+using TemplateDeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
-#if defined(DALHAL_DEVICE_SIMPLE_EVENT_DEVICE)
-    class Template : public SimpleEventDevice {
-#else
-    class Template : public Device {
-#endif
+    class Template : public TemplateDeviceBase {
     private:
         uint8_t pin = 0; // if pin would be used
 

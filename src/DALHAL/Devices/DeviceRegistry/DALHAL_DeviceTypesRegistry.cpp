@@ -30,23 +30,23 @@
 #include "DALHAL_DeviceTypesRegistry.h"
 
 // all HAL devices to use here
-#include "../Script/DALHAL_ScriptVariable.h"
-#include "../Script/DALHAL_ScriptVariableReadOnly.h"
-#include "../Script/DALHAL_ScriptVariableWriteOnlyTest.h"
-#include "../Script/DALHAL_ScriptArray.h"
+#include "../Script/ScriptVariable/DALHAL_ScriptVariable.h"
+#include "../Script/ScriptVariableReadOnly/DALHAL_ScriptVariableReadOnly.h"
+#include "../Script/ScriptVariableWriteOnlyTest/DALHAL_ScriptVariableWriteOnlyTest.h"
+#include "../Script/ScriptArray/DALHAL_ScriptArray.h"
 
-#include "../GeneralInputs/DALHAL_ButtonInput.h"
-#include "../GeneralInputs/DALHAL_AnalogInput.h"
-#include "../GeneralInputs/DALHAL_DigitalInput.h"
+#include "../GeneralInputs/ButtonInput/DALHAL_ButtonInput.h"
+#include "../GeneralInputs/AnalogInput/DALHAL_AnalogInput.h"
+#include "../GeneralInputs/DigitalInput/DALHAL_DigitalInput.h"
 
-#include "../GeneralOutputs/DALHAL_DigitalOutput.h"
-#include "../GeneralOutputs/DALHAL_PWMAnalogWrite.h"
-#include "../GeneralOutputs/DALHAL_SinglePulseOutput.h"
+#include "../GeneralOutputs/DigitalOutput/DALHAL_DigitalOutput.h"
+#include "../GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h"
+#include "../GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h"
 
 #include "../I2C/DALHAL_I2C_BUS.h"
 
 #include "../Sensors/OneWireTemp/DALHAL_OneWireTemp.h"
-#include "../Sensors/DALHAL_DHT.h"
+#include "../Sensors/DHT/DALHAL_DHT.h"
 
 
 
@@ -54,22 +54,22 @@
 #include "../REGO600/DALHAL_REGO600.h"
 
 
-#include "../Lights/DALHAL_WS2812.h"
+#include "../Lights/WS2812/DALHAL_WS2812.h"
 
 #include "../DALHAL_DeviceContainer.h"
 
-#include "../DataStorageServices/DALHAL_ThingSpeak.h"
+#include "../DataStorageServices/ThingSpeak/DALHAL_ThingSpeak.h"
 
 #include "../HomeAssistant/DALHAL_HomeAssistant.h"
 
-#include "../Actuators/DALHAL_Actuator.h"
-#include "../Actuators/DALHAL_LEDC_Servo.h"
-#include "../Actuators/DALHAL_LatchingRelay.h"
+#include "../Actuators/Actuator/DALHAL_Actuator.h"
+#include "../Actuators/LEDC_Servo/DALHAL_LEDC_Servo.h"
+#include "../Actuators/LatchingRelay/DALHAL_LatchingRelay.h"
 
 
 
-#include "../API/DALHAL_REST_Value.h"
-#include "../API/DALHAL_REST_Cmd.h"
+#include "../API/REST_Value/DALHAL_REST_Value.h"
+#include "../API/REST_Cmd/DALHAL_REST_Cmd.h"
 
 namespace DALHAL {
 

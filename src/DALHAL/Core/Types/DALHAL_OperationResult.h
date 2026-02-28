@@ -21,6 +21,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 namespace DALHAL {
 
     enum class HALOperationResult {
@@ -36,8 +38,8 @@ namespace DALHAL {
         InvalidArgument = 9,
         HardwareFault = 10,
         Timeout = 11,
-        DeviceEventsNotSupported = 12,
-        DeviceEventByNameNotFound = 13,
+        ReactiveEventsNotSupported = 12,
+        ReactiveEventByNameNotFound = 13,
 
         /** script engine specific status */
         IfConditionTrue = 20,

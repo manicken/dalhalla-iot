@@ -34,6 +34,8 @@
 #include "../Types/DALHAL_UID_Path.h"
 #include "../Types/DALHAL_OperationResult.h"
 #include "../Types/DALHAL_Operations.h"
+#include "../../Support/DALHAL_DeleterTemplate.h"
+#include "../Reactive/DALHAL_Reactive.h"
 
 namespace DALHAL {
     
@@ -64,31 +66,6 @@ namespace DALHAL {
         using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
-        class DeviceEvent {
-        public:
-            template<typename T>
-            static void DeleteAs(void* ptr) {
-                delete static_cast<T*>(ptr);
-            }
-            using CheckFn  = bool (*)(void*);
-            using DeleteFn = void (*)(void*);
-
-        private:
-            CheckFn checkFn;
-            DeleteFn deleteFn;
-            void* context;
-        public:
-            DeviceEvent() = delete;
-            DeviceEvent(DeviceEvent&) = delete;
-            DeviceEvent(CheckFn checkFn, DeleteFn deleteFn, void* context);
-
-            ~DeviceEvent();
-
-            inline bool CheckForEvent() {
-                return checkFn(context);
-            }
-        };
-
         Device(const char* type);
         virtual ~Device();
 
@@ -110,9 +87,7 @@ namespace DALHAL {
         virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
         virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
 
-        virtual HALOperationResult Get_DeviceEvent(ZeroCopyString& zcFuncName, Device::DeviceEvent** deviceEventOut);
-        //virtual HALOperationResult EventCheck(uint32_t lastSeen);
-        
+        virtual HALOperationResult Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut);
         
         /** called regulary from the main loop */
         virtual void loop();

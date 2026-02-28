@@ -26,9 +26,9 @@
 
 #include "DALHAL_HomeAssistant.h"
 #include "DALHAL_HA_DeviceTypeReg.h"
-#include "DALHAL_HA_TopicBasePath.h"
-#include "DALHAL_HA_Constants.h"
-#include "DALHAL_HA_DeviceDiscovery.h"
+#include "Core/DALHAL_HA_TopicBasePath.h"
+#include "Core/DALHAL_HA_Constants.h"
+#include "Core/DALHAL_HA_DeviceDiscovery.h"
 
 #include "../../Support/DALHAL_Logger.h"
 #include "../../Core/Device/DALHAL_JSON_Config_Defines.h"

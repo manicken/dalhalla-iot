@@ -51,8 +51,8 @@ namespace DALHAL {
             case HALOperationResult::HardwareFault: return "HardwareFault";
             case HALOperationResult::Timeout: return "Timeout";
             case HALOperationResult::NotSet: return "NotSet";
-            case HALOperationResult::DeviceEventsNotSupported: return "DeviceEventsNotSupported";
-            case HALOperationResult::DeviceEventByNameNotFound: return "DeviceEventByNameNotFound";
+            case HALOperationResult::ReactiveEventsNotSupported: return "ReactiveEventsNotSupported";
+            case HALOperationResult::ReactiveEventByNameNotFound: return "ReactiveEventByNameNotFound";
             
             default:
                 printf("unknown HALOperationResult: %d\n", (int)result);
