@@ -23,33 +23,37 @@
 
 #pragma once
 
-#define DALHAL_DEVICE_REGO600_HEATPUMP_CONTROLLER
 
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
+#include <DHTesp.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../../Core/Device/DALHAL_Device.h"
 #include "../../Core/Reactive/DALHAL_SimpleEventDevice.h"
 
 
-#include "DALHAL_REGO600register.h"
-#include "../../Drivers/REGO600.h"
 
+#define DALHAL_KEYNAME_DHT_MODEL          "model"
+// DHT models
+#define DALHAL_TYPE_DHT_MODEL_DHT11       "DHT11"
+#define DALHAL_TYPE_DHT_MODEL_DHT22       "DHT22"
+#define DALHAL_TYPE_DHT_MODEL_AM2302      "AM2302"
+#define DALHAL_TYPE_DHT_MODEL_RHT03       "RTH03"
+ /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
+#define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000
 
 namespace DALHAL {
 
-    class REGO600 : public SimpleEventDevice {
+    class DHT : public SimpleEventDevice {
     private:
-        uint32_t refreshTimeMs = 0;
-        uint8_t rxPin = 0;
-        uint8_t txPin = 0;
-        /** this is only logical devices */
-        int registerItemCount = 0; // used by both registerItems and requestList
-        Device** registerItems = nullptr;
-        Drivers::REGO600::Request** requestList = nullptr;
-        Drivers::REGO600* rego600 = nullptr;
+        DHTesp dht;
+        uint8_t pin = 0;
+        TempAndHumidity data;
+        uint32_t refreshTimeMs = DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS;
+        uint32_t lastUpdateMs = 0;
+        static bool isValidDHTModel(const char* model);
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
@@ -58,13 +62,20 @@ namespace DALHAL {
             Create,
             VerifyJSON
         };
-        REGO600(const JsonVariant &jsonObj, const char* type);
-        ~REGO600();
-        void loop() override;
-        void begin() override;
-        String ToString() override;
+        DHT(const JsonVariant &jsonObj, const char* type);
 
-        /** used to find sub/leaf devices @ "group devices" */
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+        String ToString() override;
+        
+        void loop() override; // will need loop for automatic polling as this device is slow
+
+        static HALOperationResult readTemperature(Device* context, HALValue &val);
+        static HALOperationResult readHumidity(Device* context, HALValue &val);
+        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
+        
+
+        HALOperationResult read(HALValue &val) override;
+        HALOperationResult read(const HALReadValueByCmd &val) override;
+        HALOperationResult read(const HALReadStringRequestValue &val) override;
     };
+
 }

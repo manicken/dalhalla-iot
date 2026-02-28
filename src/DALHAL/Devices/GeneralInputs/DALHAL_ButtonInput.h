@@ -22,39 +22,48 @@
 */
 
 #pragma once
-
-
-#include <Arduino.h> // Needed for String class
-
-#include <string>
-#include <ArduinoJson.h>
-
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../../Core/Device/DALHAL_CachedDeviceAccess.h"
+#include "../../Core/Manager/DALHAL_GPIO_Manager.h"
+#include <Arduino.h>
+#include <ArduinoJson.h>
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
-    private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
-    public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
+class ButtonInput : public Device {
+public:
+    // Factory and JSON validation
+    static Device* Create(const JsonVariant &jsonObj, const char* type);
+    static bool VerifyJSON(const JsonVariant &jsonObj);
+    static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
 
-        HALOperationResult exec() override;
-        
+    // Constructor
+    ButtonInput(const JsonVariant &jsonObj, const char* type);
+    ~ButtonInput();
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+    // DAL interface
+    HALOperationResult read(HALValue &val) override;
+    String ToString() override;
 
-        String ToString() override;
-    };
-}
+    // Call in main loop for debounce + toggle
+    void loop();
+
+private:
+    uint8_t pin;
+    uint32_t debounceMs;
+    bool activeLow;
+
+    bool stableState;       // debounced button state
+    bool lastRaw;           // last raw read
+    uint32_t lastChangeMs;  // last change timestamp
+
+    //bool toggleState;       // TEMP: internal toggle variable
+    CachedDeviceAccess* toggleTarget; // optional external action
+};
+
+} // namespace DALHAL

@@ -26,35 +26,35 @@
 
 #include <Arduino.h> // Needed for String class
 
-#include <string>
 #include <ArduinoJson.h>
-
+#include "../../Core/Types/DALHAL_Value.h"
 #include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+
+#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
+
 
 namespace DALHAL {
+    typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type);
+    typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
 
-    class ScriptEventDispatcher : public Device {
-    private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
-    public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
-            Create,
-            VerifyJSON
-        };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
-
-        HALOperationResult exec() override;
-        
-
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
-        String ToString() override;
+    enum class UseRootUID {
+        Mandatory,
+        Optional,
+        Void
     };
+
+    typedef struct DeviceRegistryDefine {
+		UseRootUID useRootUID;
+		HAL_DEVICE_CREATE_FUNC Create_Function;
+        HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
+	} DeviceRegistryDefine;
+    
+	typedef struct DeviceRegistryItem {
+        const char* typeName;
+        DeviceRegistryDefine def;
+    } DeviceRegistryItem ;
+
+    extern const DeviceRegistryItem DeviceRegistry[];
+
+    const DeviceRegistryItem& GetDeviceRegistryItem(const char* type);
 }

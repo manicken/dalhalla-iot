@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
@@ -32,13 +31,22 @@
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
+#include <Wire.h>
+
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+
+    class I2C_BUS : public Device {
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+        uint8_t sckpin = 0;
+        uint8_t sdapin = 0;
+        uint32_t freq = 0;
+
+        Device** devices;
+        int deviceCount;
+
+        TwoWire* wire;
+
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
@@ -48,13 +56,17 @@ namespace DALHAL {
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
+        I2C_BUS(const JsonVariant &jsonObj, const char* type);
+        ~I2C_BUS();
 
-        HALOperationResult exec() override;
-        
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+        void loop() override;
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        HALOperationResult read(const HALReadStringRequestValue& val) override;
+        HALOperationResult write(const HALWriteStringRequestValue& val) override;
 
         String ToString() override;
     };
+
+    
 }

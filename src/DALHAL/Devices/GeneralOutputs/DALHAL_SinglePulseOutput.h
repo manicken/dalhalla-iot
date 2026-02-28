@@ -23,38 +23,41 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
-
+#include <Ticker.h>
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+    class SinglePulseOutput : public Device {
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+        uint8_t pin = 0;
+        uint32_t pulseLength = 0;
+        uint8_t inactiveState = 0;
+        Ticker pulseTicker;
+        void endPulse();
+        static void pulseTicker_Callback(SinglePulseOutput* context);
     public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(const JsonVariant& jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
+        SinglePulseOutput(const JsonVariant& jsonObj, const char* type);
+        ~SinglePulseOutput();
 
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
         HALOperationResult exec() override;
-        
-
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
+        static HALOperationResult exec(Device* device);
         String ToString() override;
     };
+
 }

@@ -29,7 +29,7 @@
 #include <ArduinoJson.h>
 
 #include "../../Core/Device/DALHAL_Device.h"
-#include "../DALHAL_DeviceTypesRegistry.h"
+#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
 
 #include "DALHAL_TX433unit.h"

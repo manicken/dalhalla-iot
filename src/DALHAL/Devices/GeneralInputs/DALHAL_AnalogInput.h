@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
@@ -34,13 +33,11 @@
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+#if defined(ESP32) || defined(_WIN32)
+    class AnalogInput : public Device {
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+        uint8_t pin = 0;
     public:
-        
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
@@ -48,13 +45,13 @@ namespace DALHAL {
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
+        AnalogInput(const JsonVariant &jsonObj, const char* type);
+        ~AnalogInput();
 
-        HALOperationResult exec() override;
-        
-
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
+        HALOperationResult read(HALValue &val) override;
         String ToString() override;
     };
+#endif
+    // TODO implement Analog Input Config to set resolution, but resolution could be individual as it can be set before each read
+
 }

@@ -23,38 +23,41 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../../../Core/Device/DALHAL_Device.h"
+#include "../../../Core/Device/DALHAL_CachedDeviceAccess.h"
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
-    private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+    class Display_SSD1306_Element : public Device {
+        
     public:
-        
+        CachedDeviceAccess* cdaSource;
+        HALValue val;
+        std::string label;
+        uint8_t xPos;
+        uint8_t yPos;
+
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
-            Create,
-            VerifyJSON
-        };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
+        Display_SSD1306_Element(Display_SSD1306_Element&) = delete;
+        Display_SSD1306_Element(const JsonVariant &jsonObj, const char* type);
 
-        HALOperationResult exec() override;
-        
-
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        HALOperationResult write(const HALValue& val) override;
 
         String ToString() override;
     };
+/* the following is just to make Display_SSD1306_Element more streamlined without using cdaSource
+    however as the DisplayElements would not be so many, it maybe not matter
+    class Display_SSD_ElementFromSource : public Display_SSD1306_Element {
+    private:
+        
+    public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        Display_SSD_ElementFromSource(const JsonVariant &jsonObj, const char* type);
+    };
+    */
 }

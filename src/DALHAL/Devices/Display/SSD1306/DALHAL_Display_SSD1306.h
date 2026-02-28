@@ -23,37 +23,46 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "DALHAL_Display_SSD1306_Element.h"
+
+// Display
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include "../../I2C/DALHAL_I2C_BUS_DeviceTypeReg.h"
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+    class Display_SSD1306 : public Device {
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+        Adafruit_SSD1306* display;
+
+        Device** elements;
+        int elementCount;
     public:
-        
+        // here we could implement functions for to use with spi interface as well
+
+        static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+        static bool HasAddress(uint8_t addr);
+        static constexpr I2C_DeviceRegistryDefine RegistryDefine = {
             Create,
-            VerifyJSON
+            VerifyJSON,
+            HasAddress
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
 
-        HALOperationResult exec() override;
         
+        Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        ~Display_SSD1306();
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        HALOperationResult write(const HALWriteStringRequestValue& val);
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+        void loop() override;
 
         String ToString() override;
     };

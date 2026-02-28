@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
 #include <string>
@@ -32,15 +31,16 @@
 #include "../../Core/Device/DALHAL_Device.h"
 #include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
+#include <WS2812FX.h>
+
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+    class WS2812 : public Device {
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
-    public:
+        uint8_t pin = 0; // if pin would be used
         
+    public:
+        WS2812FX* ws2812fx;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
@@ -48,12 +48,17 @@ namespace DALHAL {
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
 
-        HALOperationResult exec() override;
-        
+        WS2812(const JsonVariant &jsonObj, const char* type);
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        HALOperationResult write(const HALWriteValueByCmd& val) override;
+        HALOperationResult write(const HALWriteStringRequestValue& val) override;
+        Device::WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
+
+        static HALOperationResult writeBrightness(Device* context, const HALValue& val);
+        static HALOperationResult writeColor(Device* context, const HALValue& val);
+
+        void loop() override;
 
         String ToString() override;
     };

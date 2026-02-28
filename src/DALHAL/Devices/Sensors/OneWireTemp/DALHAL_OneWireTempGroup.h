@@ -23,38 +23,48 @@
 
 #pragma once
 
-
 #include <Arduino.h> // Needed for String class
 
-#include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../../../Core/Device/DALHAL_Device.h"
+#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+
+
+#include "DALHAL_OneWireTempBus.h"
+#include "DALHAL_OneWireTempAutoRefresh.h"
+
 
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
+    class OneWireTempGroup : public Device {
+
     private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+        OneWireTempAutoRefresh autoRefresh;
+        Device/*OneWireTempBus*/ **busses;
+        int busCount = 0;
+
+        void requestTemperatures();
+        void readAll();
+
     public:
-        
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+            UseRootUID::Optional,
             Create,
             VerifyJSON
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
-
-        HALOperationResult exec() override;
+        OneWireTempGroup(const JsonVariant &jsonObj, const char* type);
+        ~OneWireTempGroup();
         
+        /** this function will search the busses and their devices to find the device with the uid */
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        void loop() override;
+        HALOperationResult read(const HALReadStringRequestValue &val) override;
 
         String ToString() override;
+
     };
 }

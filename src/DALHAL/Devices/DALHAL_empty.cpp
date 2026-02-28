@@ -21,33 +21,15 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DALHAL_empty.h"
 
-
-#include <Arduino.h> // Needed for String class
-
-#include <string>
-#include <ArduinoJson.h>
-
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include "../Support/DALHAL_Logger.h"
+#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include "../Support/DALHAL_ArduinoJSON_ext.h"
+#include "../Core/Manager/DALHAL_GPIO_Manager.h"
 
 namespace DALHAL {
-
-    class ScriptVariableWriteOnlyTest : public Device {
-    private:
-        HALValue value;
-    public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
-            Create,
-            VerifyJSON
-        };
-        ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type);
-        HALOperationResult write(const HALValue& val) override;
-
-        String ToString() override;
-    };
+    
+    
+	
 }
