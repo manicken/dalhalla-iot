@@ -32,7 +32,7 @@
 #define REACTIVE_TABLE_END { nullptr, nullptr }
 
 namespace DALHAL {
-
+    /** used by consumers */
     class ReactiveEvent {
     public:
         using CheckFn  = bool (*)(void*);
@@ -66,18 +66,35 @@ namespace DALHAL {
     };
 
     template<typename TDevice>
-    HALOperationResult GetReactiveEventImpl(
-        TDevice* device,
-        ZeroCopyString& name,
-        ReactiveEvent** out,
-        const EventDescriptorT<TDevice>* table)
+    HALOperationResult GetSimpleReactiveEventImpl(TDevice* device, ZeroCopyString& name, ReactiveEvent** out, const EventDescriptorT<TDevice>* table)
     {
         for (size_t i = 0; table[i].name != nullptr; ++i)
         {
             if (name.EqualsIC(table[i].name) == false) {
                 continue;
             }
-            
+            if (out) {
+                uint32_t* counterPtr = &(device->*(table[i].counter));
+
+                *out = new ReactiveEvent(
+                    ReactiveEvent::SimpleReactiveEventCheck,
+                    DeleteAs<ReactiveEvent::SimpleContext>,
+                    new ReactiveEvent::SimpleContext(*counterPtr)
+                );
+            }
+            return HALOperationResult::Success;
+        }
+        return HALOperationResult::ReactiveEventByNameNotFound;
+    }
+
+    template<typename TDevice>
+    HALOperationResult GetReactiveEventImpl(TDevice* device, ZeroCopyString& name, ReactiveEvent** out, const EventDescriptorT<TDevice>* table)
+    {
+        for (size_t i = 0; table[i].name != nullptr; ++i)
+        {
+            if (name.EqualsIC(table[i].name) == false) {
+                continue;
+            }
             if (out)
             {
                 uint32_t* counterPtr = &(device->*(table[i].counter));
@@ -88,42 +105,8 @@ namespace DALHAL {
                     new typename TDevice::ReactiveContext(*counterPtr)
                 );
             }
-
             return HALOperationResult::Success;
         }
-
         return HALOperationResult::ReactiveEventByNameNotFound;
     }
-
-    template<typename TDevice>
-    HALOperationResult GetSimpleReactiveEventImpl(
-        TDevice* device,
-        ZeroCopyString& name,
-        ReactiveEvent** out,
-        const EventDescriptorT<TDevice>* table)
-    {
-        for (size_t i = 0; table[i].name != nullptr; ++i)
-        {
-            if (name.EqualsIC(table[i].name) == false) {
-                continue;
-            }
-            
-            if (out)
-            {
-                uint32_t* counterPtr =
-                    &(device->*(table[i].counter));
-
-                *out = new ReactiveEvent(
-                    ReactiveEvent::SimpleReactiveEventCheck,
-                    DeleteAs<ReactiveEvent::SimpleContext>,
-                    new ReactiveEvent::SimpleContext(*counterPtr)
-                );
-            }
-
-            return HALOperationResult::Success;
-        }
-
-        return HALOperationResult::ReactiveEventByNameNotFound;
-    }
-
 }

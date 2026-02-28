@@ -68,7 +68,7 @@ namespace DALHAL {
         static const EventDescriptorT<Template_Reactive> eventTable[];
 
         Template_Reactive(const char* type);
-        // If you need helper getters
+
         HALOperationResult Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) override;
 
     };
