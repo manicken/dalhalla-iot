@@ -23,54 +23,54 @@
 
 #pragma once
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../../Core/Reactive/DALHAL_Reactive.h"
-#include "../../Config/DALHAL_ReactiveConfig.h"
+#include "../../../Core/Device/DALHAL_Device.h"
+#include "../../../Core/Reactive/DALHAL_Reactive.h"
+#include "../../../Config/DALHAL_ReactiveConfig.h"
 
 namespace DALHAL {
 
-    class Template_Reactive : public Device {
+    class ScriptVariable_Reactive : public Device {
     protected:
-#if HAS_REACTIVE(TEMPLATE, BEGIN)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, BEGIN)
         REACTIVE_DECLARE_FEATURE_BEGIN();
 #endif
-#if HAS_REACTIVE(TEMPLATE, VALUE_CHANGE)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, VALUE_CHANGE)
         REACTIVE_DECLARE_FEATURE_VALUE_CHANGE();
 #endif
-#if HAS_REACTIVE(TEMPLATE, STATE_CHANGE)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, STATE_CHANGE)
         REACTIVE_DECLARE_FEATURE_STATE_CHANGE();
 #endif
-#if HAS_REACTIVE(TEMPLATE, READ)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, READ)
         REACTIVE_DECLARE_FEATURE_READ();
 #endif
-#if HAS_REACTIVE(TEMPLATE, WRITE)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, WRITE)
         REACTIVE_DECLARE_FEATURE_WRITE();
 #endif
-#if HAS_REACTIVE(TEMPLATE, EXEC)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, EXEC)
         REACTIVE_DECLARE_FEATURE_EXEC();
 #endif
-#if HAS_REACTIVE(TEMPLATE, BRACKET_READ)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, BRACKET_READ)
         REACTIVE_DECLARE_FEATURE_BRACKET_READ();
 #endif
-#if HAS_REACTIVE(TEMPLATE, BRACKET_WRITE)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, BRACKET_WRITE)
         REACTIVE_DECLARE_FEATURE_BRACKET_WRITE();
 #endif
-#if HAS_REACTIVE(TEMPLATE, TIMEOUT)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, TIMEOUT)
         REACTIVE_DECLARE_FEATURE_TIMEOUT();
 #endif
-#if HAS_REACTIVE(TEMPLATE, WRITE_ERROR)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, WRITE_ERROR)
         REACTIVE_DECLARE_FEATURE_WRITE_ERROR();
 #endif
-#if HAS_REACTIVE(TEMPLATE, READ_ERROR)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, READ_ERROR)
         REACTIVE_DECLARE_FEATURE_READ_ERROR();
 #endif
-#if HAS_REACTIVE(TEMPLATE, EXEC_ERROR)
+#if HAS_REACTIVE(SCRIPT_VARIABLE, EXEC_ERROR)
         REACTIVE_DECLARE_FEATURE_EXEC_ERROR();
 #endif
     public:
-        static const EventDescriptorT<Template_Reactive> eventTable[];
+        static const EventDescriptorT<ScriptVariable_Reactive> eventTable[];
 
-        Template_Reactive(const char* type);
+        ScriptVariable_Reactive(const char* type);
 
         HALOperationResult Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) override;
 

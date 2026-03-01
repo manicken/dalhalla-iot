@@ -56,26 +56,76 @@ namespace DALHAL {
     }
 
     void Template::loop() {}
-    void Template::begin() {}
+    void Template::begin() {
+#if HAS_REACTIVE(TEMPLATE, BEGIN)
+        triggerBegin();
+#endif        
+    }
     DeviceFindResult Template::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
-    HALOperationResult Template::read(HALValue& val) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Template::read(HALValue& val) {
+#if HAS_REACTIVE(TEMPLATE, READ)
+        triggerRead();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
     HALOperationResult Template::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 #if HAS_REACTIVE(TEMPLATE, WRITE)
-       // triggerWrite();
+        triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     };
-    HALOperationResult Template::read(const HALValue& bracketSubscriptVal, HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::write(const HALValue& bracketSubscriptVal, const HALValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::read(const HALReadStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::write(const HALWriteStringRequestValue& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::read(const HALReadValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::write(const HALWriteValueByCmd& val) { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::exec() { return HALOperationResult::UnsupportedOperation; }
-    HALOperationResult Template::exec(const ZeroCopyString& cmd) { return HALOperationResult::UnsupportedOperation; }
+    HALOperationResult Template::read(const HALValue& bracketSubscriptVal, HALValue& val) {
+#if HAS_REACTIVE(TEMPLATE, BRACKET_READ)
+        triggerBracketRead();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
+#if HAS_REACTIVE(TEMPLATE, BRACKET_WRITE)
+        triggerBracketWrite();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::read(const HALReadStringRequestValue& val) {
+#if HAS_REACTIVE(TEMPLATE, READ)
+        triggerRead();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::write(const HALWriteStringRequestValue& val) {
+#if HAS_REACTIVE(TEMPLATE, WRITE)
+        triggerWrite();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::read(const HALReadValueByCmd& val) {
+#if HAS_REACTIVE(TEMPLATE, READ)
+        triggerRead();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::write(const HALWriteValueByCmd& val) {
+#if HAS_REACTIVE(TEMPLATE, WRITE)
+        triggerWrite();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::exec() {
+#if HAS_REACTIVE(TEMPLATE, EXEC)
+        triggerExec();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+    HALOperationResult Template::exec(const ZeroCopyString& cmd) {
+#if HAS_REACTIVE(TEMPLATE, EXEC)
+        triggerExec();
+#endif
+        return HALOperationResult::UnsupportedOperation;
+    }
+
     Device::ReadToHALValue_FuncType Template::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::WriteHALValue_FuncType Template::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::Exec_FuncType Template::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 

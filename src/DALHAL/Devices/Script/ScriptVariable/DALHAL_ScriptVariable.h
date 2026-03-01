@@ -32,11 +32,26 @@
 #include "../../../Core/Device/DALHAL_Device.h"
 #include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
 
+#include "../../../Config/DALHAL_ReactiveConfig.h"
+#if USING_REACTIVE(TEMPLATE)
+#include "DALHAL_ScriptVariableReactive.h"
+#include "../../../Core/Types/DALHAL_ValueReactive.h"
+using ScriptVariableDeviceBase = DALHAL::ScriptVariable_Reactive;
+#else
+using ScriptVariableDeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class ScriptVariable : public Device {
+    class ScriptVariable : public ScriptVariableDeviceBase {
     private:
+#if USING_REACTIVE(TEMPLATE)
+        ReactiveHALValue value;
+        static void ValueSetCallback(void* ctx);
+#else
         HALValue value;
+#endif
+
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);

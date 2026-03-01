@@ -33,6 +33,9 @@ namespace DALHAL {
     }
 
     const EventDescriptorT<Template_Reactive> Template_Reactive::eventTable[] = {
+#if HAS_REACTIVE(TEMPLATE, BEGIN)
+        REACTIVE_ENTRY_BEGIN(Template_Reactive),
+#endif        
 #if HAS_REACTIVE(TEMPLATE, VALUE_CHANGE)
         REACTIVE_ENTRY_VALUE_CHANGE(Template_Reactive),
 #endif
