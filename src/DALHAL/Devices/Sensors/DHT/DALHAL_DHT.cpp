@@ -23,10 +23,12 @@
 
 #include "DALHAL_DHT.h"
 #include <strings.h>
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../../Core/Manager/DALHAL_GPIO_Manager.h"
+
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
 
@@ -38,7 +40,7 @@ namespace DALHAL {
             (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_RHT03) == 0);
     }
 
-    DHT::DHT(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    DHT::DHT(const JsonVariant &jsonObj, const char* type) : DHTDeviceBase(type) {
         //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         //uid = encodeUID(uidStr);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
@@ -60,7 +62,8 @@ namespace DALHAL {
             model = DHTesp::DHT_MODEL_t::RHT03;
         dht.setup(pin,model);
         lastUpdateMs = millis()-refreshTimeMs; // direct update
-     }
+
+    }
 
     bool DHT::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_DHT_MODEL) == false){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_DHT_VERIFY_JSON); return false; }
@@ -102,7 +105,9 @@ namespace DALHAL {
             TempAndHumidity tempData = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
             if (!isnan(tempData.humidity) && !isnan(tempData.temperature)) {
                 data = tempData;
-                //triggerEvent();
+#if HAS_REACTIVE_VALUE_CHANGE(DHT)
+                triggerValueChange();
+#endif
             } else {
                 //Serial.println("could not read DHT sensor");
             }

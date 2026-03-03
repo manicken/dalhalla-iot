@@ -23,19 +23,17 @@
 
 #pragma once
 
-#include <Arduino.h> // Needed for String class
+#include "DALHAL_OneWireTempAutoRefresh.h"
 
+#include <Arduino.h> // Needed for String class
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 #include <ArduinoJson.h>
 
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-
-#include "DALHAL_OneWireTempAutoRefresh.h"
-
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 #define DALHAL_KEYNAME_ONE_WIRE_ROMID       "romid"
 #define DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT "format"

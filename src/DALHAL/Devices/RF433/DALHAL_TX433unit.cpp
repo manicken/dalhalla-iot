@@ -23,11 +23,11 @@
 
 #include "DALHAL_TX433unit.h"
 
-#include "../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../Support/DALHAL_Logger.h"
-#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 
-#include "../../Support/ConvertHelper.h"
+#include <DALHAL/Support/ConvertHelper.h>
 
 namespace DALHAL {
 

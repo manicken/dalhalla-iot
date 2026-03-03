@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_Script.h"
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DALHAL_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 

@@ -22,7 +22,7 @@
 */
 
 #include "HearbeatLed.h"
-#include "../Support/ConvertHelper.h"
+#include <DALHAL/Support/ConvertHelper.h>
 
 namespace HeartbeatLed
 {

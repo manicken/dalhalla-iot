@@ -29,28 +29,29 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
-#include "../../../Config/DALHAL_ReactiveConfig.h"
-#if USING_REACTIVE(TEMPLATE)
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(SCRIPT_VARIABLE)
 #include "DALHAL_ScriptVariableReactive.h"
-#include "../../../Core/Types/DALHAL_ValueReactive.h"
-using ScriptVariableDeviceBase = DALHAL::ScriptVariable_Reactive;
+using ScriptVariable_DeviceBase = DALHAL::ScriptVariable_Reactive;
 #else
-using ScriptVariableDeviceBase = DALHAL::Device;
+using ScriptVariable_DeviceBase = DALHAL::Device;
+#endif
+
+#if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
+#include <DALHAL/Core/Types/DALHAL_ValueReactive.h>
+using ScriptVariable_ValueBase = DALHAL::ReactiveHALValue;
+#else
+using ScriptVariable_ValueBase = DALHAL::HALValue;
 #endif
 
 namespace DALHAL {
 
-    class ScriptVariable : public ScriptVariableDeviceBase {
+    class ScriptVariable : public ScriptVariable_DeviceBase {
     private:
-#if USING_REACTIVE(TEMPLATE)
-        ReactiveHALValue value;
-        static void ValueSetCallback(void* ctx);
-#else
-        HALValue value;
-#endif
+        ScriptVariable_ValueBase value;
 
     public:
         

@@ -22,9 +22,11 @@
 */
 
 #include "DALHAL_HA_TopicBasePath.h"
-#include "DALHAL_HA_Constants.h"
+
 #include <stdio.h> // snprintf
 #include <string.h> // strlen
+
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
 namespace DALHAL {
 

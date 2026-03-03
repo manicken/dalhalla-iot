@@ -29,10 +29,16 @@
 #include <ArduinoJson.h>
 #include <DHTesp.h>
 
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-#include "../../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
-
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(TEMPLATE)
+#include "DALHAL_DHT_Reactive.h"
+using DHTDeviceBase = DALHAL::DHT_Reactive;
+#else
+using DHTDeviceBase = DALHAL::Device;
+#endif
 
 
 #define DALHAL_KEYNAME_DHT_MODEL          "model"
@@ -46,7 +52,7 @@
 
 namespace DALHAL {
 
-    class DHT : public Device {
+    class DHT : public DHTDeviceBase {
     private:
         DHTesp dht;
         uint8_t pin = 0;

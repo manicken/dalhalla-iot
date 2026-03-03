@@ -28,10 +28,9 @@
 
 #include <ArduinoJson.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
-
-#include "../../Drivers/RF433.h"
+#include <DALHAL/Drivers/RF433.h>
 
 #define DALHAL_KEYNAME_TX433_MODEL "model"
 

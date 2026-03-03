@@ -23,17 +23,15 @@
 
 #pragma once
 
+#include "DALHAL_OneWireTempBus.h"
+#include "DALHAL_OneWireTempAutoRefresh.h"
+
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
 
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-
-
-#include "DALHAL_OneWireTempBus.h"
-#include "DALHAL_OneWireTempAutoRefresh.h"
-
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 namespace DALHAL {
 

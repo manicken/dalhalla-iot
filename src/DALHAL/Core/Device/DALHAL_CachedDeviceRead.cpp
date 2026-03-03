@@ -22,12 +22,12 @@
 */
 
 #include "DALHAL_CachedDeviceRead.h"
-#include "../../Support/DALHAL_DeleterTemplate.h"
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
-#include "../../Support/DALHAL_Logger.h"
-#include "../Types/DALHAL_UID_Path.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
 
-#include "../Manager/DALHAL_DeviceManager.h"
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
 namespace DALHAL {
 

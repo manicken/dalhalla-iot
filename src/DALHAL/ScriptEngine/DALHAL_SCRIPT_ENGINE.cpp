@@ -24,7 +24,7 @@
 #include "DALHAL_SCRIPT_ENGINE.h"
 
 #include "DALHAL_SCRIPT_ENGINE_Reports.h"
-#include "../Support/DALHAL_DeleterTemplate.h"
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
 #include "Runtime/DALHAL_SCRIPT_ENGINE_StatementBlock.h"
 #include "Runtime/DALHAL_SCRIPT_ENGINE_Script.h"
@@ -33,12 +33,12 @@
 #include "Parser/DALHAL_SCRIPT_ENGINE_Parser.h"
 #include "Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
 
-#include "../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <LittleFS.h>
 
 #if defined(ESP32) || defined(ESP8266)
-#include "../../Support/LittleFS_ext.h"
+#include <Support/LittleFS_ext.h>
 #else
 #include <LittleFS_ext.h>
 #endif

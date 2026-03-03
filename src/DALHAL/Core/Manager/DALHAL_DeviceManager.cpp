@@ -23,12 +23,12 @@
 
 #include "DALHAL_DeviceManager.h"
 
-#include "../Device/DALHAL_JSON_Config_Defines.h"
-#include "../../Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
-#include "../../Support/DALHAL_Logger.h"
-#include "../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "DALHAL_GPIO_Manager.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
 

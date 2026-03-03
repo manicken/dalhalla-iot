@@ -23,8 +23,10 @@
 
 #pragma once
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include <PubSubClient.h>
+#include <PubSubClient.h> // uses a modded PubSubClient placed in lib folder
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+
 
 namespace DALHAL {
 

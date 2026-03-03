@@ -23,8 +23,8 @@
 
 #include "REGO600.h"
 
-#include "../API/DALHAL_WebSocketAPI.h"
-#include "../Support/DALHAL_Logger.h"
+#include <DALHAL/API/DALHAL_WebSocketAPI.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
 namespace Drivers {

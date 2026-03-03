@@ -23,9 +23,8 @@
 
 #include "DALHAL_OneWireTempAutoRefresh.h"
 
-#include "../../../Support/DALHAL_Logger.h"
-
-#include "../../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h> // DeviceConstStrings
 
 namespace DALHAL {
 

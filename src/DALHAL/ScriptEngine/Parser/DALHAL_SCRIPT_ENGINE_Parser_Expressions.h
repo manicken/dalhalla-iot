@@ -23,14 +23,13 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include "../../Core/Types/DALHAL_ZeroCopyString.h"
-
-
 #include "DALHAL_SCRIPT_ENGINE_Script_Token.h"
 #include "DALHAL_SCRIPT_ENGINE_Expression_Token.h"
-#include "../Runtime/DALHAL_SCRIPT_ENGINE_LogicExecNode.h"
 
+#include <Arduino.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_LogicExecNode.h>
 
 #include <string>
 

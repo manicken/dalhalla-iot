@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../../Core/Types/DALHAL_Value.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 namespace DALHAL {
 
     struct OpAdd { inline static HALValue apply(const HALValue& a, const HALValue& b) { return a + b; } };

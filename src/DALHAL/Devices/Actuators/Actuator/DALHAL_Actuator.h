@@ -29,9 +29,9 @@
 #include <ArduinoJson.h>
 
 
-#include "../../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 // for raw h-bridge control using forward and backward pins
 #define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"

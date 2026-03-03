@@ -28,16 +28,13 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-
-#include "Core/DALHAL_HA_Constants.h"
-
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
-
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
 #define DALHAL_HOME_ASSISTANT_DEFAULT_PORT 1883
 

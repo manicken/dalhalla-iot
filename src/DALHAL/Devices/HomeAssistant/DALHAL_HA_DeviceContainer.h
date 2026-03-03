@@ -23,15 +23,15 @@
 
 #pragma once
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
+#include <PubSubClient.h> // uses a modded PubSubClient placed in /lib folder
 
-#include "../../Core/Device/DALHAL_Device.h"
-
-#include <PubSubClient.h>
-#include "DALHAL_HA_DeviceTypeReg.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
 namespace DALHAL {
 

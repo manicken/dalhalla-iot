@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_UID.h"
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     HAL_UID::HAL_UID():val(0) {};

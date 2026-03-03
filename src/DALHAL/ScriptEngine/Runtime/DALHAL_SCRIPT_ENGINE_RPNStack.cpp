@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h"
-#include "../../Core/Types/DALHAL_Value.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 
 namespace DALHAL {
     namespace ScriptEngine {

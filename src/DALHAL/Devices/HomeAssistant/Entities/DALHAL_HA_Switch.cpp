@@ -22,13 +22,15 @@
 */
 
 #include "DALHAL_HA_Switch.h"
-#include "../Core/DALHAL_HA_DeviceDiscovery.h"
-#include "../Core/DALHAL_HA_CountingPubSubClient.h"
-#include "../Core/DALHAL_HA_Constants.h"
 
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
+
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
 

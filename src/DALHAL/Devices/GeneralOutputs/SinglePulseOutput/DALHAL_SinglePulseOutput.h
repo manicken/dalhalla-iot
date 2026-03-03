@@ -28,8 +28,9 @@
 #include <string>
 #include <ArduinoJson.h>
 #include <Ticker.h>
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 namespace DALHAL {
 

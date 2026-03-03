@@ -27,10 +27,10 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../../Core/Types/DALHAL_Value.h"
-#include "../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
-#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 
 
 namespace DALHAL {

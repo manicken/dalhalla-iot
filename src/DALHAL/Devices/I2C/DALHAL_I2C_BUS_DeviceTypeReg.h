@@ -23,7 +23,8 @@
 
 #pragma once
 
-#include "../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+
 #include <Wire.h>
 
 namespace DALHAL {

@@ -30,12 +30,12 @@
 #include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
-#include "../Types/DALHAL_Value.h"
-#include "../Types/DALHAL_UID_Path.h"
-#include "../Types/DALHAL_OperationResult.h"
-#include "../Types/DALHAL_Operations.h"
-#include "../../Support/DALHAL_DeleterTemplate.h"
-#include "../Reactive/DALHAL_Reactive.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
+#include <DALHAL/Core/Types/DALHAL_Operations.h>
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
+#include <DALHAL/Core/Reactive/DALHAL_Reactive.h>
 
 namespace DALHAL {
     

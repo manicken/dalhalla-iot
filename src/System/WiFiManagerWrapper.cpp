@@ -23,7 +23,7 @@
 
 #include "WiFiManager.h"
 #include "WiFiManagerWrapper.h"
-#include "../Support/NTP.h"
+#include <Support/NTP.h>
 
 #if defined(USE_DISPLAY)
 // Display

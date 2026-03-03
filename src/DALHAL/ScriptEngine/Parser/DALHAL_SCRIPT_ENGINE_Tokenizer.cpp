@@ -23,7 +23,7 @@
 
 #include "DALHAL_SCRIPT_ENGINE_Tokenizer.h"
 
-#include "../../Core/Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include "DALHAL_SCRIPT_ENGINE_Token.h"
 #include "DALHAL_SCRIPT_ENGINE_Script_Token.h"
 

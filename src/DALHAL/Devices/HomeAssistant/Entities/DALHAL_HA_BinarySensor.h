@@ -23,19 +23,18 @@
 
 #pragma once
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
-
-
-#include "../../../Core/Device/DALHAL_Device.h"
-
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-#include "../../../Core/Device/DALHAL_CachedDeviceRead.h"
-#include "../Core/DALHAL_HA_TopicBasePath.h"
-#include "../DALHAL_HA_DeviceTypeReg.h"
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
 
 #define DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS 5000
 

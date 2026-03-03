@@ -23,24 +23,17 @@
 
 #include "DALHAL_ScriptVariable.h"
 
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
 
-#if USING_REACTIVE(TEMPLATE)
-    void ValueSetCallback(void* ctx) {
-        ScriptVariableDeviceBase* dev = static_cast<ScriptVariableDeviceBase*>(ctx);
-        dev->triggerValueChange();
-    }
-#endif
-
-    ScriptVariable::ScriptVariable(const JsonVariant &jsonObj, const char* type) : ScriptVariableDeviceBase(type) {
+    ScriptVariable::ScriptVariable(const JsonVariant &jsonObj, const char* type) : ScriptVariable_DeviceBase(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        value = GetAsUINT32(jsonObj, "val",0);
-#if USING_REACTIVE(TEMPLATE)
-        value.setCallback(ValueSetCallback, this);
+        value = GetAsUINT32(jsonObj, "val", 0);
+#if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
+        value.setCallback(GenericValueCallback<ScriptVariable_DeviceBase>, this);
 #endif
     }
 
@@ -59,7 +52,7 @@ namespace DALHAL {
 
     HALOperationResult ScriptVariable::read(HALValue& val) {
         val = value;
-#if HAS_REACTIVE(SCRIPT_VARIABLE, READ)
+#if HAS_REACTIVE_READ(SCRIPT_VARIABLE)
         triggerRead();
 #endif
         return HALOperationResult::Success;
@@ -68,7 +61,7 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         value = val;
-#if HAS_REACTIVE(SCRIPT_VARIABLE, WRITE)
+#if HAS_REACTIVE_WRITE(SCRIPT_VARIABLE)
         triggerWrite();
 #endif
         return HALOperationResult::Success;

@@ -30,46 +30,44 @@
 #include "DALHAL_DeviceTypesRegistry.h"
 
 // all HAL devices to use here
-#include "../Script/ScriptVariable/DALHAL_ScriptVariable.h"
-#include "../Script/ScriptVariableReadOnly/DALHAL_ScriptVariableReadOnly.h"
-#include "../Script/ScriptVariableWriteOnlyTest/DALHAL_ScriptVariableWriteOnlyTest.h"
-#include "../Script/ScriptArray/DALHAL_ScriptArray.h"
+#include <DALHAL/Devices/Script/ScriptVariable/DALHAL_ScriptVariable.h>
+#include <DALHAL/Devices/Script/ScriptVariableReadOnly/DALHAL_ScriptVariableReadOnly.h>
+#include <DALHAL/Devices/Script/ScriptVariableWriteOnlyTest/DALHAL_ScriptVariableWriteOnlyTest.h>
+#include <DALHAL/Devices/Script/ScriptArray/DALHAL_ScriptArray.h>
 
-#include "../GeneralInputs/ButtonInput/DALHAL_ButtonInput.h"
-#include "../GeneralInputs/AnalogInput/DALHAL_AnalogInput.h"
-#include "../GeneralInputs/DigitalInput/DALHAL_DigitalInput.h"
+#include <DALHAL/Devices/GeneralInputs/ButtonInput/DALHAL_ButtonInput.h>
+#include <DALHAL/Devices/GeneralInputs/AnalogInput/DALHAL_AnalogInput.h>
+#include <DALHAL/Devices/GeneralInputs/DigitalInput/DALHAL_DigitalInput.h>
 
-#include "../GeneralOutputs/DigitalOutput/DALHAL_DigitalOutput.h"
-#include "../GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h"
-#include "../GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h"
+#include <DALHAL/Devices/GeneralOutputs/DigitalOutput/DALHAL_DigitalOutput.h>
+#include <DALHAL/Devices/GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h>
+#include <DALHAL/Devices/GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h>
 
-#include "../I2C/DALHAL_I2C_BUS.h"
+#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS.h>
 
-#include "../Sensors/OneWireTemp/DALHAL_OneWireTemp.h"
-#include "../Sensors/DHT/DALHAL_DHT.h"
-
-
-
-#include "../RF433/DALHAL_TX433.h"
-#include "../REGO600/DALHAL_REGO600.h"
-
-
-#include "../Lights/WS2812/DALHAL_WS2812.h"
-
-#include "../DeviceContainer/DALHAL_DeviceContainer.h"
-
-#include "../DataStorageServices/ThingSpeak/DALHAL_ThingSpeak.h"
-
-#include "../HomeAssistant/DALHAL_HomeAssistant.h"
-
-#include "../Actuators/Actuator/DALHAL_Actuator.h"
-#include "../Actuators/LEDC_Servo/DALHAL_LEDC_Servo.h"
-#include "../Actuators/LatchingRelay/DALHAL_LatchingRelay.h"
+#include <DALHAL/Devices/Sensors/OneWireTemp/DALHAL_OneWireTemp.h>
+#include <DALHAL/Devices/Sensors/DHT/DALHAL_DHT.h>
 
 
 
-#include "../API/REST_Value/DALHAL_REST_Value.h"
-#include "../API/REST_Cmd/DALHAL_REST_Cmd.h"
+#include <DALHAL/Devices/RF433/DALHAL_TX433.h>
+#include <DALHAL/Devices/REGO600/DALHAL_REGO600.h>
+
+
+#include <DALHAL/Devices/Lights/WS2812/DALHAL_WS2812.h>
+
+#include <DALHAL/Devices/DeviceContainer/DALHAL_DeviceContainer.h>
+
+#include <DALHAL/Devices/DataStorageServices/ThingSpeak/DALHAL_ThingSpeak.h>
+
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
+
+#include <DALHAL/Devices/Actuators/Actuator/DALHAL_Actuator.h>
+#include <DALHAL/Devices/Actuators/LEDC_Servo/DALHAL_LEDC_Servo.h>
+#include <DALHAL/Devices/Actuators/LatchingRelay/DALHAL_LatchingRelay.h>
+
+#include <DALHAL/Devices/API/REST_Value/DALHAL_REST_Value.h>
+#include <DALHAL/Devices/API/REST_Cmd/DALHAL_REST_Cmd.h>
 
 namespace DALHAL {
 

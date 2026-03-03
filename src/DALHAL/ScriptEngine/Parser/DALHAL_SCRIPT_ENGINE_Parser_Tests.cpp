@@ -31,12 +31,12 @@
 #include "../DALHAL_SCRIPT_ENGINE_Reports.h"
 
 #if defined(ESP32) || defined(ESP8266)
-#include "../../../Support/LittleFS_ext.h"
+#include <Support/LittleFS_ext.h>
 #else
 #include <LittleFS_ext.h>
 #endif
 
-#include "../../../Support/MeasureTime.h"
+#include <Support/MeasureTime.h>
 
 namespace DALHAL {
     namespace ScriptEngine {

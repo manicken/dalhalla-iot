@@ -31,13 +31,13 @@
     #include <stack>
     #include <string_view>
 
-    #include "../src/DALHAL/Core/Manager/DALHAL_DeviceManager.h"
-    #include "../src/DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
+    #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+    #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
     #include "ports/DALHAL_REST/DALHAL_REST.h"
 #endif
-    #include "../src/DALHAL/Support/ConvertHelper.h"
-    #include "../src/DALHAL/Core/Types/DALHAL_ZeroCopyString.h"
+    #include <DALHAL/Support/ConvertHelper.h>
+    #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
     #include <ArduinoJson.h>
     #include "commandLoop.h"
 

@@ -25,7 +25,7 @@
 
 #include <Arduino.h>
 #include <stdlib.h>
-#include "../Core/Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <queue>
 #include <functional>
 #if defined(_WIN32) || defined(__linux__) || defined(__MAC__)

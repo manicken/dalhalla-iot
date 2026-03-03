@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <string>
 
-#include "DALHAL_Value.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 
 namespace DALHAL {
 

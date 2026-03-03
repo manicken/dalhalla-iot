@@ -24,9 +24,9 @@
 #pragma once
 
 #include <cstdint>
-#include "../../Support/DALHAL_DeleterTemplate.h"
-#include "../Types/DALHAL_OperationResult.h"
-#include "../Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 // Terminator for all tables
 #define REACTIVE_TABLE_END { nullptr, nullptr }

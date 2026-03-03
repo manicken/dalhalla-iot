@@ -30,8 +30,8 @@
 #include "DALHAL_I2C_BUS_DeviceTypeReg.h"
 
 // Available I2C device types here
-#include "../Display/SSD1306/DALHAL_Display_SSD1306.h"
-#include "DALHAL_PCF8574x.h"
+#include <DALHAL/Devices/Display/SSD1306/DALHAL_Display_SSD1306.h>
+#include <DALHAL/Devices/I2C/DALHAL_PCF8574x.h>
 
 namespace DALHAL {
 

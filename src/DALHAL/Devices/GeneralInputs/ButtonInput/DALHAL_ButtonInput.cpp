@@ -22,10 +22,11 @@
 */
 
 #include "DALHAL_ButtonInput.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../../API/DALHAL_WebSocketAPI.h"
-#include "../../../Core/Manager/DALHAL_GPIO_Manager.h"
+
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 
 namespace DALHAL {
 

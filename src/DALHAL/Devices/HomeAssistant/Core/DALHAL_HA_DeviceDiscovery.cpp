@@ -22,14 +22,17 @@
 */
 
 #include "DALHAL_HA_DeviceDiscovery.h"
-#include "DALHAL_HA_Constants.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../../Core/Types/DALHAL_ZeroCopyString.h"
-#include "../../../Support/DALHAL_Logger.h"
-#include "DALHAL_HA_CountingPubSubClient.h"
-#include "../../../../System/DeviceUID.h"
+
 #include <cstdarg> // variadic
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
+
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include <System/DeviceUID.h>
 
 namespace DALHAL
 {

@@ -24,10 +24,10 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../../Core/Types/DALHAL_Value.h"
-#include "../../Core/Device/DALHAL_Device.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
-#include "../../Support/DALHAL_DeleterTemplate.h"
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h"  //contains the instance of halValueStack
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h"

@@ -22,17 +22,17 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_Parser_Expressions.h"
-#include "../DALHAL_SCRIPT_ENGINE_Reports.h"
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE_Reports.h>
 //#include "../Runtime/DALHAL_SCRIPT_ENGINE_CalcRPN.h"
-#include "../Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h> //contains the instance of halValueStack
 #include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
-#include "../../Core/Types/DALHAL_UID_Path.h"
-#include "../../Core/Manager/DALHAL_DeviceManager.h"
-#include "../../Support/DALHAL_DeleterTemplate.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
 namespace DALHAL {
     namespace ScriptEngine {

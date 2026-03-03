@@ -23,7 +23,7 @@
 
 #include "DALHAL_SCRIPT_ENGINE_Script_Token.h"
 
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     namespace ScriptEngine {

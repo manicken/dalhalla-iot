@@ -23,17 +23,17 @@
 
 #include "DALHAL_CommandExecutor.h"
 
-#include "../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "../../BUILD_INFO.h"
-#include "../Support/base64.h"
+#include <BUILD_INFO.h>
+#include <DALHAL/Support/base64.h>
 
-#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 
-#include "../Core/Manager/DALHAL_GPIO_Manager.h"
-#include "../Core/Manager/DALHAL_DeviceManager.h"
-#include "../ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
-#include "../../System/Info.h"
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
+#include <System/Info.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>

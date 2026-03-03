@@ -31,8 +31,8 @@
 #include <string>
 
 #include <Arduino.h> // Needed for String class
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 namespace DALHAL {
 

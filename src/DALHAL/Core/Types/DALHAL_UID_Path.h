@@ -27,9 +27,9 @@
 #include <cstring>
 #include <string>
 
-#include "DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
-#include "DALHAL_UID.h"
+#include <DALHAL/Core/Types/DALHAL_UID.h>
 
 namespace DALHAL {
 

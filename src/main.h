@@ -36,10 +36,10 @@
 #include <WiFi.h>
 #endif
 
-#include "DALHAL/Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 // OTA
-#include "System/OTA.h"
+#include <System/OTA.h>
 
 // HTTP stuff
 #include <ESPAsyncWebServer.h>
@@ -58,14 +58,13 @@
 //#define ARDUINOJSON_ENABLE_PROGMEM 0
 #include <TimeLib.h>
 #include <TimeAlarms.h>
-#include "Scheduler/Scheduler.h"
+#include <Scheduler/Scheduler.h>
 
-#include "System/Info.h"
+#include <System/Info.h>
 
-#include "Support/Time_ext.h"
+#include <Support/Time_ext.h>
 
-
-#include "System/MainConfig.h"
+#include <System/MainConfig.h>
 
 #if defined(ESP8266)
 #include <ESP8266mDNS.h>
@@ -73,18 +72,18 @@
 #include <ESPmDNS.h>
 #endif
 
-#include "DALHAL/DALHAL.h"
+#include <DALHAL/DALHAL.h>
 #ifdef DALHAL_H_
-#include "DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #endif
 
-#include "DALHAL/API/DALHAL_CommandExecutor.h"
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
 
-#include "System/WiFiManagerWrapper.h"
-#include "System/System.h"
-#include "DALHAL/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
+#include <System/WiFiManagerWrapper.h>
+#include <System/System.h>
+#include <DALHAL/Drivers/HearbeatLed.h> // this should not be here in final version (should only be accessible through HAL interface)
 
-#include "esp_task_wdt.h"
+#include <esp_task_wdt.h>
 
 #define MAIN_URLS_JSON_CMD              F("/json_cmd")
 

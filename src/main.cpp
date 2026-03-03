@@ -23,8 +23,8 @@
 
 #include "main.h"
 
-#include "DALHAL/Core/Types/DALHAL_ZeroCopyString.h"
-#include "DALHAL/Core/Manager/DALHAL_GPIO_Manager.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #if defined(ESP32)
 #include <SD_MMC.h>

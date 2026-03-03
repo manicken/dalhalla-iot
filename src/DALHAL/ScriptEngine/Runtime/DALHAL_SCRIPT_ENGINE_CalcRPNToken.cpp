@@ -23,10 +23,10 @@
 
 #include "DALHAL_SCRIPT_ENGINE_CalcRPNToken.h"
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
-#include "../../Core/Device/DALHAL_CachedDeviceRead.h"
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../../Core/Manager/DALHAL_DeviceManager.h"
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DALHAL_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 

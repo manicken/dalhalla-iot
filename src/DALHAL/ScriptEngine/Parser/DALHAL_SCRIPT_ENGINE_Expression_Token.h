@@ -34,7 +34,7 @@
 #include <vector>
 #include <stack>
 
-#include "../../Core/Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace DALHAL {
     namespace ScriptEngine {

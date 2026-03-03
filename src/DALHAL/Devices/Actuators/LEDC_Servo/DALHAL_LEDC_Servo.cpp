@@ -21,16 +21,17 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "DALHAL_LEDC_Servo.h"
+
+#include <stdio.h>
 #include <math.h>
 // need to go hardcore on this stuff as arduino is only for beginners
-#include "driver/ledc.h"
-#include "esp_err.h"
-#include <stdio.h>
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Manager/DALHAL_GPIO_Manager.h"
+#include <driver/ledc.h> // esp-idf
+#include <esp_err.h> // esp-idf
+
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #define VERIFY_JSON_SOURCE "LEDC_Servo::VerifyJSON"
 

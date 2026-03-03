@@ -20,12 +20,15 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#include "../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../Support/DALHAL_Logger.h"
+
 #include "DALHAL_HA_DeviceContainer.h"
-#include "DALHAL_HomeAssistant.h"
-#include "DALHAL_HA_DeviceTypeReg.h"
+
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     

@@ -23,15 +23,15 @@
 
 #pragma once
 
+#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS_DeviceTypeReg.h>
+
 #include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>
-
-#include "../../Core/Device/DALHAL_Device.h"
-#include "DALHAL_I2C_BUS_DeviceTypeReg.h"
-
 #include <Wire.h>
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
 namespace DALHAL {
 

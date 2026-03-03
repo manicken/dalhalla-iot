@@ -28,12 +28,12 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
-#include "../src/DALHAL/Types/DALHAL_ZeroCopyString.h"
-#include "../src/DALHAL/DALHAL_CommandExecutor.h"
-#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser.h"
-#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h"
-#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
-#include "../src/DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 
 extern std::atomic<bool> running;
 

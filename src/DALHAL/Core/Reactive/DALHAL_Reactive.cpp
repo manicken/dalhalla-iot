@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_Reactive.h"
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
 

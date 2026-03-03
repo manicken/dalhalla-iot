@@ -29,15 +29,15 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #if defined(ESP32) || defined(ESP8266)
-#include "../../../Support/LittleFS_ext.h"
+#include <Support/LittleFS_ext.h>
 #else
 #include <LittleFS_ext.h>
 #endif
 #include <string>
-#include "../Types/DALHAL_Value.h"
-#include "../Types/DALHAL_UID_Path.h"
-#include "../Types/DALHAL_Operations.h"
-#include "../Device/DALHAL_Device.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
+#include <DALHAL/Core/Types/DALHAL_Operations.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
 
 
 

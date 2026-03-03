@@ -26,9 +26,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
 
-//#include "../Support/DALHAL_Logger.h"
-//#include "../Core/Types/DALHAL_ZeroCopyString.h"
-//#include "../Core/Manager/DALHAL_DeviceManager.h"
 #include "DALHAL_CommandExecutor.h"
 
 namespace DALHAL {

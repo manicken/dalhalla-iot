@@ -23,14 +23,14 @@
 
 #include "DALHAL_ThingSpeak.h"
 
-#include "../../../Core/Manager/DALHAL_DeviceManager.h"
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
 
 
-#if __has_include("../../../../../secrets/thingspeak_test_server.h")
-#include "../../../../../secrets/thingspeak_test_server.h"
+#if __has_include(<thingspeak_test_server.h>)
+#include <thingspeak_test_server.h>
 #endif
 
 #define DEBUG_UART Serial

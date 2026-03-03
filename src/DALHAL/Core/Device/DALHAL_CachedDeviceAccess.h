@@ -29,9 +29,9 @@
 #include <ArduinoJson.h>
 #include <stdlib.h>
 
-#include "DALHAL_Device.h"
-#include "../Types/DALHAL_Value.h"
-#include "../Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace DALHAL {
 

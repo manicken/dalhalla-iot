@@ -22,10 +22,13 @@
 */
 
 #pragma once
-#include "../../../Core/Device/DALHAL_Device.h"
-#include "../../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-#include <Arduino.h>
-#include "driver/ledc.h"
+
+#include <Arduino.h> // TODO remove depend
+#include <driver/ledc.h> // esp-idf
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+
 
 #define DALHAL_LEDC_SERVO_PWM_FREQ 50
 #define DALHAL_LEDC_SERVO_PWM_DUTY_US (1000000u / DALHAL_LEDC_SERVO_PWM_FREQ)

@@ -23,17 +23,13 @@
 
 #pragma once
 
-
-#include <Arduino.h> // Needed for String class
-
-#include <ArduinoJson.h>
-
-#include "../../Core/Device/DALHAL_Device.h"
-#include "../DeviceRegistry/DALHAL_DeviceTypesRegistry.h"
-
-
 #include "DALHAL_TX433unit.h"
 
+#include <Arduino.h> // Needed for String class
+#include <ArduinoJson.h>
+
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
 #define DALHAL_KEYNAME_TX433_UNITS "units"
 

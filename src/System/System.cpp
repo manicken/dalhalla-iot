@@ -24,7 +24,7 @@
 #include "System.h"
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include "DALHAL/Drivers/HearbeatLed.h" // this should not be here in final version (should only be accessible through HAL interface)
+#include <DALHAL/Drivers/HearbeatLed.h> // this should not be here in final version (should only be accessible through HAL interface)
 
 #if defined(ESP8266)
 #include <ESP8266mDNS.h>
@@ -33,7 +33,7 @@
 #include <ESPmDNS.h>
 #endif
 
-#include "System/MainConfig.h"
+#include <System/MainConfig.h>
 #include "OTA.h"
 #include "FSBrowserAsync.h"
 

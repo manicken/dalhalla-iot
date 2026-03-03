@@ -24,7 +24,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include "DALHAL_HA_TopicBasePath.h"
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 
 
 #define DALHAL_HA_DD_CFG_ROOT_TOPIC "homeassistant"

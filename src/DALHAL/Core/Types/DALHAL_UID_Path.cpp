@@ -23,8 +23,8 @@
 
 #include "DALHAL_UID_Path.h"
 
-#include "../../Support/ConvertHelper.h"
-#include "../../Support/DALHAL_Logger.h"
+#include <DALHAL/Support/ConvertHelper.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     

@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../../../Core/Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace DALHAL {
 

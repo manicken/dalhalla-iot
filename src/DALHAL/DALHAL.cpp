@@ -26,12 +26,12 @@
 
 #include <stdlib.h>
 
-#include "Support/DALHAL_Logger.h"
-#include "Core/Manager/DALHAL_DeviceManager.h"
-#include "API/DALHAL_API.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/API/DALHAL_API.h>
 
-#include "ScriptEngine/DALHAL_SCRIPT_ENGINE.h"
-#include "../System/Info.h"
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
+#include <System/Info.h>
 
 #include "DALHAL.h"
 

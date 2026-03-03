@@ -22,9 +22,11 @@
 */
 
 #include "DALHAL_Display_SSD1306_Element.h"
-#include "../../../Support/DALHAL_ArduinoJSON_ext.h"
-#include "../../../Support/DALHAL_Logger.h"
-#include "../../../Core/Device/DALHAL_JSON_Config_Defines.h"
+
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+
+#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     

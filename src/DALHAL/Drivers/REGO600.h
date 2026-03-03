@@ -27,7 +27,7 @@
 #include <ArduinoJson.h>
 #include <memory>
 
-#include "../Core/Types/DALHAL_Value.h"
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 
 #define REGO600_UART_TX_CHKSUM_START_INDEX 2
 #define REGO600_UART_TX_BUFFER_SIZE 9 // allways 9 in size

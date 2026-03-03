@@ -22,8 +22,9 @@
 */
 
 #include "DALHAL_SerialAPI.h"
-#include "../Core/Types/DALHAL_ZeroCopyString.h"
-#include "DALHAL_CommandExecutor.h"
+
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
 
 #include <Arduino.h> // TODO remove dependency
 

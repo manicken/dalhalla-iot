@@ -58,8 +58,8 @@
 
 #elif defined(ESP32)
 
-#include "Support/fs_WebServer.h"
-#include "Support/mimetable.h"
+#include <Support/fs_WebServer.h>
+#include <Support/mimetable.h>
 
 #define WEBSERVER_TYPE fs_WebServer
 #define DBG_OUTPUT_PORT Serial

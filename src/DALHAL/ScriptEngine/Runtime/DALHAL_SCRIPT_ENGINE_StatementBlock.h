@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../../Support/DALHAL_DeleterTemplate.h" // Deleter
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h> // Deleter
 #include "DALHAL_SCRIPT_ENGINE_IfStatement.h"
 
 namespace DALHAL {

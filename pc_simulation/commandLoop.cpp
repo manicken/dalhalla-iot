@@ -22,11 +22,11 @@
 */
 
 #include "commandLoop.h"
-#include "../src/DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Tests.h"
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Tests.h>
 
-#include "../src/DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceDiscovery.h"
-#include "../src/DALHAL/Devices/HomeAssistant/DALHAL_HA_CountingPubSubClient.h"
-#include "../src/DALHAL/Devices/HomeAssistant/DALHAL_HA_TopicBasePath.h"
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CountingPubSubClient.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_TopicBasePath.h>
 
 std::atomic<bool> running{true};
 
