@@ -33,7 +33,7 @@ namespace DALHAL {
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val", 0);
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
-        value.setCallback(GenericValueCallback<ScriptVariable_DeviceBase>, this);
+        value.setCallbacks(this, GenericValueCallback<ScriptVariable_DeviceBase>, nullptr);
 #endif
     }
 

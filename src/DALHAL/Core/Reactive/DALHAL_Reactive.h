@@ -28,8 +28,8 @@
 #include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
-// Terminator for all tables
-#define REACTIVE_TABLE_END { nullptr, nullptr }
+
+
 
 namespace DALHAL {
     /** used by consumers */

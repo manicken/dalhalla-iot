@@ -73,6 +73,6 @@ namespace DALHAL {
 #if HAS_REACTIVE_EXEC_ERROR(DHT)
         REACTIVE_ENTRY_EXEC_ERROR(DHT_Reactive),
 #endif
-        REACTIVE_TABLE_END
+        REACTIVE_ENTRY__TERMINATOR_()
     };
 }

@@ -28,7 +28,7 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
-
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
 #if !defined(esp32c3) && !defined(esp32c6)
@@ -108,7 +108,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : Device(type), state(State::Idle) {
+    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : ActuatorDeviceBase(type), state(State::Idle) {
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
@@ -296,7 +296,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             }
         }
         
-
         if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
             GlobalLogger.Error(F(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
             SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH);
@@ -326,7 +325,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
-
         if (mode == DriveMode::DirEnable) {
             gpio_config_t io_conf{};
             io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -345,7 +343,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_config(&io_conf);
         }
         // reserved for future modes
-
 
         // --------------------------
         // Configure endstop pins
@@ -394,9 +391,19 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             }
             if (state == State::MovingToMin) {
                 isr_data.location = Location::Min;
+#if HAS_REACTIVE_CUSTOM(ACTUATOR)
+                triggerReachedMin();
+#endif
+
             } else if (state == State::MovingToMax) {
                 isr_data.location = Location::Max;
+#if HAS_REACTIVE_CUSTOM(ACTUATOR)
+                triggerReachedMax();
+#endif
             }
+#if HAS_REACTIVE_STATE_CHANGE(ACTUATOR)
+            triggerStateChange();
+#endif
             state = State::Idle;
             
             return;
@@ -411,22 +418,29 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    
-
     HALOperationResult Actuator::exec_drive_to_min(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMin(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(ACTUATOR)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
     HALOperationResult Actuator::exec_drive_to_max(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMax(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(ACTUATOR)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
     HALOperationResult Actuator::exec_stop(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(ACTUATOR)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -434,18 +448,20 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         auto* d = static_cast<Actuator*>(device);
         d->reset();
         d->stopDrive();
+#if HAS_REACTIVE_EXEC(ACTUATOR)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
-
     Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_CLOSE || zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN) {
+        if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE) || zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN)) {
             return exec_drive_to_min;
-        } else if (zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_OPEN || zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX) {
+        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_OPEN) || zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX)) {
             return exec_drive_to_max;
-        } else if (zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_STOP) {
+        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_STOP)) {
             return exec_stop;
-        } else if (zcFuncName == DALHAL_DEVICE_ACTUATOR_CMD_RESET) {
+        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_RESET)) {
             return exec_reset;
         } else {
             return nullptr;
@@ -453,23 +469,23 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        if (cmd == DALHAL_DEVICE_ACTUATOR_CMD_CLOSE || cmd == DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN) {
+        if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE) || cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN)) {
             driveToMin();
-            return HALOperationResult::Success;
-        } else if (cmd == DALHAL_DEVICE_ACTUATOR_CMD_OPEN || cmd == DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX) {
+        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_OPEN) || cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX)) {
             driveToMax();
-            return HALOperationResult::Success;
-        } else if (cmd == DALHAL_DEVICE_ACTUATOR_CMD_STOP) {
+        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_STOP)) {
             stopDrive();
-            return HALOperationResult::Success;
-        } else if (cmd == DALHAL_DEVICE_ACTUATOR_CMD_RESET) {
+        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_RESET)) {
             reset();
-            stopDrive();
-            return HALOperationResult::Success;
+            stopDrive();   
+        } else {
+            return HALOperationResult::UnsupportedCommand;
         }
-        return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_EXEC(ACTUATOR)
+        triggerExec();
+#endif
+        return HALOperationResult::Success;
     }
-
 
     HALOperationResult Actuator::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
@@ -492,7 +508,9 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         } else {
             driveToMax();
         }
-
+#if HAS_REACTIVE_WRITE(ACTUATOR)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -544,9 +562,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_intr_disable(pinMaxEndStop);
         }
     }
-
-    
-
 
     void Actuator::stopDrive() {
         if (state != State::TimeoutFault)
@@ -603,8 +618,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_intr_enable(pinMaxEndStop);
         }
     }
-
-    
 
     bool Actuator::endMinActive() const {
         // 1) Physical pin says active

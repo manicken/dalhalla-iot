@@ -33,14 +33,14 @@
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(TEMPLATE)
-#include "DALHAL_templateReactive.h"
-using TemplateDeviceBase = DALHAL::Template_Reactive;
+#include "DALHAL__Template__Reactive.h"
+using _Template_DeviceBase = DALHAL::_Template__Reactive;
 #else
-using TemplateDeviceBase = DALHAL::Device;
+using _Template_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
-    class Template : public TemplateDeviceBase {
+    class _Template_ : public _Template_DeviceBase {
     private:
         uint8_t pin = 0; // if pin would be used
 
@@ -94,7 +94,7 @@ namespace DALHAL {
             VerifyJSON
         };
 
-        Template(const JsonVariant &jsonObj, const char* type);
+        _Template_(const JsonVariant &jsonObj, const char* type);
 
 
 

@@ -58,102 +58,110 @@
 #define DALHAL_DEVICE_ACTUATOR_CMD_STOP   "stop"
 #define DALHAL_DEVICE_ACTUATOR_CMD_RESET  "reset"
 
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(ACTUATOR)
+#include "DALHAL_Actuator_Reactive.h"
+using ActuatorDeviceBase = DALHAL::Actuator_Reactive;
+#else
+using ActuatorDeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-class Actuator : public Device {
-public:
-    static void IRAM_ATTR endstop_isr(void* arg);
+    class Actuator : public ActuatorDeviceBase {
+    public:
+        static void IRAM_ATTR endstop_isr(void* arg);
 
-    enum class State : uint32_t {
-        Idle,
-        MovingToMin,
-        MovingToMax,
-        TimeoutFault
+        enum class State : uint32_t {
+            Idle,
+            MovingToMin,
+            MovingToMax,
+            TimeoutFault
+        };
+        enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
+
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static constexpr DeviceRegistryDefine RegistryDefine = {
+            UseRootUID::Mandatory,
+            Create,
+            VerifyJSON
+        };
+
+        Actuator(const JsonVariant &jsonObj, const char* type);
+        ~Actuator();
+
+        void setup();
+        virtual void loop() override;
+
+        virtual HALOperationResult write(const HALValue& val) override;
+        virtual HALOperationResult read(HALValue& val) override;
+
+        virtual HALOperationResult read(const HALReadStringRequestValue& val);
+
+        static HALOperationResult exec_drive_to_min(Device* device);
+        static HALOperationResult exec_drive_to_max(Device* device);
+        static HALOperationResult exec_stop(Device* device);
+        static HALOperationResult exec_reset(Device* device);
+
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
+        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
+        virtual HALOperationResult exec(const ZeroCopyString& cmd);
+
+        virtual String ToString() override;
+
+    private:
+        union DrivePins {
+            struct { gpio_num_t a, b; } hbridge;
+            struct { gpio_num_t dir, enable; } diren;
+        };
+        enum class DriveMode : uint8_t {
+            HBridge,      // forward / backward
+            DirEnable     // dir + enable
+        };
+        enum class GpioRegType {
+            Set,
+            Clear
+        };
+
+        void reset();
+        void stopDrive();
+        void driveToMin();
+        void driveToMax();
+        bool endMinActive() const;
+        bool endMaxActive() const;
+
+        void disableEndstopInterrupts();
+        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
+
+    public:
+
+        struct ISR_DATA {
+            volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
+            void (* volatile gpio_reg_func)(uint32_t) = nullptr;
+            volatile uint32_t gpio_currentActivePinMask = 0;
+            volatile bool handled = false;
+            volatile bool driveOn = false;
+            volatile Location location = Location::Unknown;
+        };
+
+    private:
+        ISR_DATA isr_data;
+
+        State state = State::Idle;
+
+        DrivePins pins;
+        DriveMode mode;
+
+        gpio_num_t pinMinEndStop;
+        gpio_num_t pinMaxEndStop;
+
+        bool pinEndMinActiveHigh;
+        bool pinEndMaxActiveHigh;
+
+        uint32_t motionStartMs;
+        uint32_t timeoutMs;
+
     };
-    enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
-
-    static bool VerifyJSON(const JsonVariant &jsonObj);
-    static Device* Create(const JsonVariant &jsonObj, const char* type);
-    static constexpr DeviceRegistryDefine RegistryDefine = {
-        UseRootUID::Mandatory,
-        Create,
-        VerifyJSON
-    };
-
-    Actuator(const JsonVariant &jsonObj, const char* type);
-    ~Actuator();
-
-    void setup();
-    virtual void loop() override;
-
-    virtual HALOperationResult write(const HALValue& val) override;
-    virtual HALOperationResult read(HALValue& val) override;
-
-    virtual HALOperationResult read(const HALReadStringRequestValue& val);
-
-    static HALOperationResult exec_drive_to_min(Device* device);
-    static HALOperationResult exec_drive_to_max(Device* device);
-    static HALOperationResult exec_stop(Device* device);
-    static HALOperationResult exec_reset(Device* device);
-
-    virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
-    /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-    virtual HALOperationResult exec(const ZeroCopyString& cmd);
-
-    virtual String ToString() override;
-
-private:
-    union DrivePins {
-        struct { gpio_num_t a, b; } hbridge;
-        struct { gpio_num_t dir, enable; } diren;
-    };
-    enum class DriveMode : uint8_t {
-        HBridge,      // forward / backward
-        DirEnable     // dir + enable
-    };
-    enum class GpioRegType {
-        Set,
-        Clear
-    };
-
-    void reset();
-    void stopDrive();
-    void driveToMin();
-    void driveToMax();
-    bool endMinActive() const;
-    bool endMaxActive() const;
-
-    void disableEndstopInterrupts();
-    void configureISRData(gpio_num_t& somePin, GpioRegType regType);
-
-public:
-
-    struct ISR_DATA {
-        volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
-        void (* volatile gpio_reg_func)(uint32_t) = nullptr;
-        volatile uint32_t gpio_currentActivePinMask = 0;
-        volatile bool handled = false;
-        volatile bool driveOn = false;
-        volatile Location location = Location::Unknown;
-    };
-
-private:
-    ISR_DATA isr_data;
-
-    State state = State::Idle;
-
-    DrivePins pins;
-    DriveMode mode;
-
-    gpio_num_t pinMinEndStop;
-    gpio_num_t pinMaxEndStop;
-
-    bool pinEndMinActiveHigh;
-    bool pinEndMaxActiveHigh;
-
-    uint32_t motionStartMs;
-    uint32_t timeoutMs;
-
-};
 
 } // namespace DALHAL

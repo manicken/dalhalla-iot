@@ -34,7 +34,7 @@
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_VARIABLE)
-#include "DALHAL_ScriptVariableReactive.h"
+#include "DALHAL_ScriptVariable_Reactive.h"
 using ScriptVariable_DeviceBase = DALHAL::ScriptVariable_Reactive;
 #else
 using ScriptVariable_DeviceBase = DALHAL::Device;

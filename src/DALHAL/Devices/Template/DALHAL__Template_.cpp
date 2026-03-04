@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_template.h"
+#include "DALHAL__Template_.h"
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
@@ -30,20 +30,20 @@
 
 namespace DALHAL {
 
-    Template::Template(const JsonVariant &jsonObj, const char* type) : TemplateDeviceBase(type) {
+    _Template_::_Template_(const JsonVariant &jsonObj, const char* type) : _Template_DeviceBase(type) {
 
     }
 
-    bool Template::VerifyJSON(const JsonVariant &jsonObj) {
+    bool _Template_::VerifyJSON(const JsonVariant &jsonObj) {
         // this is a check only to verify that the pin cfg exist
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    Device* Template::Create(const JsonVariant &jsonObj, const char* type) {
-        return new Template(jsonObj, type);
+    Device* _Template_::Create(const JsonVariant &jsonObj, const char* type) {
+        return new _Template_(jsonObj, type);
     }
 
-    String Template::ToString() {
+    String _Template_::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -56,21 +56,21 @@ namespace DALHAL {
         return ret;
     }
 
-    void Template::loop() {}
-    void Template::begin() {
+    void _Template_::loop() {}
+    void _Template_::begin() {
 #if HAS_REACTIVE(TEMPLATE, BEGIN)
         triggerBegin();
 #endif        
     }
-    DeviceFindResult Template::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
+    DeviceFindResult _Template_::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
-    HALOperationResult Template::read(HALValue& val) {
+    HALOperationResult _Template_::read(HALValue& val) {
 #if HAS_REACTIVE(TEMPLATE, READ)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::write(const HALValue& val) {
+    HALOperationResult _Template_::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 #if HAS_REACTIVE(TEMPLATE, WRITE)
@@ -78,61 +78,61 @@ namespace DALHAL {
 #endif
         return HALOperationResult::UnsupportedOperation;
     };
-    HALOperationResult Template::read(const HALValue& bracketSubscriptVal, HALValue& val) {
+    HALOperationResult _Template_::read(const HALValue& bracketSubscriptVal, HALValue& val) {
 #if HAS_REACTIVE(TEMPLATE, BRACKET_READ)
         triggerBracketRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
+    HALOperationResult _Template_::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
 #if HAS_REACTIVE(TEMPLATE, BRACKET_WRITE)
         triggerBracketWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::read(const HALReadStringRequestValue& val) {
+    HALOperationResult _Template_::read(const HALReadStringRequestValue& val) {
 #if HAS_REACTIVE(TEMPLATE, READ)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::write(const HALWriteStringRequestValue& val) {
+    HALOperationResult _Template_::write(const HALWriteStringRequestValue& val) {
 #if HAS_REACTIVE(TEMPLATE, WRITE)
         triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::read(const HALReadValueByCmd& val) {
+    HALOperationResult _Template_::read(const HALReadValueByCmd& val) {
 #if HAS_REACTIVE(TEMPLATE, READ)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::write(const HALWriteValueByCmd& val) {
+    HALOperationResult _Template_::write(const HALWriteValueByCmd& val) {
 #if HAS_REACTIVE(TEMPLATE, WRITE)
         triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::exec() {
+    HALOperationResult _Template_::exec() {
 #if HAS_REACTIVE(TEMPLATE, EXEC)
         triggerExec();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Template::exec(const ZeroCopyString& cmd) {
+    HALOperationResult _Template_::exec(const ZeroCopyString& cmd) {
 #if HAS_REACTIVE(TEMPLATE, EXEC)
         triggerExec();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
 
-    Device::ReadToHALValue_FuncType Template::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType Template::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType Template::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
+    Device::ReadToHALValue_FuncType _Template_::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::WriteHALValue_FuncType _Template_::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::Exec_FuncType _Template_::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
 
-    Device::BracketOpRead_FuncType Template::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType Template::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::BracketOpRead_FuncType _Template_::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
+    Device::BracketOpWrite_FuncType _Template_::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     
-    HALValue* Template::GetValueDirectAccessPtr() { return nullptr; }
+    HALValue* _Template_::GetValueDirectAccessPtr() { return nullptr; }
 }

@@ -113,26 +113,18 @@ namespace DALHAL {
     }
 
     HALValue::operator int32_t() const {
-        if (type == Type::INT) return uval;
-        // Handle error or conversion
-        return 0;
+        return ival;
     }
 
     HALValue::operator uint32_t() const {
-        if (type == Type::UINT) return uval;
-        // Handle error or conversion
-        return 0;
+        return uval;
     }
     HALValue::operator uint8_t() const {
-        if (type == Type::UINT) return uval;
-        // Handle error or conversion
-        return 0;
+        return uval;
     }
 
     HALValue::operator float() const {
-        if (type == Type::FLOAT) return fval;
-        // Handle error or conversion
-        return 0.0f;
+        return fval;
     }
 
     void HALValue::set(uint32_t v) {

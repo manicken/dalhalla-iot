@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_ScriptVariableReactive.h"
+#include "DALHAL_ScriptVariable_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -72,6 +72,6 @@ namespace DALHAL {
 #if HAS_REACTIVE_EXEC_ERROR(SCRIPT_VARIABLE)
         REACTIVE_ENTRY_EXEC_ERROR(ScriptVariable_Reactive),
 #endif
-        REACTIVE_TABLE_END
+        REACTIVE_ENTRY__TERMINATOR_()
     };
 }
