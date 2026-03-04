@@ -31,9 +31,18 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(DIGITAL_OUTPUT)
+#include "DALHAL_DigitalOutput_Reactive.h"
+using DigitalOutput_DeviceBase = DALHAL::DigitalOutput_Reactive;
+#else
+using DigitalOutput_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class DigitalOutput : public Device {
+    class DigitalOutput : public DigitalOutput_DeviceBase {
     private:
         uint8_t pin = 0;
         uint32_t value = 0;
