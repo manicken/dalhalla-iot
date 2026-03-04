@@ -38,22 +38,22 @@
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(LEDC_SERVO)
-#include "DALHAL_LEDC_Servo_Reactive.h"
-using LEDC_Servo_DeviceBase = DALHAL::LEDC_Servo_Reactive;
+#include "DALHAL_PWM_Servo_Reactive.h"
+using PWM_Servo_DeviceBase = DALHAL::PWM_Servo_Reactive;
 #else
-using LEDC_Servo_DeviceBase = DALHAL::Device;
+using PWM_Servo_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
 
-class LEDC_Servo : public LEDC_Servo_DeviceBase {
+class PWM_Servo : public PWM_Servo_DeviceBase {
 private:
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
         PulseUS,     // raw microseconds
     };
     uint8_t pin = 0;
-    ledc_channel_t ledcChannel = ledc_channel_t::LEDC_CHANNEL_0;
+    ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
 
     HALValue lastValue = 0.0f;
     uint32_t minPulseLength = 1000;
@@ -71,8 +71,8 @@ private:
     bool autoOffActive = false;
 
 public:
-    LEDC_Servo(const JsonVariant &jsonObj, const char* type);
-    ~LEDC_Servo();
+    PWM_Servo(const JsonVariant &jsonObj, const char* type);
+    ~PWM_Servo();
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(const JsonVariant &jsonObj, const char* type);

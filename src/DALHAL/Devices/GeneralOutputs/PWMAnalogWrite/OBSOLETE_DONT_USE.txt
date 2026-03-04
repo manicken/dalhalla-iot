@@ -1,0 +1,5 @@
+TODO 
+make it work with bare metal PWM HW
+ESP32: LEDC
+raspberry pi pico: PWM-slice
+Teensy 4: FlexPWM 

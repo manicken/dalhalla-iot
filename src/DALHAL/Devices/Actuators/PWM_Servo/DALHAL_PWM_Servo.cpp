@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_LEDC_Servo.h"
+#include "DALHAL_PWM_Servo.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -33,16 +33,16 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#define VERIFY_JSON_SOURCE "LEDC_Servo::VerifyJSON"
+#define VERIFY_JSON_SOURCE "PWM_Servo::VerifyJSON"
 
 namespace DALHAL {
 
-    LEDC_Servo::LEDC_Servo(const JsonVariant &jsonObj, const char* type) : LEDC_Servo_DeviceBase(type)
+    PWM_Servo::PWM_Servo(const JsonVariant &jsonObj, const char* type) : PWM_Servo_DeviceBase(type)
     {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = jsonObj["pin"];
-        ledcChannel = jsonObj["ledc_ch"];
+        pwmChannel = jsonObj["ch"]; // verified by VerifyJSON
 
         minPulseLength = jsonObj.containsKey("minPulseLength") ? jsonObj["minPulseLength"] : 1000;
         maxPulseLength = jsonObj.containsKey("maxPulseLength") ? jsonObj["maxPulseLength"] : 2000;
@@ -71,15 +71,15 @@ namespace DALHAL {
         Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
     }
 
-    bool LEDC_Servo::VerifyJSON(const JsonVariant &jsonObj) {
+    bool PWM_Servo::VerifyJSON(const JsonVariant &jsonObj) {
         bool anyError = false;
         if (!jsonObj.containsKey("pin")) {
             GlobalLogger.Error(F("cfg have no pin"));
             GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
             anyError = true;
         }
-        if (!jsonObj.containsKey("ledc_ch")) {
-            GlobalLogger.Error(F("cfg have no ledc_ch"));
+        if (!jsonObj.containsKey("ch")) {
+            GlobalLogger.Error(F("cfg have no ch"));
             GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
             anyError = true;
         }
@@ -103,17 +103,17 @@ namespace DALHAL {
         return (anyError == false);
     }
 
-    Device* LEDC_Servo::Create(const JsonVariant &jsonObj, const char* type) {
-        return new LEDC_Servo(jsonObj, type);
+    Device* PWM_Servo::Create(const JsonVariant &jsonObj, const char* type) {
+        return new PWM_Servo(jsonObj, type);
     }
 
-    LEDC_Servo::~LEDC_Servo() {
+    PWM_Servo::~PWM_Servo() {
         ledcDetachPin(pin);
         //ledcWrite(ledcChannel, 0);
     }
 
-    void LEDC_Servo::begin() {
-        printf("LEDC_Servo::begin\r\n");
+    void PWM_Servo::begin() {
+        printf("PWM_Servo::begin\r\n");
         
         // setup LEDC channel hardcore
         // Configure the timer first
@@ -155,26 +155,26 @@ namespace DALHAL {
         //return ledc_get_freq(group,timer);
 
         // Setup LEDC channel
-        if (ledcSetup(ledcChannel, DALHAL_LEDC_SERVO_PWM_FREQ, DALHAL_LEDC_SERVO_RESOLUTION_BITS) == 0) {
+        if (ledcSetup(pwmChannel, DALHAL_LEDC_SERVO_PWM_FREQ, DALHAL_LEDC_SERVO_RESOLUTION_BITS) == 0) {
             printf("ledcSetup fail\r\n");
         } 
-        ledcAttachPin(pin, ledcChannel);
+        ledcAttachPin(pin, pwmChannel);
         // Initialize to center
         uint32_t pulseUs = startPulseLength + pulseLengthOffset;
         uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        ledcWrite(ledcChannel, duty);
+        ledcWrite(pwmChannel, duty);
     }
 
-    void LEDC_Servo::loop() {
+    void PWM_Servo::loop() {
         if (autoOffActive == false) return; // this will only be set to true when writing and autoOffAfterMs != 0
         uint32_t now = millis();
         if ((now - lastWriteMs) > autoOffAfterMs) {
             autoOffActive = false;
-            ledcWrite(ledcChannel, 0); // turn pwm off
+            ledcWrite(pwmChannel, 0); // turn pwm off
         }
     }
 
-    HALOperationResult LEDC_Servo::write(const HALValue& val) {
+    HALOperationResult PWM_Servo::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
@@ -184,7 +184,7 @@ namespace DALHAL {
             if (fVal < minVal || fVal > maxVal) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
-            printf("\r\n LEDC_Servo write fVal:%f\r\n", fVal);
+            printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
             pulseUs = ratioValueTypeToPulse(fVal, true);
         } else if (valueType == ServoValueType::PulseUS) {
             uint32_t uiVal = val.asUInt();
@@ -196,11 +196,11 @@ namespace DALHAL {
             return HALOperationResult::UnsupportedOperation;
         }
         pulseUs += pulseLengthOffset;
-        printf("\r\n LEDC_Servo write pulseUs:%d\r\n", pulseUs);
+        printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
         
         uint32_t duty = (pulseUs * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        //Serial.printf("\r\n LEDC_Servo write duty:%d\r\n", duty);
-        ledcWrite(ledcChannel, duty);
+        //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
+        ledcWrite(pwmChannel, duty);
         if (autoOffAfterMs != 0) {
             autoOffActive = true;
             lastWriteMs = millis();
@@ -212,7 +212,7 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult LEDC_Servo::write(const HALWriteStringRequestValue& val) {
+    HALOperationResult PWM_Servo::write(const HALWriteStringRequestValue& val) {
         uint32_t pulseUs = 0;
         ZeroCopyString zcStr = val.value;
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
@@ -222,7 +222,7 @@ namespace DALHAL {
         if (zcCmd.EqualsIC("ratio")) {
             float fVal = 0.0f;
             zcStr.ConvertTo_float(fVal);
-            //Serial.printf("\r\n LEDC_Servo write fVal:%f\r\n", fVal);
+            //Serial.printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
             pulseUs = pulseUs = ratioValueTypeToPulse(fVal, false);
         } else if (zcCmd.EqualsIC("pulse")) {
             uint32_t uiVal = 0;
@@ -232,10 +232,10 @@ namespace DALHAL {
             return HALOperationResult::UnsupportedCommand;
         }
         
-    // Serial.printf("\r\n LEDC_Servo write pulseUs:%d\r\n", pulseUs);
+    // Serial.printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
         uint32_t duty = (pulseUs * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        //Serial.printf("\r\n LEDC_Servo write duty:%d\r\n", duty);
-        ledcWrite(ledcChannel, duty);
+        //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
+        ledcWrite(pwmChannel, duty);
 
         if (autoOffAfterMs != 0) {
             autoOffActive = true;
@@ -247,12 +247,12 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult LEDC_Servo::read(HALValue& val) {
+    HALOperationResult PWM_Servo::read(HALValue& val) {
         val = lastValue;
         return HALOperationResult::Success;
     }
 
-    String LEDC_Servo::ToString() {
+    String PWM_Servo::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -263,10 +263,10 @@ namespace DALHAL {
         ret += DeviceConstStrings::pin;
         ret += std::to_string(pin).c_str();
         ret += ", ledc_ch:";
-        ret += std::to_string(ledcChannel).c_str();
+        ret += std::to_string(pwmChannel).c_str();
         return ret;
     }
-    uint32_t LEDC_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {
+    uint32_t PWM_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {
         float ratio = (fVal - minVal) / (maxVal - minVal);
         if (clamp) ratio = constrain(ratio, 0.0f, 1.0f);
         return minPulseLength + ratio * (maxPulseLength - minPulseLength);

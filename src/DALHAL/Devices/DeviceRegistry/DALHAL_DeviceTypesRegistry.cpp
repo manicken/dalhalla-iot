@@ -40,7 +40,7 @@
 #include <DALHAL/Devices/GeneralInputs/DigitalInput/DALHAL_DigitalInput.h>
 
 #include <DALHAL/Devices/GeneralOutputs/DigitalOutput/DALHAL_DigitalOutput.h>
-#include <DALHAL/Devices/GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h>
+//#include <DALHAL/Devices/GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h> OBSOLETE TO BE REMOVED
 #include <DALHAL/Devices/GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h>
 
 #include <DALHAL/Devices/I2C/DALHAL_I2C_BUS.h>
@@ -63,7 +63,7 @@
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
 
 #include <DALHAL/Devices/Actuators/Actuator/DALHAL_Actuator.h>
-#include <DALHAL/Devices/Actuators/LEDC_Servo/DALHAL_LEDC_Servo.h>
+#include <DALHAL/Devices/Actuators/PWM_Servo/DALHAL_PWM_Servo.h>
 #include <DALHAL/Devices/Actuators/LatchingRelay/DALHAL_LatchingRelay.h>
 
 #include <DALHAL/Devices/API/REST_Value/DALHAL_REST_Value.h>
@@ -89,8 +89,8 @@ namespace DALHAL {
 #if defined(ESP32) || defined(_WIN32)
         {"ADC", AnalogInput::RegistryDefine},
 #endif
-        {"PWM_AW", PWMAnalogWrite::RegistryDefine},
-        {"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine},
+        //{"PWM_AW", PWMAnalogWrite::RegistryDefine}, OBSOLETE TO BE REMOVED
+        //{"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine}, OBSOLETE TO BE REMOVED
 
         /** ---------------- OneWire / Sensors ---------------- */
 #if defined(DALHAL_DEVICE_ONEWIRE_TEMPERATURE_SENSORS)
@@ -126,7 +126,7 @@ namespace DALHAL {
         {"ACTUATOR", Actuator::RegistryDefine},
         {"RELAY_LATCHING", LatchingRelay::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
-        {"LEDC_SERVO", LEDC_Servo::RegistryDefine},
+        {"PWM_SERVO", PWM_Servo::RegistryDefine}, // was LEDC_SERVO
 #endif
 
         /** ---------------- Inputs ---------------- */
