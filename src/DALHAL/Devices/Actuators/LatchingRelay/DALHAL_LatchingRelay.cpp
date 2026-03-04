@@ -106,7 +106,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    LatchingRelay::LatchingRelay(const JsonVariant &jsonObj, const char* type) : Device(type), state(State::Idle) {
+    LatchingRelay::LatchingRelay(const JsonVariant &jsonObj, const char* type) : LatchingRelay_DeviceBase(type), state(State::Idle) {
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
@@ -392,11 +392,19 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             }
             if (state == State::DrivingReset) {
                 isr_data.location = Location::Reset;
+#if HAS_REACTIVE_CUSTOM(RELAY_LATCHING)
+                triggerReset();
+#endif
             } else if (state == State::DrivingSet) {
                 isr_data.location = Location::Set;
+#if HAS_REACTIVE_CUSTOM(RELAY_LATCHING)
+                triggerSet();
+#endif
             }
             state = State::Idle;
-            
+#if HAS_REACTIVE_STATE_CHANGE(RELAY_LATCHING)
+            triggerStateChange();
+#endif
             return;
         }
         
@@ -414,17 +422,26 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     HALOperationResult LatchingRelay::exec_drive_to_reset(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
         static_cast<LatchingRelay*>(device)->driveToReset(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
     HALOperationResult LatchingRelay::exec_drive_to_set(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
         static_cast<LatchingRelay*>(device)->driveToSet(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
     HALOperationResult LatchingRelay::exec_stop(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
+#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -432,6 +449,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         auto* d = static_cast<LatchingRelay*>(device);
         d->driveToReset();
         d->stopDrive();
+#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -453,19 +473,24 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     HALOperationResult LatchingRelay::exec(const ZeroCopyString& cmd) {
         if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_CLOSE || cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MIN) {
             driveToReset();
-            return HALOperationResult::Success;
+
         } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_OPEN || cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
             driveToSet();
-            return HALOperationResult::Success;
+
         } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_STOP) {
             stopDrive();
-            return HALOperationResult::Success;
+
         } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET) {
             resetMode();
             stopDrive();
-            return HALOperationResult::Success;
+            
+        } else {
+            return HALOperationResult::UnsupportedCommand;
         }
-        return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
+        triggerExec();
+#endif
+        return HALOperationResult::Success;
     }
 
 
@@ -490,7 +515,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         } else {
             driveToSet();
         }
-
+#if HAS_REACTIVE_WRITE(ACTUATOR)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -542,9 +569,6 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_intr_disable(pinFeedbackSet);
         }
     }
-
-    
-
 
     void LatchingRelay::stopDrive() {
         if (state != State::TimeoutFault)
@@ -601,8 +625,6 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_intr_enable(pinFeedbackSet);
         }
     }
-
-    
 
     bool LatchingRelay::resetActive() const {
         // 1) Physical pin says active

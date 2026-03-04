@@ -62,14 +62,14 @@
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
 #include "DALHAL_Actuator_Reactive.h"
-using ActuatorDeviceBase = DALHAL::Actuator_Reactive;
+using Actuator_DeviceBase = DALHAL::Actuator_Reactive;
 #else
-using ActuatorDeviceBase = DALHAL::Device;
+using Actuator_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
 
-    class Actuator : public ActuatorDeviceBase {
+    class Actuator : public Actuator_DeviceBase {
     public:
         static void IRAM_ATTR endstop_isr(void* arg);
 

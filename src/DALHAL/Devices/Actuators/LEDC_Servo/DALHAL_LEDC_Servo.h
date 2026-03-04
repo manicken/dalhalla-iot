@@ -35,9 +35,18 @@
 #define DALHAL_LEDC_SERVO_RESOLUTION_BITS 12
 #define DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL ((1U << (DALHAL_LEDC_SERVO_RESOLUTION_BITS))-1u)
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(LEDC_SERVO)
+#include "DALHAL_LEDC_Servo_Reactive.h"
+using LEDC_Servo_DeviceBase = DALHAL::LEDC_Servo_Reactive;
+#else
+using LEDC_Servo_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-class LEDC_Servo : public Device {
+class LEDC_Servo : public LEDC_Servo_DeviceBase {
 private:
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.

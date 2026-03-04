@@ -109,7 +109,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : ActuatorDeviceBase(type), state(State::Idle) {
+    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : Actuator_DeviceBase(type), state(State::Idle) {
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);

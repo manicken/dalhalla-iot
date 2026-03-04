@@ -41,46 +41,25 @@
 #include <HTTPClient.h>
 #endif
 
-//#include "../../../Core/Reactive/DALHAL_SimpleEventDevice.h"
+#include "DALHAL_ThingSpeakField.h"
 
 #define DALHAL_THINGSPEAK_MAX_FIELDS 8
 #define DALHAL_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS 60*1000
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(THINGSPEAK)
+#include "DALHAL_ThingSpeak_Reactive.h"
+using ThingSpeak_DeviceBase = DALHAL::ThingSpeak_Reactive;
+#else
+using ThingSpeak_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    struct ThingSpeakField {
-        int index;
-        //Device::DeviceEvent* deviceEvent;
-        CachedDeviceRead* cdr;
-        bool dataReady = false;
-        bool sendAllInSync = false;
+    
 
-        ThingSpeakField();
-        ~ThingSpeakField();
-
-        void Set(int index, const char* uidPathAndFuncName_cStr, bool _sendAllInSync = false);
-        
-        void SetEventHandler(ZeroCopyString zcStrUidPathAndFuncName);
-
-        inline bool DataReady() {
-            return true;
-            if (sendAllInSync) {
-                if (dataReady) return true;
-                //else if (deviceEvent == nullptr) { dataReady = true; }
-                //else if (deviceEvent->CheckForEvent()) {  dataReady = true; }
-                return false;
-            } else {
-                //if (deviceEvent == nullptr) return true; // allways ready 
-                //return deviceEvent->CheckForEvent();
-                return false;
-            }
-        }
-        inline void ClearDataReady() {
-            dataReady = false;
-        }
-    };
-
-    class ThingSpeak : public Device {
+    class ThingSpeak : public ThingSpeak_DeviceBase {
     private:
         HTTPClient http;
         WiFiClient wifiClient;

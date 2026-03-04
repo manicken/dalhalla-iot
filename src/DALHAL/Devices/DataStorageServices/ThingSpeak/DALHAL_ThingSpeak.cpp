@@ -37,31 +37,9 @@
 
 namespace DALHAL {
 
-    ThingSpeakField::ThingSpeakField() :
-        index(0), 
-        cdr(nullptr) {}
-
-    ThingSpeakField::~ThingSpeakField() {
-        //if (deviceEvent != nullptr) {
-        //    delete deviceEvent;
-        //}
-    }
-
-    void ThingSpeakField::Set(int fieldIndex, const char* uidPathAndFuncName_cStr, bool _sendAllInSync) {
-        this->sendAllInSync = _sendAllInSync;
-        this->index = fieldIndex;
-        cdr = new CachedDeviceRead();
-        ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
-        if (cdr->Set(zcStrUidPathAndFuncName)) {
-            //DeviceManager::GetDeviceEvent(zcStrUidPathAndFuncName, &deviceEvent);
-        }
-        
-    }
-
-
     const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
     
-    ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : ThingSpeak_DeviceBase(type) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
 
@@ -166,6 +144,9 @@ namespace DALHAL {
 
         http.end();
         delay(0);
+#if HAS_REACTIVE_EXEC(THINGSPEAK)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 

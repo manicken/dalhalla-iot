@@ -55,9 +55,19 @@
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_STOP   "stop"
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET  "reset"
 
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(ACTUATOR)
+#include "DALHAL_LatchingRelay_Reactive.h"
+using LatchingRelay_DeviceBase = DALHAL::LatchingRelay_Reactive;
+#else
+using LatchingRelay_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-class LatchingRelay : public Device {
+class LatchingRelay : public LatchingRelay_DeviceBase {
 public:
     static void IRAM_ATTR endstop_isr(void* arg);
     
