@@ -50,8 +50,7 @@ ButtonInput::~ButtonInput() {
 }
 
 // Constructor
-ButtonInput::ButtonInput(const JsonVariant &jsonObj, const char* type)
-    : Device(type)
+ButtonInput::ButtonInput(const JsonVariant &jsonObj, const char* type) : ButtonInput_DeviceBase(type)
 {
     pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
     uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
@@ -91,37 +90,39 @@ void ButtonInput::loop() {
         lastChangeMs = now;
     }
 
-    // Debounce and detect stable change
+    // If stable long enough and state changed
     if ((now - lastChangeMs) >= debounceMs && raw != stableState) {
         stableState = raw;
 
         bool pressed = activeLow ? !stableState : stableState;
 
         if (pressed) {
-            // TEMP toggle
-
-            //toggleState = !toggleState;
-            
-            HALValue newVal;
-            // Optional: call external device/action
+#if HAS_REACTIVE_CUSTOM(BUTTON_INPUT)
+            triggerPress();
+#endif
+            // Optional: call external device/action directly
             if (toggleTarget != nullptr) {
                 HALValue currValue;
                 HALOperationResult res = toggleTarget->ReadSimple(currValue);
                 if (res != HALOperationResult::Success) {
-                    Serial.printf("[ButtonInput] %s pressed, toggleState could not execute\r\n", decodeUID(uid).c_str());
-                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute");
+                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
                     return;
                 } 
-                newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
+                HALValue newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
                 toggleTarget->WriteSimple(newVal);
-                Serial.printf("[ButtonInput] %s pressed, toggleState=%d\r\n", decodeUID(uid).c_str(), newVal.asUInt());
                 WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
             } else {
-                Serial.printf("[ButtonInput] %s pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
-                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n");
+                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
             }
 
+        } else {
+#if HAS_REACTIVE_CUSTOM(BUTTON_INPUT)
+            triggerRelease();
+#endif
         }
+#if HAS_REACTIVE_STATE_CHANGE(BUTTON_INPUT)
+        triggerStateChange();
+#endif
     }
 }
 

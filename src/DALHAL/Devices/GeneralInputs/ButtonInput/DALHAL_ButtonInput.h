@@ -31,10 +31,18 @@
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(BUTTON_INPUT)
+#include "DALHAL_ButtonInput_Reactive.h"
+using ButtonInput_DeviceBase = DALHAL::ButtonInput_Reactive;
+#else
+using ButtonInput_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-class ButtonInput : public Device {
+class ButtonInput : public ButtonInput_DeviceBase {
 public:
     // Factory and JSON validation
     static Device* Create(const JsonVariant &jsonObj, const char* type);
