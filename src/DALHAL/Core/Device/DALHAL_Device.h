@@ -35,7 +35,7 @@
 #include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/Core/Types/DALHAL_Operations.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include <DALHAL/Core/Reactive/DALHAL_Reactive.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 
 namespace DALHAL {
     

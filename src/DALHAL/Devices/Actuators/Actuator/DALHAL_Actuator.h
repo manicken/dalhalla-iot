@@ -58,6 +58,7 @@
 #define DALHAL_DEVICE_ACTUATOR_CMD_STOP   "stop"
 #define DALHAL_DEVICE_ACTUATOR_CMD_RESET  "reset"
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
 #include "DALHAL_Actuator_Reactive.h"

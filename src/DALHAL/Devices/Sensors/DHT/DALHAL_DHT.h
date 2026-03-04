@@ -32,6 +32,7 @@
 #include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(DHT)
 #include "DALHAL_DHT_Reactive.h"

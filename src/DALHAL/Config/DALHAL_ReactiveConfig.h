@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <DALHAL/Config/DALHAL_BuildFlags.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+
 #define DALHAL_REACTIVE_FEATURE_NONE           0x00000000
 
 #define DALHAL_REACTIVE_FEATURE_BEGIN          0x00000001
@@ -90,7 +93,7 @@
 
 
 // Actuators
-#define DALHAL_REACTIVE_CFG_ACTUATOR              (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE | DALHAL_REACTIVE_FEATURE_CUSTOM)
+#define DALHAL_REACTIVE_CFG_ACTUATOR              (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE | DALHAL_REACTIVE_FEATURE_CUSTOM)  /* implemented */
 #define DALHAL_REACTIVE_CFG_RELAY_LATCHING        (DALHAL_REACTIVE_FEATURE_WRITE | DALHAL_REACTIVE_FEATURE_STATE_CHANGE)
 #define DALHAL_REACTIVE_CFG_LEDC_SERVO            (DALHAL_REACTIVE_FEATURE_WRITE)
 // API
@@ -138,8 +141,38 @@
 #define HAS_REACTIVE(name, feature) (DALHAL_REACTIVE_CFG_##name & DALHAL_REACTIVE_FEATURE_##feature)
 #define USING_REACTIVE(name) (DALHAL_REACTIVE_CFG_##name)
 
+/**
+ * DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
+ *
+ * When undefined, reactive device event tables use a type-safe template-based approach:
+ *   - Each EventDescriptor stores a pointer-to-member (uint32_t CLASS_NAME::* counter)
+ *     which provides full compile-time type safety and IDE support.
+ *   - The compiler ensures that the event table matches the device class's member counters.
+ *   - Recommended for development or small/medium projects where safety and clarity are important.
+ *
+ * When defined, a generic EventDescriptor table is used:
+ *   - Counters are stored as offsets or void* pointers, allowing one table type for all devices.
+ *   - Reduces template instantiations and binary bloat for large projects.
+ *   - Some compile-time type checking is lost, but runtime safety is maintained via the reactive system macros.
+ *
+ * Choose based on whether you prioritize compile-time type safety or minimal template overhead.
+ */
 
+
+#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
+#define DALHAL_DECLARE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME) static const EventDescriptorT<CLASS_NAME> TABLE_NAME[];
+#define DALHAL_DEFINE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME)  const EventDescriptorT<CLASS_NAME> CLASS_NAME::TABLE_NAME[]
+#else // future implementation for smaller but typeless builds
+#define DALHAL_DECLARE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME) static const EventDescriptor TABLE_NAME[];
+#define DALHAL_DEFINE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME)  const EventDescriptor CLASS_NAME::TABLE_NAME[]
+#endif
+
+#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
 #define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, &CLASS_NAME::reactiveEventCounter##FEATURE_VAR_NAME}
+#else
+#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, offsetof(CLASS_NAME, reactiveEventCounter##FEATURE_VAR_NAME)}
+#endif
+
 #define DALHAL_DECLARE_REACTIVE_FEATURE(FEATURE_NAME) \
 private: \
     uint32_t reactiveEventCounter##FEATURE_NAME = 0; \
@@ -176,7 +209,11 @@ public: \
 #define REACTIVE_ENTRY_EXEC_ERROR(CLASS_NAME)     DALHAL_REACTIVE_ENTRY(CLASS_NAME, ExecError)
 
 // Terminator for all tables
+#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
 #define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, nullptr }
+#else
+#define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, 0 }
+#endif
 
 #define REACTIVE_DECLARE_FEATURE_BEGIN()          DALHAL_DECLARE_REACTIVE_FEATURE(Begin)
 #define REACTIVE_DECLARE_CYCLE_COMPLETE()         DALHAL_DECLARE_REACTIVE_FEATURE(CycleComplete)

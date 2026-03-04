@@ -23,6 +23,7 @@
 
 #include "DALHAL_DHT_Reactive.h"
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -30,10 +31,10 @@ namespace DALHAL {
     DHT_Reactive::DHT_Reactive(const char* type) : Device(type) {}
 
     HALOperationResult DHT_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
+        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
     }
 
-    const EventDescriptorT<DHT_Reactive> DHT_Reactive::eventTable[] = {
+    DALHAL_DEFINE_REACTIVE_TABLE(DHT_Reactive, eventTable) = {
 #if HAS_REACTIVE_BEGIN(DHT)
         REACTIVE_ENTRY_BEGIN(DHT_Reactive),
 #endif

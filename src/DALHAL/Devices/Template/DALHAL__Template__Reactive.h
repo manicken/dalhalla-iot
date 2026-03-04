@@ -25,6 +25,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Reactive/DALHAL_Reactive.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -76,7 +77,7 @@ namespace DALHAL {
         REACTIVE_DECLARE_FEATURE_EXEC_ERROR();
 #endif
     public:
-        static const EventDescriptorT<_Template__Reactive> eventTable[];
+        DALHAL_DECLARE_REACTIVE_TABLE(_Template__Reactive, eventTable);
 
         _Template__Reactive(const char* type);
 

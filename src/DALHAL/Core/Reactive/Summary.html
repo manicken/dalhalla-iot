@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 24.8.7.2 (Windows)"/>
+	<meta name="author" content="Jannik Svenson"/>
+	<meta name="created" content="2026-03-04T12:59:25"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 21cm 29.7cm; margin: 2cm }
+		p { color: #000000; orphans: 0; widows: 0; margin-bottom: 0.21cm; direction: ltr; background: transparent }
+		p.western { font-family: "Times New Roman", serif; font-size: 12pt; so-language: sv-SE }
+		p.cjk { font-family: "SimSun"; font-size: 12pt; so-language: zh-CN }
+		p.ctl { font-family: "Lucida Sans", sans-serif; font-size: 12pt; so-language: hi-IN }
+		h2 { color: #000000; orphans: 0; widows: 0; margin-bottom: 0.21cm; direction: ltr; background: transparent; page-break-after: avoid }
+		h2.western { font-family: "Times New Roman", serif; font-size: 18pt; so-language: sv-SE; font-weight: bold }
+		h2.cjk { font-family: "SimSun"; font-size: 18pt; so-language: zh-CN; font-weight: bold }
+		h2.ctl { font-family: "Lucida Sans", sans-serif; font-size: 18pt; so-language: hi-IN; font-weight: bold }
+		h3 { color: #000000; orphans: 0; widows: 0; margin-bottom: 0.21cm; direction: ltr; background: transparent; page-break-after: avoid }
+		h3.western { font-family: "Times New Roman", serif; font-size: 14pt; so-language: sv-SE; font-weight: bold }
+		h3.cjk { font-family: "SimSun"; font-size: 14pt; so-language: zh-CN; font-weight: bold }
+		h3.ctl { font-family: "Lucida Sans", sans-serif; font-size: 14pt; so-language: hi-IN; font-weight: bold }
+		h4 { color: #000000; orphans: 0; widows: 0; margin-bottom: 0.21cm; direction: ltr; background: transparent; page-break-after: avoid }
+		h4.western { font-family: "Times New Roman", serif; font-size: 12pt; so-language: sv-SE; font-weight: bold }
+		h4.cjk { font-family: "SimSun"; font-size: 12pt; so-language: zh-CN; font-weight: bold }
+		h4.ctl { font-family: "Lucida Sans", sans-serif; font-size: 12pt; so-language: hi-IN; font-weight: bold }
+		pre { color: #000000; orphans: 0; widows: 0; direction: ltr; background: transparent }
+		pre.western { font-family: "Courier New", monospace; font-size: 10pt; so-language: sv-SE }
+		pre.cjk { font-family: "NSimSun", monospace; font-size: 10pt; so-language: zh-CN }
+		pre.ctl { font-family: "Courier New", monospace; font-size: 10pt; so-language: hi-IN }
+		strong { font-weight: bold }
+		code.western { font-family: "Courier New", monospace }
+		code.cjk { font-family: "NSimSun", monospace }
+		code.ctl { font-family: "Courier New", monospace }
+	</style>
+</head>
+<body lang="en-AU" text="#000000" link="#000080" vlink="#800000" dir="ltr"><h2 lang="sv-SE" class="western">
+DALHAL Reactive Event System – Overview</h2>
+<p lang="sv-SE" class="western">The <strong>Reactive Event System</strong>
+in DALHAL provides a unified, type-safe, and flexible mechanism for
+devices to emit and subscribe to events without passing arbitrary
+values. It is designed to work efficiently with microcontroller
+memory and runtime constraints while supporting multiple devices,
+multiple event types, and multiple consumers.</p>
+<h3 lang="sv-SE" class="western">Goals</h3>
+<ol>
+	<li><p lang="sv-SE" class="western"><strong>Automatic event
+	emission</strong>: Devices automatically notify subscribers when
+	specific conditions occur (e.g., value change, state change,
+	write/read success, timeout, or custom events).</p></li>
+	<li><p lang="sv-SE" class="western"><strong>Counter-based
+	architecture</strong>: Each reactive event maintains a counter
+	(<code class="western">uint32_t</code>) representing the number of
+	times the event has occurred. Subscribers track the last seen value
+	to detect changes.</p></li>
+	<li><p lang="sv-SE" class="western"><strong>Type safety and
+	flexibility</strong>: Events are optionally implemented using a
+	typesafe template-based table (<code class="western">EventDescriptorT&lt;TDevice&gt;</code>)
+	or a generic offset-based table (<code class="western">EventDescriptor</code>).</p></li>
+	<li><p lang="sv-SE" class="western"><strong>Minimal runtime
+	overhead</strong>: All events are resolved via compile-time tables
+	and macros. No runtime string parsing or dynamic registration is
+	required.</p></li>
+	<li><p lang="sv-SE" class="western"><strong>Ease of use for devices</strong>:
+	Devices only need to declare which events they support via macros;
+	the system generates tables, counters, and trigger functions
+	automatically.</p></li>
+</ol>
+<hr/>
+
+<h3 lang="sv-SE" class="western">Core Concepts</h3>
+<h4 lang="sv-SE" class="western">1. Event Counters</h4>
+<ul>
+	<li><p lang="sv-SE" class="western">Each device maintains counters
+	for the events it supports, e.g., <code class="western">valueChange</code>,
+	<code class="western">stateChange</code>, <code class="western">write</code>,
+	<code class="western">read</code>, <code class="western">exec</code>,
+	<code class="western">timeout</code>, <code class="western">custom</code>.</p></li>
+	<li><p lang="sv-SE" class="western">Counters are incremented via
+	trigger functions generated by macros:</p></li>
+</ul>
+<div id="Section1" dir="ltr"><pre lang="sv-SE" class="western">inline void triggerValueChange() { reactiveEventCounter_ValueChange++; }</pre>
+</div>
+<div id="Section2" dir="ltr"><h4 lang="sv-SE" class="western">2.
+	Event Tables</h4>
+	<ul>
+		<li><p lang="sv-SE" class="western">Each device declares a static
+		event table listing the supported events:</p></li>
+	</ul>
+</div>
+<div id="Section3" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer"></a>#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
+<span lang="sv-SE">static const EventDescriptorT&lt;MyDevice&gt; eventTable[];</span>
+<span lang="sv-SE">#else</span>
+<span lang="sv-SE">static const EventDescriptor eventTable[];</span>
+<span lang="sv-SE">#endif</span></pre>
+</div>
+<div id="Section4" dir="ltr">
+	<ul><li><p lang="sv-SE" class="western">Entries map the <strong>event
+		name</strong> to either a <strong>member pointer</strong> (<code class="western">uint32_t
+		T::*</code>) in typesafe mode, or a <strong>member offset</strong>
+		(<code class="western">size_t</code>) in generic mode.</p></li>
+		<li><p lang="sv-SE" class="western">Tables are terminated with a
+		sentinel entry (<code class="western">nullptr</code>), eliminating
+		the need to store table size.</p></li>
+	</ul>
+	<h4 lang="sv-SE" class="western">3. Event Retrieval</h4>
+	<ul>
+		<li><p lang="sv-SE" class="western"><code class="western">GetSimpleReactiveEventImpl</code>:
+		Core function to fetch a <code class="western">ReactiveEvent</code>
+		by name.</p>
+		<ul>
+			<li><p lang="sv-SE" class="western">Typesafe mode: Uses <code class="western">uint32_t
+			T::*</code> member pointer.</p></li>
+			<li><p lang="sv-SE" class="western">Generic mode: Uses <code class="western">Device*</code>
+			pointer plus offset (<code class="western">offsetof</code>) to
+			locate the counter.</p></li>
+		</ul>
+		<li><p lang="sv-SE" class="western">Returns a <code class="western">ReactiveEvent</code>
+		object, which wraps:</p>
+		<ul>
+			<li><p lang="sv-SE" class="western"><code class="western">checkFn</code>:
+			Function to check if the event has occurred.</p></li>
+			<li><p lang="sv-SE" class="western"><code class="western">context</code>:
+			Pointer to the counter or context struct.</p></li>
+			<li><p lang="sv-SE" class="western"><code class="western">deleter</code>:
+			Function to clean up the context.</p></li>
+		</ul>
+	</ul>
+	<h4 lang="sv-SE" class="western">4. Reactive HAL Values</h4>
+	<ul>
+		<li><p lang="sv-SE" class="western"><code class="western">ReactiveHALValue</code>
+		wraps a normal <code class="western">HALValue</code> but supports
+		<strong>set</strong> and <strong>get callbacks</strong>, allowing
+		automatic triggering of reactive events when the value changes or
+		is read:</p></li>
+	</ul>
+</div>
+<div id="Section5" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer1"></a>value.setCallbacks(ValueSetCallback, ValueGetCallback);</pre>
+</div>
+<div id="Section6" dir="ltr">
+	<ul><li><p lang="sv-SE" class="western">This allows the system to
+		react immediately when device values are updated or read.</p></li>
+	</ul>
+	<h4 lang="sv-SE" class="western">5. Event Features</h4>
+	<p lang="sv-SE" class="western">The system defines granular event
+	types as bitmask flags:</p>
+</div>
+<div id="Section7" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer2"></a>#define DALHAL_REACTIVE_FEATURE_VALUE_CHANGE   0x00000001
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_STATE_CHANGE   0x00000002</span>
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_WRITE          0x00000008</span>
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_READ           0x00000004</span>
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_EXEC           0x00000010</span>
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_TIMEOUT        0x00010000</span>
+<span lang="sv-SE">#define DALHAL_REACTIVE_FEATURE_CUSTOM         0x80000000</span></pre>
+</div>
+<div id="Section8" dir="ltr">
+	<ul><li><p lang="sv-SE" class="western">Devices declare which
+		features they support via <code class="western">DALHAL_REACTIVE_CFG_&lt;DEVICE&gt;</code>
+		flags.</p></li>
+		<li><p lang="sv-SE" class="western">Custom events are supported
+		using <code class="western">DALHAL_REACTIVE_FEATURE_CUSTOM</code>.</p></li>
+	</ul>
+	<h4 lang="sv-SE" class="western">6. Macros</h4>
+	<ul>
+		<li><p lang="sv-SE" class="western">Macros provide <strong>consistent
+		naming</strong> and simplify reactive setup:</p></li>
+	</ul>
+</div>
+<div id="Section9" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer3"></a>DECLARE_REACTIVE_FEATURE(ValueChange)
+<span lang="sv-SE">REACTIVE_ENTRY_VALUE_CHANGE(MyDevice)</span>
+<span lang="sv-SE">HAS_REACTIVE(MyDevice, VALUE_CHANGE)</span>
+<span lang="sv-SE">triggerValueChange()</span></pre>
+</div>
+<div id="Section10" dir="ltr">
+	<ul><li><p lang="sv-SE" class="western">This ensures type-safe and
+		uniform implementation across all devices.</p></li>
+	</ul>
+	<hr/>
+
+	<h3 lang="sv-SE" class="western">Design Decisions</h3>
+	<ol>
+		<li><p lang="sv-SE" class="western"><strong>Counters instead of
+		values</strong>: Events do not carry arguments — only the
+		occurrence count is tracked. Consumers can retrieve the last seen
+		value from the device.</p></li>
+		<li><p lang="sv-SE" class="western"><strong>Optional typesafe
+		tables</strong>: Using <code class="western">uint32_t T::*</code>
+		ensures full compile-time type checking but is optional. Generic
+		offset-based tables allow simpler implementation and reduce
+		template instantiations.</p></li>
+		<li><p lang="sv-SE" class="western"><strong>Uniform event object</strong>:
+		<code class="western">ReactiveEvent</code> always stores a <code class="western">checkFn</code>
+		and <code class="western">Context</code> pointer, and optionally a
+		deleter. Even if a simple context would suffice, keeping this
+		layout allows uniform handling for custom events.</p></li>
+		<li><p lang="sv-SE" class="western"><strong>Callbacks on set/get</strong>:
+		Reactive HAL values can automatically trigger events on
+		modification or access.</p></li>
+		<li><p lang="sv-SE" class="western"><strong>Single-source of truth</strong>:
+		The event table and macros define all supported events; no separate
+		arrays or redundant tables are required, avoiding mismatches.</p></li>
+		<li><p lang="sv-SE" class="western"><strong>Extensible</strong>:
+		Future event types or device-specific events can be added by
+		defining new flags, macros, and context types.</p></li>
+	</ol>
+	<hr/>
+
+	<h3 lang="sv-SE" class="western">Usage Pattern</h3>
+	<ol>
+		<li><p lang="sv-SE" class="western">Declare reactive features in
+		the device header:</p></li>
+	</ol>
+</div>
+<div id="Section11" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer4"></a>#if HAS_REACTIVE(MY_DEVICE, VALUE_CHANGE)
+<span lang="sv-SE">DECLARE_REACTIVE_FEATURE(ValueChange)</span>
+<span lang="sv-SE">#endif</span></pre>
+</div>
+<div id="Section12" dir="ltr">
+	<ol start="2"><li><p lang="sv-SE" class="western">Define event table
+		in the reactive <code class="western">.cpp</code> file:</p></li>
+	</ol>
+</div>
+<div id="Section13" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer5"></a>const EventDescriptorT&lt;MyDevice&gt; MyDevice::eventTable[] = {
+    <span lang="sv-SE">REACTIVE_ENTRY_VALUE_CHANGE(MyDevice),</span>
+    <span lang="sv-SE">REACTIVE_ENTRY_STATE_CHANGE(MyDevice),</span>
+    <span lang="sv-SE">{nullptr, nullptr}  // terminator</span>
+<span lang="sv-SE">};</span></pre>
+</div>
+<div id="Section14" dir="ltr">
+	<ol start="3"><li><p lang="sv-SE" class="western">Use triggers
+		inside device methods:</p></li>
+	</ol>
+</div>
+<div id="Section15" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer6"></a>value = 42;
+<span lang="sv-SE">triggerValueChange();</span></pre>
+</div>
+<div id="Section16" dir="ltr">
+	<ol start="4"><li><p lang="sv-SE" class="western">Consumers retrieve
+		events by name:</p></li>
+	</ol>
+</div>
+<div id="Section17" dir="ltr"><pre lang="sv-SE" class="western"><a name="code-block-viewer7"></a>ReactiveEvent* event;
+<span lang="sv-SE">device-&gt;Get_ReactiveEvent(&quot;value_change&quot;, &amp;event);</span></pre>
+</div>
+<div id="Section18" dir="ltr">
+	<hr/>
+
+	<p lang="sv-SE" class="western">✅ <strong>Summary</strong>:</p>
+	<p lang="sv-SE" class="western">The DALHAL Reactive Event System
+	provides a <strong>flexible, macro-driven, type-safe (optional), and
+	memory-efficient</strong> way to implement event-driven behavior for
+	all device types. By relying on counters, compile-time tables, and
+	macros, it avoids runtime overhead while remaining extensible and
+	easy to maintain.</p>
+	<hr/>
+
+	<p lang="sv-SE" class="western"><br/>
+<br/>
+
+	</p>
+</div>
+</body>
+</html>

@@ -23,34 +23,60 @@
 
 #include "DALHAL_Reactive.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
 
-    ReactiveEvent::SimpleContext::SimpleContext(uint32_t& _current) : current(_current) { }
+#ifdef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
+    std::string Reactive::GetDeviceEventNames(const EventDescriptor* table)
+    {
+        std::string names;
+        names += '[';
+        bool first = true;
+        for (size_t i = 0; table[i].name != nullptr; ++i)
+        {
+            if (first == false) {
+                names += ',';
+            } else {
+                first = false;
+            }
+            names += '"' + table[i].name + '"';
+        }
+        names += ']';
+        return names;
+    }
+    HALOperationResult Reactive::GetSimpleReactiveEventImpl(DALHAL::Device* device, ZeroCopyString& name, ReactiveEvent** out, const EventDescriptor* table)
+    {
+       /* for (size_t i = 0; table[i].name != nullptr; ++i)
+        {
+            if (name.EqualsIC(table[i].name) == false) {
+                continue;
+            }
+            if (out) {
+                uint32_t* counterPtr = reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(device) + table[i].offset);
 
-    bool ReactiveEventDefault(void* context) {
-        GlobalLogger.Error(F("ReactiveEventDefault triggered"));
-        return false;
-    }
-    ReactiveEvent::ReactiveEvent(CheckFn _checkFn, Deleter _deleteFn, void* context) : checkFn(checkFn), deleteFn(_deleteFn), context(context) {
-        if (_checkFn == nullptr || _deleteFn == nullptr || context == nullptr ) {
-            this->checkFn = ReactiveEventDefault;
-            GlobalLogger.Error(F("ReactiveEvent using ReactiveEventDefault"));
+                *out = new ReactiveEvent(
+                    ReactiveEvent::SimpleReactiveEventCheck,
+                    DeleteAs<ReactiveEvent::SimpleContext>,
+                    new ReactiveEvent::SimpleContext(*counterPtr)
+                );
+            }
+            return HALOperationResult::Success;
+        }*/
+        for (const EventDescriptor* entry = table; entry->name != nullptr; ++entry)
+        {
+            if (name.EqualsIC(entry->name) == false) {
+                continue;
+            }
+            if (out) {
+                //uint32_t* counterPtr = &(device->*(table[i].counter));
+                //*out = new ReactiveEvent(*counterPtr);
+                *out = new ReactiveEvent(*(reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(device) + entry->offset)));
+            }
+            return HALOperationResult::Success;
         }
+        return HALOperationResult::ReactiveEventByNameNotFound;
     }
-    ReactiveEvent::~ReactiveEvent() {
-        if (deleteFn && context) {
-            deleteFn(context);
-        }
-    }
-
-    bool ReactiveEvent::SimpleReactiveEventCheck(void* context) {
-        ReactiveEvent::SimpleContext* ctx = static_cast<ReactiveEvent::SimpleContext*>(context);
-        if (ctx->current != ctx->lastSeen) {
-            ctx->lastSeen = ctx->current; // update to current
-            return true;
-        }
-        return false;
-    }
+#endif
 
 }

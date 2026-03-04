@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_Actuator_Reactive.h"
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -29,10 +30,9 @@ namespace DALHAL {
     Actuator_Reactive::Actuator_Reactive(const char* type) : Device(type) {}
 
     HALOperationResult Actuator_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
+        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
     }
-
-    const EventDescriptorT<Actuator_Reactive> Actuator_Reactive::eventTable[] = {
+    DALHAL_DEFINE_REACTIVE_TABLE(Actuator_Reactive, eventTable) = {
 #if HAS_REACTIVE_CUSTOM(ACTUATOR)
         DALHAL_REACTIVE_ENTRY(Actuator_Reactive, ReachedMin),
         DALHAL_REACTIVE_ENTRY(Actuator_Reactive, ReachedMax),

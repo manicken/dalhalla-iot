@@ -29,10 +29,10 @@ namespace DALHAL {
     _Template__Reactive::_Template__Reactive(const char* type) : Device(type) {}
 
     HALOperationResult _Template__Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
+        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
     }
+    DALHAL_DEFINE_REACTIVE_TABLE(_Template__Reactive, eventTable) = {
 
-    const EventDescriptorT<_Template__Reactive> _Template__Reactive::eventTable[] = {
 #if HAS_REACTIVE_CUSTOM(_TEMPLATE_)
         DALHAL_REACTIVE_ENTRY(_Template__Reactive, Custom1),
         DALHAL_REACTIVE_ENTRY(_Template__Reactive, Custom2),

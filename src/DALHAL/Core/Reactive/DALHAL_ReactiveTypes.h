@@ -1,0 +1,72 @@
+/*
+  Dalhalla IoT — JSON-configured HAL/DAL + Script Engine
+  HAL = Hardware Abstraction Layer
+  DAL = Device Abstraction Layer
+
+  Provides IoT firmware building blocks for home automation and smart sensors.
+
+  Copyright (C) 2025 Jannik Svensson
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or 
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <cstdint>
+#include <cstddef>
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
+#include <DALHAL/Config/DALHAL_BuildFlags.h>
+
+namespace  DALHAL
+{
+    /** used by consumers */
+    class ReactiveEvent {
+    public:
+        using CheckFn  = bool (*)(void*);
+        struct SimpleContext {
+            uint32_t lastSeen;
+            volatile uint32_t& current;
+            SimpleContext(uint32_t& current);
+        };
+    private:
+        CheckFn checkFn;
+        Deleter deleteFn;
+        void* context;
+    public:
+        ReactiveEvent() = delete;
+        ReactiveEvent(ReactiveEvent&) = delete;
+        ReactiveEvent(CheckFn checkFn, Deleter deleteFn, void* context);
+        ReactiveEvent(uint32_t& current);
+
+        static bool SimpleReactiveEventCheck(void* context);
+
+        ~ReactiveEvent();
+
+        inline bool CheckForEvent() {
+            return checkFn(context);
+        }
+    };
+#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
+    template<typename T>
+    struct EventDescriptorT {
+        const char* name;
+        uint32_t T::* counter;
+    };
+#else
+    struct EventDescriptor {
+        const char* name;
+        size_t offset;
+    };
+#endif
+} // namespace  DALHAL
