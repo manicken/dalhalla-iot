@@ -28,7 +28,34 @@
 namespace DALHAL {
 
 #ifdef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
-    std::string Reactive::GetDeviceEventNames(const EventDescriptor* table)
+
+    bool CheckOrGetDeviceEvents( 
+            const EventDescriptor* table,
+            const char* checkName = nullptr, // optional: check if a name exists     
+            const char** outNames = nullptr, // caller-provided array
+            size_t maxNames                  // size of the array
+        )
+    {
+        if (checkName) {
+                // Mode: check if name exists
+                for (size_t i = 0; table[i].name != nullptr; ++i) {
+                    if (strcmp(table[i].name, checkName) == 0) {
+                        return true;
+                    }
+                }
+                return false;
+            } else if (outNames && maxNames > 0) {
+                // Mode: retrieve names into buffer
+                size_t idx = 0;
+                for (size_t i = 0; table[i].name != nullptr && idx < maxNames; ++i) {
+                    outNames[idx++] = table[i].name;
+                }
+                if (idx < maxNames) outNames[idx] = nullptr; // null-terminate
+                return true; // success
+            }
+            return false; // invalid usage
+    }
+    /*std::string Reactive::GetDeviceEventNames(const EventDescriptor* table)
     {
         std::string names;
         names += '[';
@@ -44,7 +71,8 @@ namespace DALHAL {
         }
         names += ']';
         return names;
-    }
+    }*/
+    
     HALOperationResult Reactive::GetSimpleReactiveEventImpl(DALHAL::Device* device, ZeroCopyString& name, ReactiveEvent** out, const EventDescriptor* table)
     {
        /* for (size_t i = 0; table[i].name != nullptr; ++i)

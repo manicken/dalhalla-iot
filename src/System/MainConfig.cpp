@@ -23,7 +23,7 @@
 
 #include "MainConfig.h"
 #include <DALHAL/Support/ConvertHelper.h>
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace MainConfig {
 

@@ -29,7 +29,7 @@
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
 
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <System/DeviceUID.h>

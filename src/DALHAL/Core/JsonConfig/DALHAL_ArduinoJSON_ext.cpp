@@ -23,8 +23,8 @@
 
 #include "DALHAL_ArduinoJSON_ext.h"
 
-#include "../Support/DALHAL_Logger.h"
-#include "../Core/Device/DALHAL_JSON_Config_Defines.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 
 namespace DALHAL {
     bool containsKeyIgnoreCase(JsonObject obj, const char* keyToFind) {

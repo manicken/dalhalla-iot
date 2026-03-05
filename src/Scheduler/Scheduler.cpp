@@ -33,7 +33,7 @@
 
 #include "Scheduler.h"
 
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 AsStringParameter::AsStringParameter(const JsonVariant& json):OnTickExtParameters(0,1)
 {

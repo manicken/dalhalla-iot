@@ -29,7 +29,7 @@
 #include <driver/ledc.h> // esp-idf
 #include <esp_err.h> // esp-idf
 
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 

@@ -24,7 +24,7 @@
 #include "DALHAL_REGO600register.h"
 #include <DALHAL/Drivers/REGO600.h>
 
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 

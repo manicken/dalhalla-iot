@@ -41,7 +41,32 @@ namespace DALHAL {
     public:
 #ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
         template<typename TDevice>
-        static std::string GetDeviceEventNames(const EventDescriptorT<TDevice>* table)
+        static bool CheckOrGetDeviceEvents( 
+            const EventDescriptorT<TDevice>* table,
+            const char* checkName = nullptr, // optional: check if a name exists     
+            const char** outNames = nullptr, // caller-provided array
+            size_t maxNames                  // size of the array
+        ) {
+            if (checkName) {
+                // Mode: check if name exists
+                for (size_t i = 0; table[i].name != nullptr; ++i) {
+                    if (strcasecmp(table[i].name, checkName) == 0) {
+                        return true;
+                    }
+                }
+                return false;
+            } else if (outNames && maxNames > 0) {
+                // Mode: retrieve names into buffer
+                size_t idx = 0;
+                for (size_t i = 0; table[i].name != nullptr && idx < maxNames; ++i) {
+                    outNames[idx++] = table[i].name;
+                }
+                if (idx < maxNames) outNames[idx] = nullptr; // null-terminate
+                return true; // success
+            }
+            return false; // invalid usage
+        }
+        /*static std::string GetDeviceEventNames(const EventDescriptorT<TDevice>* table)
         {
             std::string names;
             names += '[';
@@ -57,9 +82,16 @@ namespace DALHAL {
             }
             names += ']';
             return names;
-        }
+        }*/
+        
 #else
-        static std::string GetDeviceEventNames(const EventDescriptor* table);
+        //static std::string GetDeviceEventNames(const EventDescriptor* table);
+        static bool CheckOrGetDeviceEvents( 
+            const EventDescriptor* table,
+            const char* checkName = nullptr, // optional: check if a name exists     
+            const char** outNames = nullptr, // caller-provided array
+            size_t maxNames                  // size of the array
+        );
 #endif
     
 

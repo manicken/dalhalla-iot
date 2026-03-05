@@ -27,7 +27,7 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Support/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 

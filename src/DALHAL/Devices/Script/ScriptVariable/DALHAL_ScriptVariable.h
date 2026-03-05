@@ -58,10 +58,27 @@ namespace DALHAL {
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
+        inline static bool HasEvent(const char* name) {
+#if USING_REACTIVE(SCRIPT_VARIABLE)
+            return Reactive::CheckOrGetDeviceEvents(eventTable, name);
+#else
+            return false;
+#endif
+        }
+        inline static bool GetEventNames(const char** outNames, size_t maxNames) {
+#if USING_REACTIVE(SCRIPT_VARIABLE)
+            return Reactive::CheckOrGetDeviceEvents(eventTable, nullptr, outNames, maxNames);
+#else
+            return false;
+#endif
+        }
+
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            HasEvent,
+            GetEventNames
         };
         ScriptVariable(const JsonVariant &jsonObj, const char* type);
         HALOperationResult read(HALValue& val) override;
@@ -69,5 +86,8 @@ namespace DALHAL {
         HALValue* GetValueDirectAccessPtr() override;
 
         String ToString() override;
+
+        
+
     };
 }

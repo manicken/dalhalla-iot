@@ -24,8 +24,7 @@
 #pragma once
 
 
-#include <Arduino.h> // Needed for String class
-
+#include <stdlib.h>
 #include <ArduinoJson.h>
 
 
