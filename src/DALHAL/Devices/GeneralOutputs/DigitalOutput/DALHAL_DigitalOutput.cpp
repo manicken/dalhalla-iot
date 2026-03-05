@@ -55,6 +55,9 @@ namespace DALHAL {
     HALOperationResult DigitalOutput::read(HALValue &val) {
         //val.set(value); // read back the latest write value
         val = value;
+#if HAS_REACTIVE(DIGITAL_OUTPUT, READ)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 

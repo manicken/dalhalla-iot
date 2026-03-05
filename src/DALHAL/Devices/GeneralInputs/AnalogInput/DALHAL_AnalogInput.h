@@ -29,12 +29,21 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(ANALOG_INPUT)
+#include "DALHAL_AnalogInput_Reactive.h"
+using AnalogInput_DeviceBase = DALHAL::AnalogInput_Reactive;
+#else
+using AnalogInput_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
 #if defined(ESP32) || defined(_WIN32)
-    class AnalogInput : public Device {
+    class AnalogInput : public AnalogInput_DeviceBase {
     private:
         uint8_t pin = 0;
     public:
@@ -47,7 +56,7 @@ namespace DALHAL {
         };
         AnalogInput(const JsonVariant &jsonObj, const char* type);
         ~AnalogInput();
-
+        void loop() override;
         HALOperationResult read(HALValue &val) override;
         String ToString() override;
     };

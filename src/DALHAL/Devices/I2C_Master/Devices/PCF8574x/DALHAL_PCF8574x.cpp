@@ -36,7 +36,7 @@ namespace DALHAL {
                (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
     }
     
-    PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(type), wire(&wire) {
+    PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : PCF8574x_DeviceBase(type), wire(&wire) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         const char* addrStr = GetAsConstChar(jsonObj, "addr");
@@ -64,6 +64,9 @@ namespace DALHAL {
         uint8_t received = wire->requestFrom(addr, (uint8_t)1);
         if (received == 0) return HALOperationResult::ExecutionFailed;
         val = (uint32_t)wire->read();
+#if HAS_REACTIVE_READ(I2C_DEVICE_PCF8574X)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
     HALOperationResult PCF8574x::write(const HALValue& val) {
@@ -76,6 +79,9 @@ namespace DALHAL {
             // todo maybe log to global logger
             return HALOperationResult::ExecutionFailed;
         }
+#if HAS_REACTIVE_WRITE(I2C_DEVICE_PCF8574X)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 

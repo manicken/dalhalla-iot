@@ -34,6 +34,14 @@
 
 #define DALHAL_KEYNAME_TX433_MODEL "model"
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(TX433_UNIT)
+#include "DALHAL_TX433unit_Reactive.h"
+using TX433unit_DeviceBase = DALHAL::TX433unit_Reactive;
+#else
+using TX433unit_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
@@ -42,7 +50,7 @@ namespace DALHAL {
         LearningCode
     };
 
-    class TX433unit : public Device {
+    class TX433unit : public TX433unit_DeviceBase {
     private:
         /** this is set from root TX433 device and used when sending */
         const uint32_t pin;

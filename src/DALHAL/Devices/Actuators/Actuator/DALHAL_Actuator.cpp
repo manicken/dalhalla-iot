@@ -423,7 +423,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMin(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
-        triggerExec();
+        static_cast<Actuator*>(device)->triggerExec();
 #endif
         return HALOperationResult::Success;
     }
@@ -432,7 +432,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMax(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
-        triggerExec();
+        static_cast<Actuator*>(device)->triggerExec();
 #endif
         return HALOperationResult::Success;
     }
@@ -440,17 +440,16 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     HALOperationResult Actuator::exec_stop(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
-        triggerExec();
+        static_cast<Actuator*>(device)->triggerExec();
 #endif
         return HALOperationResult::Success;
     }
 
     HALOperationResult Actuator::exec_reset(Device* device) {
-        auto* d = static_cast<Actuator*>(device);
-        d->reset();
-        d->stopDrive();
+        static_cast<Actuator*>(device)->reset();
+        static_cast<Actuator*>(device)->stopDrive();
 #if HAS_REACTIVE_EXEC(ACTUATOR)
-        triggerExec();
+        static_cast<Actuator*>(device)->triggerExec();
 #endif
         return HALOperationResult::Success;
     }

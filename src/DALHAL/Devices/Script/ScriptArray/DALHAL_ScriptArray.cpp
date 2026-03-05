@@ -29,7 +29,7 @@
 
 namespace DALHAL {
     
-    ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : ScriptArray_DeviceBase(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         const JsonArray jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         int arraySize = jsonArray.size();
@@ -110,6 +110,9 @@ namespace DALHAL {
             val.out_value = "unknown command";
             return HALOperationResult::UnsupportedCommand;
         }
+#if HAS_REACTIVE_READ(SCRIPT_ARRAY)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -120,6 +123,9 @@ namespace DALHAL {
             return HALOperationResult::BracketOpSubscriptOutOffRange;
         }
         val = values[index];
+#if HAS_REACTIVE_BRACKET_READ(SCRIPT_ARRAY)
+        triggerBracketRead();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -132,6 +138,9 @@ namespace DALHAL {
             return HALOperationResult::BracketOpSubscriptOutOffRange;
         }
         values[index] = val;
+#if HAS_REACTIVE_BRACKET_WRITE(SCRIPT_ARRAY)
+        triggerBracketWrite();
+#endif
         return HALOperationResult::Success;
     }
 /*

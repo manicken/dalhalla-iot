@@ -33,11 +33,6 @@ namespace DALHAL {
     }
     DALHAL_DEFINE_REACTIVE_TABLE(ThingSpeak_Reactive, eventTable) = {
 
-#if HAS_REACTIVE_CUSTOM(THINGSPEAK)
-        DALHAL_REACTIVE_ENTRY(ThingSpeak_Reactive, Custom1),
-        DALHAL_REACTIVE_ENTRY(ThingSpeak_Reactive, Custom2),
-        DALHAL_REACTIVE_ENTRY(ThingSpeak_Reactive, Custom3),
-#endif
 #if HAS_REACTIVE_BEGIN(THINGSPEAK)
         REACTIVE_ENTRY_BEGIN(ThingSpeak_Reactive),
 #endif

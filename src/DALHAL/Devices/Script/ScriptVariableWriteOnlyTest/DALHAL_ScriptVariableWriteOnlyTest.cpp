@@ -29,7 +29,7 @@
 
 namespace DALHAL {
     
-    ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type) : ScriptVariableWriteOnlyTest_DeviceBase(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
     }
@@ -48,6 +48,9 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         value = val;
+#if HAS_REACTIVE_WRITE(SCRIPT_WRITEVAR)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 

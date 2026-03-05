@@ -33,11 +33,20 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(ONE_WIRE_TEMP_BUS)
+#include "DALHAL_OneWireTempBus_Reactive.h"
+using OneWireTempBus_DeviceBase = DALHAL::OneWireTempBus_Reactive;
+#else
+using OneWireTempBus_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-    class OneWireTempBus : public Device {
+    class OneWireTempBus : public OneWireTempBus_DeviceBase {
     private:
         uint8_t pin;
         OneWire* oneWire = nullptr;

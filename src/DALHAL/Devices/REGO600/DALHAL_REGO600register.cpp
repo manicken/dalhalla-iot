@@ -30,9 +30,13 @@
 
 namespace DALHAL {
     
-    REGO600register::REGO600register(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    REGO600register::REGO600register(const JsonVariant &jsonObj, const char* type) : REGO600register_DeviceBase(type) {
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
+
+#if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
+        value.setCallbacks(this, GenericValueCallback<REGO600register_DeviceBase>, nullptr);
+#endif
     }
 
     bool REGO600register::VerifyJSON(const JsonVariant &jsonObj) {

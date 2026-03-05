@@ -30,7 +30,7 @@
 
 namespace DALHAL {
     
-    WS2812::WS2812(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    WS2812::WS2812(const JsonVariant &jsonObj, const char* type) : WS2812_DeviceBase(type) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = GetAsUINT8(jsonObj, "pin");
@@ -96,18 +96,23 @@ namespace DALHAL {
     }
     HALOperationResult WS2812::writeBrightness(Device* context, const HALValue& val) {
         //printf("\nWS2812::writeBrightness\n");
-        WS2812* ws2812fx = static_cast<WS2812*>(context);
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
         
-        ws2812fx->ws2812fx->setBrightness(val.asUInt());
-        
+        ws2812_hal_device->ws2812fx->setBrightness(val.asUInt());
+#if HAS_REACTIVE_WRITE(WS2812)
+        ws2812_hal_device->triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
     HALOperationResult WS2812::writeColor(Device* context, const HALValue& val) {
         //printf("\nWS2812::writeColor\n");
-        WS2812* ws2812fx = static_cast<WS2812*>(context);
-        ws2812fx->ws2812fx->pause();
-        ws2812fx->ws2812fx->setPixelColor(0,val.asUInt());
-        ws2812fx->ws2812fx->execShow();
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
+        ws2812_hal_device->ws2812fx->pause();
+        ws2812_hal_device->ws2812fx->setPixelColor(0,val.asUInt());
+        ws2812_hal_device->ws2812fx->execShow();
+#if HAS_REACTIVE_WRITE(WS2812)
+        ws2812_hal_device->triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -131,7 +136,9 @@ namespace DALHAL {
             WS2812::writeColor(this, val.value);
         else
             return HALOperationResult::UnsupportedCommand;
-
+#if HAS_REACTIVE_WRITE(WS2812)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -199,6 +206,9 @@ namespace DALHAL {
         }
         else
             return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_WRITE(WS2812)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 

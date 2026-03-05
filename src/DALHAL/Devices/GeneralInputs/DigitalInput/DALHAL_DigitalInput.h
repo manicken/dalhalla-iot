@@ -29,11 +29,20 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(DIGITAL_INPUT)
+#include "DALHAL_DigitalInput_Reactive.h"
+using DigitalInput_DeviceBase = DALHAL::DigitalInput_Reactive;
+#else
+using DigitalInput_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-    class DigitalInput : public Device {
+    class DigitalInput : public DigitalInput_DeviceBase {
     private:
         uint8_t pin = 0;
     public:

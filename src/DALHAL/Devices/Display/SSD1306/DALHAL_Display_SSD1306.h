@@ -34,7 +34,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS_DeviceTypeReg.h>
+#include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 
 namespace DALHAL {
 

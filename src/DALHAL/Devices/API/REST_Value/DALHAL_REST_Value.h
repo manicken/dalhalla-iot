@@ -32,7 +32,7 @@
 
 #include <Arduino.h> // Needed for String class
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 namespace DALHAL {
 

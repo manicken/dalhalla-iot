@@ -21,9 +21,9 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_I2C_BUS.h"
+#include "DALHAL_I2C_Master.h"
 
-#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS_DeviceTypeReg.h>
+#include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 
 #include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
@@ -34,7 +34,7 @@
 namespace DALHAL {
 
     
-    I2C_BUS::I2C_BUS(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    I2C_Master::I2C_Master(const JsonVariant &jsonObj, const char* type) : I2C_Master_DeviceBase(type) {
         deviceCount = 0;
         devices = nullptr;
 
@@ -87,11 +87,12 @@ namespace DALHAL {
             const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
              // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            devices[index++] = regItem.def.Create_Function(item, "SSD1306", *wire);
+            
+            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, *wire); // regItem.typeName is a flash const so it's safe to use
         }
         delete[] validItems;
     }
-    I2C_BUS::~I2C_BUS() {
+    I2C_Master::~I2C_Master() {
         if (devices != nullptr) {
             for (int i=0;i<deviceCount;i++) {
                 delete devices[i];
@@ -108,7 +109,7 @@ namespace DALHAL {
         pinMode(sdapin, INPUT);
     }
 
-    bool I2C_BUS::VerifyJSON(const JsonVariant &jsonObj) {
+    bool I2C_Master::VerifyJSON(const JsonVariant &jsonObj) {
         if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sckpin", static_cast<uint8_t>(GPIO_manager::PinFunc::OUT))) {
             SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
@@ -164,18 +165,18 @@ namespace DALHAL {
 
         }
         if (validItemCount == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("I2C_BUS"));
+            GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("I2C_Master"));
             SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
         }
         return true;
     }
 
-    Device* I2C_BUS::Create(const JsonVariant &jsonObj, const char* type) {
-        return new I2C_BUS(jsonObj, type);
+    Device* I2C_Master::Create(const JsonVariant &jsonObj, const char* type) {
+        return new I2C_Master(jsonObj, type);
     }
 
-    String I2C_BUS::ToString() {
+    String I2C_Master::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -199,17 +200,17 @@ namespace DALHAL {
         return ret;
     }
 
-    DeviceFindResult I2C_BUS::findDevice(UIDPath& path, Device*& outDevice) {
+    DeviceFindResult I2C_Master::findDevice(UIDPath& path, Device*& outDevice) {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
-    void I2C_BUS::loop() {
+    void I2C_Master::loop() {
         for (int i=0;i<deviceCount;i++) {
             devices[i]->loop();
         }
     }
 
-    HALOperationResult I2C_BUS::read(const HALReadStringRequestValue& val) {
+    HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
         ZeroCopyString zcStr = val.cmd; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd == "raw") { // this is more likely to be called
@@ -242,7 +243,6 @@ namespace DALHAL {
                 val.out_value += "\"";
             }
             val.out_value += ']';
-            return HALOperationResult::Success;
         }
         else if (zcCmd == "list") {
             val.out_value = '{';
@@ -260,12 +260,17 @@ namespace DALHAL {
                 }
             }
             val.out_value += '}';
-            return HALOperationResult::Success;
+            
+        } else {
+            return HALOperationResult::UnsupportedCommand;
         }
-        return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_READ(I2C_MASTER)
+        triggerRead();
+#endif
+        return HALOperationResult::Success;
     }
 
-    HALOperationResult I2C_BUS::write(const HALWriteStringRequestValue& val) {
+    HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
         ZeroCopyString zcStr = val.value; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd == "raw") {
@@ -305,7 +310,6 @@ namespace DALHAL {
                 // currently a TODO feature
                 // and the read function need to be DRY first
             }
-            return HALOperationResult::Success;
         } else if (zcCmd == "speed") {
             if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
             ZeroCopyString zcSpeed = zcStr.SplitOffHead('/');
@@ -319,9 +323,13 @@ namespace DALHAL {
 #else
             wire->setClock(speed);
 #endif
-            return HALOperationResult::Success;
+        } else {
+            return HALOperationResult::UnsupportedCommand;
         }
-        return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_WRITE(I2C_MASTER)
+        triggerWrite();
+#endif
+        return HALOperationResult::Success;
     }
 
 }

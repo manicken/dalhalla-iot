@@ -37,10 +37,11 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
-    SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : SinglePulseOutput_DeviceBase(type) {
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
         inactiveState = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE, 0);
+        // pulseLength is optional as it can be given by the write function
         pulseLength = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, 0);
         pinMode(pin, OUTPUT); // output
         digitalWrite(pin, inactiveState);
@@ -54,10 +55,13 @@ namespace DALHAL {
     HALOperationResult SinglePulseOutput::read(HALValue &val) {
         //val.set(value); // read back the latest write value
         val = pulseLength;
+#if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, READ)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 
-    void SinglePulseOutput::pulseTicker_Callback(SinglePulseOutput* context) {
+    /*static*/void SinglePulseOutput::pulseTicker_Callback(SinglePulseOutput* context) {
         context->endPulse();
     }
 
@@ -66,11 +70,24 @@ namespace DALHAL {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
         uint32_t t = val;
-        if (t != 0) // only change if not zero
-            pulseLength = t;//val.asUInt();
-        if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // no pulse
-
+        if (t != 0) {// only change if not zero
+            
+#if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, VALUE_CHANGE)
+            if (pulseLength != t) {
+                triggerValueChange(); // increments change counter; consumers compare with their last seen value
+            }
+#endif
+            pulseLength = t;
+        }
+#if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, WRITE)
+        HALOperationResult res = exec();
+        if (res == HALOperationResult::Success) {
+            triggerWrite();
+        }
+        return res;
+#else
         return exec();
+#endif
     }
     Device::Exec_FuncType SinglePulseOutput::GetExec_Function(ZeroCopyString& zcFuncName) {
         return SinglePulseOutput::exec;
@@ -81,14 +98,19 @@ namespace DALHAL {
     }
 
     HALOperationResult SinglePulseOutput::exec() {
-        digitalWrite(pin, !inactiveState);
+        if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
         pulseTicker.detach();
+        digitalWrite(pin, !inactiveState);
         pulseTicker.once_ms(pulseLength, pulseTicker_Callback, this);
+#if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, EXEC)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
     void SinglePulseOutput::endPulse() {
         digitalWrite(pin, inactiveState);
+        pulseTicker.detach();
     }
 
     String SinglePulseOutput::ToString() {

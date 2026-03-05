@@ -29,19 +29,19 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#if USING_REACTIVE(TEMPLATE)
+#if USING_REACTIVE(_TEMPLATE_)
 #include "DALHAL__Template__Reactive.h"
-using _Template_DeviceBase = DALHAL::_Template__Reactive;
+using _Template__DeviceBase = DALHAL::_Template__Reactive;
 #else
-using _Template_DeviceBase = DALHAL::Device;
+using _Template__DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
-    class _Template_ : public _Template_DeviceBase {
+    class _Template_ : public _Template__DeviceBase {
     private:
         uint8_t pin = 0; // if pin would be used
 

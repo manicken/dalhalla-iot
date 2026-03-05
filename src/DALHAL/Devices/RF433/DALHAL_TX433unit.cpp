@@ -38,7 +38,7 @@ namespace DALHAL {
         return true;
     }
     
-    TX433unit::TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin) : Device(type), pin(pin) {
+    TX433unit::TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin) : TX433unit_DeviceBase(type), pin(pin) {
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_MODEL);
@@ -67,11 +67,11 @@ namespace DALHAL {
         const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_MODEL);
 
         if (strcasecmp(modelStr, "lc") == 0) {
-            if (!RF433::VerifyLC_JSON(jsonObj)) return false;
+            if (!RF433::VerifyLC_JSON(jsonObj)) { return false; }
         } else if (strcasecmp(modelStr, "sfc") == 0) {
-           if (!VerifyFC_JSON(jsonObj)) return false;
+           if (!VerifyFC_JSON(jsonObj)) { return false; }
         } else if (strcasecmp(modelStr, "afc") == 0) {
-           if (!VerifyFC_JSON(jsonObj)) return false;
+           if (!VerifyFC_JSON(jsonObj)) { return false; }
         } else {
             GlobalLogger.Error(F("TX433unit - invalid model type: "),modelStr);
             return false;
@@ -84,20 +84,25 @@ namespace DALHAL {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         RF433::init(pin); // ensure that the correct pin is used and that it's set to a output
         if (model == TX433_MODEL::FixedCode) {
-            if (fixedState == false)
+            if (fixedState == false) {
                 RF433::SendTo433_FC(staticData, val.asUInt());
-            else
+            } else {
                 RF433::SendTo433_FC(staticData);
-            return HALOperationResult::Success;
+            }
         }
         else if (model == TX433_MODEL::LearningCode) {
-            if (fixedState == false)
+            if (fixedState == false) {
                 RF433::SendTo433_LC(staticData, val.asUInt());
-            else
+            } else {
                 RF433::SendTo433_LC(staticData);
-            return HALOperationResult::Success;
+            }
+        } else {
+            return HALOperationResult::ExecutionFailed; // this will never happend
         }
-        return HALOperationResult::ExecutionFailed; // this will never happend
+#if HAS_REACTIVE_WRITE(TX433_UNIT)
+        triggerWrite();
+#endif
+        return HALOperationResult::Success;
     }
 
     String TX433unit::ToString() {

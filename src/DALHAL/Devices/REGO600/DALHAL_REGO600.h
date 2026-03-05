@@ -30,14 +30,23 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include "DALHAL_REGO600register.h"
 #include <DALHAL/Drivers/REGO600.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(REGO600)
+#include "DALHAL_REGO600_Reactive.h"
+using REGO600_DeviceBase = DALHAL::REGO600_Reactive;
+#else
+using REGO600_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class REGO600 : public Device {
+    class REGO600 : public REGO600_DeviceBase {
     private:
         uint32_t refreshTimeMs = 0;
         uint8_t rxPin = 0;

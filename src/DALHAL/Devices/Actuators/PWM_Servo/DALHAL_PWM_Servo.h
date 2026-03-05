@@ -27,7 +27,7 @@
 #include <driver/ledc.h> // esp-idf
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 
 #define DALHAL_LEDC_SERVO_PWM_FREQ 50
@@ -37,7 +37,7 @@
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#if USING_REACTIVE(LEDC_SERVO)
+#if USING_REACTIVE(PWM_SERVO)
 #include "DALHAL_PWM_Servo_Reactive.h"
 using PWM_Servo_DeviceBase = DALHAL::PWM_Servo_Reactive;
 #else

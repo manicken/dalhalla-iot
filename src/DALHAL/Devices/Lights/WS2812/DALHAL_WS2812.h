@@ -29,13 +29,22 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include <WS2812FX.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(WS2812)
+#include "DALHAL_WS2812_Reactive.h"
+using WS2812_DeviceBase = DALHAL::WS2812_Reactive;
+#else
+using WS2812_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class WS2812 : public Device {
+    class WS2812 : public WS2812_DeviceBase {
     private:
         uint8_t pin = 0; // if pin would be used
         

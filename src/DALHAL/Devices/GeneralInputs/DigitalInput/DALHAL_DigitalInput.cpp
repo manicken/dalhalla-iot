@@ -39,7 +39,7 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
     }
 
-    DigitalInput::DigitalInput(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    DigitalInput::DigitalInput(const JsonVariant &jsonObj, const char* type) : DigitalInput_DeviceBase(type) {
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
         //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();
@@ -54,6 +54,9 @@ namespace DALHAL {
     HALOperationResult DigitalInput::read(HALValue &val) {
         //val.set((uint32_t)digitalRead(pin));
         val = (uint32_t)digitalRead(pin);
+#if HAS_REACTIVE_READ(DIGITAL_INPUT)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 

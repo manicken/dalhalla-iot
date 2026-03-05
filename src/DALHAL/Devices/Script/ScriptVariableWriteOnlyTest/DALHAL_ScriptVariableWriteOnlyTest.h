@@ -30,11 +30,20 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(SCRIPT_WRITEVAR)
+#include "DALHAL_ScriptVariableWriteOnlyTest_Reactive.h"
+using ScriptVariableWriteOnlyTest_DeviceBase = DALHAL::ScriptVariableWriteOnlyTest_Reactive;
+#else
+using ScriptVariableWriteOnlyTest_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-    class ScriptVariableWriteOnlyTest : public Device {
+    class ScriptVariableWriteOnlyTest : public ScriptVariableWriteOnlyTest_DeviceBase {
     private:
         HALValue value;
     public:

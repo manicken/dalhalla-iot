@@ -206,7 +206,7 @@ namespace DALHAL {
             lastWriteMs = millis();
         }
         lastValue = val;
-#if HAS_REACTIVE_WRITE(LEDC_SERVO)
+#if HAS_REACTIVE_WRITE(PWM_SERVO)
         triggerWrite();
 #endif
         return HALOperationResult::Success;
@@ -241,7 +241,7 @@ namespace DALHAL {
             autoOffActive = true;
             lastWriteMs = millis();
         }
-#if HAS_REACTIVE_WRITE(LEDC_SERVO)
+#if HAS_REACTIVE_WRITE(PWM_SERVO)
         triggerWrite();
 #endif
         return HALOperationResult::Success;
@@ -249,6 +249,9 @@ namespace DALHAL {
 
     HALOperationResult PWM_Servo::read(HALValue& val) {
         val = lastValue;
+#if HAS_REACTIVE(PWM_SERVO, READ)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 

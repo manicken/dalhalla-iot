@@ -27,7 +27,7 @@
 */
 
 
-#include "DALHAL_DeviceTypesRegistry.h"
+#include "DALHAL_DevicesRegistry.h"
 
 // all HAL devices to use here
 #include <DALHAL/Devices/Script/ScriptVariable/DALHAL_ScriptVariable.h>
@@ -43,7 +43,7 @@
 //#include <DALHAL/Devices/GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h> OBSOLETE TO BE REMOVED
 #include <DALHAL/Devices/GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h>
 
-#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS.h>
+#include <DALHAL/Devices/I2C_Master/DALHAL_I2C_Master.h>
 
 #include <DALHAL/Devices/Sensors/OneWireTemp/DALHAL_OneWireTemp.h>
 #include <DALHAL/Devices/Sensors/DHT/DALHAL_DHT.h>
@@ -106,7 +106,7 @@ namespace DALHAL {
 #if defined(DALHAL_DEVICE_REGO600_HEATPUMP_CONTROLLER)
         {"REGO600", REGO600::RegistryDefine},
 #endif
-        {"I2C", I2C_BUS::RegistryDefine},
+        {"I2C", I2C_Master::RegistryDefine},
 
         /** ---------------- Lights ---------------- */
         {"WS2812", WS2812::RegistryDefine},

@@ -63,7 +63,7 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    OneWireTempBus::OneWireTempBus(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    OneWireTempBus::OneWireTempBus(const JsonVariant &jsonObj, const char* type) : OneWireTempBus_DeviceBase(type) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
@@ -122,6 +122,9 @@ namespace DALHAL {
             OneWireTempDevice* device = static_cast<OneWireTempDevice*>(devices[i]); // cast for fast exec not using vtable lockup
             device->read(*dTemp);
         }
+#if HAS_REACTIVE_CYCLE_COMPLETE(ONE_WIRE_TEMP_BUS)
+        triggerCycleComplete();
+#endif
     }
 
     DeviceFindResult OneWireTempBus::findDevice(UIDPath& path, Device*& outDevice) {
@@ -131,23 +134,24 @@ namespace DALHAL {
     HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
         if (val.cmd == "getAllNewDevices") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
             val.out_value += getAllDevices(false, true);
-            return HALOperationResult::Success;
         }
         else if (val.cmd == "getAllNewDevicesWithTemp") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
             val.out_value += getAllDevices(true, true);
-            return HALOperationResult::Success;
         }
         else if (val.cmd == "getAllDevices") { // (as json) return a complete list of all devices found for all busses
             val.out_value += getAllDevices(false, false);
-            return HALOperationResult::Success;
         }
         else if (val.cmd == "getAllTemperatures") { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
             val.out_value += getAllDevices(true, false);
-            return HALOperationResult::Success;
+        } else {
+            std::string stdStrCmd = val.cmd.ToString();
+            GlobalLogger.Warn(F("OneWireTempBus::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
+            return HALOperationResult::UnsupportedCommand;
         }
-        std::string stdStrCmd = val.cmd.ToString();
-        GlobalLogger.Warn(F("OneWireTempBus::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
-        return HALOperationResult::UnsupportedCommand;
+#if HAS_REACTIVE_READ(ONE_WIRE_TEMP_BUS)
+        triggerRead();
+#endif
+        return HALOperationResult::Success;
     }
 
     bool OneWireTempBus::haveDeviceWithRomID(OneWireAddress addr) {

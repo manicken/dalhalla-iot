@@ -33,10 +33,26 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #define DALHAL_KEYNAME_ONE_WIRE_ROMID       "romid"
 #define DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT "format"
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(ONE_WIRE_TEMP_DEVICE)
+#include "DALHAL_OneWireTempDevice_Reactive.h"
+using OneWireTempDevice_DeviceBase = DALHAL::OneWireTempDevice_Reactive;
+#else
+using OneWireTempDevice_DeviceBase = DALHAL::Device;
+#endif
+
+#if HAS_REACTIVE_VALUE_CHANGE(ONE_WIRE_TEMP_DEVICE)
+#include <DALHAL/Core/Types/DALHAL_ValueReactive.h>
+using OneWireTempDevice_ValueBase = DALHAL::ReactiveHALValue;
+#else
+using OneWireTempDevice_ValueBase = DALHAL::HALValue;
+#endif
 
 namespace DALHAL {
 
@@ -52,12 +68,12 @@ namespace DALHAL {
         };
     } OneWireAddress;
 
-    class OneWireTempDevice : public Device {
+    class OneWireTempDevice : public OneWireTempDevice_DeviceBase {
         
     public:
         OneWireAddress romid;
         OneWireTempDeviceTempFormat format = OneWireTempDeviceTempFormat::Celsius;
-        float value = 0.0f;
+        OneWireTempDevice_ValueBase value = 0.0f;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         
@@ -90,9 +106,9 @@ namespace DALHAL {
         };
         OneWireTempDeviceAtRoot(const JsonVariant &jsonObj, const char* type);
         ~OneWireTempDeviceAtRoot();
-//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         HALOperationResult write(const HALValue& val) override;
-//#endif
+#endif
         void loop() override;
 
         String ToString() override;

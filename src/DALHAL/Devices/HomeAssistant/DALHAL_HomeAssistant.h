@@ -32,7 +32,7 @@
 #include <PubSubClient.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 

@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Devices/I2C/DALHAL_I2C_BUS_DeviceTypeReg.h>
+#include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 
 #include <Arduino.h> // Needed for String class
 
@@ -33,9 +33,18 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(I2C_DEVICE_PCF8574X)
+#include "DALHAL_PCF8574x_Reactive.h"
+using PCF8574x_DeviceBase = DALHAL::PCF8574x_Reactive;
+#else
+using PCF8574x_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class PCF8574x : public Device {
+    class PCF8574x : public PCF8574x_DeviceBase {
     private:
         uint8_t addr = 0;
         TwoWire* wire;

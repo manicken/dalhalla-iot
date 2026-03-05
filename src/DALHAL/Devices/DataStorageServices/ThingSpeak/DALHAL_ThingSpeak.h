@@ -30,7 +30,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #if defined(ESP8266)
 #include <ESP8266HTTPClient.h>

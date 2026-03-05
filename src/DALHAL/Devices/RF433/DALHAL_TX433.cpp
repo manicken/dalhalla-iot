@@ -50,7 +50,7 @@ namespace DALHAL {
     Device* TX433::Create(const JsonVariant &jsonObj, const char* type) {
         return new TX433(jsonObj, type);
     }
-    TX433::TX433(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    TX433::TX433(const JsonVariant &jsonObj, const char* type) : TX433_DeviceBase(type) {
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
@@ -105,6 +105,9 @@ namespace DALHAL {
         
         RF433::DecodeFromJSON(stdStrCmd); // TODO make this function take ZeroCopyString as argument, even thu it's copied internally
         // TODO better error check from DecodeFromJSON
+#if HAS_REACTIVE_WRITE(TX433)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 

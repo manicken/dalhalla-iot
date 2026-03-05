@@ -30,12 +30,21 @@
 #include <Wire.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(_TEMPLATE_)
+#include "DALHAL_I2C_Master_Reactive.h"
+using I2C_Master_DeviceBase = DALHAL::I2C_Master_Reactive;
+#else
+using I2C_Master_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
 
-    class I2C_BUS : public Device {
+    class I2C_Master : public I2C_Master_DeviceBase {
     private:
         uint8_t sckpin = 0;
         uint8_t sdapin = 0;
@@ -52,11 +61,11 @@ namespace DALHAL {
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
-            Create,
-            VerifyJSON
+            I2C_Master::Create,
+            I2C_Master::VerifyJSON
         };
-        I2C_BUS(const JsonVariant &jsonObj, const char* type);
-        ~I2C_BUS();
+        I2C_Master(const JsonVariant &jsonObj, const char* type);
+        ~I2C_Master();
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void loop() override;

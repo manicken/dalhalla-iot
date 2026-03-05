@@ -30,11 +30,20 @@
 #include <Ticker.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(SINGLE_PULSE_OUTPUT)
+#include "DALHAL_SinglePulseOutput_Reactive.h"
+using SinglePulseOutput_DeviceBase = DALHAL::SinglePulseOutput_Reactive;
+#else
+using SinglePulseOutput_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-    class SinglePulseOutput : public Device {
+    class SinglePulseOutput : public SinglePulseOutput_DeviceBase {
     private:
         uint8_t pin = 0;
         uint32_t pulseLength = 0;

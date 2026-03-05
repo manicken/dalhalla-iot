@@ -62,7 +62,7 @@ namespace DALHAL {
         }
         return true;
     }
-    OneWireTempGroup::OneWireTempGroup(const JsonVariant &jsonObj, const char* type) : Device(type),
+    OneWireTempGroup::OneWireTempGroup(const JsonVariant &jsonObj, const char* type) : OneWireTempGroup_DeviceBase(type),
         autoRefresh(
             [this]() { requestTemperatures(); },
             [this]() { readAll(); },
@@ -122,7 +122,7 @@ namespace DALHAL {
                     val.out_value += ",";
             }
             val.out_value += "]";
-            return HALOperationResult::Success;
+
         }
         else if (val.cmd == "getAllNewDevicesWithTemp") {
             val.out_value = "[";
@@ -134,7 +134,7 @@ namespace DALHAL {
                     val.out_value += ",";
             }
             val.out_value += "]";
-            return HALOperationResult::Success;
+
         }
         else if (val.cmd == "getAllDevices") { // (as json) return a complete list of all devices found for all busses
             val.out_value = "[";
@@ -146,7 +146,7 @@ namespace DALHAL {
                     val.out_value += ",";
             }
             val.out_value += "]";
-            return HALOperationResult::Success;
+
         }
         else if (val.cmd == "getAllTemperatures") { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
             val.out_value = "[";
@@ -158,12 +158,17 @@ namespace DALHAL {
                     val.out_value += ",";
             }
             val.out_value += "]";
-            return HALOperationResult::Success;
+            
+        } else {
+            std::string stdStrCmd = val.cmd.ToString();
+            GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
+            //val.out_value = F("{\"error\":\"cmd not found\"}");
+            return HALOperationResult::UnsupportedCommand;  // cmd not found
         }
-        std::string stdStrCmd = val.cmd.ToString();
-        GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
-        //val.out_value = F("{\"error\":\"cmd not found\"}");
-        return HALOperationResult::UnsupportedCommand;  // cmd not found
+#if HAS_REACTIVE_READ(ONE_WIRE_TEMP_GROUP)
+        triggerRead();
+#endif
+        return HALOperationResult::Success;
     }
 
     void OneWireTempGroup::requestTemperatures() {
@@ -178,6 +183,9 @@ namespace DALHAL {
             OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast because need of non generic function
             bus->readAll();
         }
+#if HAS_REACTIVE_CYCLE_COMPLETE(ONE_WIRE_TEMP_GROUP)
+        triggerCycleComplete();
+#endif
     }
 
     void OneWireTempGroup::loop() {

@@ -51,7 +51,7 @@ namespace DALHAL {
         return Convert::HexToBytes(romIdStr, nullptr, 8);
     }
 
-    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : OneWireTempDevice_DeviceBase(type) {
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         const char* romIdStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
@@ -65,7 +65,9 @@ namespace DALHAL {
                 format = OneWireTempDeviceTempFormat::Fahrenheit;
             // else the default value is used (defined in .h file)
         }
-        
+#if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
+        value.setCallbacks(this, GenericValueCallback<OneWireTempDevice_DeviceBase>, nullptr);
+#endif
     }
 
     OneWireTempDevice::~OneWireTempDevice() {
@@ -74,6 +76,9 @@ namespace DALHAL {
 
     HALOperationResult OneWireTempDevice::read(HALValue& val) {
         val = value;
+#if HAS_REACTIVE_READ(ONE_WIRE_TEMP_DEVICE)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -107,7 +112,7 @@ namespace DALHAL {
         else ret += "\"other\"";
         ret += ",";
         ret += DeviceConstStrings::value;//StartWithComma;
-        ret += std::to_string(value).c_str();
+        ret += value.toString().c_str();
         //ret += "\"";
         return ret;
     }
@@ -156,14 +161,12 @@ namespace DALHAL {
     void OneWireTempDeviceAtRoot::readAll() {
         read(*dTemp);
     }
-
-    HALOperationResult OneWireTempDeviceAtRoot::write(const HALValue& val) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+    HALOperationResult OneWireTempDeviceAtRoot::write(const HALValue& val) {
         dTemp->setTempC(val); // only in simulator
         return HALOperationResult::Success;
-#endif
-        return HALOperationResult::UnsupportedOperation;
     }
+#endif
 
     void OneWireTempDeviceAtRoot::loop() {
         autoRefresh.loop();

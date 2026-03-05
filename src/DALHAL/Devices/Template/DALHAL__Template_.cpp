@@ -30,7 +30,7 @@
 
 namespace DALHAL {
 
-    _Template_::_Template_(const JsonVariant &jsonObj, const char* type) : _Template_DeviceBase(type) {
+    _Template_::_Template_(const JsonVariant &jsonObj, const char* type) : _Template__DeviceBase(type) {
 
     }
 

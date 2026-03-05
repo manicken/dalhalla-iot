@@ -29,13 +29,22 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #define DALHAL_KEYNAME_TX433_UNITS "units"
 
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(TX433)
+#include "DALHAL_TX433_Reactive.h"
+using TX433_DeviceBase = DALHAL::TX433_Reactive;
+#else
+using TX433_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class TX433 : public Device {
+    class TX433 : public TX433_DeviceBase {
     private:
         uint8_t pin = 0; // if pin would be used
         Device/*TX433unit*/** units;

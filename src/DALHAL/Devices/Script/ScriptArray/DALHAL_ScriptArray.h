@@ -29,11 +29,20 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/DeviceRegistry/DALHAL_DeviceTypesRegistry.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(SCRIPT_ARRAY)
+#include "DALHAL_ScriptArray_Reactive.h"
+using ScriptArray_DeviceBase = DALHAL::ScriptArray_Reactive;
+#else
+using ScriptArray_DeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
-    class ScriptArray : public Device {
+    class ScriptArray : public ScriptArray_DeviceBase {
     private:
         HALValue* values;
         int valueCount = 0;
