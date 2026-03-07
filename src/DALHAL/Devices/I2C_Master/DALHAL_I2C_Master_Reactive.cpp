@@ -28,10 +28,9 @@ namespace DALHAL {
 
     I2C_Master_Reactive::I2C_Master_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult I2C_Master_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(I2C_Master_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(I2C_Master_Reactive);
+    
+    DALHAL_DEFINE_REACTIVE_TABLE(I2C_Master_Reactive) = {
 
 #if HAS_REACTIVE_BEGIN(I2C_MASTER)
         REACTIVE_ENTRY_BEGIN(I2C_Master_Reactive),

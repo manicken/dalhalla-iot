@@ -28,10 +28,9 @@ namespace DALHAL {
 
     WS2812_Reactive::WS2812_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult WS2812_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(WS2812_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(WS2812_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(WS2812_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(WS2812)
         DALHAL_REACTIVE_ENTRY(WS2812_Reactive, Custom1), // keep for future custom features

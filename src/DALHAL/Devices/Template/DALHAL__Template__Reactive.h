@@ -25,7 +25,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Reactive/DALHAL_Reactive.h>
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -33,51 +33,51 @@ namespace DALHAL {
     class _Template__Reactive : public Device {
     protected:
 #if HAS_REACTIVE_CUSTOM(_TEMPLATE_)
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom1);
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom2);
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom3);
+        DALHAL_DECLARE_REACTIVE_FEATURE(_Template__Reactive, Custom1);
+        DALHAL_DECLARE_REACTIVE_FEATURE(_Template__Reactive, Custom2);
+        DALHAL_DECLARE_REACTIVE_FEATURE(_Template__Reactive, Custom3);
 #endif
 #if HAS_REACTIVE_BEGIN(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_BEGIN();
+        REACTIVE_DECLARE_FEATURE_BEGIN(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_CYCLE_COMPLETE(_TEMPLATE_)
-        REACTIVE_DECLARE_CYCLE_COMPLETE();
+        REACTIVE_DECLARE_CYCLE_COMPLETE(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_VALUE_CHANGE(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_VALUE_CHANGE();
+        REACTIVE_DECLARE_FEATURE_VALUE_CHANGE(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_STATE_CHANGE(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_STATE_CHANGE();
+        REACTIVE_DECLARE_FEATURE_STATE_CHANGE(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_READ(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_READ();
+        REACTIVE_DECLARE_FEATURE_READ(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_WRITE(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_WRITE();
+        REACTIVE_DECLARE_FEATURE_WRITE(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_EXEC(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_EXEC();
+        REACTIVE_DECLARE_FEATURE_EXEC(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_BRACKET_READ(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_BRACKET_READ();
+        REACTIVE_DECLARE_FEATURE_BRACKET_READ(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_BRACKET_WRITE(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_BRACKET_WRITE();
+        REACTIVE_DECLARE_FEATURE_BRACKET_WRITE(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_TIMEOUT(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_TIMEOUT();
+        REACTIVE_DECLARE_FEATURE_TIMEOUT(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_WRITE_ERROR(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_WRITE_ERROR();
+        REACTIVE_DECLARE_FEATURE_WRITE_ERROR(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_READ_ERROR(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_READ_ERROR();
+        REACTIVE_DECLARE_FEATURE_READ_ERROR(_Template__Reactive);
 #endif
 #if HAS_REACTIVE_EXEC_ERROR(_TEMPLATE_)
-        REACTIVE_DECLARE_FEATURE_EXEC_ERROR();
+        REACTIVE_DECLARE_FEATURE_EXEC_ERROR(_Template__Reactive);
 #endif
     public:
-        DALHAL_DECLARE_REACTIVE_TABLE(_Template__Reactive, eventTable);
+        DALHAL_DECLARE_REACTIVE_TABLE(_Template__Reactive);
 
         _Template__Reactive(const char* type);
 

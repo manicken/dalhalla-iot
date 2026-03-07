@@ -22,17 +22,16 @@
 */
 
 #include "DALHAL_LatchingRelay_Reactive.h"
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
 
     LatchingRelay_Reactive::LatchingRelay_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult LatchingRelay_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(LatchingRelay_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(LatchingRelay_Reactive);
+    
+    DALHAL_DEFINE_REACTIVE_TABLE(LatchingRelay_Reactive) = {
 #if HAS_REACTIVE_CUSTOM(RELAY_LATCHING)
         DALHAL_REACTIVE_ENTRY(LatchingRelay_Reactive, Reset),
         DALHAL_REACTIVE_ENTRY(LatchingRelay_Reactive, Set),

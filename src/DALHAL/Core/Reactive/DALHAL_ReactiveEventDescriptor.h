@@ -23,40 +23,17 @@
 
 #pragma once
 
-#include "DALHAL_ReactiveEventDescriptor.h"
-#include "DALHAL_ReactiveEvent.h"
-
 #include <cstdint>
+#include <cstddef>
 
-
-#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
-#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#include <DALHAL/Config/DALHAL_BuildFlags.h>
 
-namespace DALHAL {
+namespace  DALHAL
+{
     
-    class Reactive {
-    public:
-
-        static bool CheckDeviceEvent(
-            const EventDescriptor* table,
-            const char* checkName
-        );
-
-        static size_t GetDeviceEvents(
-            const EventDescriptor* table,
-            const char** outNames,
-            size_t maxNames
-        );
-
-        static HALOperationResult GetSimpleReactiveEventImpl(
-            Device* device,
-            ZeroCopyString& name,
-            ReactiveEvent** out, 
-            const EventDescriptor* table
-        );
+    struct EventDescriptor {
+        const char* name;
+        uint32_t* (*getter)(Device*);
     };
-}
+
+} // namespace  DALHAL

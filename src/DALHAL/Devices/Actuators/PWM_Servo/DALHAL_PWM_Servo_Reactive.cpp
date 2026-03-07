@@ -23,15 +23,15 @@
 
 #include "DALHAL_PWM_Servo_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
 namespace DALHAL {
 
     PWM_Servo_Reactive::PWM_Servo_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult PWM_Servo_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(PWM_Servo_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(PWM_Servo_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(PWM_Servo_Reactive) = {
 
 #if HAS_REACTIVE_BEGIN(PWM_SERVO)
         REACTIVE_ENTRY_BEGIN(PWM_Servo_Reactive),

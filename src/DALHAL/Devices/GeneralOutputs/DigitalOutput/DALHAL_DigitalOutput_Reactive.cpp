@@ -28,10 +28,9 @@ namespace DALHAL {
 
     DigitalOutput_Reactive::DigitalOutput_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult DigitalOutput_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(DigitalOutput_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(DigitalOutput_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(DigitalOutput_Reactive) = {
 
 #if HAS_REACTIVE_BEGIN(DIGITAL_OUTPUT)
         REACTIVE_ENTRY_BEGIN(DigitalOutput_Reactive),

@@ -38,7 +38,6 @@
 #define DALHAL_KEYNAME_ONE_WIRE_ROMID       "romid"
 #define DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT "format"
 
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_DEVICE)
 #include "DALHAL_OneWireTempDevice_Reactive.h"

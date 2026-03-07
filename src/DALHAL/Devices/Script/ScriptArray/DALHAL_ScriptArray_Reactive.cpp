@@ -28,10 +28,9 @@ namespace DALHAL {
 
     ScriptArray_Reactive::ScriptArray_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult ScriptArray_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(ScriptArray_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(ScriptArray_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(ScriptArray_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(SCRIPT_ARRAY)
         DALHAL_REACTIVE_ENTRY(ScriptArray_Reactive, Custom1),

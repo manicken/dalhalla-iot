@@ -31,7 +31,7 @@
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(BUTTON_INPUT)
 #include "DALHAL_ButtonInput_Reactive.h"

@@ -28,10 +28,9 @@ namespace DALHAL {
 
     OneWireTempBus_Reactive::OneWireTempBus_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult OneWireTempBus_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(OneWireTempBus_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(OneWireTempBus_Reactive);
+    
+    DALHAL_DEFINE_REACTIVE_TABLE(OneWireTempBus_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(ONE_WIRE_TEMP_BUS)
         DALHAL_REACTIVE_ENTRY(OneWireTempBus_Reactive, Custom1),

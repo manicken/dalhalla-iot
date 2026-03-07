@@ -28,10 +28,9 @@ namespace DALHAL {
 
     ScriptVariableWriteOnlyTest_Reactive::ScriptVariableWriteOnlyTest_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult ScriptVariableWriteOnlyTest_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(ScriptVariableWriteOnlyTest_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(ScriptVariableWriteOnlyTest_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(ScriptVariableWriteOnlyTest_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(SCRIPT_WRITEVAR)
         DALHAL_REACTIVE_ENTRY(ScriptVariableWriteOnlyTest_Reactive, Custom1),

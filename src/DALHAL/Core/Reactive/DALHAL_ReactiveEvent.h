@@ -47,7 +47,7 @@ namespace  DALHAL
         ReactiveEvent() = delete;
         ReactiveEvent(ReactiveEvent&) = delete;
         ReactiveEvent(CheckFn checkFn, Deleter deleteFn, void* context);
-        ReactiveEvent(uint32_t& current);
+        ReactiveEvent(uint32_t* current);
 
         static bool SimpleReactiveEventCheck(void* context);
 
@@ -57,16 +57,4 @@ namespace  DALHAL
             return checkFn(context);
         }
     };
-#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
-    template<typename T>
-    struct EventDescriptorT {
-        const char* name;
-        uint32_t T::* counter;
-    };
-#else
-    struct EventDescriptor {
-        const char* name;
-        size_t offset;
-    };
-#endif
-} // namespace  DALHAL
+}

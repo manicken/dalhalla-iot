@@ -28,10 +28,9 @@ namespace DALHAL {
 
     TX433unit_Reactive::TX433unit_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult TX433unit_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(TX433unit_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(TX433unit_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(TX433unit_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(TX433_UNIT)
         DALHAL_REACTIVE_ENTRY(TX433unit_Reactive, Custom1),

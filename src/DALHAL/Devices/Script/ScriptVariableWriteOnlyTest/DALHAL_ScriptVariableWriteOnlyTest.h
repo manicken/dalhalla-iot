@@ -32,7 +32,6 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_WRITEVAR)
 #include "DALHAL_ScriptVariableWriteOnlyTest_Reactive.h"

@@ -23,15 +23,15 @@
 
 #include "DALHAL_ButtonInput_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
 namespace DALHAL {
 
     ButtonInput_Reactive::ButtonInput_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult ButtonInput_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(ButtonInput_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(ButtonInput_Reactive);
+    
+    DALHAL_DEFINE_REACTIVE_TABLE(ButtonInput_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(BUTTON_INPUT)
         DALHAL_REACTIVE_ENTRY(ButtonInput_Reactive, Press),

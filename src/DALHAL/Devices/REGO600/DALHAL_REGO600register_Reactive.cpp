@@ -28,10 +28,9 @@ namespace DALHAL {
 
     REGO600register_Reactive::REGO600register_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult REGO600register_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(REGO600register_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(REGO600register_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(REGO600register_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(REGO600_REGISTRY_ITEM)
         DALHAL_REACTIVE_ENTRY(REGO600register_Reactive, Custom1),

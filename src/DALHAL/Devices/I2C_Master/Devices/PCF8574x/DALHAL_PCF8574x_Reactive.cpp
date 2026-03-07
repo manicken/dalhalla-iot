@@ -28,10 +28,9 @@ namespace DALHAL {
 
     PCF8574x_Reactive::PCF8574x_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult PCF8574x_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(PCF8574x_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(PCF8574x_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(PCF8574x_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(I2C_DEVICE_PCF8574X)
         DALHAL_REACTIVE_ENTRY(PCF8574x_Reactive, Interrupt),

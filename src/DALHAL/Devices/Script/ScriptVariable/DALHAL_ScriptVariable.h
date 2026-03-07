@@ -32,7 +32,6 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_VARIABLE)
 #include "DALHAL_ScriptVariable_Reactive.h"
@@ -58,27 +57,12 @@ namespace DALHAL {
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        inline static bool HasEvent(const char* name) {
-#if USING_REACTIVE(SCRIPT_VARIABLE)
-            return Reactive::CheckOrGetDeviceEvents(eventTable, name);
-#else
-            return false;
-#endif
-        }
-        inline static bool GetEventNames(const char** outNames, size_t maxNames) {
-#if USING_REACTIVE(SCRIPT_VARIABLE)
-            return Reactive::CheckOrGetDeviceEvents(eventTable, nullptr, outNames, maxNames);
-#else
-            return false;
-#endif
-        }
-
+        
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
             VerifyJSON,
-            HasEvent,
-            GetEventNames
+            DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
         };
         ScriptVariable(const JsonVariant &jsonObj, const char* type);
         HALOperationResult read(HALValue& val) override;

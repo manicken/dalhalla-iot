@@ -23,15 +23,15 @@
 
 #include "DALHAL_ThingSpeak_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
 namespace DALHAL {
 
     ThingSpeak_Reactive::ThingSpeak_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult ThingSpeak_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(ThingSpeak_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(ThingSpeak_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(ThingSpeak_Reactive) = {
 
 #if HAS_REACTIVE_BEGIN(THINGSPEAK)
         REACTIVE_ENTRY_BEGIN(ThingSpeak_Reactive),

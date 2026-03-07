@@ -55,8 +55,6 @@
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_STOP   "stop"
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET  "reset"
 
-
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
 #include "DALHAL_LatchingRelay_Reactive.h"

@@ -25,7 +25,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Reactive/DALHAL_Reactive.h>
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
@@ -33,51 +33,51 @@ namespace DALHAL {
     class ScriptVariableWriteOnlyTest_Reactive : public Device {
     protected:
 #if HAS_REACTIVE_CUSTOM(SCRIPT_WRITEVAR)
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom1);
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom2);
-        DALHAL_DECLARE_REACTIVE_FEATURE(Custom3);
+        DALHAL_DECLARE_REACTIVE_FEATURE(ScriptVariableWriteOnlyTest_Reactive, Custom1);
+        DALHAL_DECLARE_REACTIVE_FEATURE(ScriptVariableWriteOnlyTest_Reactive, Custom2);
+        DALHAL_DECLARE_REACTIVE_FEATURE(ScriptVariableWriteOnlyTest_Reactive, Custom3);
 #endif
 #if HAS_REACTIVE_BEGIN(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_BEGIN();
+        REACTIVE_DECLARE_FEATURE_BEGIN(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_CYCLE_COMPLETE(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_CYCLE_COMPLETE();
+        REACTIVE_DECLARE_CYCLE_COMPLETE(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_VALUE_CHANGE();
+        REACTIVE_DECLARE_FEATURE_VALUE_CHANGE(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_STATE_CHANGE(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_STATE_CHANGE();
+        REACTIVE_DECLARE_FEATURE_STATE_CHANGE(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_READ(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_READ();
+        REACTIVE_DECLARE_FEATURE_READ(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_WRITE(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_WRITE();
+        REACTIVE_DECLARE_FEATURE_WRITE(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_EXEC(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_EXEC();
+        REACTIVE_DECLARE_FEATURE_EXEC(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_BRACKET_READ(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_BRACKET_READ();
+        REACTIVE_DECLARE_FEATURE_BRACKET_READ(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_BRACKET_WRITE(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_BRACKET_WRITE();
+        REACTIVE_DECLARE_FEATURE_BRACKET_WRITE(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_TIMEOUT(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_TIMEOUT();
+        REACTIVE_DECLARE_FEATURE_TIMEOUT(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_WRITE_ERROR(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_WRITE_ERROR();
+        REACTIVE_DECLARE_FEATURE_WRITE_ERROR(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_READ_ERROR(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_READ_ERROR();
+        REACTIVE_DECLARE_FEATURE_READ_ERROR(ScriptVariableWriteOnlyTest_Reactive);
 #endif
 #if HAS_REACTIVE_EXEC_ERROR(SCRIPT_WRITEVAR)
-        REACTIVE_DECLARE_FEATURE_EXEC_ERROR();
+        REACTIVE_DECLARE_FEATURE_EXEC_ERROR(ScriptVariableWriteOnlyTest_Reactive);
 #endif
     public:
-        DALHAL_DECLARE_REACTIVE_TABLE(ScriptVariableWriteOnlyTest_Reactive, eventTable);
+        DALHAL_DECLARE_REACTIVE_TABLE(ScriptVariableWriteOnlyTest_Reactive);
 
         ScriptVariableWriteOnlyTest_Reactive(const char* type);
 

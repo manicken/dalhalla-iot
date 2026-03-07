@@ -23,9 +23,6 @@
 
 #pragma once
 
-#include <DALHAL/Config/DALHAL_BuildFlags.h>
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveTypes.h>
-
 #define DALHAL_REACTIVE_FEATURE_NONE           0x00000000
 
 #define DALHAL_REACTIVE_FEATURE_BEGIN          0x00000001
@@ -200,43 +197,27 @@
 #define HAS_REACTIVE(name, feature) (DALHAL_REACTIVE_CFG_##name & DALHAL_REACTIVE_FEATURE_##feature)
 #define USING_REACTIVE(name) (DALHAL_REACTIVE_CFG_##name)
 
-/**
- * DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
- *
- * When undefined, reactive device event tables use a type-safe template-based approach:
- *   - Each EventDescriptor stores a pointer-to-member (uint32_t CLASS_NAME::* counter)
- *     which provides full compile-time type safety and IDE support.
- *   - The compiler ensures that the event table matches the device class's member counters.
- *   - Recommended for development or small/medium projects where safety and clarity are important.
- *
- * When defined, a generic EventDescriptor table is used:
- *   - Counters are stored as offsets or void* pointers, allowing one table type for all devices.
- *   - Reduces template instantiations and binary bloat for large projects.
- *   - Some compile-time type checking is lost, but runtime safety is maintained via the reactive system macros.
- *
- * Choose based on whether you prioritize compile-time type safety or minimal template overhead.
- */
+#define DALHAL_DECLARE_REACTIVE_TABLE(CLASS_NAME) static const EventDescriptor ReactiveEventTable[];
+#define DALHAL_DEFINE_REACTIVE_TABLE(CLASS_NAME)  const EventDescriptor CLASS_NAME::ReactiveEventTable[]
+
+#define DALHAL_REACTIVE_EVENT_TABLENAME ReactiveEventTable
+
+#define DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(CLASS_NAME) \
+    HALOperationResult CLASS_NAME::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) { \
+        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, CLASS_NAME::ReactiveEventTable); \
+    }
+
+#define DALHAL_REACTIVE_EVENT_TABLE(name) \
+    ((DALHAL_REACTIVE_CFG_##name) ? (ReactiveEventTable) : nullptr)
+
+#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, &CLASS_NAME::reactiveEventGetCounterPtr##FEATURE_VAR_NAME}
 
 
-#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
-#define DALHAL_DECLARE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME) static const EventDescriptorT<CLASS_NAME> TABLE_NAME[];
-#define DALHAL_DEFINE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME)  const EventDescriptorT<CLASS_NAME> CLASS_NAME::TABLE_NAME[]
-#else // future implementation for smaller but typeless builds
-#define DALHAL_DECLARE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME) static const EventDescriptor TABLE_NAME[];
-#define DALHAL_DEFINE_REACTIVE_TABLE(CLASS_NAME, TABLE_NAME)  const EventDescriptor CLASS_NAME::TABLE_NAME[]
-#endif
-
-#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
-#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, &CLASS_NAME::reactiveEventCounter##FEATURE_VAR_NAME}
-#else
-#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, offsetof(CLASS_NAME, reactiveEventCounter##FEATURE_VAR_NAME)}
-#endif
-
-#define DALHAL_DECLARE_REACTIVE_FEATURE(FEATURE_NAME) \
-private: \
-    uint32_t reactiveEventCounter##FEATURE_NAME = 0; \
+#define DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, FEATURE_NAME) \
 public: \
-    inline void trigger##FEATURE_NAME() { reactiveEventCounter##FEATURE_NAME++; }
+    uint32_t reactiveEventCounter##FEATURE_NAME = 0; \
+    inline void trigger##FEATURE_NAME() { reactiveEventCounter##FEATURE_NAME++; } \
+    inline static uint32_t* reactiveEventGetCounterPtr##FEATURE_NAME(Device* device) { return &(static_cast<CLASS_NAME*>(device)->reactiveEventCounter##FEATURE_NAME); }
 
 #define HAS_REACTIVE_CUSTOM(name)                (DALHAL_REACTIVE_CFG_##name & DALHAL_REACTIVE_FEATURE_CUSTOM)
 #define HAS_REACTIVE_BEGIN(name)                 (DALHAL_REACTIVE_CFG_##name & DALHAL_REACTIVE_FEATURE_BEGIN)
@@ -267,26 +248,26 @@ public: \
 #define REACTIVE_ENTRY_WRITE_ERROR(CLASS_NAME)    DALHAL_REACTIVE_ENTRY(CLASS_NAME, WriteError)
 #define REACTIVE_ENTRY_EXEC_ERROR(CLASS_NAME)     DALHAL_REACTIVE_ENTRY(CLASS_NAME, ExecError)
 
-// Terminator for all tables
-#ifndef DALHAL_REACTIVE_NOT_USE_TYPESAFE_TEMPLATE_BASED_TABLES
-#define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, nullptr }
-#else
-#define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, 0 }
-#endif
 
-#define REACTIVE_DECLARE_FEATURE_BEGIN()          DALHAL_DECLARE_REACTIVE_FEATURE(Begin)
-#define REACTIVE_DECLARE_CYCLE_COMPLETE()         DALHAL_DECLARE_REACTIVE_FEATURE(CycleComplete)
-#define REACTIVE_DECLARE_FEATURE_VALUE_CHANGE()   DALHAL_DECLARE_REACTIVE_FEATURE(ValueChange)
-#define REACTIVE_DECLARE_FEATURE_STATE_CHANGE()   DALHAL_DECLARE_REACTIVE_FEATURE(StateChange)
-#define REACTIVE_DECLARE_FEATURE_WRITE()          DALHAL_DECLARE_REACTIVE_FEATURE(Write)
-#define REACTIVE_DECLARE_FEATURE_READ()           DALHAL_DECLARE_REACTIVE_FEATURE(Read)
-#define REACTIVE_DECLARE_FEATURE_EXEC()           DALHAL_DECLARE_REACTIVE_FEATURE(Exec)
-#define REACTIVE_DECLARE_FEATURE_BRACKET_READ()   DALHAL_DECLARE_REACTIVE_FEATURE(BracketRead)
-#define REACTIVE_DECLARE_FEATURE_BRACKET_WRITE()  DALHAL_DECLARE_REACTIVE_FEATURE(BracketWrite)
-#define REACTIVE_DECLARE_FEATURE_TIMEOUT()        DALHAL_DECLARE_REACTIVE_FEATURE(Timeout)
-#define REACTIVE_DECLARE_FEATURE_READ_ERROR()     DALHAL_DECLARE_REACTIVE_FEATURE(ReadError)
-#define REACTIVE_DECLARE_FEATURE_WRITE_ERROR()    DALHAL_DECLARE_REACTIVE_FEATURE(WriteError)
-#define REACTIVE_DECLARE_FEATURE_EXEC_ERROR()     DALHAL_DECLARE_REACTIVE_FEATURE(ExecError)
+// Terminator for all tables
+#define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, nullptr }
+
+#define REACTIVE_ENTRY_BEGIN_TEST(NAME, CLASS_NAME)    HAS_REACTIVE_BEGIN(NAME) ? DALHAL_REACTIVE_ENTRY(CLASS_NAME, Begin) : REACTIVE_ENTRY__TERMINATOR_()
+
+
+#define REACTIVE_DECLARE_FEATURE_BEGIN(CLASS_NAME)          DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Begin)
+#define REACTIVE_DECLARE_CYCLE_COMPLETE(CLASS_NAME)         DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, CycleComplete)
+#define REACTIVE_DECLARE_FEATURE_VALUE_CHANGE(CLASS_NAME)   DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, ValueChange)
+#define REACTIVE_DECLARE_FEATURE_STATE_CHANGE(CLASS_NAME)   DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, StateChange)
+#define REACTIVE_DECLARE_FEATURE_WRITE(CLASS_NAME)          DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Write)
+#define REACTIVE_DECLARE_FEATURE_READ(CLASS_NAME)           DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Read)
+#define REACTIVE_DECLARE_FEATURE_EXEC(CLASS_NAME)           DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Exec)
+#define REACTIVE_DECLARE_FEATURE_BRACKET_READ(CLASS_NAME)   DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, BracketRead)
+#define REACTIVE_DECLARE_FEATURE_BRACKET_WRITE(CLASS_NAME)  DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, BracketWrite)
+#define REACTIVE_DECLARE_FEATURE_TIMEOUT(CLASS_NAME)        DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Timeout)
+#define REACTIVE_DECLARE_FEATURE_READ_ERROR(CLASS_NAME)     DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, ReadError)
+#define REACTIVE_DECLARE_FEATURE_WRITE_ERROR(CLASS_NAME)    DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, WriteError)
+#define REACTIVE_DECLARE_FEATURE_EXEC_ERROR(CLASS_NAME)     DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, ExecError)
 
 template<typename T>
 static void GenericValueCallback(void* ctx) {

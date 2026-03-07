@@ -23,15 +23,15 @@
 
 #include "DALHAL_AnalogInput_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
 namespace DALHAL {
 
     AnalogInput_Reactive::AnalogInput_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult AnalogInput_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(AnalogInput_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(AnalogInput_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(AnalogInput_Reactive) = {
 
 #if HAS_REACTIVE_BEGIN(ANALOG_INPUT)
         REACTIVE_ENTRY_BEGIN(AnalogInput_Reactive),

@@ -28,10 +28,9 @@ namespace DALHAL {
 
     SinglePulseOutput_Reactive::SinglePulseOutput_Reactive(const char* type) : Device(type) {}
 
-    HALOperationResult SinglePulseOutput_Reactive::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut) {
-        return Reactive::GetSimpleReactiveEventImpl(this, zcFuncName, reactiveEventOut, eventTable);
-    }
-    DALHAL_DEFINE_REACTIVE_TABLE(SinglePulseOutput_Reactive, eventTable) = {
+    DALHAL_DEFINE_GET_REACTIVE_EVENT_FUNC(SinglePulseOutput_Reactive);
+
+    DALHAL_DEFINE_REACTIVE_TABLE(SinglePulseOutput_Reactive) = {
 
 #if HAS_REACTIVE_CUSTOM(SINGLE_PULSE_OUTPUT)
         DALHAL_REACTIVE_ENTRY(SinglePulseOutput_Reactive, Custom1),
