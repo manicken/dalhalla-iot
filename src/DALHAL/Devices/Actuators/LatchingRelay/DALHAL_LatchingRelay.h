@@ -56,7 +56,7 @@
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET  "reset"
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#if USING_REACTIVE(ACTUATOR)
+#if USING_REACTIVE(RELAY_LATCHING)
 #include "DALHAL_LatchingRelay_Reactive.h"
 using LatchingRelay_DeviceBase = DALHAL::LatchingRelay_Reactive;
 #else
@@ -82,7 +82,8 @@ public:
     static constexpr DeviceRegistryDefine RegistryDefine = {
         UseRootUID::Mandatory,
         Create,
-        VerifyJSON
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
 
     LatchingRelay(const JsonVariant &jsonObj, const char* type);

@@ -91,7 +91,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)
         };
 
         _Template_(const JsonVariant &jsonObj, const char* type);

@@ -46,7 +46,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            nullptr /* no events available */
         };
         ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
 

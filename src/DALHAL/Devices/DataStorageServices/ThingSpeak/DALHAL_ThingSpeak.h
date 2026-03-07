@@ -76,7 +76,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
         };
         ThingSpeak(const JsonVariant &jsonObj, const char* type);
         ~ThingSpeak();

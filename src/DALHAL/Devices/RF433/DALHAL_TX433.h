@@ -54,7 +54,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(TX433)
         };
         TX433(const JsonVariant &jsonObj, const char* type);
         TX433(TX433&) = delete;

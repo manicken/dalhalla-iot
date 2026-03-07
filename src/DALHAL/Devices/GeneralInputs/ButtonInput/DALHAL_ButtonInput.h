@@ -50,7 +50,8 @@ public:
     static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
         };
 
     // Constructor

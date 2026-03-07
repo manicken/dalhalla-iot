@@ -34,7 +34,7 @@
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#if USING_REACTIVE(_TEMPLATE_)
+#if USING_REACTIVE(I2C_MASTER)
 #include "DALHAL_I2C_Master_Reactive.h"
 using I2C_Master_DeviceBase = DALHAL::I2C_Master_Reactive;
 #else
@@ -61,8 +61,9 @@ namespace DALHAL {
         static Device* Create(const JsonVariant &jsonObj, const char* type);
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
-            I2C_Master::Create,
-            I2C_Master::VerifyJSON
+            Create,
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
         };
         I2C_Master(const JsonVariant &jsonObj, const char* type);
         ~I2C_Master();

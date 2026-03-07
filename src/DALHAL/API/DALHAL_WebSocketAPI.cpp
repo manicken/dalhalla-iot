@@ -46,8 +46,12 @@ namespace DALHAL {
   <button onclick="ws.send('hal/reloadcfg');">reload cfg</button>
   <button onclick="ws.send('help');">help</button>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
-    <button onclick="ws.send('hal/printDevices');">Print Devices</button>
+    <button onclick="ws.send('hal/printRegistry');">Print Device Registry</button>
     <button onclick="ws.send('hal/getAvailableGPIOs');">get Available GPIOs</button>
+    <button onclick="ws.send('system/info');">get Info</button>
+  </div>
+  <div style="display:flex; flex-direction:row; gap: 0.5em;">
+    <button onclick="ws.send('hal/printDevices');">Print Devices</button>
     <button onclick="ws.send('hal/printlog');">print log</button>
   </div>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
@@ -60,6 +64,9 @@ namespace DALHAL {
     <button onclick="sendCmd()">Send</button>
 </div>
  </div>
+ <div style="display:flex; justify-content:flex-end; margin-bottom:0.5em;">
+    <button onclick="document.getElementById('log').textContent='';">Clear log</button>
+</div>
 <pre id="log" style="margin:0; margin-top:1em; flex:1 1 auto; overflow-y:auto; background:#f0f0f0; padding:1em; "></pre>
 <script>
 let location_host = location.host;
@@ -76,8 +83,36 @@ function connect() {
         document.getElementById('log').textContent += "Connected\n";
     };
 
-    ws.onmessage = (evt) => {
+    /*ws.onmessage = (evt) => {
         document.getElementById('log').textContent += evt.data + '\n';
+    };*/
+
+    ws.onmessage = (evt) => {
+        const log = document.getElementById('log');
+
+        let jsonData;
+        try {
+            jsonData = JSON.parse(evt.data);
+            // JSON detected — make it collapsible
+            const details = document.createElement('details');
+            const summary = document.createElement('summary');
+            const oneLine = JSON.stringify(jsonData);
+            summary.textContent = oneLine.length > 80 ? oneLine.substr(0, 77) + "  ..." : oneLine;
+            details.appendChild(summary);
+
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(jsonData, null, 2); // nicely indented
+            details.appendChild(pre);
+
+            log.appendChild(details);
+        } catch(e) {
+            // Not JSON, just print normally
+            const div = document.createElement('div');
+            div.style.whiteSpace = "pre-wrap";  // preserves newlines
+            div.style.fontFamily = "monospace"; // optional, for readability
+            div.textContent = evt.data;
+            log.appendChild(div);
+        }
     };
 
     ws.onclose = () => {

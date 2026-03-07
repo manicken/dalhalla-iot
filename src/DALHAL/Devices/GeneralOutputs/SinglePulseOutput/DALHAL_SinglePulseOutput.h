@@ -56,7 +56,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
         };
         SinglePulseOutput(const JsonVariant& jsonObj, const char* type);
         ~SinglePulseOutput();

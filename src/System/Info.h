@@ -80,12 +80,14 @@ namespace Info
 void printESP_info(void);
     */
 
-bool resetReason_is_crash(bool includeWatchdogs);
+    bool resetReason_is_crash(bool includeWatchdogs);
 
 
-const char* getResetReasonStr();
+    const char* getResetReasonStr();
 
-uint64_t reverseBytes(uint64_t value);
+    uint64_t reverseBytes(uint64_t value);
 
-void srv_handle_info(AsyncWebServerRequest* req);
+    void srv_handle_info(AsyncWebServerRequest* req);
+
+    const char* getESPVariant();
 }

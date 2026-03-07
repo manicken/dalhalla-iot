@@ -32,14 +32,7 @@
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
-#if USING_REACTIVE(DHT)
-#include "DALHAL_DHT_Reactive.h"
-using DHTDeviceBase = DALHAL::DHT_Reactive;
-#else
-using DHTDeviceBase = DALHAL::Device;
-#endif
+
 
 
 #define DALHAL_KEYNAME_DHT_MODEL          "model"
@@ -50,6 +43,14 @@ using DHTDeviceBase = DALHAL::Device;
 #define DALHAL_TYPE_DHT_MODEL_RHT03       "RTH03"
  /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
 #define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000
+
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(DHT)
+#include "DALHAL_DHT_Reactive.h"
+using DHTDeviceBase = DALHAL::DHT_Reactive;
+#else
+using DHTDeviceBase = DALHAL::Device;
+#endif
 
 namespace DALHAL {
 
@@ -67,7 +68,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(DHT)
         };
         DHT(const JsonVariant &jsonObj, const char* type);
 

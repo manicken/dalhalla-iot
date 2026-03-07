@@ -78,7 +78,8 @@ public:
     static constexpr DeviceRegistryDefine RegistryDefine = {
         UseRootUID::Mandatory,
         Create,
-        VerifyJSON
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)
     };
 
     void begin() override;

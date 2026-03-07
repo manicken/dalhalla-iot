@@ -59,7 +59,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Optional,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
         };
         OneWireTempGroup(const JsonVariant &jsonObj, const char* type);
         ~OneWireTempGroup();

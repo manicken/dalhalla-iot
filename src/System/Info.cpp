@@ -120,161 +120,245 @@ void printESP_info(void) {
     DEBUG_UART.println();
 }*/
 
-bool resetReason_is_crash(bool includeWatchdogs)
-{
-    #if defined(ESP8266)
-    rst_info *info = system_get_rst_info();
-    uint32 reason = info->reason;
-    if (reason == rst_reason::REASON_EXCEPTION_RST)
-        return true;
-    if (includeWatchdogs) {
-        switch (reason) {
-            case rst_reason::REASON_WDT_RST: return true;
-            case rst_reason::REASON_SOFT_WDT_RST: return true;
-            default: return false;
-        }
-    }
-#elif defined(ESP32)
-    esp_reset_reason_t reason = esp_reset_reason();
-    if (reason == ESP_RST_PANIC) return true;
-    if (includeWatchdogs) {
-        switch (reason) {
-            case ESP_RST_INT_WDT: return true;
-            case ESP_RST_TASK_WDT: return true;
-            case ESP_RST_WDT: return true;
-            default: return false;
-        }
-    }
-#endif
-    return false;
-}
-
-const char* getResetReasonStr()
-{
-#if defined(ESP8266)
-    rst_info *info = system_get_rst_info();
-    uint32 reason = info->reason;
-    if (reason == rst_reason::REASON_DEFAULT_RST)
-        return "normal startup by power on";
-    else if (reason == rst_reason::REASON_WDT_RST)
-        return "hardware watch dog reset";
-    else if (reason == rst_reason::REASON_EXCEPTION_RST)
-        return "exception reset";
-    else if (reason == rst_reason::REASON_SOFT_WDT_RST)
-        return "software watch dog reset";
-    else if (reason == rst_reason::REASON_SOFT_RESTART)
-        return "software restart/system_restart";
-    else if (reason == rst_reason::REASON_DEEP_SLEEP_AWAKE)
-        return "wake up from deep-sleep";
-    else if (reason == rst_reason::REASON_EXT_SYS_RST)
-        return "external system reset";
-    else
-        return "undefined reset cause";
-#elif defined(ESP32)
-    esp_reset_reason_t reset_reason = esp_reset_reason();
-    switch (reset_reason) {
-        case ESP_RST_POWERON: return "Power-on reset";
-        case ESP_RST_EXT: return "External reset";
-        case ESP_RST_SW: return "Software reset";
-        case ESP_RST_PANIC: return "Software reset due to panic";
-        case ESP_RST_INT_WDT: return "Interrupt watchdog reset";
-        case ESP_RST_TASK_WDT: return "Task watchdog reset";
-        case ESP_RST_WDT: return "Other watchdog reset";
-        case ESP_RST_DEEPSLEEP: return "Reset after deep sleep";
-        case ESP_RST_BROWNOUT: return "Brownout reset";
-        case ESP_RST_SDIO: return "SDIO reset";
-        default: return "Unknown reset reason";
-    }
-#endif
-        
-}
-
-uint64_t reverseBytes(uint64_t value) {
-    return ((value & 0x00000000000000FF) << 56) |
-           ((value & 0x000000000000FF00) << 40) |
-           ((value & 0x0000000000FF0000) << 24) |
-           ((value & 0x00000000FF000000) << 8)  |
-           ((value & 0x000000FF00000000) >> 8)  |
-           ((value & 0x0000FF0000000000) >> 24) |
-           ((value & 0x00FF000000000000) >> 40) |
-           ((value & 0xFF00000000000000) >> 56);
-}
-
-void srv_handle_info(AsyncWebServerRequest* req)
-{
-    String srv_return_msg = getESP_info();
-    req->send(200, "text/html", srv_return_msg);
-    //server.sendContent(srv_return_msg);
-
-    //server.sendContent("");
-}
-String getESP_info() {
-    uint32_t ideSize = ESP.getFlashChipSize();
-#if defined(ESP8266)
-    uint32_t realSize = ESP.getFlashChipRealSize();
-#else
-    uint32_t realSize = ideSize;
-#endif
-    FlashMode_t ideMode = ESP.getFlashChipMode();
-    String infoMsg = "";
-
-    infoMsg.concat(F("<!DOCTYPE html PUBLIC\"ISO/IEC 15445:2000//DTD HTML//EN\"><html><head><title></title></head><body>"));
-#if defined(ESP8266)
-    srv_return_msg.concat(F("<br>Flash real id:   ")); srv_return_msg.concat(ESP.getFlashChipId());
-#elif defined(ESP32)
-    infoMsg.concat(F("<br>Flash real id:  (ESP32 don't have this function)"));
-#endif
-    uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
-    String hostString = String(macAddrBigEndian & 0xFFFFFF,HEX);
-    hostString.toUpperCase();
-    infoMsg.concat(F("<br>Chip short id:   "));infoMsg.concat(WIFI_CHIPID_PREFIX); infoMsg.concat(hostString);
-
-    infoMsg.concat(F("<br>Flash real size: ")); infoMsg.concat(realSize);
-
-    infoMsg.concat(F("<br>Flash ide  size: ")); infoMsg.concat(ideSize);
-    infoMsg.concat(F("<br>Flash ide speed: ")); infoMsg.concat(ESP.getFlashChipSpeed());
-    infoMsg.concat(F("<br>Flash ide mode:  ")); infoMsg.concat((ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
-    if(ideSize != realSize)
+    bool resetReason_is_crash(bool includeWatchdogs)
     {
-        infoMsg.concat(F("<br>Flash Chip configuration wrong!\r\n"));
-    }
-    else
-    {
-        infoMsg.concat(F("<br>Flash Chip configuration ok.\r\n"));
-    }
 #if defined(ESP8266)
-    srv_return_msg.concat(F("<br> ESP8266 Chip id = ")); srv_return_msg.concat(ESP.getChipId());
-#endif
-    infoMsg.concat(F("<br><br>"));
-    if (LITTLEFS_BEGIN_FUNC_CALL) {
-        infoMsg.concat(F("<br>LittleFS mounted OK"));
-#if defined(ESP8266)
-        FSInfo fsi;
-        if (LittleFS.info(fsi)) {
-            srv_return_msg.concat(F("<br>LittleFS blocksize = ")); srv_return_msg.concat(fsi.blockSize); 
-            srv_return_msg.concat(F("<br>LittleFS maxOpenFiles = ")); srv_return_msg.concat(fsi.maxOpenFiles); 
-            srv_return_msg.concat(F("<br>LittleFS maxPathLength = ")); srv_return_msg.concat(fsi.maxPathLength); 
-            srv_return_msg.concat(F("<br>LittleFS pageSize = ")); srv_return_msg.concat(fsi.pageSize); 
-            srv_return_msg.concat(F("<br>LittleFS totalBytes = ")); srv_return_msg.concat(fsi.totalBytes); 
-            srv_return_msg.concat(F("<br>LittleFS usedBytes = ")); srv_return_msg.concat(fsi.usedBytes); 
+        rst_info *info = system_get_rst_info();
+        uint32 reason = info->reason;
+        if (reason == rst_reason::REASON_EXCEPTION_RST)
+            return true;
+        if (includeWatchdogs) {
+            switch (reason) {
+                case rst_reason::REASON_WDT_RST: return true;
+                case rst_reason::REASON_SOFT_WDT_RST: return true;
+                default: return false;
+            }
         }
+#elif defined(ESP32)
+        esp_reset_reason_t reason = esp_reset_reason();
+        if (reason == ESP_RST_PANIC) return true;
+        if (includeWatchdogs) {
+            switch (reason) {
+                case ESP_RST_INT_WDT: return true;
+                case ESP_RST_TASK_WDT: return true;
+                case ESP_RST_WDT: return true;
+                default: return false;
+            }
+        }
+#endif
+        return false;
+    }
+
+    const char* getResetReasonStr()
+    {
+#if defined(ESP8266)
+        rst_info *info = system_get_rst_info();
+        uint32 reason = info->reason;
+        if (reason == rst_reason::REASON_DEFAULT_RST)
+            return "normal startup by power on";
+        else if (reason == rst_reason::REASON_WDT_RST)
+            return "hardware watch dog reset";
+        else if (reason == rst_reason::REASON_EXCEPTION_RST)
+            return "exception reset";
+        else if (reason == rst_reason::REASON_SOFT_WDT_RST)
+            return "software watch dog reset";
+        else if (reason == rst_reason::REASON_SOFT_RESTART)
+            return "software restart/system_restart";
+        else if (reason == rst_reason::REASON_DEEP_SLEEP_AWAKE)
+            return "wake up from deep-sleep";
+        else if (reason == rst_reason::REASON_EXT_SYS_RST)
+            return "external system reset";
         else
+            return "undefined reset cause";
 #elif defined(ESP32)
-        infoMsg.concat(F("<br>LittleFS totalBytes = ")); infoMsg.concat(LittleFS.totalBytes());
-        infoMsg.concat(F("<br>LittleFS usedBytes = ")); infoMsg.concat(LittleFS.usedBytes()); 
+        esp_reset_reason_t reset_reason = esp_reset_reason();
+        switch (reset_reason) {
+            case ESP_RST_POWERON: return "Power-on reset";
+            case ESP_RST_EXT: return "External reset";
+            case ESP_RST_SW: return "Software reset";
+            case ESP_RST_PANIC: return "Software reset due to panic";
+            case ESP_RST_INT_WDT: return "Interrupt watchdog reset";
+            case ESP_RST_TASK_WDT: return "Task watchdog reset";
+            case ESP_RST_WDT: return "Other watchdog reset";
+            case ESP_RST_DEEPSLEEP: return "Reset after deep sleep";
+            case ESP_RST_BROWNOUT: return "Brownout reset";
+            case ESP_RST_SDIO: return "SDIO reset";
+            default: return "Unknown reset reason";
+        }
+#endif
+            
+    }
+
+    uint64_t reverseBytes(uint64_t value) {
+        return ((value & 0x00000000000000FF) << 56) |
+            ((value & 0x000000000000FF00) << 40) |
+            ((value & 0x0000000000FF0000) << 24) |
+            ((value & 0x00000000FF000000) << 8)  |
+            ((value & 0x000000FF00000000) >> 8)  |
+            ((value & 0x0000FF0000000000) >> 24) |
+            ((value & 0x00FF000000000000) >> 40) |
+            ((value & 0xFF00000000000000) >> 56);
+    }
+
+    void srv_handle_info(AsyncWebServerRequest* req)
+    {
+        String srv_return_msg = getESP_info();
+        req->send(200, "text/html", srv_return_msg);
+        //server.sendContent(srv_return_msg);
+
+        //server.sendContent("");
+    }
+    String getESP_info() {
+        uint32_t ideSize = ESP.getFlashChipSize();
+
+#if defined(ESP8266)
+        uint32_t realSize = ESP.getFlashChipRealSize();
 #else
-            srv_return_msg.concat(F("<br>LittleFS info not implemented"));
+        uint32_t realSize = ideSize;
 #endif
 
-        infoMsg.concat("<br><br>Files:<br>");
-        
-        //LittleFS_ext::listDir(DEBUG_UART,"/", 0);
-        LittleFS_ext::listDir(infoMsg, true, "/", 0);
-    }
-    else
-        infoMsg.concat(F("<br>LittleFS Fail to mount"));
+        FlashMode_t ideMode = ESP.getFlashChipMode();
 
-    infoMsg.concat(F("</body></html>"));
-    return infoMsg;
-}
+        String infoMsg = "{";
+
+#if defined(ESP8266)
+        infoMsg.concat("\"flash_real_id\":");
+        infoMsg.concat(ESP.getFlashChipId());
+        infoMsg.concat(",");
+#else
+        infoMsg.concat("\"flash_real_id\":\"unsupported\",");
+#endif
+
+        uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
+        String hostString = String(macAddrBigEndian & 0xFFFFFF, HEX);
+        hostString.toUpperCase();
+
+        infoMsg.concat("\"chip_short_id\":\"");
+        infoMsg.concat(WIFI_CHIPID_PREFIX);
+        infoMsg.concat(hostString);
+        infoMsg.concat("\",");
+
+        infoMsg.concat("\"flash_real_size\":");
+        infoMsg.concat(realSize);
+        infoMsg.concat(",");
+
+        infoMsg.concat("\"flash_ide_size\":");
+        infoMsg.concat(ideSize);
+        infoMsg.concat(",");
+
+        infoMsg.concat("\"flash_ide_speed\":");
+        infoMsg.concat(ESP.getFlashChipSpeed());
+        infoMsg.concat(",");
+
+        infoMsg.concat("\"flash_ide_mode\":\"");
+        infoMsg.concat(
+            ideMode == FM_QIO  ? "QIO"  :
+            ideMode == FM_QOUT ? "QOUT" :
+            ideMode == FM_DIO  ? "DIO"  :
+            ideMode == FM_DOUT ? "DOUT" :
+            "UNKNOWN"
+        );
+        infoMsg.concat("\",");
+
+        infoMsg.concat("\"flash_config_ok\":");
+        infoMsg.concat(ideSize == realSize ? "true" : "false");
+        infoMsg.concat(",");
+
+#if defined(ESP8266)
+        infoMsg.concat("\"esp_chip_id\":");
+        infoMsg.concat(ESP.getChipId());
+        infoMsg.concat(",");
+#endif
+
+        infoMsg.concat("\"littlefs\":{");
+
+        if (LITTLEFS_BEGIN_FUNC_CALL) {
+
+            infoMsg.concat("\"mounted\":true,");
+
+#if defined(ESP8266)
+
+            FSInfo fsi;
+            if (LittleFS.info(fsi)) {
+
+                infoMsg.concat("\"block_size\":");
+                infoMsg.concat(fsi.blockSize);
+                infoMsg.concat(",");
+
+                infoMsg.concat("\"max_open_files\":");
+                infoMsg.concat(fsi.maxOpenFiles);
+                infoMsg.concat(",");
+
+                infoMsg.concat("\"max_path_length\":");
+                infoMsg.concat(fsi.maxPathLength);
+                infoMsg.concat(",");
+
+                infoMsg.concat("\"page_size\":");
+                infoMsg.concat(fsi.pageSize);
+                infoMsg.concat(",");
+
+                infoMsg.concat("\"total_bytes\":");
+                infoMsg.concat(fsi.totalBytes);
+                infoMsg.concat(",");
+
+                infoMsg.concat("\"used_bytes\":");
+                infoMsg.concat(fsi.usedBytes);
+                infoMsg.concat(",");
+            }
+
+#elif defined(ESP32)
+
+            infoMsg.concat("\"total_bytes\":");
+            infoMsg.concat(LittleFS.totalBytes());
+            infoMsg.concat(",");
+
+            infoMsg.concat("\"used_bytes\":");
+            infoMsg.concat(LittleFS.usedBytes());
+            infoMsg.concat(",");
+
+#endif
+
+            infoMsg.concat("\"files\":[");
+
+            LittleFS_ext::listDir(infoMsg, LittleFS_ext::ListMode::JSON, "/", 0);
+
+            infoMsg.concat("]");
+
+        } else {
+            infoMsg.concat("\"mounted\":false");
+        }
+
+        infoMsg.concat("}");
+
+        infoMsg.concat("}");
+
+        return infoMsg;
+    }
+    const char* getESPVariant()
+    {
+#if defined(CONFIG_IDF_TARGET_ESP32)
+        return "ESP32";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+        return "ESP32-S2";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+        return "ESP32-S3";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+        return "ESP32-C2";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+        return "ESP32-C3";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+        return "ESP32-C6";
+
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+        return "ESP32-H2";
+
+#else
+        return "UNKNOWN";
+#endif
+    }
 }

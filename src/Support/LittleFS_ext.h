@@ -38,6 +38,7 @@ namespace LittleFS_ext
         FileReadError,
         BufferOverflowError
     };
+    enum class ListMode { PLAIN, HTML, JSON };
     /** --- Text loader (null-terminated, \n normalized) --- */
     FileResult load_text_file(const char* file_name, char** outBuffer, size_t* outSize = nullptr);
     /** --- Binary loader (exact size, no modifications, no null terminator) --- */
@@ -45,5 +46,5 @@ namespace LittleFS_ext
 
     int getFileSize(const char* file_name);
     void listDir(Stream &printStream, const char *dirname, uint8_t level);
-    void listDir(String &str, bool isHtml, const char *dirname, uint8_t level);
+    void listDir(String &str, ListMode mode, const char *dirname, uint8_t level = 0);
 }

@@ -52,7 +52,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
         };
 
         /** called when all hal devices has been loaded */

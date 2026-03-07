@@ -74,7 +74,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            nullptr /* no events available */
         };
 
         /** called regulary from the main loop */

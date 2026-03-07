@@ -54,7 +54,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            DALHAL_REACTIVE_EVENT_TABLE(WS2812)
         };
 
         WS2812(const JsonVariant &jsonObj, const char* type);

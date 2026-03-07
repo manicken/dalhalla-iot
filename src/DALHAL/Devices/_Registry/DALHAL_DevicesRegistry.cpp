@@ -145,9 +145,36 @@ namespace DALHAL {
         int i=0;
         while (true) {
             const DeviceRegistryItem& regItem = DeviceRegistry[i++];
-            if (regItem.typeName == nullptr) break;
+            if (regItem.typeName == nullptr) break; // break on terminator entry
             if (strcasecmp(regItem.typeName, type) == 0) return regItem;
         }
         return RegistryTerminatorItem;
+    }
+
+    std::string DeviceRegistryToString() {
+        std::string ret = "{\"regitems\":[";
+        int i=0;
+        bool first = true;
+        for (const DeviceRegistryItem* regItem = DeviceRegistry; regItem->typeName != nullptr; ++regItem)
+        {
+            if (first == false) { ret += ","; }
+            else { first = false; }
+            ret += ' ';
+            ret += '{';
+            ret += "\"name\":\""; ret += regItem->typeName; ret += '"';
+            ret += ",\"events\":[";
+            if (regItem->def.reactiveTable != nullptr) {
+                bool first2 = true;
+                for (const EventDescriptor* entry = regItem->def.reactiveTable; entry->name; entry++) {
+                
+                    if (first2 == false) { ret += ','; }
+                    else { first2 = false; }
+                    ret += '"'; ret += entry->name; ret += '"';
+                }
+            }
+            ret += "]}";
+        }
+        ret += "]}";
+        return ret;
     }
 }

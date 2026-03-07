@@ -32,6 +32,7 @@
 
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #include <System/Info.h>
 
@@ -143,6 +144,12 @@ namespace DALHAL {
                     });
                 }
 
+            }
+            else if (zcCommand.EqualsIC("printRegistry")) {
+                if (cb != nullptr) {
+                    std::string ret = DeviceRegistryToString();
+                    cb(ret);
+                }
             }
             else
             {
@@ -266,10 +273,13 @@ namespace DALHAL {
                 message += '"';
             }
         }
-        message = "{" + message;
-        message += "}";
-        if (cb != nullptr) 
-            cb(message);
+        if (message.length() != 0) { // this lets the command exec print it's own format
+            message = "{" + message;
+            message += "}";
+            if (cb != nullptr) 
+                cb(message);
+        }
+        
         return (anyErrors == false);
     }
     bool CommandExecutor::reloadJSON(ZeroCopyString& zcStr, std::string& message) {

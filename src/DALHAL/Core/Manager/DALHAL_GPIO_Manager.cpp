@@ -25,6 +25,7 @@
 #include <DALHAL/Support/ConvertHelper.h> // for Convert::toBin & Convert::toHex
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <System/Info.h>
 
 #define ENUM_TO_MASK(a) static_cast<DALHAL_GPIO_MGR_PINFUNC_TYPE>(a)
 #define MAKE_PIN_MASK_8(a, b, c, d, e, f, g, h) (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f) | ENUM_TO_MASK(g) | ENUM_TO_MASK(h))
@@ -360,6 +361,7 @@ namespace DALHAL {
     #elif defined(_WIN32) || defined(__linux__)
             strList.append("\"MCU\":\"PC_SIM\",");
     #endif
+            strList.append("\"variant\":\""); strList.append(Info::getESPVariant()); strList.append("\",");
             if (listMode != PrintListMode::String) {
                 strList.append("\"PinModes\":{");
                 if (PinModeStrings_length == -1) set_PinModeStrings_length();

@@ -43,7 +43,8 @@ namespace DALHAL {
         static constexpr DeviceRegistryDefine RegistryDefine = {
             UseRootUID::Mandatory,
             Create,
-            VerifyJSON
+            VerifyJSON,
+            nullptr /* no events available on obsolete device*/
         };
 
         REST_Value(const JsonVariant &jsonObj, const char* type);

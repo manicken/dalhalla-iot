@@ -37,8 +37,6 @@
 namespace DALHAL {
     typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type);
     typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
-    //typedef bool (*HAL_DEVICE_HAS_EVENT_FUNC)(const char* name);
-    //typedef bool (*HAL_DEVICE_GET_EVENT_NAMES)(const char** outNames, size_t maxNames);
 
     enum class UseRootUID {
         Mandatory,
@@ -51,8 +49,6 @@ namespace DALHAL {
 		HAL_DEVICE_CREATE_FUNC Create_Function;
         HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
         const EventDescriptor* reactiveTable;
-        //HAL_DEVICE_HAS_EVENT_FUNC HasEvent_Function;
-        //HAL_DEVICE_GET_EVENT_NAMES GetEventNames_Function;
 	} DeviceRegistryDefine;
     
 	typedef struct DeviceRegistryItem {
@@ -63,4 +59,6 @@ namespace DALHAL {
     extern const DeviceRegistryItem DeviceRegistry[];
 
     const DeviceRegistryItem& GetDeviceRegistryItem(const char* type);
+
+    std::string DeviceRegistryToString();
 }

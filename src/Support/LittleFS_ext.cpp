@@ -175,46 +175,88 @@ namespace LittleFS_ext
         printStream.println();
     }
     
-    void listDir(String &str, bool isHtml, const char *dirname, uint8_t level) {
-        str.concat(GetNrSpaces(level, isHtml));
-        str.concat("Listing directory:"); str.concat(dirname);
-        if (isHtml) str.concat("<br>"); else str.concat("\r\n");
-        level+=2;
+    
+
+    void listDir(String &str, ListMode mode, const char *dirname, uint8_t level/* = 0*/) {
+        // Indentation helper
+        auto indent = [&](uint8_t l) -> String {
+            String s;
+            for (uint8_t i = 0; i < l; i++) s += (mode == ListMode::HTML ? "&nbsp;" : " ");
+            return s;
+        };
+
+        if (mode == ListMode::JSON) {
+            str.concat("{");
+            str.concat("\"dir\":\"");
+            str.concat(dirname);
+            str.concat("\",\"entries\":[");
+        } else {
+            str.concat(indent(level));
+            str.concat("Listing directory: ");
+            str.concat(dirname);
+            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+        }
 
         File root = LittleFS.open(dirname, "r");
         if (!root) {
+            str.concat(indent(level + 2));
             str.concat(" - failed to open directory");
-            if (isHtml) str.concat("<br>"); else str.concat("\r\n");
+            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+            if (mode == ListMode::JSON) str.concat("]");
             return;
         }
         if (!root.isDirectory()) {
+            str.concat(indent(level + 2));
             str.concat(" - not a directory");
-            if (isHtml) str.concat("<br>"); else str.concat("\r\n");
+            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+            if (mode == ListMode::JSON) str.concat("]");
             return;
         }
 
         File file = root.openNextFile();
+        bool firstEntry = true;
         while (file) {
+            if (mode == ListMode::JSON && !firstEntry) str.concat(",");
+            firstEntry = false;
+
             if (file.isDirectory()) {
-                str.concat(GetNrSpaces(level, isHtml));
-                str.concat("DIR : ");
-                str.concat(file.name());
-                if (isHtml) str.concat("<br>"); else str.concat("\r\n");
+                if (mode == ListMode::JSON) {
 #if defined(ESP32)
-                listDir(str, isHtml, file.path(), level + 2);
+                    listDir(str, mode, file.path(), level + 2);
 #elif defined(ESP8266)
-                listDir(str, isHtml, file.fullName(), level + 2);
+                    listDir(str, mode, file.fullName(), level + 2);
 #endif
+                } else {
+                    str.concat(indent(level + 2));
+                    str.concat("DIR : ");
+                    str.concat(file.name());
+                    str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+#if defined(ESP32)
+                    listDir(str, mode, file.path(), level + 2);
+#elif defined(ESP8266)
+                    listDir(str, mode, file.fullName(), level + 2);
+#endif
+                }
             } else {
-                str.concat(GetNrSpaces(level, isHtml));
-                str.concat("FILE: ");
-                str.concat(file.name());
-                str.concat("\tSIZE: ");
-                str.concat(file.size());
-                if (isHtml) str.concat("<br>"); else str.concat("\r\n");
+                if (mode == ListMode::JSON) {
+                    str.concat("{\"file\":\"");
+                    str.concat(file.name());
+                    str.concat("\",\"size\":");
+                    str.concat(file.size());
+                    str.concat("}");
+                } else {
+                    str.concat(indent(level + 2));
+                    str.concat("FILE: ");
+                    str.concat(file.name());
+                    str.concat("\tSIZE: ");
+                    str.concat(file.size());
+                    str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+                }
             }
             file = root.openNextFile();
         }
-        if (isHtml) str.concat("<br>"); else str.concat("\r\n");
+
+        if (mode == ListMode::JSON) str.concat("]}");
+        else str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
     }
 }
