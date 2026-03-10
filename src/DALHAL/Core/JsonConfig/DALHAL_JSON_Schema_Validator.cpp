@@ -22,96 +22,138 @@
 */
 
 #include "DALHAL_JSON_Schema_Validator.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <ArduinoJSON.h>
 using json = JsonVariant;
  
 namespace DALHAL {
-    
+
     namespace JsonSchema {
 
-        bool validateField(const json& j, const DALHAL::JsonSchema::FieldBase* field, std::string& error) {
-            if (!field) return true;
+            
+        bool isKnownField(const char* key, const FieldBase* const* fields)
+        {
+            for (int i = 0; fields[i] != nullptr; i++) {
+                const FieldBase* f = fields[i];
 
-            // check if the field exists in JSON
-            if (!j.containsKey(field->name)) {
-                if (field->flag == DALHAL::JsonSchema::FieldFlag::Required) {
-                    error = "Required field missing: " + std::string(field->name);
-                    return false;
-                } else {
-                    return true; // optional field can be missing
+                if (f->type == FieldType::AnyOfGroup) {
+                    const AnyOfGroup* group = static_cast<const AnyOfGroup*>(f);
+
+                    for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (strcmp(key, group->fields[g]->name) == 0)
+                            return true;
+                    }
+                }
+                else {
+                    if (strcmp(key, f->name) == 0)
+                        return true;
                 }
             }
 
-            const auto& value = j[field->name];
+            return false;
+        }
+
+        // Helper to validate FieldString / FieldUID
+        bool validateStringField(const JsonVariant& value, const FieldString* f, std::string& error)
+        {
+            if (!value.is<const char*>()) {
+                error = std::string(f->name) + " must be a string";
+                return false;
+            }
+            const char* s = value.as<const char*>();
+            if (f->maxLength > 0 && strlen(s) > f->maxLength) {
+                error = std::string(f->name) + " exceeds maxLength";
+                return false;
+            }
+            return true;
+        }
+
+        // Validate a single field
+        bool validateField(const JsonObjectConst& j, const FieldBase* field, std::string& error)
+        {
+            if (!field) return true;
+
+            // Handle required/optional
+            if (!j.containsKey(field->name)) {
+                if (field->flag == FieldFlag::Required) {
+                    error = std::string("Required field missing: ") + field->name;
+                    return false;
+                }
+                return true; // optional can be missing
+            }
+
+            JsonVariant value = j[field->name];
 
             switch (field->type) {
-                case DALHAL::JsonSchema::FieldType::Int: {
-                    auto f = static_cast<const DALHAL::JsonSchema::FieldInt*>(field);
-                    if (!value.is<int32_t>()) {
-                        error = std::string(field->name) + " must be an integer";
+                case FieldType::Int: {
+                    auto f = static_cast<const FieldInt*>(field);
+                    if (!value.is<int>()) {
+                        error = std::string(f->name) + " must be integer";
                         return false;
                     }
                     int v = value.as<int>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(field->name) + " out of range";
+                        error = std::string(f->name) + " out of range";
                         return false;
                     }
                     break;
                 }
-                case DALHAL::JsonSchema::FieldType::UInt: {
-                    auto f = static_cast<const DALHAL::JsonSchema::FieldUInt*>(field);
-                    if (!value.is<uint32_t>()) {
-                        error = std::string(field->name) + " must be unsigned integer";
+                case FieldType::UInt: {
+                    auto f = static_cast<const FieldUInt*>(field);
+                    if (!value.is<unsigned int>()) {
+                        error = std::string(f->name) + " must be unsigned int";
                         return false;
                     }
-                    uint32_t v = value.as<uint32_t>();
+                    unsigned int v = value.as<unsigned int>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(field->name) + " out of range";
+                        error = std::string(f->name) + " out of range";
                         return false;
                     }
                     break;
                 }
-                case DALHAL::JsonSchema::FieldType::Float: {
-                    auto f = static_cast<const DALHAL::JsonSchema::FieldFloat*>(field);
-                    if (!value.as<float>()) {
-                        error = std::string(field->name) + " must be a number";
+                case FieldType::Float: {
+                    auto f = static_cast<const FieldFloat*>(field);
+                    if (!value.is<float>() && !value.is<double>() && !value.is<int>()) {
+                        error = std::string(f->name) + " must be a number";
                         return false;
                     }
                     float v = value.as<float>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(field->name) + " out of range";
+                        error = std::string(f->name) + " out of range";
                         return false;
                     }
                     break;
                 }
-                case DALHAL::JsonSchema::FieldType::UID:
-                case DALHAL::JsonSchema::FieldType::UID_Path:
-                case DALHAL::JsonSchema::FieldType::Array:
-                case DALHAL::JsonSchema::FieldType::Pin:
-                    // TODO: handle these
-                    break;
-                case DALHAL::JsonSchema::FieldType::AnyOfGroup:
-                    // handled recursively
+                case FieldType::UID:
+                case FieldType::UID_Path:
+                case FieldType::Pin:
+                case FieldType::Array:
+                    // cast FieldString for UID / UID_Path / simple string fields
+                    return validateStringField(value, static_cast<const FieldString*>(field), error);
+
+                case FieldType::AnyOfGroup:
+                    // handled by validateAnyOfGroup
                     break;
             }
 
             return true;
         }
 
-        bool validateAnyOfGroup(const json& j, const DALHAL::JsonSchema::AnyOfGroup* group, std::string& error) {
+        // Validate AnyOfGroup
+        bool validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, std::string& error)
+        {
             if (!group) return true;
-
             bool found = false;
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
-                const auto* f = group->fields[i];
+                const FieldBase* f = group->fields[i];
                 if (j.containsKey(f->name)) {
                     found = true;
                     if (!validateField(j, f, error)) return false;
                 }
             }
 
-            if (!found && group->flag == DALHAL::JsonSchema::FieldFlag::Required) {
+            if (!found && group->flag == FieldFlag::Required) {
                 error = "None of the AnyOfGroup fields present";
                 return false;
             }
@@ -119,53 +161,95 @@ namespace DALHAL {
             return true;
         }
 
-        bool validateMode(const json& j, const DALHAL::JsonSchema::ModeSelector* mode, std::string& error) {
-            if (!mode) return true;
+        // Validate ModeSelector
+        int evaluateModes(const JsonObjectConst& j, const ModeSelector* modes)
+        {
+            int matchedMode = -1;
+            for (int i = 0; modes[i].name != nullptr; ++i)
+            {
+                const ModeSelector& mode = modes[i];
+                bool modeValid = true;
+                for (int c = 0; mode.conjunctions[c].fieldRef != nullptr; ++c)
+                {
+                    const ModeConjunctionDefine& conj = mode.conjunctions[c];
+                    bool exists = false;
+                    if (conj.fieldRef->type == FieldType::AnyOfGroup)
+                    {
+                        const AnyOfGroup* group =
+                            static_cast<const AnyOfGroup*>(conj.fieldRef);
 
-            for (size_t i = 0; mode->conjunctions[i].fieldRef != nullptr; ++i) {
-                const auto& conj = mode->conjunctions[i];
-                bool exists = j.containsKey(conj.fieldRef->name);
-                if (conj.required && !exists) {
-                    error = "Mode requirement failed: field " + std::string(conj.fieldRef->name) + " must exist";
-                    return false;
+                        for (int g = 0; group->fields[g] != nullptr; ++g)
+                        {
+                            if (j.containsKey(group->fields[g]->name))
+                            {
+                                exists = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        exists = j.containsKey(conj.fieldRef->name);
+                    }
+                    if (conj.required != exists)
+                    {
+                        modeValid = false;
+                        break;
+                    }
                 }
-                if (!conj.required && exists) {
-                    error = "Mode requirement failed: field " + std::string(conj.fieldRef->name) + " must NOT exist";
-                    return false;
+                if (modeValid)
+                {
+                    if (matchedMode != -1)
+                    {
+                        // multiple modes match -> ambiguous
+                        return -2;
+                    }
+                    matchedMode = i;
                 }
             }
-
-            return true;
+            return matchedMode;
         }
 
-        bool validateDevice(const json& j, const DALHAL::JsonSchema::Device* device, uint32_t modeId, std::string& error) {
-            if (!device) return false;
+        // Validate a full device
+        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* device, std::string& error)
+        {
+            // check for unknown fields
+            for (JsonPairConst kv : j) {
+                const char* key = kv.key().c_str();
 
-            // Validate fields
-            for (size_t i = 0; device->fields[i] != nullptr; ++i) {
-                const auto* f = device->fields[i];
-                if (f->type == DALHAL::JsonSchema::FieldType::AnyOfGroup) {
-                    if (!validateAnyOfGroup(j, static_cast<const DALHAL::JsonSchema::AnyOfGroup*>(f), error))
-                        return false;
-                } else {
-                    if (!validateField(j, f, error)) return false;
+                if (!isKnownField(key, device->fields)) {
+                    GlobalLogger.Error(F("Unknown config field:"), key);
                 }
             }
+            // 1 Validate fields
+            for (int i = 0; device->fields[i] != nullptr; ++i)
+            {
+                const FieldBase* f = device->fields[i];
 
-            // Find mode
-            const DALHAL::JsonSchema::ModeSelector* selectedMode = nullptr;
-            for (size_t i = 0; device->modes[i] != nullptr; ++i) {
-                if (device->modes[i]->modeId == modeId) {
-                    selectedMode = device->modes[i];
-                    break;
+                if (f->type == FieldType::AnyOfGroup)
+                {
+                    if (!validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), error))
+                        return -1;
+                }
+                else
+                {
+                    if (!validateField(j, f, error))
+                        return -1;
                 }
             }
-
-            if (selectedMode) {
-                if (!validateMode(j, selectedMode, error)) return false;
+            // 2 Detect mode
+            int mode = evaluateModes(j, device->modes);
+            if (mode == -1)
+            {
+                error = "No valid configuration mode found";
+                return -1;
             }
-
-            return true;
+            if (mode == -2)
+            {
+                error = "Configuration matches multiple modes";
+                return -1;
+            }
+            return mode;
         }
 
     }

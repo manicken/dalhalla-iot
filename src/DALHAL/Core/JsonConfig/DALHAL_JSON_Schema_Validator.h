@@ -32,11 +32,18 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        bool validateField(const json& j, const DALHAL::JsonSchema::FieldBase* field, std::string& error);
-        bool validateAnyOfGroup(const json& j, const DALHAL::JsonSchema::AnyOfGroup* group, std::string& error);
-        bool validateMode(const json& j, const DALHAL::JsonSchema::ModeSelector* mode, std::string& error);
-        bool validateDevice(const json& j, const DALHAL::JsonSchema::Device* device, uint32_t modeId, std::string& error);
+        bool isKnownField(const char* key, const FieldBase* const* fields);
+        // Helper to validate FieldString / FieldUID
+        bool validateStringField(const JsonVariant& value, const FieldString* f, std::string& error);
+        // Validate a single field
+        bool validateField(const JsonObjectConst& j, const FieldBase* field, std::string& error);
+        // Validate AnyOfGroup
+        bool validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, std::string& error);
+        // Validate ModeSelector
+        int evaluateModes(const JsonObjectConst& j, const ModeSelector* modes);
+        // Validate a full device
+        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* device, std::string& error);
 
     }
-    
+
 }

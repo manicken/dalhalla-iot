@@ -121,16 +121,15 @@ namespace DALHAL {
         };
 
         struct ModeSelector {
-            uint32_t modeId = 0;
             const char* name; // optional
             const ModeConjunctionDefine* conjunctions; // nullptr terminated
-            constexpr ModeSelector(uint32_t modeId, const char* name, const ModeConjunctionDefine* conjunctions)
-                : modeId(modeId), name(name), conjunctions(conjunctions) {}
+            constexpr ModeSelector(const char* name, const ModeConjunctionDefine* conjunctions)
+                : name(name), conjunctions(conjunctions) {}
         };
 
         struct Device {
             const FieldBase* const* fields;
-            const ModeSelector* const* modes;
+            const ModeSelector* modes;
         };
 
     } // namespace JsonSchema

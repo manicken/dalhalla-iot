@@ -44,21 +44,11 @@ namespace DALHAL {
             { &eventSource, false },      // event_source must NOT exist
             { nullptr, false}
         };
-        constexpr ModeSelector refreshMode = {
-            0, // simple loader check type
-            "refresh mode",
-            refreshModeConjunctions
-        };
         constexpr ModeConjunctionDefine eventModeConjunctions[] = {
             { &refreshTimeGroup, false },  // group must NOT exist for this mode
             { &source, true },            // source must exist
             { &eventSource, true },      // event_source must exist
             { nullptr, false}
-        };
-        constexpr ModeSelector eventMode = {
-            1, // simple loader check type
-            "event mode",
-            eventModeConjunctions
         };
         constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
             { &refreshTimeGroup, false },  // group must NOT exist for this mode
@@ -66,16 +56,11 @@ namespace DALHAL {
             { &eventSource, false },      // event_source must NOT exist
             { nullptr, false}
         };
-        constexpr ModeSelector scriptMode = {
-            2, // simple loader check type
-            "script mode",
-            scriptModeConjunctions
-        };
-        constexpr const ModeSelector* templateDeviceModes[] = {
-            &refreshMode,
-            &eventMode,
-            &scriptMode,
-            nullptr
+        constexpr const ModeSelector templateDeviceModes[] = {
+            {"refresh mode", refreshModeConjunctions},
+            {"event mode", eventModeConjunctions},
+            {"script mode", scriptModeConjunctions},
+            {nullptr, nullptr}
         };
 
         constexpr const FieldBase* templateFields[] = {
