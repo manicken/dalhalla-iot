@@ -24,7 +24,7 @@
 #include "DALHAL_GPIO_Manager.h"
 #include <DALHAL/Support/ConvertHelper.h> // for Convert::toBin & Convert::toHex
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <System/Info.h>
 
 #define ENUM_TO_MASK(a) static_cast<DALHAL_GPIO_MGR_PINFUNC_TYPE>(a)

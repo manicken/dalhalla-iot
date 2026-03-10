@@ -1,4 +1,4 @@
-/*
+ /*
   Dalhalla IoT — JSON-configured HAL/DAL + Script Engine
   HAL = Hardware Abstraction Layer
   DAL = Device Abstraction Layer
@@ -21,15 +21,22 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_empty.h"
+#pragma once
 
-#include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include "DALHAL_JSON_Schema.h"
+
+#include <ArduinoJSON.h>
+using json = JsonVariant;
 
 namespace DALHAL {
+
+    namespace JsonSchema {
+
+        bool validateField(const json& j, const DALHAL::JsonSchema::FieldBase* field, std::string& error);
+        bool validateAnyOfGroup(const json& j, const DALHAL::JsonSchema::AnyOfGroup* group, std::string& error);
+        bool validateMode(const json& j, const DALHAL::JsonSchema::ModeSelector* mode, std::string& error);
+        bool validateDevice(const json& j, const DALHAL::JsonSchema::Device* device, uint32_t modeId, std::string& error);
+
+    }
     
-    
-	
 }

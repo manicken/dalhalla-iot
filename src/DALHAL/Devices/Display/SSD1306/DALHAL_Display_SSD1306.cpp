@@ -24,7 +24,7 @@
 #include "DALHAL_Display_SSD1306.h"
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>

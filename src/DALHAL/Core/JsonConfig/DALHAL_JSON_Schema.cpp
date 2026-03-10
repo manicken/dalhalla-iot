@@ -26,15 +26,69 @@
 namespace DALHAL {
     
     namespace JsonSchema {
-        constexpr FieldString uidTemplate = {"uid", FieldType::UID, FieldFlag::Required, nullptr, 8};
-        constexpr FieldUInt    haRefresh  = { "refreshtimesec", FieldType::UInt, FieldFlag::Optional, 1, 3600, 0 };
-        constexpr FieldString haEventSrc = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 64 };
+        constexpr FieldUID uid{};
         
-        constexpr const FieldBase* haSensorFields[] = {
-            &uidTemplate,
-            &haRefresh,
-            &haEventSrc,
+        constexpr FieldUInt    refreshTimeMs  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 3600, 0 };
+        constexpr FieldUInt    refreshTimeSec  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 3600, 0 };
+        constexpr FieldUInt    refreshTimeMin  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 3600, 0 };
+        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMs, &refreshTimeSec, &refreshTimeMin, nullptr};
+
+        constexpr AnyOfGroup   refreshTimeGroup = {FieldFlag::Optional, refreshGroupItems};
+        
+        constexpr FieldString source = { "source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
+        constexpr FieldString eventSource = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
+        
+        constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
+            { &refreshTimeGroup, true },  // group must exist for this mode
+            { &source, true },            // source must exist
+            { &eventSource, false },      // event_source must NOT exist
+            { nullptr, false}
+        };
+        constexpr ModeSelector refreshMode = {
+            0, // simple loader check type
+            "refresh mode",
+            refreshModeConjunctions
+        };
+        constexpr ModeConjunctionDefine eventModeConjunctions[] = {
+            { &refreshTimeGroup, false },  // group must NOT exist for this mode
+            { &source, true },            // source must exist
+            { &eventSource, true },      // event_source must exist
+            { nullptr, false}
+        };
+        constexpr ModeSelector eventMode = {
+            1, // simple loader check type
+            "event mode",
+            eventModeConjunctions
+        };
+        constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
+            { &refreshTimeGroup, false },  // group must NOT exist for this mode
+            { &source, false },            // source must NOT exist
+            { &eventSource, false },      // event_source must NOT exist
+            { nullptr, false}
+        };
+        constexpr ModeSelector scriptMode = {
+            2, // simple loader check type
+            "script mode",
+            scriptModeConjunctions
+        };
+        constexpr const ModeSelector* templateDeviceModes[] = {
+            &refreshMode,
+            &eventMode,
+            &scriptMode,
             nullptr
+        };
+
+        constexpr const FieldBase* templateFields[] = {
+            &uid,
+            &refreshTimeGroup,
+            &source,
+            &eventSource,
+            nullptr
+        };
+
+        constexpr JsonSchema::Device templateDevice = {
+            templateFields,
+            templateDeviceModes
         };
 
     }

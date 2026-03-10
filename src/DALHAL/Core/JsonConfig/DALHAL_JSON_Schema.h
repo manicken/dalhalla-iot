@@ -25,12 +25,15 @@
 
 
 #include <stdlib.h>
+#include <DALHAL/Core/Types/DALHAL_UID.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
         enum class FieldType {
+            AnyOfGroup,
             UID,
             UID_Path,
             Int,
@@ -42,7 +45,8 @@ namespace DALHAL {
 
         enum class FieldFlag {
             Required,
-            Optional
+            Optional,
+            AnyOfGroup // the higher group defines
         };
 
         struct FieldBase {
@@ -87,6 +91,12 @@ namespace DALHAL {
                 : FieldBase(n, t, f), defaultValue(defVal), maxLength(maxLen) {}
         };
 
+        struct FieldUID : FieldString {
+            constexpr FieldUID()
+                : FieldString(DALHAL_KEYNAME_UID, FieldType::UID, FieldFlag::Required, nullptr, HAL_UID::Size) {}
+        };
+        
+
         struct FieldPin : FieldBase {
             uint8_t def;
         };
@@ -95,5 +105,33 @@ namespace DALHAL {
             const FieldBase** allowedChildren; // nullptr terminated
             const char* arrayName;             // e.g., "items", "groups"
         };
-    }
+
+        // FieldGroup is a logical unit of fields where the group may be optional, 
+        // and if present, at least one child field must exist. 
+        // The group's presence can be overridden by ModeSelector rules.
+        struct AnyOfGroup : FieldBase {
+            const FieldBase* const* fields;
+            constexpr AnyOfGroup(FieldFlag f, const FieldBase* const* fields)
+                : FieldBase(nullptr, FieldType::AnyOfGroup, f), fields(fields) {}
+        };
+
+        struct ModeConjunctionDefine {
+            const FieldBase* fieldRef;
+            bool required; // true = must exist, false = must explicit NOT exist
+        };
+
+        struct ModeSelector {
+            uint32_t modeId = 0;
+            const char* name; // optional
+            const ModeConjunctionDefine* conjunctions; // nullptr terminated
+            constexpr ModeSelector(uint32_t modeId, const char* name, const ModeConjunctionDefine* conjunctions)
+                : modeId(modeId), name(name), conjunctions(conjunctions) {}
+        };
+
+        struct Device {
+            const FieldBase* const* fields;
+            const ModeSelector* const* modes;
+        };
+
+    } // namespace JsonSchema
 }

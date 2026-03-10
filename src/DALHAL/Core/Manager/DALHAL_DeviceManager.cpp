@@ -23,7 +23,7 @@
 
 #include "DALHAL_DeviceManager.h"
 
-#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>

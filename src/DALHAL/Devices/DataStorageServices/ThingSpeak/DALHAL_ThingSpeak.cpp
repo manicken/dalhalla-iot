@@ -25,7 +25,7 @@
 
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/Device/DALHAL_JSON_Config_Defines.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 
