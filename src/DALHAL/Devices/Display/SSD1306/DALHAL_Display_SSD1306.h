@@ -50,7 +50,7 @@ namespace DALHAL {
         static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static bool HasAddress(uint8_t addr);
-        static constexpr I2C_DeviceRegistryDefine RegistryDefine = {
+        static constexpr I2C_Registry::Define RegistryDefine = {
             Create,
             VerifyJSON,
             HasAddress

@@ -71,10 +71,7 @@
 
 namespace DALHAL {
 
-    constexpr DeviceRegistryDefine RegistryItemNullDefault = {UseRootUID::Void, nullptr, nullptr };
-    constexpr DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
-
-    constexpr DeviceRegistryItem DeviceRegistry[] = {
+    constexpr Registry::Item DeviceRegistry[] = {
 
          /** ---------------- Script-backed Devices ---------------- */
         {"VAR", ScriptVariable::RegistryDefine},
@@ -133,7 +130,7 @@ namespace DALHAL {
         {"BUTTON", ButtonInput::RegistryDefine},
 
         /** mandatory null terminator */
-        RegistryTerminatorItem, // Stop for active devices
+        Registry::TerminatorItem, // Stop for active devices
 
         /** --- Planned / future devices --- */
 #if defined(ESP32) || defined(_WIN32)
@@ -141,40 +138,4 @@ namespace DALHAL {
 #endif
     };
 
-    const DeviceRegistryItem& GetDeviceRegistryItem(const char* type) {
-        int i=0;
-        while (true) {
-            const DeviceRegistryItem& regItem = DeviceRegistry[i++];
-            if (regItem.typeName == nullptr) break; // break on terminator entry
-            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
-        }
-        return RegistryTerminatorItem;
-    }
-
-    std::string DeviceRegistryToString() {
-        std::string ret = "{\"regitems\":[";
-        int i=0;
-        bool first = true;
-        for (const DeviceRegistryItem* regItem = DeviceRegistry; regItem->typeName != nullptr; ++regItem)
-        {
-            if (first == false) { ret += ","; }
-            else { first = false; }
-            ret += ' ';
-            ret += '{';
-            ret += "\"name\":\""; ret += regItem->typeName; ret += '"';
-            ret += ",\"events\":[";
-            if (regItem->def.reactiveTable != nullptr) {
-                bool first2 = true;
-                for (const EventDescriptor* entry = regItem->def.reactiveTable; entry->name; entry++) {
-                
-                    if (first2 == false) { ret += ','; }
-                    else { first2 = false; }
-                    ret += '"'; ret += entry->name; ret += '"';
-                }
-            }
-            ret += "]}";
-        }
-        ret += "]}";
-        return ret;
-    }
 }

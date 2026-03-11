@@ -32,6 +32,7 @@
 
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #include <System/Info.h>
@@ -147,7 +148,7 @@ namespace DALHAL {
             }
             else if (zcCommand.EqualsIC("printRegistry")) {
                 if (cb != nullptr) {
-                    std::string ret = DeviceRegistryToString();
+                    std::string ret = Registry::ToString(DeviceRegistry);
                     cb(ret);
                 }
             }

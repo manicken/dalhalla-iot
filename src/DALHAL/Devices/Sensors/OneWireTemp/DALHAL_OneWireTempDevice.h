@@ -33,7 +33,7 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #define DALHAL_KEYNAME_ONE_WIRE_ROMID       "romid"
 #define DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT "format"
@@ -98,8 +98,8 @@ namespace DALHAL {
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+        static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)

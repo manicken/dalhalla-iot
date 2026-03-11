@@ -35,7 +35,7 @@
 
 namespace DALHAL {
 
-    constexpr I2C_DeviceRegistryDefine RegistryItemNullDefault = {nullptr, nullptr, nullptr};
+    constexpr I2C_Registry::Define RegistryItemNullDefault = {nullptr, nullptr, nullptr};
     constexpr I2C_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
 
     constexpr I2C_DeviceRegistryItem I2C_DeviceRegistry[] = {

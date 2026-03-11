@@ -32,6 +32,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
 #define VERIFY_JSON_SOURCE "PWM_Servo::VerifyJSON"
 
@@ -39,7 +40,7 @@ namespace DALHAL {
 
     PWM_Servo::PWM_Servo(const JsonVariant &jsonObj, const char* type) : PWM_Servo_DeviceBase(type)
     {
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
+        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = jsonObj["pin"];
         pwmChannel = jsonObj["ch"]; // verified by VerifyJSON

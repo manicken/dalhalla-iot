@@ -39,6 +39,7 @@ namespace DALHAL {
             Int,
             UInt,
             Float,
+            String,
             Array,
             Object,
             HardwarePin,
@@ -149,14 +150,14 @@ namespace DALHAL {
         };
 
         struct FieldArray : FieldBase {
-            const Device* subtype;
-            constexpr FieldArray(const char* n, FieldFlag f, const Device* subtype)
+            const JsonSchema::Device* subtype;
+            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
                 : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
         };
 
         struct FieldObject : FieldBase {
-            const Device* subtype;
-            constexpr FieldObject(const char* n, FieldFlag f, const Device* subtype)
+            const JsonSchema::Device* subtype;
+            constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
                 : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
         };
 

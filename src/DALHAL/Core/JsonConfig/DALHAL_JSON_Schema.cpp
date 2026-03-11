@@ -26,34 +26,35 @@
 namespace DALHAL {
     
     namespace JsonSchema {
-        constexpr FieldUID uid{};
+        constexpr FieldUID uidField{};
+        constexpr FieldString typeField = {DALHAL_KEYNAME_TYPE, FieldType::String, FieldFlag::Required, nullptr, 0};
         
-        constexpr FieldUInt    refreshTimeMs  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeSec  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeMin  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMs, &refreshTimeSec, &refreshTimeMin, nullptr};
+        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
+        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
+        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
+        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
 
-        constexpr AnyOfGroup   refreshTimeGroup = {"refreshtimems", FieldFlag::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
+        constexpr AnyOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldFlag::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
         
-        constexpr FieldString source = { "source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
-        constexpr FieldString eventSource = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
+        constexpr FieldString sourceField = { "source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
+        constexpr FieldString eventSourceField = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
         
         constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
-            { &refreshTimeGroup, true },  // group must exist for this mode
-            { &source, true },            // source must exist
-            { &eventSource, false },      // event_source must NOT exist
+            { &refreshTimeGroupFields, true },  // group must exist for this mode
+            { &sourceField, true },            // source must exist
+            { &eventSourceField, false },      // event_source must NOT exist
             { nullptr, false}
         };
         constexpr ModeConjunctionDefine eventModeConjunctions[] = {
-            { &refreshTimeGroup, false },  // group must NOT exist for this mode
-            { &source, true },            // source must exist
-            { &eventSource, true },      // event_source must exist
+            { &refreshTimeGroupFields, false },  // group must NOT exist for this mode
+            { &sourceField, true },            // source must exist
+            { &eventSourceField, true },      // event_source must exist
             { nullptr, false}
         };
         constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
-            { &refreshTimeGroup, false },  // group must NOT exist for this mode
-            { &source, false },            // source must NOT exist
-            { &eventSource, false },      // event_source must NOT exist
+            { &refreshTimeGroupFields, false },  // group must NOT exist for this mode
+            { &sourceField, false },            // source must NOT exist
+            { &eventSourceField, false },      // event_source must NOT exist
             { nullptr, false}
         };
         constexpr const ModeSelector templateDeviceModes[] = {
@@ -64,10 +65,11 @@ namespace DALHAL {
         };
 
         constexpr const FieldBase* templateFields[] = {
-            &uid,
-            &refreshTimeGroup,
-            &source,
-            &eventSource,
+            &typeField,
+            &uidField,
+            &refreshTimeGroupFields,
+            &sourceField,
+            &eventSourceField,
             nullptr
         };
 

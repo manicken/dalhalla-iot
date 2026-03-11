@@ -24,41 +24,12 @@
 #pragma once
 
 
-#include <Arduino.h> // Needed for String class
-
-#include <ArduinoJson.h>
-#include <DALHAL/Core/Types/DALHAL_Value.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
+#include <string>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 
 namespace DALHAL {
-    typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type);
-    typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
-
-    enum class UseRootUID {
-        Mandatory,
-        Optional,
-        Void
-    };
-
-    typedef struct DeviceRegistryDefine {
-		UseRootUID useRootUID;
-		HAL_DEVICE_CREATE_FUNC Create_Function;
-        HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
-        const EventDescriptor* reactiveTable;
-	} DeviceRegistryDefine;
     
-	typedef struct DeviceRegistryItem {
-        const char* typeName;
-        DeviceRegistryDefine def;
-    } DeviceRegistryItem ;
+    extern const Registry::Item DeviceRegistry[];
 
-    extern const DeviceRegistryItem DeviceRegistry[];
-
-    const DeviceRegistryItem& GetDeviceRegistryItem(const char* type);
-
-    std::string DeviceRegistryToString();
 }

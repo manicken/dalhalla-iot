@@ -32,7 +32,7 @@
 
 #include <Arduino.h> // Needed for String class
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -40,8 +40,8 @@ namespace DALHAL {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+        static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             nullptr /* no events available on obsolete device*/

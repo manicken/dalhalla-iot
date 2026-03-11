@@ -33,14 +33,14 @@ namespace DALHAL {
     typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot);
     typedef bool (*HA_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
 
-    typedef struct HA_DeviceRegistryDefine {
+    typedef struct HA_Registry::Define {
         HA_HAL_DEVICE_CREATE_FUNC Create_Function;
         HA_HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
-    } HA_DeviceRegistryDefine;
+    } HA_Registry::Define;
 
     typedef struct HA_DeviceRegistryItem {
         const char* typeName;
-        HA_DeviceRegistryDefine def;
+        HA_Registry::Define def;
     } HA_DeviceRegistryItem ;
 
     extern const HA_DeviceRegistryItem HA_DeviceRegistry[];

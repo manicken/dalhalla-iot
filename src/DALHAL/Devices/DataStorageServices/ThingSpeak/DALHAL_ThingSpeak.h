@@ -30,7 +30,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #if defined(ESP8266)
 #include <ESP8266HTTPClient.h>
@@ -73,8 +73,8 @@ namespace DALHAL {
         static const char* TS_ROOT_URL;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(const JsonVariant &jsonObj, const char* type);
-        static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+        static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)

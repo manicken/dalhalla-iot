@@ -28,7 +28,7 @@
 #include <string>
 #include <ArduinoJson.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 // for raw h-bridge control using forward and backward pins
 #define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A        "pinA"
@@ -79,8 +79,8 @@ public:
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(const JsonVariant &jsonObj, const char* type);
-    static constexpr DeviceRegistryDefine RegistryDefine = {
-        UseRootUID::Mandatory,
+    static constexpr Registry::Define RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)

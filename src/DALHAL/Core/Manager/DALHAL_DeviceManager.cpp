@@ -24,6 +24,7 @@
 #include "DALHAL_DeviceManager.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -69,7 +70,7 @@ namespace DALHAL {
 
     Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant &jsonObj) {
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
-        const DeviceRegistryItem& regItem = GetDeviceRegistryItem(type);
+        const Registry::Item& regItem = Registry::GetItem(DeviceRegistry, type);
         if (regItem.typeName == nullptr) {
             // should never happen as VerifyJson is called before and do actually verify that this function should work
             GlobalLogger.Error(F("CreateDeviceFromJSON - something is very wrong if this happens"));
@@ -88,13 +89,13 @@ namespace DALHAL {
 
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
 
-        const DeviceRegistryItem& regItem = GetDeviceRegistryItem(type);
+        const Registry::Item& regItem = Registry::GetItem(DeviceRegistry, type);
         if (regItem.typeName == nullptr) {
             GlobalLogger.Error(F("VerifyDeviceJson - could not find type:"),type);
             return false;
         }
 
-        if (regItem.def.useRootUID == UseRootUID::Mandatory)
+        if (regItem.def.useRootUID == Registry::UseRootUID::Mandatory)
             if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
         if (regItem.def.Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }

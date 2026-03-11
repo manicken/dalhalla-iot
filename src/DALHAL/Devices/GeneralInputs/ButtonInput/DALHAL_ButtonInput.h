@@ -26,7 +26,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
@@ -47,8 +47,8 @@ public:
     // Factory and JSON validation
     static Device* Create(const JsonVariant &jsonObj, const char* type);
     static bool VerifyJSON(const JsonVariant &jsonObj);
-    static constexpr DeviceRegistryDefine RegistryDefine = {
-            UseRootUID::Mandatory,
+    static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)

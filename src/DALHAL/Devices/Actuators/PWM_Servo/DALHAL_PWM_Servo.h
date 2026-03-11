@@ -27,7 +27,7 @@
 #include <driver/ledc.h> // esp-idf
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 
 #define DALHAL_LEDC_SERVO_PWM_FREQ 50
@@ -75,8 +75,8 @@ public:
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(const JsonVariant &jsonObj, const char* type);
-    static constexpr DeviceRegistryDefine RegistryDefine = {
-        UseRootUID::Mandatory,
+    static constexpr Registry::Define RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)

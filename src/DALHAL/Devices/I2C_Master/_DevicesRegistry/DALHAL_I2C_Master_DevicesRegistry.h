@@ -33,15 +33,15 @@ namespace DALHAL {
     typedef bool (*I2C_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
 
-    typedef struct I2C_DeviceRegistryDefine {
+    typedef struct I2C_Registry::Define {
         I2C_HAL_DEVICE_CREATE_FUNC Create_Function;
         I2C_HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
-    } I2C_DeviceRegistryDefine;
+    } I2C_Registry::Define;
 
     typedef struct I2C_DeviceRegistryItem {
         const char* typeName;
-        I2C_DeviceRegistryDefine def;
+        I2C_Registry::Define def;
     } I2C_DeviceRegistryItem ;
 
     extern const I2C_DeviceRegistryItem I2C_DeviceRegistry[];
