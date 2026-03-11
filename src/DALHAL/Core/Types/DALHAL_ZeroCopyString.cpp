@@ -245,7 +245,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::SplitOffHead(char delimiter) {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
         
         const char* splitPos = FindChar(delimiter);
         const char* newStartPos = start;
@@ -258,7 +258,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::SplitOffTail(char delimiter) {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
         
         const char* splitPos = FindCharReverse(delimiter);
         const char* newEndPos = end;
@@ -271,7 +271,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::SplitOffHead(const char* delimiterPtr) {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
 
         const char* newStartPos = start;
         if (ContainsPtr(delimiterPtr) == false) {
@@ -283,7 +283,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::SplitOffTail(const char* delimiterPtr) {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
 
         const char* newEndPos = end;
         if (ContainsPtr(delimiterPtr) == false) {
@@ -295,7 +295,7 @@ namespace DALHAL {
     }
 
     bool ZeroCopyString::MoveStartAfter(char delimiter) {
-        if (!start || start >= end) return false;
+        if (!start || !end || start >= end) return false;
         
         const char* splitPos = FindChar(delimiter);
 
@@ -308,7 +308,7 @@ namespace DALHAL {
     }
 
     bool ZeroCopyString::MoveEndBefore(char delimiter) {
-        if (!start || start >= end) return false;
+        if (!start || !end || start >= end) return false;
         
         const char* splitPos = FindCharReverse(delimiter);
 
@@ -321,7 +321,7 @@ namespace DALHAL {
     }
 
     bool ZeroCopyString::MoveStartAfter(const char* delimiterPtr) {
-        if (!start || start >= end) return false;
+        if (!start || !end || start >= end) return false;
 
         if (ContainsPtr(delimiterPtr) == false) {
             //start = end; // this makes the source(this) string empty
@@ -332,7 +332,7 @@ namespace DALHAL {
     }
 
     bool ZeroCopyString::MoveEndBefore(const char* delimiterPtr) {
-        if (!start || start >= end) return false;
+        if (!start || !end || start >= end) return false;
 
         if (ContainsPtr(delimiterPtr) == false) {
             // leave the source string untouched
@@ -343,7 +343,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::GetHead(char delimiter) const {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
         
         const char* splitPos = FindChar(delimiter);
         if (splitPos == nullptr) {
@@ -354,7 +354,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::GetTail(char delimiter) const {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
         
         const char* splitPos = FindCharReverse(delimiter);
         if (splitPos == nullptr) {
@@ -364,7 +364,7 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::GetHead(const char* delimiterPtr) const {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
 
         if (ContainsPtr(delimiterPtr) == false) {
             return ZeroCopyString(start, end);
@@ -373,13 +373,27 @@ namespace DALHAL {
     }
 
     ZeroCopyString ZeroCopyString::GetTail(const char* delimiterPtr) const {
-        if (!start || start >= end) return ZeroCopyString(nullptr, nullptr);
+        if (!start || !end || start >= end) return ZeroCopyString(nullptr, nullptr);
 
         if (ContainsPtr(delimiterPtr) == false) {
             return ZeroCopyString(); // return empty 
         }
 
         return ZeroCopyString(delimiterPtr+1, end); 
+    }
+
+    void ZeroCopyString::Trim() {
+        if (!start || !end || start >= end) return;
+        
+        // Trim leading whitespace
+        while (start < end && std::isspace(static_cast<unsigned char>(*start))) {
+            ++start;
+        }
+
+        // Trim trailing whitespace
+        while (end > start && std::isspace(static_cast<unsigned char>(*(end - 1)))) {
+            --end;
+        }
     }
 
     bool ZeroCopyString::Equals(const ZeroCopyString& other) const {

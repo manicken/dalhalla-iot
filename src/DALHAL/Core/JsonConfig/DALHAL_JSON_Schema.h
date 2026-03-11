@@ -40,7 +40,9 @@ namespace DALHAL {
             UInt,
             Float,
             Array,
-            Pin
+            Object,
+            HardwarePin,
+            HardwarePinOrVirtualPin
         };
 
         enum class FieldFlag {
@@ -62,6 +64,9 @@ namespace DALHAL {
             int32_t minValue;
             int32_t maxValue;
             int32_t defaultValue;
+
+            constexpr FieldInt(const char* n, FieldType t, FieldFlag f, int32_t minValue, int32_t maxValue, int32_t defaultValue)
+                : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldUInt : FieldBase {
@@ -69,7 +74,7 @@ namespace DALHAL {
             uint32_t maxValue;
             uint32_t defaultValue;
 
-             constexpr FieldUInt(const char* n, FieldType t, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
+            constexpr FieldUInt(const char* n, FieldType t, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
                 : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
@@ -77,10 +82,16 @@ namespace DALHAL {
             float minValue;
             float maxValue;
             float defaultValue;
+
+            constexpr FieldFloat(const char* n, FieldType t, FieldFlag f, float minValue, float maxValue, float defaultValue)
+                : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldBool : FieldBase {
             bool defaultValue;
+
+            constexpr FieldBool(const char* n, FieldType t, FieldFlag f, bool defaultValue)
+                : FieldBase(n, t, f), defaultValue(defaultValue) {}
         };
 
         struct FieldString : FieldBase {
@@ -97,22 +108,27 @@ namespace DALHAL {
         };
         
 
-        struct FieldPin : FieldBase {
-            uint8_t def;
+        struct FieldHardwarePin : FieldBase {
+            uint16_t mode;
+            constexpr FieldHardwarePin(const char* n, FieldFlag f, uint16_t mode)
+                : FieldBase(n, FieldType::HardwarePin, f), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 
-        struct FieldArray : FieldBase {
-            const FieldBase** allowedChildren; // nullptr terminated
-            const char* arrayName;             // e.g., "items", "groups"
+        struct FieldHardwarePinOrVirtualPIN : FieldBase {
+            uint16_t mode;
+            constexpr FieldHardwarePinOrVirtualPIN(const char* n, FieldFlag f, uint16_t mode)
+                : FieldBase(n, FieldType::HardwarePinOrVirtualPin, f), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
+
+        
 
         // FieldGroup is a logical unit of fields where the group may be optional, 
         // and if present, at least one child field must exist. 
         // The group's presence can be overridden by ModeSelector rules.
         struct AnyOfGroup : FieldBase {
             const FieldBase* const* fields;
-            constexpr AnyOfGroup(FieldFlag f, const FieldBase* const* fields)
-                : FieldBase(nullptr, FieldType::AnyOfGroup, f), fields(fields) {}
+            constexpr AnyOfGroup(const char* outputName, FieldFlag f, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::AnyOfGroup, f), fields(fields) {}
         };
 
         struct ModeConjunctionDefine {
@@ -130,6 +146,18 @@ namespace DALHAL {
         struct Device {
             const FieldBase* const* fields;
             const ModeSelector* modes;
+        };
+
+        struct FieldArray : FieldBase {
+            const Device* subtype;
+            constexpr FieldArray(const char* n, FieldFlag f, const Device* subtype)
+                : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
+        };
+
+        struct FieldObject : FieldBase {
+            const Device* subtype;
+            constexpr FieldObject(const char* n, FieldFlag f, const Device* subtype)
+                : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
         };
 
     } // namespace JsonSchema

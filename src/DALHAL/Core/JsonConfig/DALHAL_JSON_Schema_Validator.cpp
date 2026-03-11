@@ -22,7 +22,9 @@
 */
 
 #include "DALHAL_JSON_Schema_Validator.h"
+#include "DALHAL/Core/Manager/DALHAL_GPIO_Manager.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 #include <ArduinoJSON.h>
 using json = JsonVariant;
@@ -31,7 +33,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-            
+        // this is only a helper/support function and do not use anyError
+        // as this could be jsut defined as a warning, depending on strict level requirements
         bool isKnownField(const char* key, const FieldBase* const* fields)
         {
             for (int i = 0; fields[i] != nullptr; i++) {
@@ -55,32 +58,40 @@ namespace DALHAL {
         }
 
         // Helper to validate FieldString / FieldUID
-        bool validateStringField(const JsonVariant& value, const FieldString* f, std::string& error)
+        void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError)
         {
             if (!value.is<const char*>()) {
-                error = std::string(f->name) + " must be a string";
-                return false;
+                GlobalLogger.Error(F("Field must be a string:"), f->name);
+                anyError = true;
+                return;
             }
-            const char* s = value.as<const char*>();
-            if (f->maxLength > 0 && strlen(s) > f->maxLength) {
-                error = std::string(f->name) + " exceeds maxLength";
-                return false;
+            ZeroCopyString zcStr = value.as<const char*>(); // wrap in ZeroCopyString for neat functions
+            zcStr.Trim();
+            size_t strLen = zcStr.Length(); // use of lenght here is fast
+            if (strLen == 0) {
+                GlobalLogger.Error(F("Field string cannot be empty:"), f->name);
             }
-            return true;
+            if (f->maxLength > 0 && strLen > f->maxLength) {
+                GlobalLogger.Error(F("Field exceeds maxLength:"), f->name);
+                anyError = true;
+                return;
+            }
         }
 
         // Validate a single field
-        bool validateField(const JsonObjectConst& j, const FieldBase* field, std::string& error)
+        void validateField(const JsonObjectConst& j, const FieldBase* field, bool& anyError)
         {
-            if (!field) return true;
+            if (!field) { return; } // failsafe just return
 
             // Handle required/optional
             if (!j.containsKey(field->name)) {
                 if (field->flag == FieldFlag::Required) {
-                    error = std::string("Required field missing: ") + field->name;
-                    return false;
+                    GlobalLogger.Error(F("Required field missing"));
+                    GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                    anyError = true;
+                    return;
                 }
-                return true; // optional can be missing
+                return; // optional can be missing
             }
 
             JsonVariant value = j[field->name];
@@ -89,76 +100,120 @@ namespace DALHAL {
                 case FieldType::Int: {
                     auto f = static_cast<const FieldInt*>(field);
                     if (!value.is<int>()) {
-                        error = std::string(f->name) + " must be integer";
-                        return false;
+                        GlobalLogger.Error(F(" must be a integer"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     int v = value.as<int>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(f->name) + " out of range";
-                        return false;
+                        GlobalLogger.Error(F(" out of range"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     break;
                 }
                 case FieldType::UInt: {
                     auto f = static_cast<const FieldUInt*>(field);
                     if (!value.is<unsigned int>()) {
-                        error = std::string(f->name) + " must be unsigned int";
-                        return false;
+                        GlobalLogger.Error(F(" must be unsigned int"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     unsigned int v = value.as<unsigned int>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(f->name) + " out of range";
-                        return false;
+                        GlobalLogger.Error(F(" out of range"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     break;
                 }
                 case FieldType::Float: {
                     auto f = static_cast<const FieldFloat*>(field);
                     if (!value.is<float>() && !value.is<double>() && !value.is<int>()) {
-                        error = std::string(f->name) + " must be a number";
-                        return false;
+                        GlobalLogger.Error(F(" must be a number"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     float v = value.as<float>();
                     if (v < f->minValue || v > f->maxValue) {
-                        error = std::string(f->name) + " out of range";
-                        return false;
+                        GlobalLogger.Error(F(" out of range"));
+                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        anyError = true;
+                        return;
                     }
                     break;
                 }
+                case FieldType::HardwarePin: {
+                    auto f = static_cast<const FieldHardwarePin*>(field);
+                    if (value.is<uint8_t>() == false) {
+                        GlobalLogger.Error(F("Harware Pin is not a valid value"));
+                        GlobalLogger.setLastEntrySource(f->name); //  safe as field name is a flash const and setLastEntrySource require "static" strings as it just store the ptr to the string
+                    }
+                    uint8_t pin = value.as<uint8_t>();
+                    if (GPIO_manager::CheckIfPinAvailableAndReserve(pin, f->mode) == false)
+                        anyError = true;
+                    return;
+                }
+                case FieldType::HardwarePinOrVirtualPin: {
+                    auto f = static_cast<const FieldHardwarePinOrVirtualPIN*>(field);
+                    if (value.is<const char*>()) {
+                        bool anyErrorTemp = false;
+                        validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
+                        if (anyErrorTemp == true) {
+                            anyError = true;
+                            return;
+                        }
+                        // TODO implement functionality to check if "virtual pin device" exists
+                    } else {
+
+                    }
+                    return;
+                }
                 case FieldType::UID:
                 case FieldType::UID_Path:
-                case FieldType::Pin:
-                case FieldType::Array:
                     // cast FieldString for UID / UID_Path / simple string fields
-                    return validateStringField(value, static_cast<const FieldString*>(field), error);
-
+                    validateStringField(value, static_cast<const FieldString*>(field), anyError);
+                    return;
+                case FieldType::Array: {
+                    auto f = static_cast<const FieldArray*>(field);
+                    validateDevice(value, f->subtype, anyError);
+                    return;
+                }
+                case FieldType::Object: {
+                    auto f = static_cast<const FieldObject*>(field);
+                    validateDevice(value, f->subtype, anyError);
+                    return;
+                }
                 case FieldType::AnyOfGroup:
                     // handled by validateAnyOfGroup
                     break;
             }
-
-            return true;
         }
 
         // Validate AnyOfGroup
-        bool validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, std::string& error)
+        void validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, bool& anyError)
         {
-            if (!group) return true;
+            if (!group) { return; } // failsafe just return
+
             bool found = false;
+            
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
                 const FieldBase* f = group->fields[i];
                 if (j.containsKey(f->name)) {
                     found = true;
-                    if (!validateField(j, f, error)) return false;
+                    validateField(j, f, anyError);
                 }
             }
 
             if (!found && group->flag == FieldFlag::Required) {
-                error = "None of the AnyOfGroup fields present";
-                return false;
+                GlobalLogger.Error(F("None of the AnyOfGroup fields present"));
+                anyError = true;
             }
-
-            return true;
         }
 
         // Validate ModeSelector
@@ -211,45 +266,40 @@ namespace DALHAL {
         }
 
         // Validate a full device
-        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* device, std::string& error)
+        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* devScheme, bool& anyError)
         {
-            // check for unknown fields
+            // 1. Check unknown fields
             for (JsonPairConst kv : j) {
                 const char* key = kv.key().c_str();
 
-                if (!isKnownField(key, device->fields)) {
-                    GlobalLogger.Error(F("Unknown config field:"), key);
+                if (!isKnownField(key, devScheme->fields)) {
+                    GlobalLogger.Warn(F("Unknown config field:"), key);
+                    // as this should not render the json invalid
+                    // anyError is not set
                 }
             }
-            // 1 Validate fields
-            for (int i = 0; device->fields[i] != nullptr; ++i)
-            {
-                const FieldBase* f = device->fields[i];
 
-                if (f->type == FieldType::AnyOfGroup)
-                {
-                    if (!validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), error))
-                        return -1;
+            // 2. Validate each field
+            for (int i = 0; devScheme->fields[i] != nullptr; ++i) {
+                const FieldBase* f = devScheme->fields[i];
+
+                if (f->type == FieldType::AnyOfGroup) {
+                    validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), anyError);
+                } else {
+                    validateField(j, f, anyError);
                 }
-                else
-                {
-                    if (!validateField(j, f, error))
-                        return -1;
-                }
             }
-            // 2 Detect mode
-            int mode = evaluateModes(j, device->modes);
-            if (mode == -1)
-            {
-                error = "No valid configuration mode found";
-                return -1;
+
+            // 3. Evaluate modes
+            int mode = evaluateModes(j, devScheme->modes);
+            if (mode == -1) {
+                GlobalLogger.Error(F("No valid configuration mode found"));
+                anyError = true;
+            } else if (mode == -2) {
+                GlobalLogger.Error(F("Configuration matches multiple modes"));
+                anyError = true;
             }
-            if (mode == -2)
-            {
-                error = "Configuration matches multiple modes";
-                return -1;
-            }
-            return mode;
+            return anyError ? -1 : mode;
         }
 
     }

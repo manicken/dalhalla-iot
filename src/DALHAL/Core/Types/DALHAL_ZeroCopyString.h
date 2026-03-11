@@ -149,7 +149,8 @@ namespace DALHAL {
         ZeroCopyString GetHead(const char* delimiterPtr) const;
         /** just get the substring from the delimiterPtr to the end without changing the original */
         ZeroCopyString GetTail(const char* delimiterPtr) const;
-
+        /* trims leading and trailing whitespace from the string*/
+        void Trim();
 
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;

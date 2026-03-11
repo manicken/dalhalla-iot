@@ -34,15 +34,15 @@ namespace DALHAL {
 
         bool isKnownField(const char* key, const FieldBase* const* fields);
         // Helper to validate FieldString / FieldUID
-        bool validateStringField(const JsonVariant& value, const FieldString* f, std::string& error);
+        void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError);
         // Validate a single field
-        bool validateField(const JsonObjectConst& j, const FieldBase* field, std::string& error);
+        void validateField(const JsonObjectConst& j, const FieldBase* field, bool& anyError);
         // Validate AnyOfGroup
-        bool validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, std::string& error);
+        void validateAnyOfGroup(const JsonObjectConst& j, const AnyOfGroup* group, bool& anyError);
         // Validate ModeSelector
         int evaluateModes(const JsonObjectConst& j, const ModeSelector* modes);
         // Validate a full device
-        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* device, std::string& error);
+        int validateDevice(const JsonObjectConst& j, const JsonSchema::Device* device, bool& anyError);
 
     }
 

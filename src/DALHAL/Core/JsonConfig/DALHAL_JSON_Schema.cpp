@@ -28,12 +28,12 @@ namespace DALHAL {
     namespace JsonSchema {
         constexpr FieldUID uid{};
         
-        constexpr FieldUInt    refreshTimeMs  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 3600, 0 };
-        constexpr FieldUInt    refreshTimeSec  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 3600, 0 };
-        constexpr FieldUInt    refreshTimeMin  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 3600, 0 };
+        constexpr FieldUInt    refreshTimeMs  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
+        constexpr FieldFloat    refreshTimeSec  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
+        constexpr FieldFloat    refreshTimeMin  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
         constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMs, &refreshTimeSec, &refreshTimeMin, nullptr};
 
-        constexpr AnyOfGroup   refreshTimeGroup = {FieldFlag::Optional, refreshGroupItems};
+        constexpr AnyOfGroup   refreshTimeGroup = {"refreshtimems", FieldFlag::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
         
         constexpr FieldString source = { "source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
         constexpr FieldString eventSource = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
