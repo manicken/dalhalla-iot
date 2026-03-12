@@ -29,6 +29,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define OneWireTempGroup::RegistryDefine = {
+        Registry::UseRootUID::Optional,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
+    };
+
     Device* OneWireTempGroup::Create(DeviceCreateContext& context) {
         return new OneWireTempGroup(context);
     }

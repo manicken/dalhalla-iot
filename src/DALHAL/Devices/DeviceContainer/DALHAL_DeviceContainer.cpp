@@ -29,6 +29,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+
+    constexpr Registry::Define DeviceContainer::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        nullptr /* no events available */
+    };
     
     DeviceContainer::~DeviceContainer() {
         if (devices) {

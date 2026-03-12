@@ -33,6 +33,12 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define Number::RegistryDefine = {
+        Registry::UseRootUID::Void,
+        Create,
+        VerifyJSON
+    };
+
     void Number::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);

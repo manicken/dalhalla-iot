@@ -32,12 +32,18 @@
 
 namespace DALHAL {
 
+    constexpr I2C_RegistryDefine PCF8574x::RegistryDefine = {
+        Create,
+        VerifyJSON,
+        HasAddress
+    };
+
     bool PCF8574x::HasAddress(uint8_t addr) {
         return (addr >= 0x20 && addr <= 0x27) || // PCF8574
                (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
     }
     
-    PCF8574x::PCF8574x(DeviceCreateContext& context, TwoWire& wire) : PCF8574x_DeviceBase(context.deviceType), wire(&wire) {
+    PCF8574x::PCF8574x(I2C_Master_CreateFunctionContext& context) : PCF8574x_DeviceBase(context.deviceType), wire(context.wire) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
@@ -58,14 +64,14 @@ namespace DALHAL {
         return true;
     }
 
-    Device* PCF8574x::Create(DeviceCreateContext& context, TwoWire& wire) {
-        return new PCF8574x(context, wire);
+    Device* PCF8574x::Create(DeviceCreateContext& context) {
+        return new PCF8574x(static_cast<I2C_Master_CreateFunctionContext&>(context));
     }
 
     HALOperationResult PCF8574x::read(HALValue& val) {
-        uint8_t received = wire->requestFrom(addr, (uint8_t)1);
+        uint8_t received = wire.requestFrom(addr, (uint8_t)1);
         if (received == 0) return HALOperationResult::ExecutionFailed;
-        val = (uint32_t)wire->read();
+        val = (uint32_t)wire.read();
 #if HAS_REACTIVE_READ(I2C_DEVICE_PCF8574X)
         triggerRead();
 #endif
@@ -74,9 +80,9 @@ namespace DALHAL {
     HALOperationResult PCF8574x::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        wire->beginTransmission(addr);
-        wire->write(val.asUInt());
-        uint8_t res = wire->endTransmission(true);
+        wire.beginTransmission(addr);
+        wire.write(val.asUInt());
+        uint8_t res = wire.endTransmission(true);
         if (res != 0) {
             // todo maybe log to global logger
             return HALOperationResult::ExecutionFailed;

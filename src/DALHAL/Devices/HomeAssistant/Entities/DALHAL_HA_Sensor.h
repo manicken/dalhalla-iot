@@ -65,11 +65,11 @@ namespace DALHAL {
         static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Void,
             Create,
             VerifyJSON
-        };
+        };*/
 
         Sensor(HA_CreateFunctionContext& context);
         ~Sensor();

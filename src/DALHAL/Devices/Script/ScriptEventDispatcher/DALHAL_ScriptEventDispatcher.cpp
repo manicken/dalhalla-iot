@@ -28,6 +28,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+    constexpr Registry::Define ScriptEventDispatcher::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        nullptr /* no events available */
+    };
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : Device(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);

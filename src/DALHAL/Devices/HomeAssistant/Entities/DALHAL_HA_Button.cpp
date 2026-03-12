@@ -31,6 +31,11 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+    constexpr Registry::Define Button::RegistryDefine = {
+        Registry::UseRootUID::Void,
+        Create,
+        VerifyJSON
+    };
 
     void Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);

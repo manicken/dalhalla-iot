@@ -46,18 +46,18 @@ namespace DALHAL {
     class PCF8574x : public PCF8574x_DeviceBase {
     private:
         uint8_t addr = 0;
-        TwoWire* wire;
+        TwoWire& wire;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context, TwoWire& wire);
+        static Device* Create(DeviceCreateContext& context);
         static bool HasAddress(uint8_t addr);
-        static constexpr I2C_RegistryDefine RegistryDefine = {
+        static const I2C_RegistryDefine RegistryDefine;/* = {
             Create,
             VerifyJSON,
             HasAddress
-        };
+        };*/
 
-        PCF8574x(DeviceCreateContext& context, TwoWire& wire);
+        PCF8574x(I2C_Master_CreateFunctionContext& context);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

@@ -29,6 +29,12 @@
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 
 namespace DALHAL {
+    constexpr Registry::Define ButtonInput::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
+    };
 
 // Factory method
 Device* ButtonInput::Create(DeviceCreateContext& context) {

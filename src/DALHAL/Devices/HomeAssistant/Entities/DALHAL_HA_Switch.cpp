@@ -34,6 +34,12 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define Switch::RegistryDefine = {
+        Registry::UseRootUID::Void,
+        Create,
+        VerifyJSON
+    };
+
     const char* Switch::PAYLOAD_OFF = "OFF";
     const char* Switch::PAYLOAD_ON = "ON";
 

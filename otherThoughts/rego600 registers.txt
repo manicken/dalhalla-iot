@@ -1,0 +1,17 @@
+{"uid":"hp","type":"REGO600","rxpin":34,"txpin":33,"refreshtimesec":10,"items": [
+	  {"uid":"gt1","regname":"GT1"},
+	  {"uid":"gt2","regname":"GT2"},
+	  {"uid":"gt3","regname":"GT3"},
+	  {"uid":"gt5","regname":"GT5"},
+	  {"uid":"gt6","regname":"GT6"},
+	  {"uid":"gt8","regname":"GT8"},
+	  {"uid":"gt9","regname":"GT9"},
+	  {"uid":"gt10","regname":"GT10"},
+	  {"uid":"gt11","regname":"GT11"},
+	  {"uid":"comp","regname":"COMP"},
+	  {"uid":"el3","regname":"el3"},
+	  {"uid":"el6","regname":"el6"},
+	  {"uid":"vxv","regname":"vxv"},
+	  {"uid":"alarm","regname":"alarm"}
+	   
+  ]}, 

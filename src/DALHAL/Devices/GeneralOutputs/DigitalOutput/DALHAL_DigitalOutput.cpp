@@ -29,6 +29,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+
+    constexpr Registry::Define DigitalOutput::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
+    };
     
     Device* DigitalOutput::Create(DeviceCreateContext& context) {
         return new DigitalOutput(context);

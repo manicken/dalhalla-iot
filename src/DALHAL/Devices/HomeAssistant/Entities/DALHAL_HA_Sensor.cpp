@@ -34,6 +34,11 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define Sensor::RegistryDefine = {
+        Registry::UseRootUID::Void,
+        Create,
+        VerifyJSON
+    };
 
     void Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         mqtt.write(',');

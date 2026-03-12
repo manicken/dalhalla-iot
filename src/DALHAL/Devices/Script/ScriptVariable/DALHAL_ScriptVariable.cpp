@@ -29,6 +29,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define ScriptVariable::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
+    };
+
     ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));

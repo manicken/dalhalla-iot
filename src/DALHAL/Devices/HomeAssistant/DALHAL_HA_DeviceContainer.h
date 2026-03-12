@@ -52,11 +52,11 @@ namespace DALHAL {
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Void,
             Create,
             VerifyJSON
-        };
+        };*/
         HA_DeviceContainer(HA_CreateFunctionContext& context);
         ~HA_DeviceContainer();
         String ToString() override;

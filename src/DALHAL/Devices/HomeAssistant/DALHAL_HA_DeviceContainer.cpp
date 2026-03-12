@@ -31,6 +31,11 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
+    constexpr Registry::Define HA_DeviceContainer::RegistryDefine = {
+        Registry::UseRootUID::Void,
+        Create,
+        VerifyJSON
+    };
     
     HA_DeviceContainer::~HA_DeviceContainer() {
         if (devices) {
@@ -57,7 +62,7 @@ namespace DALHAL {
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            bool valid = regItem.def.Verify_JSON_Function(jsonItem);
+            bool valid = regItem.def->Verify_JSON_Function(jsonItem);
             validDevices[i] = valid;
             deviceCountTmp++;
         }
@@ -89,7 +94,7 @@ namespace DALHAL {
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             context.jsonObjItem = &jsonItem;
             context.deviceType = regItem.typeName;
-            devices[index++] = regItem.def.Create_Function(context);
+            devices[index++] = regItem.def->Create_Function(context);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -121,7 +126,7 @@ namespace DALHAL {
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            bool valid = regItem.def.Verify_JSON_Function(jsonItem);
+            bool valid = regItem.def->Verify_JSON_Function(jsonItem);
             if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
         }
         return true;

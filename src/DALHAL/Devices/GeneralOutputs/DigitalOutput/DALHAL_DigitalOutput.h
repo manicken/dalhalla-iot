@@ -48,12 +48,12 @@ namespace DALHAL {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
-        };
+        };*/
         DigitalOutput(DeviceCreateContext& context);
         ~DigitalOutput();
 

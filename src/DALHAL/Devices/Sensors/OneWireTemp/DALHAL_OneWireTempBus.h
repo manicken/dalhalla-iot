@@ -77,12 +77,12 @@ namespace DALHAL {
     public:
         
         static Device* Create(DeviceCreateContext& context);
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Optional,
             Create,
             OneWireTempBus::VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
-        };
+        };*/
         OneWireTempBusAtRoot(DeviceCreateContext& context);
         ~OneWireTempBusAtRoot();
 

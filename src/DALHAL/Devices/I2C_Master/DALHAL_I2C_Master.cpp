@@ -33,6 +33,12 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define I2C_Master::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
+    };
     
     I2C_Master::I2C_Master(DeviceCreateContext& context) : I2C_Master_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
@@ -71,9 +77,10 @@ namespace DALHAL {
             
             const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             
-            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
+            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type);
+            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (regItem.def.Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }
@@ -81,18 +88,19 @@ namespace DALHAL {
         deviceCount = validItemCount;
         devices = new Device*[validItemCount]();
         int index = 0;
-        DeviceCreateContext createContext;
+        I2C_Master_CreateFunctionContext createContext(*wire);
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
             if (validItems[i] == false) continue;
             
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type_cStr);
+            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type_cStr);
+            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type_cStr);
              // no nullcheck is needed as ValidateJSON ensures that all types are correct
             createContext.jsonObjItem = &item;
             createContext.deviceType = regItem.typeName; // use static/flash string
-
-            devices[index++] = regItem.def.Create_Function(createContext, *wire); // regItem.typeName is a flash const so it's safe to use
+            
+            devices[index++] = regItem.def->Create_Function(createContext); // regItem.typeName is a flash const so it's safe to use
         }
         delete[] validItems;
     }
@@ -147,24 +155,26 @@ namespace DALHAL {
             if (ValidateJsonStringField(item, DALHAL_KEYNAME_TYPE) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
             
             const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
+            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type);
+            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
+            
             if (regItem.typeName == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - could not find type:"),type);
                 SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
             
-            if (regItem.def.Verify_JSON_Function == nullptr) {
+            if (regItem.def->Verify_JSON_Function == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - Verify_JSON_Function nullptr:"),type);
                 SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
-            if (regItem.def.Create_Function == nullptr) {
+            if (regItem.def->Create_Function == nullptr) {
                 GlobalLogger.Error(F("VerifyI2CDeviceJson - Create_Function nullptr:"),type);
                 SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
                 return false;
             }
-            if (regItem.def.Verify_JSON_Function(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
+            if (regItem.def->Verify_JSON_Function(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
             validItemCount++;
 
         }

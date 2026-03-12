@@ -31,6 +31,15 @@
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
+
+    constexpr Registry::Define Actuator::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
+    };
+
+
 #if !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
         GPIO.out_w1ts = mask;

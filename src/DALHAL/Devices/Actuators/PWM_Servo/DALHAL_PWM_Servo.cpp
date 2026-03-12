@@ -38,6 +38,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define PWM_Servo::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)
+    };
+
     PWM_Servo::PWM_Servo(DeviceCreateContext& context) : PWM_Servo_DeviceBase(context.deviceType)
     {
         const JsonVariant& jsonObj = *(context.jsonObjItem);

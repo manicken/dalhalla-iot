@@ -1,0 +1,8 @@
+i could also have different levels of json validations where level 0 defines what we are currently discussing, 
+then level 1 mean device dependency check, 
+
+heck i could even have more levels:
+level 0 check for required fields and value ranges
+level 1 check for UID usage collisions
+level 2 check for GPIO usage collisions
+level 3 check for dependency i.e when im referring to other devices

@@ -51,12 +51,12 @@ namespace DALHAL {
         WS2812FX* ws2812fx;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(WS2812)
-        };
+        };*/
 
         WS2812(DeviceCreateContext& context);
 

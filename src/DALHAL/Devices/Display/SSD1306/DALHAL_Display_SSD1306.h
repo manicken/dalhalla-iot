@@ -48,17 +48,17 @@ namespace DALHAL {
     public:
         // here we could implement functions for to use with spi interface as well
 
-        static Device* Create(DeviceCreateContext& context, TwoWire& wire);
+        static Device* Create(DeviceCreateContext& context);
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static bool HasAddress(uint8_t addr);
-        static constexpr I2C_RegistryDefine RegistryDefine = {
+        static const I2C_RegistryDefine RegistryDefine;/* = {
             Create,
             VerifyJSON,
             HasAddress
-        };
+        };*/
 
         
-        Display_SSD1306(DeviceCreateContext& context, TwoWire& wire);
+        Display_SSD1306(I2C_Master_CreateFunctionContext& context);
         ~Display_SSD1306();
 
         HALOperationResult write(const HALWriteStringRequestValue& val);

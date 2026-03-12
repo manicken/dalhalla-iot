@@ -77,14 +77,14 @@ namespace DALHAL {
             return nullptr; // no match
         }
 
-        if (regItem.def.Create_Function == nullptr) {
+        if (regItem.def->Create_Function == nullptr) {
             GlobalLogger.Error(F("CreateDeviceFromJSON - Create_Function == nullptr - something is very wrong if this happens"));
             return nullptr; // should never happen as VerifyJson is called before and do actually verify that this pointer do point to something
         }
         DeviceCreateContext createContext;
         createContext.jsonObjItem = &jsonObj;
         createContext.deviceType = regItem.typeName;
-        return regItem.def.Create_Function(createContext);
+        return regItem.def->Create_Function(createContext);
     }
     bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         
@@ -98,13 +98,13 @@ namespace DALHAL {
             return false;
         }
 
-        if (regItem.def.useRootUID == Registry::UseRootUID::Mandatory)
+        if (regItem.def->useRootUID == Registry::UseRootUID::Mandatory)
             if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
-        if (regItem.def.Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
-        if (regItem.def.Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
+        if (regItem.def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
+        if (regItem.def->Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
 
-        return regItem.def.Verify_JSON_Function(jsonObj);
+        return regItem.def->Verify_JSON_Function(jsonObj);
 
     }
 

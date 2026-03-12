@@ -28,6 +28,8 @@
 
 #include <ArduinoJson.h> // this dependency can be removed when I begin to use the new config scheme validator
 
+#include <string>
+
 namespace DALHAL {
 
     struct DeviceCreateContext
@@ -48,21 +50,44 @@ namespace DALHAL {
             Void
         };
 
-        typedef struct Define {
+        struct Define {
             UseRootUID useRootUID;
             HAL_DEVICE_CREATE_FUNC Create_Function;
             HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
             const EventDescriptor* reactiveTable;
-            
-        } Define;
-        
-        typedef struct Item {
-            const char* typeName;
-            Define def;
-        } Item ;
+            constexpr Define(
+                UseRootUID useRootUID, 
+                HAL_DEVICE_CREATE_FUNC Create_Function, 
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
+            ) : 
+                useRootUID(useRootUID), 
+                Create_Function(Create_Function), 
+                Verify_JSON_Function(Verify_JSON_Function),
+                reactiveTable(nullptr)
+            {}
 
-        constexpr Registry::Define ItemNullDefault = {UseRootUID::Void, nullptr, nullptr };
-        constexpr Registry::Item TerminatorItem = {nullptr, ItemNullDefault};
+            constexpr Define(
+                UseRootUID useRootUID, 
+                HAL_DEVICE_CREATE_FUNC Create_Function, 
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+                const EventDescriptor* reactiveTable
+            ) : 
+                useRootUID(useRootUID), 
+                Create_Function(Create_Function), 
+                Verify_JSON_Function(Verify_JSON_Function),
+                reactiveTable(reactiveTable)
+            {}
+            
+        };
+        
+        struct Item {
+            const char* typeName;
+            const Registry::Define* def;
+
+            constexpr Item(const char* typeName, const Registry::Define* def) : typeName(typeName), def(def) {}
+        };
+
+        constexpr Registry::Item TerminatorItem = {nullptr, nullptr};
 
         const Registry::Item& GetItem(const Registry::Item* reg, const char* type);
 

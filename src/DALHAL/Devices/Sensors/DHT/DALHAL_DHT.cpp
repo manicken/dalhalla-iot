@@ -31,6 +31,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+    
+    constexpr Registry::Define DHT::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(DHT)
+    };
 
     bool DHT::isValidDHTModel(const char* modelStr) {
         return 

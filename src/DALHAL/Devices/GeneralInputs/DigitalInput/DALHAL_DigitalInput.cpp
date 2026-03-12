@@ -30,6 +30,13 @@
 
 
 namespace DALHAL {
+
+    constexpr Registry::Define DigitalInput::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)
+    };
     
     Device* DigitalInput::Create(DeviceCreateContext& context) {
         return new DigitalInput(context);

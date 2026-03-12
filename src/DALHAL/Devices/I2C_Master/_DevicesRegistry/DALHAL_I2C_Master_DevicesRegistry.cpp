@@ -35,30 +35,20 @@
 
 namespace DALHAL {
 
-    constexpr I2C_RegistryDefine RegistryItemNullDefault = {nullptr, nullptr, nullptr};
-    constexpr I2C_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
-
-    constexpr I2C_DeviceRegistryItem I2C_DeviceRegistry[] = {
-        {"SSD1306",   Display_SSD1306::RegistryDefine},
-        {"PCF8574x",  PCF8574x::RegistryDefine},
+    constexpr Registry::Item I2C_DeviceRegistry[] = {
+        {"SSD1306",   &Display_SSD1306::RegistryDefine},
+        {"PCF8574x",  &PCF8574x::RegistryDefine},
         /** mandatory null terminator */
-        RegistryTerminatorItem
+        Registry::TerminatorItem
     };
-    const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type) {
-        int i=0;
-        while (true) {
-            const I2C_DeviceRegistryItem& regItem = I2C_DeviceRegistry[i++];
-            if (regItem.typeName == nullptr) break;
-            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
-        }
-        return RegistryTerminatorItem;
-    }
+
     std::string describeI2CAddress(uint8_t addr) {
         std::string deviceNames;
         deviceNames.reserve(32); // to minimize heap fragmentation
         bool first = true;
         for (int i = 0; I2C_DeviceRegistry[i].typeName != nullptr; i++) {
-            if (I2C_DeviceRegistry[i].def.HasAddress_Function(addr)) {
+            const I2C_RegistryDefine* i2c_def = static_cast<const I2C_RegistryDefine*>(I2C_DeviceRegistry[i].def);
+            if (i2c_def->HasAddress_Function(addr)) {
                 if (first == false) deviceNames += ',';
                 else first = false;
                 deviceNames += I2C_DeviceRegistry[i].typeName;

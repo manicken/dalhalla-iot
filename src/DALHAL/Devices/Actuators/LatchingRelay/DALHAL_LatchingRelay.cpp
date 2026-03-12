@@ -29,6 +29,14 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
+
+    constexpr Registry::Define LatchingRelay::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
+    };
+
 #if !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
         GPIO.out_w1ts = mask;

@@ -73,12 +73,12 @@ namespace DALHAL {
         static const char* TS_ROOT_URL;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
-        };
+        };*/
         ThingSpeak(DeviceCreateContext& context);
         ~ThingSpeak();
         HALOperationResult exec() override;

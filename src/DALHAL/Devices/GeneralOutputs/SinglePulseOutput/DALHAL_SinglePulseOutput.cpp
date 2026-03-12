@@ -28,6 +28,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
+
+    constexpr Registry::Define SinglePulseOutput::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
+    };
     
     Device* SinglePulseOutput::Create(DeviceCreateContext& context) {
         return new SinglePulseOutput(context);

@@ -114,3 +114,45 @@ to save flash memory when im using similar strings
 
 1224641  
 1157049 if we don't include DALHAL.h (current usage is 67592 bytes)
+
+// major jump to crazy implementations 
+
+1307649
+1306801
+1306925
+1306889 // after removal of HAL req functions
+
+1305625 // after having all CommandExecutor error reporting using GlobalLogger
+
+1305865 // after complete rework of finddevice
+
+1305741 // after remove use of UIDPathMaxLength
+1305821 // after making better device root registry
+1305905 // after change all custom registries
+
+1306145
+
+1351353
+1351149
+1351129
+1351117
+
+1351005
+
+1359285 after all reactive stuff is implemented and in DALHAL_REACTIVE_DEVELOPMENT_MODE
+
+1355601 as above but normal stuff only and using safe types
+
+1353769 as above but normal stuff only and using NON safe types
+
+
+1355961 before changing to 
+
+1354173
+
+1354229
+
+1353833
+
+1357445 // before changing into DeviceCreateContext& context
+1357633 // after changing into DeviceCreateContext& context

@@ -37,6 +37,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define ThingSpeak::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
+    };
+
     const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
     
     ThingSpeak::ThingSpeak(DeviceCreateContext& context) : ThingSpeak_DeviceBase(context.deviceType) {

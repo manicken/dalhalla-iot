@@ -29,6 +29,12 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
+        constexpr Registry::Define _Template_::RegistryDefine = {
+                Registry::UseRootUID::Mandatory,
+                Create,
+                VerifyJSON,
+                DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)
+        };
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);

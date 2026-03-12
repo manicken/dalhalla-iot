@@ -49,9 +49,9 @@ namespace DALHAL {
                 ret += '{';
                 ret += "\"name\":\""; ret += regItem->typeName; ret += '"';
                 ret += ",\"events\":[";
-                if (regItem->def.reactiveTable != nullptr) {
+                if (regItem->def->reactiveTable != nullptr) {
                     bool first2 = true;
-                    for (const EventDescriptor* entry = regItem->def.reactiveTable; entry->name; entry++) {
+                    for (const EventDescriptor* entry = regItem->def->reactiveTable; entry->name; entry++) {
                     
                         if (first2 == false) { ret += ','; }
                         else { first2 = false; }

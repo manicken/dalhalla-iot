@@ -1,0 +1,62 @@
+{
+  "device_type": "sensor",
+  "measurements": [
+    {
+      "name": "temperature",
+      "unit": "C",
+      "type": "float",
+      "min": -40,
+      "max": 125
+    }
+  ]
+}
+{
+  "device_type": "sensor",
+  "measurements": [
+    {
+      "name": "temperature",
+      "unit": "C",
+      "type": "float",
+      "min": -40,
+      "max": 125
+    }
+  ]
+}
+struct MeasurementInfo {
+    const char* name;      // "temperature"
+    const char* unit;      // "C"
+    const char* datatype;  // "float"
+};
+
+struct DeviceDescription {
+    const char* deviceType;    // "sensor"
+    const MeasurementInfo* measurements;
+    int measurementCount;
+};
+static MeasurementInfo tempInfo[] = {
+    { "temperature", "C", "float" }
+};
+
+static DeviceDescription desc = {
+    "sensor",
+    tempInfo,
+    1
+};
+
+
+currently i have the following dalhal cfg:
+
+{"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a"},
+{"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b"},
+{"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum"}
+
+but with this new system it could simply be:
+
+{"uid":"temp_room1", "source":"temps:a:a"},
+{"uid":"temp_room2", "source":"temps:a:b"},
+{"uid":"hum_room1", "source":"hum"}
+
+or i could also copy the uid from the source path if the uid is omitted:
+{"source":"temps:a:a"}, // will have a uid=a
+{"source":"temps:a:b"}, // will have a uid=b
+{"source":"hum"}  // will have a uid=hum

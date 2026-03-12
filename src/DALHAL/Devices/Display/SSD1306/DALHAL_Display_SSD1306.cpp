@@ -32,15 +32,21 @@
 
 namespace DALHAL {
 
+    constexpr I2C_RegistryDefine Display_SSD1306::RegistryDefine = {
+        Create,
+        VerifyJSON,
+        HasAddress
+    };
+
     bool Display_SSD1306::HasAddress(uint8_t addr) {
         return addr == 0x3C || addr == 0x3D; 
     }
 
-    Device* Display_SSD1306::Create(DeviceCreateContext& context, TwoWire& wire) {
-        return new Display_SSD1306(context, wire);
+    Device* Display_SSD1306::Create(DeviceCreateContext& context) {
+        return new Display_SSD1306(static_cast<I2C_Master_CreateFunctionContext&>(context));
     }
     
-    Display_SSD1306::Display_SSD1306(DeviceCreateContext& context, TwoWire& wire) : Device(context.deviceType) {
+    Display_SSD1306::Display_SSD1306(I2C_Master_CreateFunctionContext& context) : Device(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
@@ -52,7 +58,7 @@ namespace DALHAL {
         uint8_t textSize = GetAsUINT8(jsonObj, "textsize");
         if (textSize == 0) textSize = 1;
 
-        display = new Adafruit_SSD1306(width, height, &Wire, -1); // -1 = no reset pin
+        display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
         delay(200);
         if (display->begin(SSD1306_SWITCHCAPVCC, addr))
         {

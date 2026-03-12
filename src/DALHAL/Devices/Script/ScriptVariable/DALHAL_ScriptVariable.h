@@ -58,12 +58,12 @@ namespace DALHAL {
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         
-        static constexpr Registry::Define RegistryDefine = {
+        static const Registry::Define RegistryDefine;/* = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
-        };
+        };*/
         ScriptVariable(DeviceCreateContext& context);
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

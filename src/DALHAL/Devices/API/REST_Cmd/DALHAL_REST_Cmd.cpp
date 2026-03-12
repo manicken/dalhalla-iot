@@ -29,6 +29,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define REST_Cmd::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        nullptr // no events available on obsolete device
+    };
+
     bool REST_Cmd::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, "url") == false){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_REMOTE_FETCH_REST_VERIFY_JSON); return false; }
         return true;

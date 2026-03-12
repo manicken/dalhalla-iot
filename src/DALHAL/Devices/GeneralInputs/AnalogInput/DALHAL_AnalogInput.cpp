@@ -29,6 +29,12 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
+    constexpr Registry::Define AnalogInput::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
+    };
     
 #if defined(ESP32) || defined(_WIN32)
     Device* AnalogInput::Create(DeviceCreateContext& context) {

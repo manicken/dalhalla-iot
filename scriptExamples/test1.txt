@@ -1,0 +1,59 @@
+// this is a good example where events can be used
+// here is first a situation where i call both async and sync "functions"
+// not really functions in that matter but more like argument free subroutines
+// a remainder my script engine "compiles" to a direct execution path upon loading
+// so no string parsing is done at any time in runtime
+// so here i dont have Reactive Emitting on every device
+
+on temp#read then
+  if temp > 20 then
+	fan = 128
+	fan_cng() // this is a trigger on exec device that increments it's eventcouter,  this will then be async executed later
+	fan_cng2() // this will execute the code directly
+  endif
+endon
+
+on fan_cng then // this i simply triggered async
+	// do something special here
+endon
+
+on fan_cng2#exec then
+   // this code will be executed directly on call
+endon
+
+// but can also be advanced:
+
+on temp#read then
+  if temp*2 > 20 then
+	fan = tables:tmp2fan[temp]
+  endif
+endon
+
+// here i do now have Reactive Emitting on every device
+
+on temp#read then
+  if temp > 30 then
+	fan = 255
+  elseif temp > 20 then
+	fan = 128
+  else
+	fan = 32
+  endif
+endon
+
+on fan#changed then // this i simply triggered async
+
+endon
+
+
+on button#click then
+   if door == 0 then
+	 door = 1
+   else
+    door = 0;
+   endif
+endon
+
+on button#click then
+	door ^= 1
+endon

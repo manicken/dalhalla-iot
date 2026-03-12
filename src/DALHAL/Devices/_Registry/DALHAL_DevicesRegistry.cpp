@@ -79,64 +79,64 @@ namespace DALHAL {
     constexpr Registry::Item DeviceRegistry[] = {
 
          /** ---------------- Script-backed Devices ---------------- */
-        {"VAR", ScriptVariable::RegistryDefine},
-        {"CONSTVAR", ScriptVariableReadOnly::RegistryDefine},
-        {"WRITEVAR", ScriptVariableWriteOnlyTest::RegistryDefine}, // only a development test device, that is used when testing write only functionality
-        {"ARRAY", ScriptArray::RegistryDefine},
+        {"VAR", &ScriptVariable::RegistryDefine},
+        {"CONSTVAR", &ScriptVariableReadOnly::RegistryDefine},
+        {"WRITEVAR", &ScriptVariableWriteOnlyTest::RegistryDefine}, // only a development test device, that is used when testing write only functionality
+        {"ARRAY", &ScriptArray::RegistryDefine},
 
         /** ---------------- Core Devices ---------------- */
-        {"DIN", DigitalInput::RegistryDefine},
-        {"DOUT", DigitalOutput::RegistryDefine},
-        {"DPOUT", SinglePulseOutput::RegistryDefine},
+        {"DIN", &DigitalInput::RegistryDefine},
+        {"DOUT", &DigitalOutput::RegistryDefine},
+        {"DPOUT", &SinglePulseOutput::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
-        {"ADC", AnalogInput::RegistryDefine},
+        {"ADC", &AnalogInput::RegistryDefine},
 #endif
         //{"PWM_AW", PWMAnalogWrite::RegistryDefine}, OBSOLETE TO BE REMOVED
         //{"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine}, OBSOLETE TO BE REMOVED
 
         /** ---------------- OneWire / Sensors ---------------- */
 #if defined(DALHAL_DEVICE_ONEWIRE_TEMPERATURE_SENSORS)
-        {"1WTG", OneWireTempGroup::RegistryDefine},
-        {"1WTB", OneWireTempBusAtRoot::RegistryDefine},
-        {"1WTD", OneWireTempDeviceAtRoot::RegistryDefine},
+        {"1WTG", &OneWireTempGroup::RegistryDefine},
+        {"1WTB", &OneWireTempBusAtRoot::RegistryDefine},
+        {"1WTD", &OneWireTempDeviceAtRoot::RegistryDefine},
 #endif
         /** ---------------- Other / Sensors ---------------- */
-        {"DHT", DHT::RegistryDefine},
+        {"DHT", &DHT::RegistryDefine},
 
         /** ---------------- RF / Communication ---------------- */
-        {"TX433", TX433::RegistryDefine},
+        {"TX433", &TX433::RegistryDefine},
 #if defined(DALHAL_DEVICE_REGO600_HEATPUMP_CONTROLLER)
-        {"REGO600", REGO600::RegistryDefine},
+        {"REGO600", &REGO600::RegistryDefine},
 #endif
-        {"I2C", I2C_Master::RegistryDefine},
+        {"I2C", &I2C_Master::RegistryDefine},
 
         /** ---------------- Lights ---------------- */
-        {"WS2812", WS2812::RegistryDefine},
+        {"WS2812", &WS2812::RegistryDefine},
         
         /** -------------- Virtual Devices --------- */
         //{"REST_VAR", REST_Value::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
         //{"REST_CMD", REST_Cmd::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
 
         /** ---------------- Device Containers ---------------- */
-        {"CONTAINER", DeviceContainer::RegistryDefine},
+        {"CONTAINER", &DeviceContainer::RegistryDefine},
         
         /** ---------------- External / Cloud / API Devices ---------------- */
-        {"THINGSPEAK", ThingSpeak::RegistryDefine},
-        {"HOMEASSISTANT", HomeAssistant::RegistryDefine},
+        {"THINGSPEAK", &ThingSpeak::RegistryDefine},
+        {"HOMEASSISTANT", &HomeAssistant::RegistryDefine},
         
         /** ---------------- Actuators / Outputs ---------------- */
-        {"ACTUATOR", Actuator::RegistryDefine},
-        {"RELAY_LATCHING", LatchingRelay::RegistryDefine},
+        {"ACTUATOR", &Actuator::RegistryDefine},
+        {"RELAY_LATCHING", &LatchingRelay::RegistryDefine},
 #if defined(ESP32) || defined(_WIN32)
-        {"PWM_SERVO", PWM_Servo::RegistryDefine}, // was LEDC_SERVO
+        {"PWM_SERVO", &PWM_Servo::RegistryDefine}, // was LEDC_SERVO
 #endif
 
         /** ---------------- Inputs ---------------- */
-        {"BUTTON", ButtonInput::RegistryDefine},
+        {"BUTTON", &ButtonInput::RegistryDefine},
 
         /** template device */
 #ifdef DALHAL_DEVICE__TEMPLATE_
-        {"TEMPLATE", _Template_::RegistryDefine},
+        {"TEMPLATE", &_Template_::RegistryDefine},
 #endif
         /** mandatory null terminator */
         Registry::TerminatorItem, // Stop for active devices
@@ -144,7 +144,7 @@ namespace DALHAL {
 
         /** --- Planned / future devices --- */
 #if defined(ESP32) || defined(_WIN32)
-        {"PWM_LEDC", Registry::ItemNullDefault},
+        {"PWM_LEDC", nullptr},
 #endif
     };
 

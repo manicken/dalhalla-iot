@@ -47,12 +47,12 @@ public:
     // Factory and JSON validation
     static Device* Create(DeviceCreateContext& context);
     static bool VerifyJSON(const JsonVariant &jsonObj);
-    static constexpr Registry::Define RegistryDefine = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
-        };
+    static const Registry::Define RegistryDefine;/* = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
+    };*/
 
     // Constructor
     ButtonInput(DeviceCreateContext& context);

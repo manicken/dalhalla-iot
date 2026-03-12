@@ -37,6 +37,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define HomeAssistant::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        nullptr /* no events available */
+    };
+
     bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, "deviceId") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
         if (ValidateJsonStringField(jsonObj, "host") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
@@ -253,7 +260,7 @@ namespace DALHAL {
             
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (regItem.def.Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }
@@ -274,7 +281,7 @@ namespace DALHAL {
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             createFuncContext.jsonObjItem = &item;
             createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-            devices[index++] = regItem.def.Create_Function(createFuncContext);
+            devices[index++] = regItem.def->Create_Function(createFuncContext);
         }
         delete[] validItems;
     }
@@ -319,7 +326,7 @@ namespace DALHAL {
                 const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                 createFuncContext.jsonObjItem = &item;
                 createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-                devices[newItemIndex++] = regItem.def.Create_Function(createFuncContext);
+                devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
                 yield();
             }
         }
@@ -337,7 +344,7 @@ namespace DALHAL {
         const char* type_cStr = GetAsConstChar(jsonObjItem, DALHAL_KEYNAME_TYPE);
         const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
         // no nullcheck is needed as ValidateJSON ensures that all types are correct
-        if (regItem.def.Verify_JSON_Function(jsonObjItem) == false) { return false; }
+        if (regItem.def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
         return true;
     }
 

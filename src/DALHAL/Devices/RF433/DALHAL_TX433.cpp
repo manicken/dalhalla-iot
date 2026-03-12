@@ -30,6 +30,13 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Define TX433::RegistryDefine = {
+        Registry::UseRootUID::Mandatory,
+        Create,
+        VerifyJSON,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433)
+    };
+
     bool TX433::VerifyJSON(const JsonVariant &jsonObj) {
         if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_VERIFY_JSON); return false; }
 

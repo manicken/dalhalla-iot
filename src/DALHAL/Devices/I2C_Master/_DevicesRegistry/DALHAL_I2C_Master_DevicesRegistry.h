@@ -31,24 +31,39 @@
 
 namespace DALHAL {
 
-    typedef Device* (*I2C_HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context, TwoWire& wire);
-    typedef bool (*I2C_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
 
-    typedef struct I2C_RegistryDefine {
-        I2C_HAL_DEVICE_CREATE_FUNC Create_Function;
-        I2C_HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
+    struct I2C_RegistryDefine : public Registry::Define {
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
-    } I2C_RegistryDefine;
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            Registry::HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::Define(Registry::UseRootUID::Void, Create_Function, Verify_JSON_Function),
+            HasAddress_Function(HasAddress_Function)
+        {}
 
-    typedef struct I2C_DeviceRegistryItem {
-        const char* typeName;
-        I2C_RegistryDefine def;
-    } I2C_DeviceRegistryItem ;
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            Registry::HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function,
+            const EventDescriptor* reactiveTable
+        ) : 
+            Registry::Define(Registry::UseRootUID::Void, Create_Function, Verify_JSON_Function, reactiveTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
 
-    extern const I2C_DeviceRegistryItem I2C_DeviceRegistry[];
-    const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type);
+    };
+
+    extern const Registry::Item I2C_DeviceRegistry[];
+    //const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type);
     // used by i2c scanner to describe which devices a adress belongs to
     std::string describeI2CAddress(uint8_t addr);
+
+    struct I2C_Master_CreateFunctionContext : DeviceCreateContext {
+        TwoWire& wire;
+        I2C_Master_CreateFunctionContext(TwoWire& wire) : DeviceCreateContext(), wire(wire) {}
+    };
 
 }
