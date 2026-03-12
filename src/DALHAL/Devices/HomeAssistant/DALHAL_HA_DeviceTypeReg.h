@@ -53,10 +53,11 @@ namespace DALHAL {
 
     extern const Registry::Item HA_DeviceRegistry[];
 
-    struct HA_CreateFunctionContext {
+    struct HA_CreateFunctionContext /*: DeviceCreateContext */{
         PubSubClient& mqttClient;
         const JsonVariant& jsonGlobal;
-        const JsonVariant& jsonObjRoot;
+        const JsonVariant& jsonObjRoot; // thing this need to mutable to avoid the need to recreate contexts
         HA_CreateFunctionContext(PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), jsonGlobal(jsonGlobal), jsonObjRoot(jsonObjRoot) {}
+        //HA_CreateFunctionContext(const JsonVariant& jsonObj, const char* const type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot) : DeviceCreateContext(jsonObj, type), mqttClient(mqttClient), jsonGlobal(jsonGlobal), jsonObjRoot(jsonObjRoot) {}
     };
 }

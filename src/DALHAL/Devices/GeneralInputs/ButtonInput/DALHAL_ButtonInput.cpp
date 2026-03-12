@@ -149,7 +149,7 @@ String ButtonInput::ToString() {
     ret += "\",";
 
     ret += DeviceConstStrings::type;
-    ret += type;
+    ret += this->Type;
     ret += ",";
 
     ret += DeviceConstStrings::pin;

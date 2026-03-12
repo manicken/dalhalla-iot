@@ -451,7 +451,7 @@ namespace DALHAL {
         }
         if (writeResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(writeResult));
-            GlobalLogger.setLastEntrySource(outDevice->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(writeResult);
             message += '"';
@@ -562,7 +562,7 @@ namespace DALHAL {
         }
         if (readResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(readResult));
-            GlobalLogger.setLastEntrySource(outDevice->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(readResult);
             message += '"';
@@ -606,7 +606,7 @@ namespace DALHAL {
         }
         if (res != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(res));
-            GlobalLogger.setLastEntrySource(outDevice->GetType());
+            GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(res);
             message += '"';

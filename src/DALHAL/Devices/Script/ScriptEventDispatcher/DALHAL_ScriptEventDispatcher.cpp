@@ -64,7 +64,7 @@ namespace DALHAL {
         ret += '"';
         ret += ',';
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += '"';
         return ret;
     }

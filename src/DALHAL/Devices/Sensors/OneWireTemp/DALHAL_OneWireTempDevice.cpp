@@ -175,7 +175,7 @@ namespace DALHAL {
     String OneWireTempDeviceAtRoot::ToString() {
         String ret;
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\",";
         ret += OneWireTempDevice::ToString();
         ret += autoRefresh.ToString();

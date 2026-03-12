@@ -56,9 +56,9 @@ namespace DALHAL {
         }
     }
 
-    const char* Device::GetType() { return type; } 
+    //const char* Device::GetType() { return type; } 
 
-    Device::Device(const char* type) : type(type) { }
+    Device::Device(const char* const type) : Type(type) { }
 
     Device::~Device() {}
 
@@ -135,7 +135,7 @@ namespace DALHAL {
         //outDevice = nullptr; // allways set
         
         if (devices == nullptr || *devices == nullptr || deviceCount == 0) {
-            GlobalLogger.Error(F("Could not continue search at device type: "), currentDevice?currentDevice->type:"root");
+            GlobalLogger.Error(F("Could not continue search at device type: "), currentDevice?currentDevice->Type:"root");
             return DeviceFindResult::SubDeviceListEmpty;
         }
         if (path.empty()) {

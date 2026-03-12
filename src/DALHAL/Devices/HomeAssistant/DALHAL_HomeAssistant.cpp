@@ -191,7 +191,7 @@ namespace DALHAL {
             for (int i = 0; i < deviceCount; i++) {
                 Device* dev = devices[i];
                 if (uid != dev->uid) continue;
-                if (zcType != dev->GetType()) continue;
+                if (zcType != dev->Type) continue;
                 // found device just return
                 return;
                 
@@ -349,7 +349,7 @@ namespace DALHAL {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += this->type;
+        ret += this->Type;
         ret += "\",\"items\":[";
         for (int i=0;i<deviceCount;i++) {
             ret += '{';

@@ -55,18 +55,17 @@ namespace DALHAL {
     protected:
         Device() = delete;
         Device(Device&) = delete;
-        const char* type;
+        
         
     public:
-        const char* GetType();
-        
+        const char* const Type;
         using Exec_FuncType = HALOperationResult (*)(Device*);
         using ReadToHALValue_FuncType = HALOperationResult (*)(Device* device, HALValue& outValue);
         using WriteHALValue_FuncType = HALOperationResult (*)(Device* device, const HALValue& value);
         using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
-        Device(const char* type);
+        Device(const char* const type);
         virtual ~Device();
 
         HAL_UID uid;

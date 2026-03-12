@@ -657,7 +657,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\",";
         if (mode == DriveMode::HBridge) {
             ret += "\"mode\":\"h-bridge\"";

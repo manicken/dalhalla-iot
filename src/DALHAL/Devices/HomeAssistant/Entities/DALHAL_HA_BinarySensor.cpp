@@ -102,7 +102,7 @@ namespace DALHAL {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\"";
        
         return ret;

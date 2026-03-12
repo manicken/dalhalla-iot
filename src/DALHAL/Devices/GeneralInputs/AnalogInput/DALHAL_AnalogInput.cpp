@@ -75,7 +75,7 @@ namespace DALHAL {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\"";
         ret += DeviceConstStrings::pin;
         ret += std::to_string(pin).c_str();

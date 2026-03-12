@@ -91,7 +91,7 @@ namespace DALHAL {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\",";
         ret += "\"addr\":\"0x";
         ret += Convert::toHex(addr).c_str();

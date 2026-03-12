@@ -35,6 +35,7 @@ namespace DALHAL {
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
         value.setCallbacks(this, GenericValueCallback<ScriptVariable_DeviceBase>, nullptr);
 #endif
+        DeviceCreateContext ctx(jsonObj, type);
     }
 
     bool ScriptVariable::VerifyJSON(const JsonVariant &jsonObj) {
@@ -74,7 +75,7 @@ namespace DALHAL {
         ret += decodeUID(uid).c_str();
         ret += "\",";
         ret += DeviceConstStrings::type;
-        ret += type;
+        ret += this->Type;
         ret += "\",";
         ret += DeviceConstStrings::value;//StartWithComma;
         if (value.getType() == HALValue::Type::FLOAT)
