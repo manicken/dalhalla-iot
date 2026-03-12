@@ -51,7 +51,8 @@ namespace DALHAL {
         return Convert::HexToBytes(romIdStr, nullptr, 8);
     }
 
-    OneWireTempDevice::OneWireTempDevice(const JsonVariant &jsonObj, const char* type) : OneWireTempDevice_DeviceBase(type) {
+    OneWireTempDevice::OneWireTempDevice(DeviceCreateContext& context) : OneWireTempDevice_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         const char* romIdStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
@@ -123,8 +124,8 @@ namespace DALHAL {
     //   ██     ██ ███ ██ ██ ██   ██ ██             ██    ██      ██  ██  ██ ██          ██   ██ ██       ██  ██  ██ ██      ██          ██ ██ ██     ██   ██ ██    ██ ██    ██    ██    
     //   ██      ███ ███  ██ ██   ██ ███████        ██    ███████ ██      ██ ██          ██████  ███████   ████   ██  ██████ ███████      █ ████      ██   ██  ██████   ██████     ██    
 
-    Device* OneWireTempDeviceAtRoot::Create(const JsonVariant& jsonObj, const char* type, void* context) {
-        return new OneWireTempDeviceAtRoot(jsonObj, type);
+    Device* OneWireTempDeviceAtRoot::Create(DeviceCreateContext& context) {
+        return new OneWireTempDeviceAtRoot(context);
     }
 
     bool OneWireTempDeviceAtRoot::VerifyJSON(const JsonVariant &jsonObj) {
@@ -132,14 +133,15 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    OneWireTempDeviceAtRoot::OneWireTempDeviceAtRoot(const JsonVariant &jsonObj, const char* type) 
-        : OneWireTempDevice(jsonObj, type), 
+    OneWireTempDeviceAtRoot::OneWireTempDeviceAtRoot(DeviceCreateContext& context) 
+        : OneWireTempDevice(context), 
           autoRefresh(
             [this](){ requestTemperatures(); },
             [this](){ readAll(); },
-            ParseRefreshTimeMs(jsonObj,DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+            ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
         )
     {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
         GPIO_manager::ReservePin(pin); // this is in most cases taken care of in OneWireTempBus::VerifyJSON but there are situations where it's needed
 

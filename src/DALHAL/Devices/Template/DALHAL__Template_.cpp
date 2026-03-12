@@ -30,8 +30,8 @@
 
 namespace DALHAL {
 
-    _Template_::_Template_(const JsonVariant &jsonObj, const char* type) : _Template__DeviceBase(type) {
-
+    _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
     }
 
     bool _Template_::VerifyJSON(const JsonVariant &jsonObj) {
@@ -39,8 +39,8 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    Device* _Template_::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new _Template_(jsonObj, type);
+    Device* _Template_::Create(DeviceCreateContext& context) {
+        return new _Template_(context);
     }
 
     String _Template_::ToString() {

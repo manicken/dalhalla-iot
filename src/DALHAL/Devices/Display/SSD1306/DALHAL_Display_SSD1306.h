@@ -35,6 +35,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -47,7 +48,7 @@ namespace DALHAL {
     public:
         // here we could implement functions for to use with spi interface as well
 
-        static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        static Device* Create(DeviceCreateContext& context, TwoWire& wire);
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static bool HasAddress(uint8_t addr);
         static constexpr I2C_RegistryDefine RegistryDefine = {
@@ -57,7 +58,7 @@ namespace DALHAL {
         };
 
         
-        Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        Display_SSD1306(DeviceCreateContext& context, TwoWire& wire);
         ~Display_SSD1306();
 
         HALOperationResult write(const HALWriteStringRequestValue& val);

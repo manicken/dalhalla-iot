@@ -47,14 +47,14 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             nullptr /* no events available */
         };
-        DeviceContainer(const JsonVariant &jsonObj, const char* type);
+        DeviceContainer(DeviceCreateContext& context);
         ~DeviceContainer();
         String ToString() override;
     };

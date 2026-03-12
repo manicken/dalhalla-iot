@@ -31,8 +31,8 @@
 namespace DALHAL {
 
 // Factory method
-Device* ButtonInput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-    return new ButtonInput(jsonObj, type);
+Device* ButtonInput::Create(DeviceCreateContext& context) {
+    return new ButtonInput(context);
 }
 
 // JSON validation
@@ -50,8 +50,9 @@ ButtonInput::~ButtonInput() {
 }
 
 // Constructor
-ButtonInput::ButtonInput(const JsonVariant &jsonObj, const char* type) : ButtonInput_DeviceBase(type)
+ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
 {
+    const JsonVariant& jsonObj = *(context.jsonObjItem);
     pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
     uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
 

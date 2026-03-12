@@ -42,14 +42,14 @@ namespace DALHAL {
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             nullptr /* no events available */
         };
-        ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type);
+        ScriptEventDispatcher(DeviceCreateContext& context);
 
         HALOperationResult exec() override;
         

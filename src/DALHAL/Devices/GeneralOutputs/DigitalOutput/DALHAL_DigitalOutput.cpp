@@ -30,15 +30,16 @@
 
 namespace DALHAL {
     
-    Device* DigitalOutput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new DigitalOutput(jsonObj, type);
+    Device* DigitalOutput::Create(DeviceCreateContext& context) {
+        return new DigitalOutput(context);
     }
 
     bool DigitalOutput::VerifyJSON(const JsonVariant &jsonObj) {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
-    DigitalOutput::DigitalOutput(const JsonVariant &jsonObj, const char* type) : DigitalOutput_DeviceBase(type) {
+    DigitalOutput::DigitalOutput(DeviceCreateContext& context) : DigitalOutput_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
         //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();

@@ -34,7 +34,8 @@
 namespace DALHAL {
 
     
-    I2C_Master::I2C_Master(const JsonVariant &jsonObj, const char* type) : I2C_Master_DeviceBase(type) {
+    I2C_Master::I2C_Master(DeviceCreateContext& context) : I2C_Master_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         deviceCount = 0;
         devices = nullptr;
 
@@ -80,15 +81,18 @@ namespace DALHAL {
         deviceCount = validItemCount;
         devices = new Device*[validItemCount]();
         int index = 0;
+        DeviceCreateContext createContext;
         for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
+            const JsonVariant& item = items[i];
             if (validItems[i] == false) continue;
             
-            const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
+            const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
+            const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type_cStr);
              // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            
-            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, *wire); // regItem.typeName is a flash const so it's safe to use
+            createContext.jsonObjItem = &item;
+            createContext.deviceType = regItem.typeName; // use static/flash string
+
+            devices[index++] = regItem.def.Create_Function(createContext, *wire); // regItem.typeName is a flash const so it's safe to use
         }
         delete[] validItems;
     }
@@ -172,8 +176,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* I2C_Master::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new I2C_Master(jsonObj, type);
+    Device* I2C_Master::Create(DeviceCreateContext& context) {
+        return new I2C_Master(context);
     }
 
     String I2C_Master::ToString() {

@@ -45,11 +45,12 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":"%s"), stateTopicStr);
     }
     
-    Sensor::Sensor(const JsonVariant &jsonObj, const char* type_cStr, HA_CreateFunctionContext* context) : mqttClient(context->mqttClient), Device(type_cStr) {
+    Sensor::Sensor(HA_CreateFunctionContext& context) : mqttClient(context.mqttClient), Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         
-        const char* deviceId_cStr = context->jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
         topicBasePath.Set(deviceId_cStr, uidStr);
 
         if (ValidateJsonStringField(jsonObj, "source")) {
@@ -66,7 +67,7 @@ namespace DALHAL {
         refreshMs = ParseRefreshTimeMs(jsonObj, DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS);
 
         //const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, context->jsonGlobal, topicBasePath, Sensor::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, Sensor::SendDeviceDiscovery);
         //delete[] cfgTopic_cStr;
 
         wasOnline = false;
@@ -158,8 +159,8 @@ namespace DALHAL {
         return !anyError;
     }
 
-    Device* Sensor::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new Sensor(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
+    Device* Sensor::Create(DeviceCreateContext& context) {
+        return new Sensor(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String Sensor::ToString() {

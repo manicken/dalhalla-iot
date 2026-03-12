@@ -63,7 +63,8 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    OneWireTempBus::OneWireTempBus(const JsonVariant &jsonObj, const char* type) : OneWireTempBus_DeviceBase(type) {
+    OneWireTempBus::OneWireTempBus(DeviceCreateContext& context) : OneWireTempBus_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
@@ -89,9 +90,14 @@ namespace DALHAL {
         }
         devices = new (std::nothrow) Device*[static_cast<size_t>(deviceCount)]();
         uint32_t index = 0;
+        DeviceCreateContext createContext;
+        createContext.deviceType = "OneWireTempDevice";
+
         for (int i=0;i<itemCount;i++) {
             if (validDevices[i] == false) continue;
-            devices[index++] = new OneWireTempDevice(static_cast<const JsonVariant&>(items[i]), type); // here type is not used so we just take it from bus
+            const JsonVariant& item = items[i];
+            createContext.jsonObjItem = &item;
+            devices[index++] = new OneWireTempDevice(createContext);
         }
         delete[] validDevices;
     }
@@ -243,12 +249,12 @@ namespace DALHAL {
         return ret;
     }
 
-    OneWireTempBusAtRoot::OneWireTempBusAtRoot(const JsonVariant &jsonObj, const char* type) 
-    : OneWireTempBus(jsonObj, type),
+    OneWireTempBusAtRoot::OneWireTempBusAtRoot(DeviceCreateContext& context) 
+    : OneWireTempBus(context),
         autoRefresh(
               [this]() { requestTemperatures(); },
               [this]() { readAll(); },
-              ParseRefreshTimeMs(jsonObj,DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+              ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
         )
     {
         
@@ -276,7 +282,7 @@ namespace DALHAL {
         return ret;
     }
 
-    Device* OneWireTempBusAtRoot::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new OneWireTempBusAtRoot(jsonObj, type);
+    Device* OneWireTempBusAtRoot::Create(DeviceCreateContext& context) {
+        return new OneWireTempBusAtRoot(context);
     }
 }

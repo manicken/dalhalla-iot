@@ -40,14 +40,14 @@ namespace DALHAL {
         HALValue value;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             nullptr /* no events available */
         };
-        ScriptVariableReadOnly(const JsonVariant &jsonObj, const char* type);
+        ScriptVariableReadOnly(DeviceCreateContext& context);
         HALOperationResult read(HALValue& val) override;
 
         String ToString() override;

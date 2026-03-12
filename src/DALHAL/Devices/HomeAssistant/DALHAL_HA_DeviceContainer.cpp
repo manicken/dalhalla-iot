@@ -41,7 +41,8 @@ namespace DALHAL {
         }
     }
 
-    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context) : Device(type) {
+    HA_DeviceContainer::HA_DeviceContainer(HA_CreateFunctionContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         
@@ -80,13 +81,15 @@ namespace DALHAL {
 
         // Second pass: actually create and store devices
         uint32_t index = 0;
-
+        
         for (int i=0;i<arraySize;i++) {
             const JsonVariant& jsonItem = jsonArray[i];
             if (validDevices[i] == false) continue;
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            devices[index++] = regItem.def.Create_Function(jsonItem, regItem.typeName, context);
+            context.jsonObjItem = &jsonItem;
+            context.deviceType = regItem.typeName;
+            devices[index++] = regItem.def.Create_Function(context);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -124,8 +127,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* HA_DeviceContainer::Create(const JsonVariant& jsonObj, const char* type, void* context) {
-        return new HA_DeviceContainer(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
+    Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {
+        return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String HA_DeviceContainer::ToString() {

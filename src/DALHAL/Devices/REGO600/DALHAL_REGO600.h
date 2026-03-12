@@ -57,14 +57,14 @@ namespace DALHAL {
         Drivers::REGO600* rego600 = nullptr;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(REGO600)
         };
-        REGO600(const JsonVariant &jsonObj, const char* type);
+        REGO600(DeviceCreateContext& context);
         ~REGO600();
         void loop() override;
         void begin() override;

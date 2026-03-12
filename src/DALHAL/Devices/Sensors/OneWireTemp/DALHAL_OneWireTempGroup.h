@@ -55,14 +55,14 @@ namespace DALHAL {
 
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Optional,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
         };
-        OneWireTempGroup(const JsonVariant &jsonObj, const char* type);
+        OneWireTempGroup(DeviceCreateContext& context);
         ~OneWireTempGroup();
         
         /** this function will search the busses and their devices to find the device with the uid */

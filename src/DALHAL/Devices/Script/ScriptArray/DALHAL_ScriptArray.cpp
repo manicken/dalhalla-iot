@@ -29,7 +29,8 @@
 
 namespace DALHAL {
     
-    ScriptArray::ScriptArray(const JsonVariant &jsonObj, const char* type) : ScriptArray_DeviceBase(type) {
+    ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         const JsonArray jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         int arraySize = jsonArray.size();
@@ -63,8 +64,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptArray::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ScriptArray(jsonObj, type);
+    Device* ScriptArray::Create(DeviceCreateContext& context) {
+        return new ScriptArray(context);
     }
 
     String ScriptArray::ToString() {

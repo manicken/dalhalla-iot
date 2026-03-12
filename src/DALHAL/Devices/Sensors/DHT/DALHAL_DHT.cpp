@@ -40,7 +40,8 @@ namespace DALHAL {
             (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_RHT03) == 0);
     }
 
-    DHT::DHT(const JsonVariant &jsonObj, const char* type) : DHTDeviceBase(type) {
+    DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         //uid = encodeUID(uidStr);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
@@ -77,8 +78,8 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    Device* DHT::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new DHT(jsonObj, type);
+    Device* DHT::Create(DeviceCreateContext& context) {
+        return new DHT(context);
     }
 
     String DHT::ToString() {

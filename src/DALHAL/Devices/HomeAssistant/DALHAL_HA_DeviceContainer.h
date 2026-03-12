@@ -51,13 +51,13 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Void,
             Create,
             VerifyJSON
         };
-        HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context);
+        HA_DeviceContainer(HA_CreateFunctionContext& context);
         ~HA_DeviceContainer();
         String ToString() override;
     };

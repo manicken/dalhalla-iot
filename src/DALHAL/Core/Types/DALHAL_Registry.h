@@ -32,15 +32,15 @@ namespace DALHAL {
 
     struct DeviceCreateContext
     {
-        const JsonVariant& jsonObj;
-        const char* const type;
-        DeviceCreateContext(const JsonVariant& jsonObj, const char* const type): jsonObj(jsonObj), type(type) { }
+        const JsonVariant* jsonObjItem;
+        const char* deviceType;
+        DeviceCreateContext(): jsonObjItem(nullptr), deviceType("NOT_SET") { }
     };
 
     namespace Registry {
-        typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, void* context);
-        //typedef Device* (*HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context);
-        typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
+        //typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, void* context);
+        typedef Device* (*HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context);
+        typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &jsonObj);
 
         enum class UseRootUID {
             Mandatory,

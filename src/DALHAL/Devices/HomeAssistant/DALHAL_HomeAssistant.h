@@ -71,7 +71,7 @@ namespace DALHAL {
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
@@ -87,7 +87,7 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         
-        HomeAssistant(const JsonVariant &jsonObj, const char* type);
+        HomeAssistant(DeviceCreateContext& context);
         ~HomeAssistant();
 
 

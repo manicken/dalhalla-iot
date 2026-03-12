@@ -63,7 +63,7 @@ namespace DALHAL {
         void begin() override;
 
         static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
 
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Void,
@@ -71,7 +71,7 @@ namespace DALHAL {
             VerifyJSON
         };
 
-        BinarySensor(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context);
+        BinarySensor(HA_CreateFunctionContext& context);
         ~BinarySensor();
 
 

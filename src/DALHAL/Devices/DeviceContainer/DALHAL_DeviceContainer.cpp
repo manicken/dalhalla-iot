@@ -39,7 +39,8 @@ namespace DALHAL {
         }
     }
 
-    DeviceContainer::DeviceContainer(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    DeviceContainer::DeviceContainer(DeviceCreateContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         
@@ -115,8 +116,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* DeviceContainer::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new DeviceContainer(jsonObj, type);
+    Device* DeviceContainer::Create(DeviceCreateContext& context) {
+        return new DeviceContainer(context);
     }
 
     String DeviceContainer::ToString() {

@@ -29,7 +29,8 @@
 
 namespace DALHAL {
     
-    ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(const JsonVariant &jsonObj, const char* type) : ScriptVariableWriteOnlyTest_DeviceBase(type) {
+    ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(DeviceCreateContext& context) : ScriptVariableWriteOnlyTest_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
     }
@@ -40,8 +41,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptVariableWriteOnlyTest::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ScriptVariableWriteOnlyTest(jsonObj, type);
+    Device* ScriptVariableWriteOnlyTest::Create(DeviceCreateContext& context) {
+        return new ScriptVariableWriteOnlyTest(context);
     }
 
     HALOperationResult ScriptVariableWriteOnlyTest::write(const HALValue& val) {

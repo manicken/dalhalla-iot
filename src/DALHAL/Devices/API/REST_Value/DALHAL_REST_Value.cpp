@@ -34,14 +34,13 @@ namespace DALHAL {
         return true;
     }
 
-    Device* REST_Value::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new REST_Value(jsonObj, type);
+    Device* REST_Value::Create(DeviceCreateContext& context) {
+        return new REST_Value(context);
     }
 
-    REST_Value::REST_Value(const JsonVariant &jsonObj, const char* type)
-        : DALHAL::Device(type),
-        lastRefresh(0)
+    REST_Value::REST_Value(DeviceCreateContext& context) : DALHAL::Device(context.deviceType), lastRefresh(0)
     {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         refreshTimeMs = ParseRefreshTimeMs(jsonObj, 2000);
         remoteUrl = GetAsConstChar(jsonObj, "url");

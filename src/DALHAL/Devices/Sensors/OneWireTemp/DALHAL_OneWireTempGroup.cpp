@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    Device* OneWireTempGroup::Create(const JsonVariant& jsonObj, const char* type, void* context) {
-        return new OneWireTempGroup(jsonObj, type);
+    Device* OneWireTempGroup::Create(DeviceCreateContext& context) {
+        return new OneWireTempGroup(context);
     }
 
     bool OneWireTempGroup::VerifyJSON(const JsonVariant &jsonObj) {
@@ -62,14 +62,15 @@ namespace DALHAL {
         }
         return true;
     }
-    OneWireTempGroup::OneWireTempGroup(const JsonVariant &jsonObj, const char* type) : OneWireTempGroup_DeviceBase(type),
+    OneWireTempGroup::OneWireTempGroup(DeviceCreateContext& context) : OneWireTempGroup_DeviceBase(context.deviceType),
         autoRefresh(
             [this]() { requestTemperatures(); },
             [this]() { readAll(); },
-            ParseRefreshTimeMs(jsonObj,DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+            ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
         ), 
         busses(nullptr)
     {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
         uid = encodeUID(uidStr);      
 
@@ -90,9 +91,13 @@ namespace DALHAL {
         busses = new Device*[busCount]();
         // second pass create busses
         uint32_t index = 0;
+        DeviceCreateContext createContext;
+        createContext.deviceType = "OneWireTempBus";
         for (int i=0;i<itemCount;i++) {
             if (validBusses[i] == false) continue;
-            busses[index++] = new OneWireTempBus(static_cast<const JsonVariant&>(items[i]), type); // here type is not used so we just take the group one
+            const JsonVariant& item = items[i];
+            createContext.jsonObjItem = &item;
+            busses[index++] = new OneWireTempBus(createContext);
         }
         delete[] validBusses;
     }

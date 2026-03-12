@@ -48,7 +48,7 @@ namespace DALHAL {
         bool readOnly = false;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
@@ -71,7 +71,7 @@ namespace DALHAL {
         //BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
 
         
-        ScriptArray(const JsonVariant &jsonObj, const char* type);
+        ScriptArray(DeviceCreateContext& context);
 
         String ToString() override;
     };

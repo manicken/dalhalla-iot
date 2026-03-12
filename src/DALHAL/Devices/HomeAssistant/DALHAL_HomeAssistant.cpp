@@ -51,11 +51,12 @@ namespace DALHAL {
         return false;
     }
 
-    Device* HomeAssistant::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new HomeAssistant(jsonObj, type);
+    Device* HomeAssistant::Create(DeviceCreateContext& context) {
+        return new HomeAssistant(context);
     }
     
-    HomeAssistant::HomeAssistant(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    HomeAssistant::HomeAssistant(DeviceCreateContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         devices = nullptr; // ensure that it's set
         deviceCount = 0;
         deviceID = std::string(GetAsConstChar(jsonObj, "deviceId"));
@@ -261,7 +262,9 @@ namespace DALHAL {
         int index = 0;
         // second pass create devices
         const JsonVariant& groupObj = jsonObj["group"];
-        HA_CreateFunctionContext createFuncContext(mqttClient, groupObj, jsonObj);
+        HA_CreateFunctionContext createFuncContext(mqttClient);
+        createFuncContext.jsonGlobal = &groupObj;
+        createFuncContext.jsonObjRoot = &jsonObj;
         for (int i=0;i<arrayCount;i++) {
             if (validItems[i] == false) continue;
 
@@ -269,8 +272,9 @@ namespace DALHAL {
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-
-            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, &createFuncContext);
+            createFuncContext.jsonObjItem = &item;
+            createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
+            devices[index++] = regItem.def.Create_Function(createFuncContext);
         }
         delete[] validItems;
     }
@@ -299,11 +303,13 @@ namespace DALHAL {
         devices = new Device*[deviceCount]();
         validItemIndex = 0;
         int newItemIndex = 0;
+        HA_CreateFunctionContext createFuncContext(mqttClient);
         for (int i=0;i<jsonArrayGroupsCount;i++) {
             const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
             const JsonArray& jsonArrayItems = jsonObjGrpItem["items"];
             int jsonArrayItemsCount = jsonArrayItems.size();
-            HA_CreateFunctionContext createFuncContext(mqttClient, jsonObjGrpItem, jsonObj);
+            createFuncContext.jsonGlobal = &jsonObjGrpItem;
+            createFuncContext.jsonObjRoot = &jsonObj;
             for (int j=0;j<jsonArrayItemsCount;j++) {
                 if (validItems[validItemIndex++] == false) continue;
 
@@ -311,8 +317,9 @@ namespace DALHAL {
                 const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
         
                 const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-
-                devices[newItemIndex++] = regItem.def.Create_Function(item, regItem.typeName, &createFuncContext);
+                createFuncContext.jsonObjItem = &item;
+                createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
+                devices[newItemIndex++] = regItem.def.Create_Function(createFuncContext);
                 yield();
             }
         }

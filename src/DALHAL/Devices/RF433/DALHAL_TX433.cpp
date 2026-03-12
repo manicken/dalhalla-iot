@@ -47,10 +47,11 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)));
     }
 
-    Device* TX433::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new TX433(jsonObj, type);
+    Device* TX433::Create(DeviceCreateContext& context) {
+        return new TX433(context);
     }
-    TX433::TX433(const JsonVariant &jsonObj, const char* type) : TX433_DeviceBase(type) {
+    TX433::TX433(DeviceCreateContext& context) : TX433_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
@@ -73,10 +74,13 @@ namespace DALHAL {
             // second pass create units(devices)
             units = new Device*[unitCount](); /*TX433unit*/
             uint32_t index = 0;
+            DeviceCreateContext createContext;
+            createContext.deviceType = "TX433unit";
             for (int i=0;i<_unitCount;i++) {
                 if (validUnits[i] == false) continue;
-                const JsonVariant& unit = _units[i];
-                units[index++] = new TX433unit(unit, nullptr, pin); // here type is not used so we just take it from current to avoid creating new const strings, or use nullstr do also work
+                const JsonVariant& item = _units[i];
+                createContext.jsonObjItem = &item;
+                units[index++] = new TX433unit(createContext, pin); // here type is not used so we just take it from current to avoid creating new const strings, or use nullstr do also work
             }
             delete[] validUnits;
         }

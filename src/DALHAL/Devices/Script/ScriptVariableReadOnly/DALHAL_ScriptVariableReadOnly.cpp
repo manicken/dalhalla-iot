@@ -29,7 +29,8 @@
 
 namespace DALHAL {
     
-    ScriptVariableReadOnly::ScriptVariableReadOnly(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    ScriptVariableReadOnly::ScriptVariableReadOnly(DeviceCreateContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
     }
@@ -40,8 +41,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptVariableReadOnly::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ScriptVariableReadOnly(jsonObj, type);
+    Device* ScriptVariableReadOnly::Create(DeviceCreateContext& context) {
+        return new ScriptVariableReadOnly(context);
     }
 
     HALOperationResult ScriptVariableReadOnly::read(HALValue& val) {

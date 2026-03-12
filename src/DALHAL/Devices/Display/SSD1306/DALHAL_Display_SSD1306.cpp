@@ -28,6 +28,7 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -35,12 +36,12 @@ namespace DALHAL {
         return addr == 0x3C || addr == 0x3D; 
     }
 
-    Device* Display_SSD1306::Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire) {
-        return new Display_SSD1306(jsonObj, type, wire);
+    Device* Display_SSD1306::Create(DeviceCreateContext& context, TwoWire& wire) {
+        return new Display_SSD1306(context, wire);
     }
     
-    Display_SSD1306::Display_SSD1306(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : Device(type) {
-
+    Display_SSD1306::Display_SSD1306(DeviceCreateContext& context, TwoWire& wire) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
 
@@ -82,11 +83,13 @@ namespace DALHAL {
         elementCount = validItemCount;
         elements = new Device*[validItemCount](); /*Display_SSD1306_Element*/
         int index = 0;
+        DeviceCreateContext createContext;
         for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
+            const JsonVariant& item = items[i];
             if (validItems[i] == false) continue;
-            
-            elements[index++] = new Display_SSD1306_Element(item, "I2C_DISP_SSD1306_ELM");
+            createContext.jsonObjItem = &item;
+            createContext.deviceType = "I2C_DISP_SSD1306_ELM";
+            elements[index++] = new Display_SSD1306_Element(createContext);
         }
         delete[] validItems;
     }

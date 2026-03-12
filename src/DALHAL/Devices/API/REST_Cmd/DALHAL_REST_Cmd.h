@@ -37,7 +37,7 @@ namespace DALHAL {
     class REST_Cmd : public DALHAL::Device {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
@@ -45,7 +45,7 @@ namespace DALHAL {
             nullptr /* no events available on obsolete device*/
         };
 
-        REST_Cmd(const JsonVariant &jsonObj, const char* type);
+        REST_Cmd(DeviceCreateContext& context);
 
         DALHAL::HALOperationResult exec() override;
 

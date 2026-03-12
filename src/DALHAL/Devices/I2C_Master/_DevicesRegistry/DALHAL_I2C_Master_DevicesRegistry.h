@@ -27,9 +27,11 @@
 
 #include <Wire.h>
 
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 namespace DALHAL {
 
-    typedef Device* (*I2C_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, TwoWire& wire);
+    typedef Device* (*I2C_HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context, TwoWire& wire);
     typedef bool (*I2C_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
 

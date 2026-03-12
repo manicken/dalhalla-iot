@@ -49,7 +49,7 @@ namespace DALHAL {
         TwoWire* wire;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        static Device* Create(DeviceCreateContext& context, TwoWire& wire);
         static bool HasAddress(uint8_t addr);
         static constexpr I2C_RegistryDefine RegistryDefine = {
             Create,
@@ -57,7 +57,7 @@ namespace DALHAL {
             HasAddress
         };
 
-        PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire);
+        PCF8574x(DeviceCreateContext& context, TwoWire& wire);
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

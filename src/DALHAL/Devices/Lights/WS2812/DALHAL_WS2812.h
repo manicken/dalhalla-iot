@@ -50,7 +50,7 @@ namespace DALHAL {
     public:
         WS2812FX* ws2812fx;
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
@@ -58,7 +58,7 @@ namespace DALHAL {
             DALHAL_REACTIVE_EVENT_TABLE(WS2812)
         };
 
-        WS2812(const JsonVariant &jsonObj, const char* type);
+        WS2812(DeviceCreateContext& context);
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;

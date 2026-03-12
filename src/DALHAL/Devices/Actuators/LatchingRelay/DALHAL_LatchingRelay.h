@@ -78,7 +78,7 @@ public:
     enum class Location : int32_t { Unknown = -1, Reset = 0, Set = 1 };
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
-    static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+    static Device* Create(DeviceCreateContext& context);
     static constexpr Registry::Define RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
@@ -86,7 +86,7 @@ public:
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
 
-    LatchingRelay(const JsonVariant &jsonObj, const char* type);
+    LatchingRelay(DeviceCreateContext& context);
     ~LatchingRelay();
 
     void setup();

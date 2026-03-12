@@ -70,11 +70,11 @@ private:
     bool autoOffActive = false;
 
 public:
-    PWM_Servo(const JsonVariant &jsonObj, const char* type);
+    PWM_Servo(DeviceCreateContext& context);
     ~PWM_Servo();
 
     static bool VerifyJSON(const JsonVariant &jsonObj);
-    static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+    static Device* Create(DeviceCreateContext& context);
     static constexpr Registry::Define RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,

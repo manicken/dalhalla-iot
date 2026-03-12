@@ -27,8 +27,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
 namespace DALHAL {
-    bool containsKeyIgnoreCase(JsonObject obj, const char* keyToFind) {
-        for (JsonPair kv : obj) {
+    /*bool containsKeyIgnoreCase(const JsonVariant& obj, const char* keyToFind) {
+        for (const JsonPair& kv : obj) {
             if (strcasecmp(kv.key().c_str(), keyToFind) == 0) {
                 return true;
             }
@@ -36,14 +36,14 @@ namespace DALHAL {
         return false;
     }
 
-    JsonVariant getValueIgnoreCase(JsonObject obj, const char* keyToFind) {
-        for (JsonPair kv : obj) {
+    JsonVariant getValueIgnoreCase(const JsonVariant& obj, const char* keyToFind) {
+        for (const JsonPair& kv : obj) {
             if (strcasecmp(kv.key().c_str(), keyToFind) == 0) {
                 return kv.value();
             }
         }
         return JsonVariant(); // null
-    }
+    }*/
 /*
     bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName) {
         if (!jsonObj.containsKey(keyName)) {
@@ -130,11 +130,11 @@ namespace DALHAL {
     uint32_t ParseRefreshTimeMs(const JsonVariant &jsonObj, const uint32_t defaultRefreshTimeMs) {
         double rawSec = 1.0;
         if (jsonObj.containsKey(DALHAL_KEYNAME_REFRESHTIME_SEC)) {
-            double val = ParseRefreshTime(jsonObj[DALHAL_KEYNAME_REFRESHTIME_SEC]);
+            double val = ParseRefreshTime(jsonObj[DALHAL_KEYNAME_REFRESHTIME_SEC].as<JsonVariant>());
             if (val >= 1.0) rawSec = val;
         }
         else if (jsonObj.containsKey(DALHAL_KEYNAME_REFRESHTIME_MIN)) {
-            double val = ParseRefreshTime(jsonObj[DALHAL_KEYNAME_REFRESHTIME_MIN]);
+            double val = ParseRefreshTime(jsonObj[DALHAL_KEYNAME_REFRESHTIME_MIN].as<JsonVariant>());
             val *= 60.0;
             if (val >= 1.0) rawSec = val;
         }

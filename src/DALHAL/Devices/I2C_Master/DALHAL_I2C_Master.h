@@ -58,14 +58,14 @@ namespace DALHAL {
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
         };
-        I2C_Master(const JsonVariant &jsonObj, const char* type);
+        I2C_Master(DeviceCreateContext& context);
         ~I2C_Master();
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;

@@ -38,8 +38,9 @@
 
 namespace DALHAL {
 
-    PWM_Servo::PWM_Servo(const JsonVariant &jsonObj, const char* type) : PWM_Servo_DeviceBase(type)
+    PWM_Servo::PWM_Servo(DeviceCreateContext& context) : PWM_Servo_DeviceBase(context.deviceType)
     {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = jsonObj["pin"];
@@ -104,8 +105,8 @@ namespace DALHAL {
         return (anyError == false);
     }
 
-    Device* PWM_Servo::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new PWM_Servo(jsonObj, type);
+    Device* PWM_Servo::Create(DeviceCreateContext& context) {
+        return new PWM_Servo(context);
     }
 
     PWM_Servo::~PWM_Servo() {

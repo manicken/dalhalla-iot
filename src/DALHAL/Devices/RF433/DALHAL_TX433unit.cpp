@@ -29,6 +29,8 @@
 
 #include <DALHAL/Support/ConvertHelper.h>
 
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 namespace DALHAL {
 
     bool TX433unit::VerifyFC_JSON(const JsonVariant &jsonObj) {
@@ -38,7 +40,8 @@ namespace DALHAL {
         return true;
     }
     
-    TX433unit::TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin) : TX433unit_DeviceBase(type), pin(pin) {
+    TX433unit::TX433unit(DeviceCreateContext& context, const uint32_t pin) : TX433unit_DeviceBase(context.deviceType), pin(pin) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
         const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_MODEL);

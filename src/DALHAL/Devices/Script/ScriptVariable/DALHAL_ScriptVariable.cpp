@@ -29,13 +29,14 @@
 
 namespace DALHAL {
 
-    ScriptVariable::ScriptVariable(const JsonVariant &jsonObj, const char* type) : ScriptVariable_DeviceBase(type) {
+    ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val", 0);
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
         value.setCallbacks(this, GenericValueCallback<ScriptVariable_DeviceBase>, nullptr);
 #endif
-        DeviceCreateContext ctx(jsonObj, type);
+        DeviceCreateContext ctx(context);
     }
 
     bool ScriptVariable::VerifyJSON(const JsonVariant &jsonObj) {
@@ -44,8 +45,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptVariable::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ScriptVariable(jsonObj, type);
+    Device* ScriptVariable::Create(DeviceCreateContext& context) {
+        return new ScriptVariable(context);
     }
 
     HALValue* ScriptVariable::GetValueDirectAccessPtr() {

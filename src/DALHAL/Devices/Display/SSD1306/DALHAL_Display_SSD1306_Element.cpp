@@ -28,9 +28,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 namespace DALHAL {
     
-    Display_SSD1306_Element::Display_SSD1306_Element(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    Display_SSD1306_Element::Display_SSD1306_Element(DeviceCreateContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         xPos = GetAsUINT8(jsonObj, "x");

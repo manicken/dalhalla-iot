@@ -29,6 +29,7 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include <DALHAL/Drivers/RF433.h>
 
@@ -67,7 +68,7 @@ namespace DALHAL {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
         
-        TX433unit(const JsonVariant &jsonObj, const char* type, const uint32_t pin);
+        TX433unit(DeviceCreateContext& context, const uint32_t pin);
         TX433unit(TX433unit&) = delete;
         HALOperationResult write(const HALValue &val);
 

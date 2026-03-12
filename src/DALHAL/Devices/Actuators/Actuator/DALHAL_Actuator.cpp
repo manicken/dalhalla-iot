@@ -108,10 +108,11 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    Actuator::Actuator(const JsonVariant &jsonObj, const char* type) : Actuator_DeviceBase(type), state(State::Idle) {
+    Actuator::Actuator(DeviceCreateContext& context) : Actuator_DeviceBase(context.deviceType), state(State::Idle) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
+        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
 
         // as we allready verified in VerifyJSON that the pin cfg is absolutely explicit defined
@@ -317,8 +318,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return anyError == false;
     }
 
-    Device* Actuator::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new Actuator(jsonObj, type);
+    Device* Actuator::Create(DeviceCreateContext& context) {
+        return new Actuator(context);
     }
 
     void Actuator::setup() {

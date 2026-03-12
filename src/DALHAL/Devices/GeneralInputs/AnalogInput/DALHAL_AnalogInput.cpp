@@ -31,15 +31,16 @@
 namespace DALHAL {
     
 #if defined(ESP32) || defined(_WIN32)
-    Device* AnalogInput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new AnalogInput(jsonObj, type);
+    Device* AnalogInput::Create(DeviceCreateContext& context) {
+        return new AnalogInput(context);
     }
 
     bool AnalogInput::VerifyJSON(const JsonVariant &jsonObj) {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
     }
 
-    AnalogInput::AnalogInput(const JsonVariant &jsonObj, const char* type) : AnalogInput_DeviceBase(type) {
+    AnalogInput::AnalogInput(DeviceCreateContext& context) : AnalogInput_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID)); 
         //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();

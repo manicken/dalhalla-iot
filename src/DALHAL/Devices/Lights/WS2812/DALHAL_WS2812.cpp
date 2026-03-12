@@ -30,7 +30,8 @@
 
 namespace DALHAL {
     
-    WS2812::WS2812(const JsonVariant &jsonObj, const char* type) : WS2812_DeviceBase(type) {
+    WS2812::WS2812(DeviceCreateContext& context) : WS2812_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         pin = GetAsUINT8(jsonObj, "pin");
@@ -230,8 +231,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* WS2812::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new WS2812(jsonObj, type);
+    Device* WS2812::Create(DeviceCreateContext& context) {
+        return new WS2812(context);
     }
 
     String WS2812::ToString() {

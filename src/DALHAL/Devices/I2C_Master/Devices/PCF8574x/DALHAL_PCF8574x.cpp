@@ -28,6 +28,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/ConvertHelper.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -36,7 +37,8 @@ namespace DALHAL {
                (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
     }
     
-    PCF8574x::PCF8574x(const JsonVariant &jsonObj, const char* type, TwoWire& wire) : PCF8574x_DeviceBase(type), wire(&wire) {
+    PCF8574x::PCF8574x(DeviceCreateContext& context, TwoWire& wire) : PCF8574x_DeviceBase(context.deviceType), wire(&wire) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
         const char* addrStr = GetAsConstChar(jsonObj, "addr");
@@ -56,8 +58,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* PCF8574x::Create(const JsonVariant &jsonObj, const char* type, TwoWire& wire) {
-        return new PCF8574x(jsonObj, type, wire);
+    Device* PCF8574x::Create(DeviceCreateContext& context, TwoWire& wire) {
+        return new PCF8574x(context, wire);
     }
 
     HALOperationResult PCF8574x::read(HALValue& val) {

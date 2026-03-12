@@ -28,6 +28,7 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(REGO600_REGISTRY_ITEM)
@@ -52,8 +53,8 @@ namespace DALHAL {
         
         ScriptVariable_ValueBase value;   // need to be public for the moment
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
-        REGO600register(const JsonVariant &jsonObj, const char* type);
+        static Device* Create(DeviceCreateContext& context);
+        REGO600register(DeviceCreateContext& context);
 
         HALOperationResult read(HALValue& val) override;
         String ToString() override;

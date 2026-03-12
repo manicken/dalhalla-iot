@@ -56,7 +56,7 @@ namespace DALHAL {
         Device **devices;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        OneWireTempBus(const JsonVariant &jsonObj, const char* type);
+        OneWireTempBus(DeviceCreateContext& context);
         ~OneWireTempBus();
         
         OneWireTempDevice* GetFirstDevice();
@@ -76,14 +76,14 @@ namespace DALHAL {
 
     public:
         
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Optional,
             Create,
             OneWireTempBus::VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
         };
-        OneWireTempBusAtRoot(const JsonVariant &jsonObj, const char* type);
+        OneWireTempBusAtRoot(DeviceCreateContext& context);
         ~OneWireTempBusAtRoot();
 
         void loop() override;

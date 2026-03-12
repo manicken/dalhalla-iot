@@ -79,7 +79,7 @@ namespace DALHAL {
         }
 
         // Validate a single field
-        void validateField(const JsonObject& j, const FieldBase* field, bool& anyError)
+        void validateField(const JsonVariant& j, const FieldBase* field, bool& anyError)
         {
             if (!field) { return; } // failsafe just return
 
@@ -196,7 +196,7 @@ namespace DALHAL {
         }
 
         // Validate AnyOfGroup
-        void validateAnyOfGroup(const JsonObject& j, const AnyOfGroup* group, bool& anyError)
+        void validateAnyOfGroup(const JsonVariant& j, const AnyOfGroup* group, bool& anyError)
         {
             if (!group) { return; } // failsafe just return
 
@@ -217,7 +217,7 @@ namespace DALHAL {
         }
 
         // Validate ModeSelector
-        int evaluateModes(const JsonObject& j, const ModeSelector* modes)
+        int evaluateModes(const JsonVariant& j, const ModeSelector* modes)
         {
             int matchedMode = -1;
             for (int i = 0; modes[i].name != nullptr; ++i)
@@ -266,10 +266,10 @@ namespace DALHAL {
         }
 
         // Validate a full device
-        int validateDevice(const JsonObject& j, const JsonSchema::Device* devScheme, bool& anyError)
+        int validateDevice(const JsonVariant& j, const JsonSchema::Device* devScheme, bool& anyError)
         {
             // 1. Check unknown fields
-            for (const JsonPair kv : j) {
+            for (const JsonPair& kv : j.as<JsonObject>()) {
                 const char* key = kv.key().c_str();
 
                 if (!isKnownField(key, devScheme->fields)) {

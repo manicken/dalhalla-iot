@@ -76,7 +76,7 @@ namespace DALHAL {
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         
-        OneWireTempDevice(const JsonVariant &jsonObj, const char* type);
+        OneWireTempDevice(DeviceCreateContext& context);
         ~OneWireTempDevice();
         
         HALOperationResult read(HALValue& val) override;
@@ -97,14 +97,14 @@ namespace DALHAL {
     public:
         
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
         };
-        OneWireTempDeviceAtRoot(const JsonVariant &jsonObj, const char* type);
+        OneWireTempDeviceAtRoot(DeviceCreateContext& context);
         ~OneWireTempDeviceAtRoot();
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         HALOperationResult write(const HALValue& val) override;

@@ -50,14 +50,14 @@ namespace DALHAL {
         int unitCount;
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,
             DALHAL_REACTIVE_EVENT_TABLE(TX433)
         };
-        TX433(const JsonVariant &jsonObj, const char* type);
+        TX433(DeviceCreateContext& context);
         TX433(TX433&) = delete;
         ~TX433();
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;

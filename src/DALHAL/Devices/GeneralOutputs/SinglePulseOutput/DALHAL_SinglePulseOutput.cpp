@@ -29,15 +29,16 @@
 
 namespace DALHAL {
     
-    Device* SinglePulseOutput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new SinglePulseOutput(jsonObj, type);
+    Device* SinglePulseOutput::Create(DeviceCreateContext& context) {
+        return new SinglePulseOutput(context);
     }
 
     bool SinglePulseOutput::VerifyJSON(const JsonVariant &jsonObj) {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
-    SinglePulseOutput::SinglePulseOutput(const JsonVariant &jsonObj, const char* type) : SinglePulseOutput_DeviceBase(type) {
+    SinglePulseOutput::SinglePulseOutput(DeviceCreateContext& context) : SinglePulseOutput_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
         inactiveState = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE, 0);

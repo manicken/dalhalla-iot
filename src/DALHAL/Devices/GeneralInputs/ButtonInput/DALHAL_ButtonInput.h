@@ -45,7 +45,7 @@ namespace DALHAL {
 class ButtonInput : public ButtonInput_DeviceBase {
 public:
     // Factory and JSON validation
-    static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+    static Device* Create(DeviceCreateContext& context);
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
@@ -55,7 +55,7 @@ public:
         };
 
     // Constructor
-    ButtonInput(const JsonVariant &jsonObj, const char* type);
+    ButtonInput(DeviceCreateContext& context);
     ~ButtonInput();
 
     // DAL interface

@@ -68,7 +68,7 @@ namespace DALHAL {
         return ret;
     }
 
-    Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant &jsonObj) {
+    Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant& jsonObj) {
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
         const Registry::Item& regItem = Registry::GetItem(DeviceRegistry, type);
         if (regItem.typeName == nullptr) {
@@ -81,7 +81,10 @@ namespace DALHAL {
             GlobalLogger.Error(F("CreateDeviceFromJSON - Create_Function == nullptr - something is very wrong if this happens"));
             return nullptr; // should never happen as VerifyJson is called before and do actually verify that this pointer do point to something
         }
-        return regItem.def.Create_Function(jsonObj, regItem.typeName, nullptr);
+        DeviceCreateContext createContext;
+        createContext.jsonObjItem = &jsonObj;
+        createContext.deviceType = regItem.typeName;
+        return regItem.def.Create_Function(createContext);
     }
     bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         

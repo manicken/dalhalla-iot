@@ -39,7 +39,8 @@ namespace DALHAL {
 
     const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
     
-    ThingSpeak::ThingSpeak(const JsonVariant &jsonObj, const char* type) : ThingSpeak_DeviceBase(type) {
+    ThingSpeak::ThingSpeak(DeviceCreateContext& context) : ThingSpeak_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
 
@@ -221,8 +222,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ThingSpeak::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ThingSpeak(jsonObj, type);
+    Device* ThingSpeak::Create(DeviceCreateContext& context) {
+        return new ThingSpeak(context);
     }
 
     String ThingSpeak::ToString() {

@@ -29,7 +29,8 @@
 
 namespace DALHAL {
     
-    ScriptEventDispatcher::ScriptEventDispatcher(const JsonVariant &jsonObj, const char* type) : Device(type) {
+    ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         eventCounter = 0;
     }
@@ -38,8 +39,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptEventDispatcher::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new ScriptEventDispatcher(jsonObj, type);
+    Device* ScriptEventDispatcher::Create(DeviceCreateContext& context) {
+        return new ScriptEventDispatcher(context);
     }
 
     HALOperationResult ScriptEventDispatcher::exec() {

@@ -82,7 +82,7 @@ namespace DALHAL {
         enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
+        static Device* Create(DeviceCreateContext& context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,
@@ -90,7 +90,7 @@ namespace DALHAL {
             DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
         };
 
-        Actuator(const JsonVariant &jsonObj, const char* type);
+        Actuator(DeviceCreateContext& context);
         ~Actuator();
 
         void setup();

@@ -33,7 +33,8 @@
 
 namespace DALHAL {
     
-    REGO600::REGO600(const JsonVariant &jsonObj, const char* type) : REGO600_DeviceBase(type) {
+    REGO600::REGO600(DeviceCreateContext& context) : REGO600_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 
@@ -61,10 +62,13 @@ namespace DALHAL {
         requestList = new (std::nothrow) Drivers::REGO600::Request*[registerItemCount]();
         registerItems = new (std::nothrow) Device*[registerItemCount]();
         int index = 0;
+        DeviceCreateContext createContext;
+        createContext.deviceType = "REGO600reg";
         for (int i=0;i<itemCount;i++) {
             if (validItems[i] == false) continue;
             const JsonVariant& item = items[i];
-            REGO600register* itemReg = new REGO600register(item, nullptr);
+            createContext.jsonObjItem = &item;
+            REGO600register* itemReg = new REGO600register(createContext);
 
             const char* regName = GetAsConstChar(item, "regname");
             const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
@@ -152,8 +156,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* REGO600::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new REGO600(jsonObj, type);
+    Device* REGO600::Create(DeviceCreateContext& context) {
+        return new REGO600(context);
     }
 
     String REGO600::ToString() {

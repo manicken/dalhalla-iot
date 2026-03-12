@@ -36,13 +36,13 @@ namespace DALHAL {
         // Helper to validate FieldString / FieldUID
         void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError);
         // Validate a single field
-        void validateField(const JsonObject& j, const FieldBase* field, bool& anyError);
+        void validateField(const JsonVariant& j, const FieldBase* field, bool& anyError);
         // Validate AnyOfGroup
-        void validateAnyOfGroup(const JsonObject& j, const AnyOfGroup* group, bool& anyError);
+        void validateAnyOfGroup(const JsonVariant& j, const AnyOfGroup* group, bool& anyError);
         // Validate ModeSelector
-        int evaluateModes(const JsonObject& j, const ModeSelector* modes);
+        int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
         // Validate a full device
-        int validateDevice(const JsonObject& j, const JsonSchema::Device* device, bool& anyError);
+        int validateDevice(const JsonVariant& j, const JsonSchema::Device* device, bool& anyError);
 
     }
 

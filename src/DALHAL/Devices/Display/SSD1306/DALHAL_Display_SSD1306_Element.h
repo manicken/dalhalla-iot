@@ -30,6 +30,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -44,7 +45,7 @@ namespace DALHAL {
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
         Display_SSD1306_Element(Display_SSD1306_Element&) = delete;
-        Display_SSD1306_Element(const JsonVariant &jsonObj, const char* type);
+        Display_SSD1306_Element(DeviceCreateContext& context);
 
         HALOperationResult write(const HALValue& val) override;
 
@@ -57,7 +58,7 @@ namespace DALHAL {
         
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        Display_SSD_ElementFromSource(const JsonVariant &jsonObj, const char* type);
+        Display_SSD_ElementFromSource(DeviceCreateContext& context);
     };
     */
 }

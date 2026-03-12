@@ -27,10 +27,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
     
-    REGO600register::REGO600register(const JsonVariant &jsonObj, const char* type) : REGO600register_DeviceBase(type) {
+    REGO600register::REGO600register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
 
@@ -54,8 +56,8 @@ namespace DALHAL {
         return anyError == false;
     }
 
-    Device* REGO600register::Create(const JsonVariant &jsonObj, const char* type) {
-        return new REGO600register(jsonObj, type);
+    Device* REGO600register::Create(DeviceCreateContext& context) {
+        return new REGO600register(context);
     }
 
     HALOperationResult REGO600register::read(HALValue& val) {

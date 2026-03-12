@@ -40,10 +40,11 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Number::Number(const JsonVariant &jsonObj, const char* type_cStr, HA_CreateFunctionContext* context) : mqttClient(context->mqttClient), Device(type_cStr) {
+    Number::Number(HA_CreateFunctionContext& context) : mqttClient(context.mqttClient), Device(context.deviceType) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
-        const char* deviceId_cStr = context->jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
 
           
         topicBasePath.Set(deviceId_cStr, uidStr);
@@ -59,7 +60,7 @@ namespace DALHAL {
             cda = nullptr;
         }
 
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, context->jsonGlobal, topicBasePath, Number::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, Number::SendDeviceDiscovery);
         
     }
     Number::~Number() {
@@ -80,8 +81,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* Number::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new Number(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
+    Device* Number::Create(DeviceCreateContext& context) {
+        return new Number(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String Number::ToString() {

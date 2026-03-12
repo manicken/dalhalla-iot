@@ -29,9 +29,9 @@
 
 
 namespace DALHAL {
-    bool containsKeyIgnoreCase(JsonObject obj, const char* keyToFind);
+    /*bool containsKeyIgnoreCase(const JsonVariant& obj, const char* keyToFind);
 
-    JsonVariant getValueIgnoreCase(JsonObject obj, const char* keyToFind);
+    JsonVariant getValueIgnoreCase(const JsonVariant& obj, const char* keyToFind);*/
 
     bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName);
     const char* GetValidatedJsonStringField(const JsonVariant &jsonObj, const char* keyName, const char* defaultValue);

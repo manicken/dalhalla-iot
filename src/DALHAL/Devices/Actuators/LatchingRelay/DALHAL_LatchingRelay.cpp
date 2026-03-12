@@ -106,7 +106,8 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    LatchingRelay::LatchingRelay(const JsonVariant &jsonObj, const char* type) : LatchingRelay_DeviceBase(type), state(State::Idle) {
+    LatchingRelay::LatchingRelay(DeviceCreateContext& context) : LatchingRelay_DeviceBase(context.deviceType), state(State::Idle) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
@@ -316,8 +317,8 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return anyError == false;
     }
 
-    Device* LatchingRelay::Create(const JsonVariant &jsonObj, const char* type, void* context) {
-        return new LatchingRelay(jsonObj, type);
+    Device* LatchingRelay::Create(DeviceCreateContext& context) {
+        return new LatchingRelay(context);
     }
 
     void LatchingRelay::setup() {
