@@ -49,12 +49,60 @@ namespace DALHAL {
             Optional,
             Void
         };
+        struct DefineBase {
+            HAL_DEVICE_CREATE_FUNC Create_Function;
+            HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
+            const EventDescriptor* reactiveTable;
+
+            constexpr DefineBase(
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
+            ) :
+                Create_Function(Create_Function),
+                Verify_JSON_Function(Verify_JSON_Function),
+                reactiveTable(nullptr)
+            {}
+
+            constexpr DefineBase(
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+                const EventDescriptor* reactiveTable
+            ) :
+                Create_Function(Create_Function),
+                Verify_JSON_Function(Verify_JSON_Function),
+                reactiveTable(reactiveTable)
+            {}
+        };
+
+        struct DefineRoot : public DefineBase {
+            UseRootUID useRootUID;
+
+            constexpr DefineRoot(
+                UseRootUID useRootUID,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
+            ) :
+                DefineBase(Create_Function, Verify_JSON_Function),
+                useRootUID(useRootUID)
+            {}
+
+            constexpr DefineRoot(
+                UseRootUID useRootUID,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+                const EventDescriptor* reactiveTable
+            ) :
+                DefineBase(Create_Function, Verify_JSON_Function, reactiveTable),
+                useRootUID(useRootUID)
+            {}
+        };
 
         struct Define {
             UseRootUID useRootUID;
             HAL_DEVICE_CREATE_FUNC Create_Function;
             HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
             const EventDescriptor* reactiveTable;
+            
             constexpr Define(
                 UseRootUID useRootUID, 
                 HAL_DEVICE_CREATE_FUNC Create_Function, 
