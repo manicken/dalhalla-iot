@@ -23,14 +23,18 @@
 
 #pragma once
 
-#include <PubSubClient.h> // uses a modded PubSubClient placed in lib folder
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+//#include <PubSubClient.h> // uses a modded PubSubClient placed in lib folder
+
+//#include <DALHAL/Core/Device/DALHAL_Device.h>
 
 
 namespace DALHAL {
 
-    typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot);
+    /*typedef Device* (*HA_HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot);
     typedef bool (*HA_HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
 
     typedef struct HA_Registry::Define {
@@ -43,7 +47,16 @@ namespace DALHAL {
         HA_Registry::Define def;
     } HA_DeviceRegistryItem ;
 
-    extern const HA_DeviceRegistryItem HA_DeviceRegistry[];
+    
     const HA_DeviceRegistryItem& Get_HA_DeviceRegistryItem(const char* type);
+*/
 
+    extern const Registry::Item HA_DeviceRegistry[];
+
+    struct HA_CreateFunctionContext {
+        PubSubClient& mqttClient;
+        const JsonVariant& jsonGlobal;
+        const JsonVariant& jsonObjRoot;
+        HA_CreateFunctionContext(PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), jsonGlobal(jsonGlobal), jsonObjRoot(jsonObjRoot) {}
+    };
 }

@@ -30,6 +30,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+
 namespace DALHAL {
 
     void Number::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
@@ -39,10 +40,10 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Number::Number(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
+    Number::Number(const JsonVariant &jsonObj, const char* type_cStr, HA_CreateFunctionContext* context) : mqttClient(context->mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
-        const char* deviceId_cStr = jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = context->jsonObjRoot["deviceId"];
 
           
         topicBasePath.Set(deviceId_cStr, uidStr);
@@ -58,7 +59,7 @@ namespace DALHAL {
             cda = nullptr;
         }
 
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, jsonObjGlobal, topicBasePath, Number::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, context->jsonGlobal, topicBasePath, Number::SendDeviceDiscovery);
         
     }
     Number::~Number() {
@@ -79,8 +80,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* Number::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        return new Number(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
+    Device* Number::Create(const JsonVariant &jsonObj, const char* type, void* context) {
+        return new Number(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
     }
 
     String Number::ToString() {

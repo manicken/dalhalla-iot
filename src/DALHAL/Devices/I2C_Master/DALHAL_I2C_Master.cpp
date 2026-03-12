@@ -172,7 +172,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* I2C_Master::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* I2C_Master::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new I2C_Master(jsonObj, type);
     }
 

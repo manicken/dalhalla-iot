@@ -29,6 +29,8 @@
 
 #include "DALHAL_HA_DeviceTypeReg.h"
 
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 // Available Home Assistant device-endpoint-entities types here
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceContainer.h>
 
@@ -41,10 +43,10 @@
 
 namespace DALHAL {
 
-    constexpr HA_Registry::Define RegistryItemNullDefault = {nullptr, nullptr };
-    constexpr HA_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
+    //constexpr HA_Registry::Define RegistryItemNullDefault = {nullptr, nullptr };
+    //constexpr HA_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
 
-    constexpr HA_DeviceRegistryItem HA_DeviceRegistry[] = {
+    constexpr Registry::Item HA_DeviceRegistry[] = {
         {"sensor",    Sensor::RegistryDefine},
         {"binary_sensor",  BinarySensor::RegistryDefine},
         {"switch",    Switch::RegistryDefine},
@@ -52,15 +54,7 @@ namespace DALHAL {
         {"number",    Number::RegistryDefine},
         {"CONTAINER", HA_DeviceContainer::RegistryDefine},
         /** mandatory null terminator */
-        RegistryTerminatorItem
+        Registry::TerminatorItem
     };
-    const HA_DeviceRegistryItem& Get_HA_DeviceRegistryItem(const char* type) {
-        int i=0;
-        while (true) {
-            const HA_DeviceRegistryItem& regItem = HA_DeviceRegistry[i++];
-            if (regItem.typeName == nullptr) break;
-            if (strcasecmp(regItem.typeName, type) == 0) return regItem;
-        }
-        return RegistryTerminatorItem;
-    }
+    
 }

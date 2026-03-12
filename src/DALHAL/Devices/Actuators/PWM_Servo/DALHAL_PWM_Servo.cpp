@@ -104,7 +104,7 @@ namespace DALHAL {
         return (anyError == false);
     }
 
-    Device* PWM_Servo::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* PWM_Servo::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new PWM_Servo(jsonObj, type);
     }
 

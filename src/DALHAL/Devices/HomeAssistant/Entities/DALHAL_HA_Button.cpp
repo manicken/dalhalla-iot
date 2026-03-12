@@ -37,10 +37,10 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }
     
-    Button::Button(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
+    Button::Button(const JsonVariant &jsonObj, const char* type_cStr, HA_CreateFunctionContext* context) : mqttClient(context->mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
-        const char* deviceId_cStr = jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = context->jsonObjRoot["deviceId"];
   
         topicBasePath.Set(deviceId_cStr, uidStr);
 
@@ -56,7 +56,7 @@ namespace DALHAL {
         }
         //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
 
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, jsonObjGlobal, topicBasePath, Button::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, context->jsonGlobal, topicBasePath, Button::SendDeviceDiscovery);
 
         //lastMs = millis()-refreshMs; // force a direct update after start
     }
@@ -78,8 +78,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* Button::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        return new Button(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
+    Device* Button::Create(const JsonVariant &jsonObj, const char* type, void* context) {
+        return new Button(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
     }
 
     String Button::ToString() {

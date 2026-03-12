@@ -33,6 +33,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
+
 namespace DALHAL {
 
     class HA_DeviceContainer : public Device {
@@ -50,12 +51,13 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
-        static constexpr HA_Registry::Define RegistryDefine = {
+        static Device* Create(const JsonVariant& jsonObj, const char* type, void* context);
+        static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Void,
             Create,
             VerifyJSON
         };
-        HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context);
         ~HA_DeviceContainer();
         String ToString() override;
     };

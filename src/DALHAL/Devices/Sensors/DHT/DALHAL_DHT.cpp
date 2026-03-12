@@ -77,7 +77,7 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
-    Device* DHT::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* DHT::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new DHT(jsonObj, type);
     }
 

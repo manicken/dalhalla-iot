@@ -41,7 +41,7 @@ namespace DALHAL {
         }
     }
 
-    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : Device(type) {
+    HA_DeviceContainer::HA_DeviceContainer(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context) : Device(type) {
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         
@@ -55,7 +55,7 @@ namespace DALHAL {
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             bool valid = regItem.def.Verify_JSON_Function(jsonItem);
             validDevices[i] = valid;
             deviceCountTmp++;
@@ -80,12 +80,13 @@ namespace DALHAL {
 
         // Second pass: actually create and store devices
         uint32_t index = 0;
+
         for (int i=0;i<arraySize;i++) {
             const JsonVariant& jsonItem = jsonArray[i];
             if (validDevices[i] == false) continue;
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
-            devices[index++] = regItem.def.Create_Function(jsonItem, regItem.typeName, mqttClient, jsonObjGlobal, jsonObjRoot);
+            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+            devices[index++] = regItem.def.Create_Function(jsonItem, regItem.typeName, context);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
@@ -116,15 +117,15 @@ namespace DALHAL {
             if (IsConstChar(jsonItem) == true) { continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             bool valid = regItem.def.Verify_JSON_Function(jsonItem);
             if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
         }
         return true;
     }
 
-    Device* HA_DeviceContainer::Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        return new HA_DeviceContainer(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
+    Device* HA_DeviceContainer::Create(const JsonVariant& jsonObj, const char* type, void* context) {
+        return new HA_DeviceContainer(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
     }
 
     String HA_DeviceContainer::ToString() {

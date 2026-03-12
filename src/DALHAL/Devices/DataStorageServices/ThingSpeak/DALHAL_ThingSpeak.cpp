@@ -221,7 +221,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ThingSpeak::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* ThingSpeak::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new ThingSpeak(jsonObj, type);
     }
 

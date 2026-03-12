@@ -76,7 +76,7 @@ namespace DALHAL {
 
     public:
         
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Optional,
             Create,

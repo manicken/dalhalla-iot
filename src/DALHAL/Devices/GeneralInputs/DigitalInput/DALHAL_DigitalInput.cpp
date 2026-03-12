@@ -31,7 +31,7 @@
 
 namespace DALHAL {
     
-    Device* DigitalInput::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* DigitalInput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new DigitalInput(jsonObj, type);
     }
 

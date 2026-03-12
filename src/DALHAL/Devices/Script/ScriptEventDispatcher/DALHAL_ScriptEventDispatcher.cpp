@@ -38,7 +38,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptEventDispatcher::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* ScriptEventDispatcher::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new ScriptEventDispatcher(jsonObj, type);
     }
 

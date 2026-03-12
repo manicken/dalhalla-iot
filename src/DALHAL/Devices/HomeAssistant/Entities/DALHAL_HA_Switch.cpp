@@ -46,10 +46,10 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Switch::Switch(const JsonVariant &jsonObj, const char* type_cStr, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) : mqttClient(mqttClient), Device(type_cStr) {
+    Switch::Switch(const JsonVariant &jsonObj, const char* type_cStr, HA_CreateFunctionContext* context) : mqttClient(context->mqttClient), Device(type_cStr) {
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
-        const char* deviceId_cStr = jsonObjRoot["deviceId"];
+        const char* deviceId_cStr = context->jsonObjRoot["deviceId"];
 
         if (jsonObj["momentary"].is<bool>()) { // do return false if key not found
             momentary = jsonObj["momentary"].as<bool>();
@@ -72,7 +72,7 @@ namespace DALHAL {
         //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
 
         //const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, jsonObjGlobal, topicBasePath, Switch::SendDeviceDiscovery);
+        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, type_cStr, uidStr, jsonObj, context->jsonGlobal, topicBasePath, Switch::SendDeviceDiscovery);
         //delete[] cfgTopic_cStr;
     }
     Switch::~Switch() {
@@ -93,8 +93,8 @@ namespace DALHAL {
         return true;
     }
 
-    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot) {
-        return new Switch(jsonObj, type, mqttClient, jsonObjGlobal, jsonObjRoot);
+    Device* Switch::Create(const JsonVariant &jsonObj, const char* type, void* context) {
+        return new Switch(jsonObj, type, static_cast<HA_CreateFunctionContext*>(context));
     }
 
     String Switch::ToString() {

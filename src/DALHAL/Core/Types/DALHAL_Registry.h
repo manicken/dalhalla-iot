@@ -30,8 +30,14 @@
 
 namespace DALHAL {
 
+    struct DeviceCreateContext
+    {
+        const JsonVariant* json;
+        const char* type;
+    };
+
     namespace Registry {
-        typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type);
+        typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, void* context);
         typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &json);
 
         enum class UseRootUID {
@@ -45,6 +51,7 @@ namespace DALHAL {
             HAL_DEVICE_CREATE_FUNC Create_Function;
             HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
             const EventDescriptor* reactiveTable;
+            
         } Define;
         
         typedef struct Item {

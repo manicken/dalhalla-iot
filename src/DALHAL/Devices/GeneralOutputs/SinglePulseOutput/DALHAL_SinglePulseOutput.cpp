@@ -29,7 +29,7 @@
 
 namespace DALHAL {
     
-    Device* SinglePulseOutput::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* SinglePulseOutput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new SinglePulseOutput(jsonObj, type);
     }
 

@@ -276,7 +276,7 @@ namespace DALHAL {
         return ret;
     }
 
-    Device* OneWireTempBusAtRoot::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* OneWireTempBusAtRoot::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new OneWireTempBusAtRoot(jsonObj, type);
     }
 }

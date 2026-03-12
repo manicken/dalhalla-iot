@@ -69,6 +69,11 @@
 #include <DALHAL/Devices/API/REST_Value/DALHAL_REST_Value.h>
 #include <DALHAL/Devices/API/REST_Cmd/DALHAL_REST_Cmd.h>
 
+// this is only a template device and should only be enabled(uncommented)
+// when major changes are done to the system, 
+// to make sure that the template is updated as well
+#include <DALHAL/Devices/Template/DALHAL__Template_.h> 
+
 namespace DALHAL {
 
     constexpr Registry::Item DeviceRegistry[] = {
@@ -129,12 +134,17 @@ namespace DALHAL {
         /** ---------------- Inputs ---------------- */
         {"BUTTON", ButtonInput::RegistryDefine},
 
+        /** template device */
+#ifdef DALHAL_DEVICE__TEMPLATE_
+        {"TEMPLATE", _Template_::RegistryDefine},
+#endif
         /** mandatory null terminator */
         Registry::TerminatorItem, // Stop for active devices
+        
 
         /** --- Planned / future devices --- */
 #if defined(ESP32) || defined(_WIN32)
-        {"PWM_LEDC", RegistryItemNullDefault},
+        {"PWM_LEDC", Registry::ItemNullDefault},
 #endif
     };
 

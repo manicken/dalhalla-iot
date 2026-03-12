@@ -31,7 +31,7 @@
 namespace DALHAL {
 
 // Factory method
-Device* ButtonInput::Create(const JsonVariant &jsonObj, const char* type) {
+Device* ButtonInput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
     return new ButtonInput(jsonObj, type);
 }
 

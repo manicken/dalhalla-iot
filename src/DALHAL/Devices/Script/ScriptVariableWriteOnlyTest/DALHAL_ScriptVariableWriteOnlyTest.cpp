@@ -40,7 +40,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptVariableWriteOnlyTest::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* ScriptVariableWriteOnlyTest::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new ScriptVariableWriteOnlyTest(jsonObj, type);
     }
 

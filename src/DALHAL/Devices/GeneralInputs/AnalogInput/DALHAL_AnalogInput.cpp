@@ -31,7 +31,7 @@
 namespace DALHAL {
     
 #if defined(ESP32) || defined(_WIN32)
-    Device* AnalogInput::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* AnalogInput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new AnalogInput(jsonObj, type);
     }
 

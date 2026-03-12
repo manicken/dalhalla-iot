@@ -29,7 +29,7 @@
 
 namespace DALHAL {
 
-    Device* OneWireTempGroup::Create(const JsonVariant& jsonObj, const char* type) {
+    Device* OneWireTempGroup::Create(const JsonVariant& jsonObj, const char* type, void* context) {
         return new OneWireTempGroup(jsonObj, type);
     }
 

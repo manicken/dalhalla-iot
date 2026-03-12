@@ -81,7 +81,7 @@ namespace DALHAL {
             GlobalLogger.Error(F("CreateDeviceFromJSON - Create_Function == nullptr - something is very wrong if this happens"));
             return nullptr; // should never happen as VerifyJson is called before and do actually verify that this pointer do point to something
         }
-        return regItem.def.Create_Function(jsonObj, regItem.typeName);
+        return regItem.def.Create_Function(jsonObj, regItem.typeName, nullptr);
     }
     bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         

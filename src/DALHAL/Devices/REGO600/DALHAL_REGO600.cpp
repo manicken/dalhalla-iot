@@ -152,7 +152,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* REGO600::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* REGO600::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new REGO600(jsonObj, type);
     }
 

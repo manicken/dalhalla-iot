@@ -47,7 +47,7 @@ namespace DALHAL {
         return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)));
     }
 
-    Device* TX433::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* TX433::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new TX433(jsonObj, type);
     }
     TX433::TX433(const JsonVariant &jsonObj, const char* type) : TX433_DeviceBase(type) {

@@ -34,7 +34,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* REST_Cmd::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* REST_Cmd::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new REST_Cmd(jsonObj, type);
     }
 

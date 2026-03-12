@@ -37,7 +37,7 @@ namespace DALHAL {
     class REST_Cmd : public DALHAL::Device {
     public:
         static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(const JsonVariant &jsonObj, const char* type);
+        static Device* Create(const JsonVariant &jsonObj, const char* type, void* context);
         static constexpr Registry::Define RegistryDefine = {
             Registry::UseRootUID::Mandatory,
             Create,

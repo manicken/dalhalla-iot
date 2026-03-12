@@ -230,7 +230,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* WS2812::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* WS2812::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new WS2812(jsonObj, type);
     }
 

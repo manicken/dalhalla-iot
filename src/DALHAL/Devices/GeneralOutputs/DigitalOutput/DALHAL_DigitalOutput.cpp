@@ -30,7 +30,7 @@
 
 namespace DALHAL {
     
-    Device* DigitalOutput::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* DigitalOutput::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new DigitalOutput(jsonObj, type);
     }
 

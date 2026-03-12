@@ -56,12 +56,13 @@ namespace DALHAL {
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
-        static constexpr HA_Registry::Define RegistryDefine = {
+        static Device* Create(const JsonVariant& jsonObj, const char* type, void* context);
+        static constexpr Registry::Define RegistryDefine = {
+            Registry::UseRootUID::Void,
             Create,
             VerifyJSON
         };
-        Switch(const JsonVariant& jsonObj, const char* type, PubSubClient& mqttClient, const JsonVariant& jsonObjGlobal, const JsonVariant& jsonObjRoot);
+        Switch(const JsonVariant& jsonObj, const char* type, HA_CreateFunctionContext* context);
         ~Switch();
 
 

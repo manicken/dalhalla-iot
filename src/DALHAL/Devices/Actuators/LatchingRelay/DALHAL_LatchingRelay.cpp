@@ -316,7 +316,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return anyError == false;
     }
 
-    Device* LatchingRelay::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* LatchingRelay::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new LatchingRelay(jsonObj, type);
     }
 

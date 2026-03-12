@@ -51,7 +51,7 @@ namespace DALHAL {
         return false;
     }
 
-    Device* HomeAssistant::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* HomeAssistant::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new HomeAssistant(jsonObj, type);
     }
     
@@ -250,7 +250,7 @@ namespace DALHAL {
             
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             
-            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
             if (regItem.def.Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
@@ -261,14 +261,16 @@ namespace DALHAL {
         int index = 0;
         // second pass create devices
         const JsonVariant& groupObj = jsonObj["group"];
+        HA_CreateFunctionContext createFuncContext(mqttClient, groupObj, jsonObj);
         for (int i=0;i<arrayCount;i++) {
             if (validItems[i] == false) continue;
 
             const JsonVariant& item = jsonArrayItems[i];
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             
-            const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
-            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, mqttClient, groupObj, jsonObj);
+            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+
+            devices[index++] = regItem.def.Create_Function(item, regItem.typeName, &createFuncContext);
         }
         delete[] validItems;
     }
@@ -301,15 +303,16 @@ namespace DALHAL {
             const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
             const JsonArray& jsonArrayItems = jsonObjGrpItem["items"];
             int jsonArrayItemsCount = jsonArrayItems.size();
+            HA_CreateFunctionContext createFuncContext(mqttClient, jsonObjGrpItem, jsonObj);
             for (int j=0;j<jsonArrayItemsCount;j++) {
                 if (validItems[validItemIndex++] == false) continue;
 
                 const JsonVariant& item = jsonArrayItems[j];
                 const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
         
-                const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+                const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
 
-                devices[newItemIndex++] = regItem.def.Create_Function(item, regItem.typeName, mqttClient, jsonObjGrpItem, jsonObj);
+                devices[newItemIndex++] = regItem.def.Create_Function(item, regItem.typeName, &createFuncContext);
                 yield();
             }
         }
@@ -325,7 +328,7 @@ namespace DALHAL {
         if (ValidateJsonStringField(jsonObjItem, DALHAL_KEYNAME_TYPE) == false) { return false; }
         
         const char* type_cStr = GetAsConstChar(jsonObjItem, DALHAL_KEYNAME_TYPE);
-        const HA_DeviceRegistryItem& regItem = Get_HA_DeviceRegistryItem(type_cStr);
+        const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
         // no nullcheck is needed as ValidateJSON ensures that all types are correct
         if (regItem.def.Verify_JSON_Function(jsonObjItem) == false) { return false; }
         return true;

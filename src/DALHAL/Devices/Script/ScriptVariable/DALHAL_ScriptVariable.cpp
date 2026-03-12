@@ -43,7 +43,7 @@ namespace DALHAL {
         return true;
     }
 
-    Device* ScriptVariable::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* ScriptVariable::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new ScriptVariable(jsonObj, type);
     }
 

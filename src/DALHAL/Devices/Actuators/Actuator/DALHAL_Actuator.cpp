@@ -317,7 +317,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return anyError == false;
     }
 
-    Device* Actuator::Create(const JsonVariant &jsonObj, const char* type) {
+    Device* Actuator::Create(const JsonVariant &jsonObj, const char* type, void* context) {
         return new Actuator(jsonObj, type);
     }
 
