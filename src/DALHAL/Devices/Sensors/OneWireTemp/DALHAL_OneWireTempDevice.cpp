@@ -32,7 +32,7 @@
 
 namespace DALHAL {
     
-    constexpr Registry::Define OneWireTempDeviceAtRoot::RegistryDefine = {
+    constexpr Registry::DefineRoot OneWireTempDeviceAtRoot::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

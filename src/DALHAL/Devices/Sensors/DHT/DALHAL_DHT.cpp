@@ -32,7 +32,7 @@
 
 namespace DALHAL {
     
-    constexpr Registry::Define DHT::RegistryDefine = {
+    constexpr Registry::DefineRoot DHT::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

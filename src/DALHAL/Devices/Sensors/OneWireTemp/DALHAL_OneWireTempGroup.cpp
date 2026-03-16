@@ -29,7 +29,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define OneWireTempGroup::RegistryDefine = {
+    constexpr Registry::DefineRoot OneWireTempGroup::RegistryDefine = {
         Registry::UseRootUID::Optional,
         Create,
         VerifyJSON,

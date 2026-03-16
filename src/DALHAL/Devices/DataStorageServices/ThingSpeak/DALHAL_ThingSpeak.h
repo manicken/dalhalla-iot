@@ -73,7 +73,7 @@ namespace DALHAL {
         static const char* TS_ROOT_URL;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::Define RegistryDefine;/* = {
+        static const Registry::DefineRoot RegistryDefine;/* = {
             Registry::UseRootUID::Mandatory,
             Create,
             VerifyJSON,

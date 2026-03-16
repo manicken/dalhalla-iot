@@ -33,7 +33,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define I2C_Master::RegistryDefine = {
+    constexpr Registry::DefineRoot I2C_Master::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

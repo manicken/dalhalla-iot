@@ -29,7 +29,7 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
-    constexpr Registry::Define AnalogInput::RegistryDefine = {
+    constexpr Registry::DefineRoot AnalogInput::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

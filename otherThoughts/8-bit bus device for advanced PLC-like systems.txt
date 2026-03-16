@@ -1,0 +1,21 @@
+A0-A7            (8)
+D0-D7            (8)
+RD,WR            (2)
+RESET,SYNC-CLOCK (2)
+I2C BUS          (2)
+INT0-INT1        (2)
+
+i was first thinking that one reads back the ALE register from the module to get the address, 
+but its better if simply just the selected adress (HW selection) is read back surely much easier/safer?
+then i thouhgt about a unique situation,
+lets sat that there is some glitch in the system where one device/module
+only receive part of the written adress into it but that adress accidentally matches 
+it's own adress, then the actual device rx this adress correctly, then we would have 
+a situation where two modules are now selected
+
+here is my proposed new bus pinout
+
+VCC is the system voltage and is used for the normal bus signals currently 3v3
+
+(G)  D   D   D   D  (G)  D   D   D   D  (G)  A   A   A   A   A   A   A   A  (G)
+(G) RST (G) CLK (G) _RD _WR (G) I2C I2C (G) INT INT INT INT (G) VCC VCC VCC (G)

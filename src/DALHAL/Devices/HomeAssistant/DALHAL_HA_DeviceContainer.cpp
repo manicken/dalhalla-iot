@@ -31,8 +31,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
-    constexpr Registry::Define HA_DeviceContainer::RegistryDefine = {
-        Registry::UseRootUID::Void,
+    constexpr Registry::DefineBase HA_DeviceContainer::RegistryDefine = {
         Create,
         VerifyJSON
     };

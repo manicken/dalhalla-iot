@@ -28,7 +28,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
-    constexpr Registry::Define ScriptArray::RegistryDefine = {
+    constexpr Registry::DefineRoot ScriptArray::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

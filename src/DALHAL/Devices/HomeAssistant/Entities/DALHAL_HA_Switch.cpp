@@ -34,8 +34,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define Switch::RegistryDefine = {
-        Registry::UseRootUID::Void,
+    constexpr Registry::DefineBase Switch::RegistryDefine = {
         Create,
         VerifyJSON
     };

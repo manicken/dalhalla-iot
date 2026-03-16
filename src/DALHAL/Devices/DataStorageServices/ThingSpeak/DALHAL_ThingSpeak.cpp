@@ -37,7 +37,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define ThingSpeak::RegistryDefine = {
+    constexpr Registry::DefineRoot ThingSpeak::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

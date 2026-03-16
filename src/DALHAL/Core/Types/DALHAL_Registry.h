@@ -96,43 +96,12 @@ namespace DALHAL {
                 useRootUID(useRootUID)
             {}
         };
-
-        struct Define {
-            UseRootUID useRootUID;
-            HAL_DEVICE_CREATE_FUNC Create_Function;
-            HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
-            const EventDescriptor* reactiveTable;
-            
-            constexpr Define(
-                UseRootUID useRootUID, 
-                HAL_DEVICE_CREATE_FUNC Create_Function, 
-                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
-            ) : 
-                useRootUID(useRootUID), 
-                Create_Function(Create_Function), 
-                Verify_JSON_Function(Verify_JSON_Function),
-                reactiveTable(nullptr)
-            {}
-
-            constexpr Define(
-                UseRootUID useRootUID, 
-                HAL_DEVICE_CREATE_FUNC Create_Function, 
-                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
-                const EventDescriptor* reactiveTable
-            ) : 
-                useRootUID(useRootUID), 
-                Create_Function(Create_Function), 
-                Verify_JSON_Function(Verify_JSON_Function),
-                reactiveTable(reactiveTable)
-            {}
-            
-        };
         
         struct Item {
             const char* typeName;
-            const Registry::Define* def;
+            const Registry::DefineBase* def;
 
-            constexpr Item(const char* typeName, const Registry::Define* def) : typeName(typeName), def(def) {}
+            constexpr Item(const char* typeName, const Registry::DefineBase* def) : typeName(typeName), def(def) {}
         };
 
         constexpr Registry::Item TerminatorItem = {nullptr, nullptr};

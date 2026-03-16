@@ -29,7 +29,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define ScriptVariable::RegistryDefine = {
+    constexpr Registry::DefineRoot ScriptVariable::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

@@ -29,7 +29,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define SinglePulseOutput::RegistryDefine = {
+    constexpr Registry::DefineRoot SinglePulseOutput::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

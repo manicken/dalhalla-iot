@@ -29,7 +29,7 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
-        constexpr Registry::Define _Template_::RegistryDefine = {
+        constexpr Registry::DefineRoot _Template_::RegistryDefine = {
                 Registry::UseRootUID::Mandatory,
                 Create,
                 VerifyJSON,

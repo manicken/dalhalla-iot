@@ -31,8 +31,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
-    constexpr Registry::Define Button::RegistryDefine = {
-        Registry::UseRootUID::Void,
+    constexpr Registry::DefineBase Button::RegistryDefine = {
         Create,
         VerifyJSON
     };

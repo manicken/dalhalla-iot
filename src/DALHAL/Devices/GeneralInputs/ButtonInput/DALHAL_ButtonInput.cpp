@@ -29,7 +29,7 @@
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 
 namespace DALHAL {
-    constexpr Registry::Define ButtonInput::RegistryDefine = {
+    constexpr Registry::DefineRoot ButtonInput::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

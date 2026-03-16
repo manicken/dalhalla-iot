@@ -29,7 +29,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define REST_Value::RegistryDefine = {
+    constexpr Registry::DefineRoot REST_Value::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

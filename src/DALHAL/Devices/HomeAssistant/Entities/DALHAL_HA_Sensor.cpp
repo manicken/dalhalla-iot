@@ -34,8 +34,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define Sensor::RegistryDefine = {
-        Registry::UseRootUID::Void,
+    constexpr Registry::DefineBase Sensor::RegistryDefine = {
         Create,
         VerifyJSON
     };

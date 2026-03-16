@@ -77,7 +77,7 @@ namespace DALHAL {
     public:
         
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::Define RegistryDefine;/* = {
+        static const Registry::DefineRoot RegistryDefine;/* = {
             Registry::UseRootUID::Optional,
             Create,
             OneWireTempBus::VerifyJSON,

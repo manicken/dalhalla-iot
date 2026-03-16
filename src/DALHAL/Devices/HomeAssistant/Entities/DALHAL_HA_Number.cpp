@@ -33,8 +33,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define Number::RegistryDefine = {
-        Registry::UseRootUID::Void,
+    constexpr Registry::DefineBase Number::RegistryDefine = {
         Create,
         VerifyJSON
     };

@@ -32,7 +32,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define Actuator::RegistryDefine = {
+    constexpr Registry::DefineRoot Actuator::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

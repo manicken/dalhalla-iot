@@ -30,7 +30,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define WS2812::RegistryDefine = {
+    constexpr Registry::DefineRoot WS2812::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

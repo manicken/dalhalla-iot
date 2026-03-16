@@ -30,7 +30,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define TX433::RegistryDefine = {
+    constexpr Registry::DefineRoot TX433::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

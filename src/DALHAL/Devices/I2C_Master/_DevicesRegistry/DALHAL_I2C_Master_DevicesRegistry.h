@@ -33,14 +33,14 @@ namespace DALHAL {
 
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
 
-    struct I2C_RegistryDefine : public Registry::Define {
+    struct I2C_RegistryDefine : public Registry::DefineBase {
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
         constexpr I2C_RegistryDefine(
             Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
             Registry::HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
             I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
         ) : 
-            Registry::Define(Registry::UseRootUID::Void, Create_Function, Verify_JSON_Function),
+            Registry::DefineBase(Create_Function, Verify_JSON_Function),
             HasAddress_Function(HasAddress_Function)
         {}
 
@@ -50,7 +50,7 @@ namespace DALHAL {
             I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function,
             const EventDescriptor* reactiveTable
         ) : 
-            Registry::Define(Registry::UseRootUID::Void, Create_Function, Verify_JSON_Function, reactiveTable),
+            Registry::DefineBase(Create_Function, Verify_JSON_Function, reactiveTable),
             HasAddress_Function(HasAddress_Function)
         {}
 

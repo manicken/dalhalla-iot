@@ -47,7 +47,7 @@ public:
     // Factory and JSON validation
     static Device* Create(DeviceCreateContext& context);
     static bool VerifyJSON(const JsonVariant &jsonObj);
-    static const Registry::Define RegistryDefine;/* = {
+    static const Registry::DefineRoot RegistryDefine;/* = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

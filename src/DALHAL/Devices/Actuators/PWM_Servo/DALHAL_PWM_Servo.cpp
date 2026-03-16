@@ -38,7 +38,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define PWM_Servo::RegistryDefine = {
+    constexpr Registry::DefineRoot PWM_Servo::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

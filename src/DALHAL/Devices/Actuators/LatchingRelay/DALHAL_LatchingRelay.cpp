@@ -30,7 +30,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define LatchingRelay::RegistryDefine = {
+    constexpr Registry::DefineRoot LatchingRelay::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,

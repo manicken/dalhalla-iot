@@ -30,7 +30,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Define DigitalOutput::RegistryDefine = {
+    constexpr Registry::DefineRoot DigitalOutput::RegistryDefine = {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,
