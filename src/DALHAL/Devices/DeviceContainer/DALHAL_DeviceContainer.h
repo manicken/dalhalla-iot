@@ -33,12 +33,20 @@
 namespace DALHAL {
 
     class DeviceContainer : public Device {
+    public: // static fields and exposed external structures
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+        static const Registry::DefineRoot RegistryDefine;
+
     private:
         Device** devices;
         int deviceCount;
+
     public:
 
-        
+        DeviceContainer(DeviceCreateContext& context);
+        ~DeviceContainer();
+
         /** called regulary from the main loop */
         void loop() override;
         /** called when all hal devices has been loaded */
@@ -46,16 +54,6 @@ namespace DALHAL {
         /** used to find sub/leaf devices @ "group devices" */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available 
-        };*/
-        DeviceContainer(DeviceCreateContext& context);
-        ~DeviceContainer();
         String ToString() override;
     };
 }

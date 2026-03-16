@@ -65,101 +65,97 @@ using LatchingRelay_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
-class LatchingRelay : public LatchingRelay_DeviceBase {
-public:
-    static void IRAM_ATTR endstop_isr(void* arg);
+    class LatchingRelay : public LatchingRelay_DeviceBase {
+    public: // static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+        
+        static void IRAM_ATTR endstop_isr(void* arg);
+        
+        enum class State : uint32_t {
+            Idle,
+            DrivingReset,
+            DrivingSet,
+            TimeoutFault
+        };
+        enum class Location : int32_t { Unknown = -1, Reset = 0, Set = 1 };
     
-    enum class State : uint32_t {
-        Idle,
-        DrivingReset,
-        DrivingSet,
-        TimeoutFault
+    public:
+        LatchingRelay(DeviceCreateContext& context);
+        ~LatchingRelay();
+
+        void setup();
+        virtual void loop() override;
+
+        virtual HALOperationResult write(const HALValue& val) override;
+        virtual HALOperationResult read(HALValue& val) override;
+
+        virtual HALOperationResult read(const HALReadStringRequestValue& val);
+
+        static HALOperationResult exec_drive_to_reset(Device* device);
+        static HALOperationResult exec_drive_to_set(Device* device);
+        static HALOperationResult exec_stop(Device* device);
+        static HALOperationResult exec_resetMode(Device* device);
+
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
+        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
+        virtual HALOperationResult exec(const ZeroCopyString& cmd);
+
+        virtual String ToString() override;
+
+    private:
+        union DrivePins {
+            struct { gpio_num_t a, b; } hbridge;
+            struct { gpio_num_t data, enable; } data_enable;
+        };
+        enum class DriveMode : uint8_t {
+            HBridge,      // set / reset
+            DataEnable     // Data + Enable
+        };
+        enum class GpioRegType {
+            Set,
+            Clear
+        };
+
+        void resetMode();
+        void stopDrive();
+        void driveToReset();
+        void driveToSet();
+        bool resetActive() const;
+        bool setActive() const;
+
+        void disableFeedbackSignalInterrupts();
+        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
+
+    public:
+
+        struct ISR_DATA {
+            volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
+            void (* volatile gpio_reg_func)(uint32_t) = nullptr;
+            volatile uint32_t gpio_currentActivePinMask = 0;
+            volatile bool handled = false;
+            volatile bool driveOn = false;
+            volatile Location location = Location::Unknown;
+        };
+
+    private:
+        ISR_DATA isr_data;
+
+        State state = State::Idle;
+
+        DrivePins pins;
+        DriveMode mode;
+
+        gpio_num_t pinFeedbackReset;
+        gpio_num_t pinFeedbackSet;
+
+        bool pinFeedbackResetActiveHigh;
+        bool pinFeedbackSetActiveHigh;
+
+        uint32_t motionStartMs;
+        uint32_t timeoutMs;
+
     };
-    enum class Location : int32_t { Unknown = -1, Reset = 0, Set = 1 };
-
-    static bool VerifyJSON(const JsonVariant &jsonObj);
-    static Device* Create(DeviceCreateContext& context);
-    static const Registry::DefineRoot RegistryDefine;/* = {
-        Registry::UseRootUID::Mandatory,
-        Create,
-        VerifyJSON,
-        DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
-    };*/
-
-    LatchingRelay(DeviceCreateContext& context);
-    ~LatchingRelay();
-
-    void setup();
-    virtual void loop() override;
-
-    virtual HALOperationResult write(const HALValue& val) override;
-    virtual HALOperationResult read(HALValue& val) override;
-
-    virtual HALOperationResult read(const HALReadStringRequestValue& val);
-
-    static HALOperationResult exec_drive_to_reset(Device* device);
-    static HALOperationResult exec_drive_to_set(Device* device);
-    static HALOperationResult exec_stop(Device* device);
-    static HALOperationResult exec_resetMode(Device* device);
-
-    virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
-    /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-    virtual HALOperationResult exec(const ZeroCopyString& cmd);
-
-    virtual String ToString() override;
-
-private:
-    union DrivePins {
-        struct { gpio_num_t a, b; } hbridge;
-        struct { gpio_num_t data, enable; } data_enable;
-    };
-    enum class DriveMode : uint8_t {
-        HBridge,      // set / reset
-        DataEnable     // Data + Enable
-    };
-    enum class GpioRegType {
-        Set,
-        Clear
-    };
-
-    void resetMode();
-    void stopDrive();
-    void driveToReset();
-    void driveToSet();
-    bool resetActive() const;
-    bool setActive() const;
-
-    void disableFeedbackSignalInterrupts();
-    void configureISRData(gpio_num_t& somePin, GpioRegType regType);
-
-public:
-
-    struct ISR_DATA {
-        volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
-        void (* volatile gpio_reg_func)(uint32_t) = nullptr;
-        volatile uint32_t gpio_currentActivePinMask = 0;
-        volatile bool handled = false;
-        volatile bool driveOn = false;
-        volatile Location location = Location::Unknown;
-    };
-
-private:
-    ISR_DATA isr_data;
-
-    State state = State::Idle;
-
-    DrivePins pins;
-    DriveMode mode;
-
-    gpio_num_t pinFeedbackReset;
-    gpio_num_t pinFeedbackSet;
-
-    bool pinFeedbackResetActiveHigh;
-    bool pinFeedbackSetActiveHigh;
-
-    uint32_t motionStartMs;
-    uint32_t timeoutMs;
-
-};
 
 } // namespace DALHAL

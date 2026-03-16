@@ -70,7 +70,11 @@ using Actuator_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class Actuator : public Actuator_DeviceBase {
-    public:
+    public: // static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+        
         static void IRAM_ATTR endstop_isr(void* arg);
 
         enum class State : uint32_t {
@@ -80,16 +84,8 @@ namespace DALHAL {
             TimeoutFault
         };
         enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
-
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
-        };*/
-
+        
+    public:
         Actuator(DeviceCreateContext& context);
         ~Actuator();
 

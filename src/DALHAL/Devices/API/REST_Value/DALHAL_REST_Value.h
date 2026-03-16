@@ -37,20 +37,10 @@
 namespace DALHAL {
 
     class REST_Value : public DALHAL::Device {
-    public:
+    public: // static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available on obsolete device
-        };*/
-
-        REST_Value(DeviceCreateContext& context);
-
-        DALHAL::HALOperationResult read(DALHAL::HALValue& val) override;
-        void loop() override;
 
     private:
         DALHAL::HALValue cachedValue;
@@ -59,5 +49,11 @@ namespace DALHAL {
         uint32_t lastRefresh;
 
         void fetchRemoteValue();
+        
+    public:
+        REST_Value(DeviceCreateContext& context);
+
+        DALHAL::HALOperationResult read(DALHAL::HALValue& val) override;
+        void loop() override;
     };
 }

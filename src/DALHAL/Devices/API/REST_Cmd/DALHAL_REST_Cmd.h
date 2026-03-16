@@ -35,22 +35,18 @@
 namespace DALHAL {
 
     class REST_Cmd : public DALHAL::Device {
-    public:
+    public: // static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available on obsolete device
-        };*/
-
-        REST_Cmd(DeviceCreateContext& context);
-
-        DALHAL::HALOperationResult exec() override;
-
 
     private:
         String remoteUrl;
+
+    public:
+        REST_Cmd(DeviceCreateContext& context);
+
+        DALHAL::HALOperationResult exec() override;
+    
     };
 }

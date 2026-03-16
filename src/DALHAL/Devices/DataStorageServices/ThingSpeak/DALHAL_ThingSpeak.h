@@ -57,6 +57,13 @@ using ThingSpeak_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class ThingSpeak : public ThingSpeak_DeviceBase {
+    public: // static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
+        static const char* TS_ROOT_URL;
+
     private:
         HTTPClient http;
         WiFiClient wifiClient;
@@ -70,15 +77,6 @@ namespace DALHAL {
         uint32_t lastUpdateMs = 0;
 
     public:
-        static const char* TS_ROOT_URL;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
-        };*/
         ThingSpeak(DeviceCreateContext& context);
         ~ThingSpeak();
         HALOperationResult exec() override;

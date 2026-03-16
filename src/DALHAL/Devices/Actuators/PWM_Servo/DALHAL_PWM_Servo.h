@@ -46,6 +46,11 @@ using PWM_Servo_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
 class PWM_Servo : public PWM_Servo_DeviceBase {
+public: // static fields and exposed external structures
+    static const Registry::DefineRoot RegistryDefine;
+    static bool VerifyJSON(const JsonVariant &jsonObj);
+    static Device* Create(DeviceCreateContext& context);
+
 private:
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
@@ -70,17 +75,11 @@ private:
     bool autoOffActive = false;
 
 public:
+    
     PWM_Servo(DeviceCreateContext& context);
     ~PWM_Servo();
-
-    static bool VerifyJSON(const JsonVariant &jsonObj);
-    static Device* Create(DeviceCreateContext& context);
-    static const Registry::DefineRoot RegistryDefine;/* = {
-        Registry::UseRootUID::Mandatory,
-        Create,
-        VerifyJSON,
-        DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)
-    };*/
+    
+    
 
     void begin() override;
     void loop() override;
