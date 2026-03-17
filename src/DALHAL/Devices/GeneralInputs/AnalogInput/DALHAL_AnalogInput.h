@@ -44,7 +44,7 @@ namespace DALHAL {
 #if defined(ESP32) || defined(_WIN32)
     class AnalogInput : public AnalogInput_DeviceBase {
     public: // public static fields and exposed external structures
-        static const Registry::DefineRoot RegistryDefine;
+        static const Registry::DefineBase RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         

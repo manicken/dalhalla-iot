@@ -38,8 +38,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot PWM_Servo::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase PWM_Servo::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)

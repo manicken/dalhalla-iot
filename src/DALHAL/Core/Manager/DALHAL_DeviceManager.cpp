@@ -98,10 +98,7 @@ namespace DALHAL {
             return false;
         }
 
-        //const Registry::DefineRoot* defRoot = static_cast<const Registry::DefineRoot*>(regItem.def);
-
-        if (static_cast<const Registry::DefineRoot*>(regItem.def)->useRootUID == Registry::UseRootUID::Mandatory)
-            if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
+        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
         if (regItem.def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
         if (regItem.def->Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined

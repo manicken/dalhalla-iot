@@ -44,7 +44,7 @@ namespace DALHAL {
 
     class ButtonInput : public ButtonInput_DeviceBase {
     public: // public static fields and exposed external structures
-        static const Registry::DefineRoot RegistryDefine;
+        static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
         static bool VerifyJSON(const JsonVariant &jsonObj);
 

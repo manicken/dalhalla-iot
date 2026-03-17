@@ -43,7 +43,7 @@
 
 namespace DALHAL {
 
-    //constexpr HA_Registry::DefineRoot RegistryItemNullDefault = {nullptr, nullptr };
+    //constexpr HA_Registry::DefineBase RegistryItemNullDefault = {nullptr, nullptr };
     //constexpr HA_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
 
     constexpr Registry::Item HA_DeviceRegistry[] = {

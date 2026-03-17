@@ -27,11 +27,15 @@
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 #include <ArduinoJSON.h>
-using json = JsonVariant;
+#include <DALHAL/Support/ConvertHelper.h>
+//using json = JsonVariant;
  
 namespace DALHAL {
 
     namespace JsonSchema {
+
+        const char* ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER = "JSON_Schema_Validator - validateFromRegister";
+        const char* ERROR_SOURCE_STR_VALIDATE_FIELD = "JSON_Schema_Validator - validateField";
 
         // this is only a helper/support function and do not use anyError
         // as this could be jsut defined as a warning, depending on strict level requirements
@@ -62,6 +66,7 @@ namespace DALHAL {
         {
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), f->name);
+                GlobalLogger.setLastEntrySource("validateStringField");
                 anyError = true;
                 return;
             }
@@ -70,9 +75,13 @@ namespace DALHAL {
             size_t strLen = zcStr.Length(); // use of lenght here is fast
             if (strLen == 0) {
                 GlobalLogger.Error(F("Field string cannot be empty:"), f->name);
+                GlobalLogger.setLastEntrySource("validateStringField");
+                anyError = true;
+                return;
             }
             if (f->maxLength > 0 && strLen > f->maxLength) {
                 GlobalLogger.Error(F("Field exceeds maxLength:"), f->name);
+                GlobalLogger.setLastEntrySource("validateStringField");
                 anyError = true;
                 return;
             }
@@ -175,22 +184,49 @@ namespace DALHAL {
                     return;
                 }
                 case FieldType::UID:
-                case FieldType::UID_Path:
+                case FieldType::UID_Path: {
                     // cast FieldString for UID / UID_Path / simple string fields
                     validateStringField(value, static_cast<const FieldString*>(field), anyError);
                     return;
+                }
                 case FieldType::Array: {
                     auto f = static_cast<const FieldArray*>(field);
                     validateDevice(value, f->subtype, anyError);
                     return;
                 }
+                case FieldType::RegistryArray: {
+                    auto f = static_cast<const FieldRegistryArray*>(field);
+                    validateFromRegister(value, f->subtypes, anyError);
+                    break;
+                }
                 case FieldType::Object: {
                     auto f = static_cast<const FieldObject*>(field);
                     validateDevice(value, f->subtype, anyError);
-                    return;
+                    break;
+                }
+                case FieldType::HexBytes: {
+                    
+                    bool anyErrorTemp = false;
+                    validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
+                    if (anyErrorTemp == true) {
+                        anyError = true;
+                        break; // no point of continue
+                    }
+                    auto f = static_cast<const FieldHexBytes*>(field);
+                    const char* cStr = value.as<const char*>();
+                    // TODO implement settings for delimiter enforcement
+                    bool parseOk = Convert::HexToBytes(cStr, nullptr, f->byteCount);
+                    if (parseOk == false) {
+                        GlobalLogger.Error(F("validateField HexBytes parse error"));
+                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+                        anyError = true;
+                    }
+                    break;
                 }
                 case FieldType::AnyOfGroup:
                     // handled by validateAnyOfGroup
+                    // as groups are not real fields
+                    // just a "collection" of multiple fields
                     break;
             }
         }
@@ -266,7 +302,7 @@ namespace DALHAL {
         }
 
         // Validate a full device
-        int validateDevice(const JsonVariant& j, const JsonSchema::Device* devScheme, bool& anyError)
+        /*int*/ void validateDevice(const JsonVariant& j, const JsonSchema::Device* devScheme, bool& anyError)
         {
             // 1. Check unknown fields
             for (const JsonPair& kv : j.as<JsonObject>()) {
@@ -283,7 +319,7 @@ namespace DALHAL {
             for (int i = 0; devScheme->fields[i] != nullptr; ++i) {
                 const FieldBase* f = devScheme->fields[i];
 
-                if (f->type == FieldType::AnyOfGroup) {
+                if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
                     validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), anyError);
                 } else {
                     validateField(j, f, anyError);
@@ -299,7 +335,63 @@ namespace DALHAL {
                 GlobalLogger.Error(F("Configuration matches multiple modes"));
                 anyError = true;
             }
-            return anyError ? -1 : mode;
+            //return anyError ? -1 : mode; // dont think this is ever needed
+        }
+
+        // Validate the JSON array against the given device registry.
+        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, bool& anyError) {
+
+            if (jsonArray.is<JsonArray>() == false) {
+                GlobalLogger.Error(F("Json register field is not a array"));
+                GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                anyError = true;
+                return; // can't continue here
+            }
+            const JsonArray& items = jsonArray.as<JsonArray>();
+            if (items.size() == 0) {
+                GlobalLogger.Error(F("Json register array is empty"));
+                GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                anyError = true;
+                return; // can't continue here
+            }
+            uint32_t itemCount = items.size();
+
+            for (uint32_t i = 0; i < itemCount; ++i) {
+                const JsonVariant& jsonItem = items[i];
+
+                if (jsonItem.is<const char*>()) { continue; } // comment item
+                if (DALHAL::Device::DisabledInJson(jsonItem)) { continue; } // disabled
+
+                bool anyErrorTemp = false;
+                validateField(jsonItem, &JsonSchema::typeField, anyErrorTemp); // this will internally emit errors to log
+                if (anyErrorTemp == true) {
+                    anyError = true;
+                    continue; // skip the current json device
+                }
+                const char* type_cStr = jsonItem[DALHAL_KEYNAME_TYPE];
+                const Registry::Item& regItem = Registry::GetItem(reg, type_cStr);
+                if (regItem.typeName == nullptr) {
+                    GlobalLogger.Error(F("could not find type:"),type_cStr);
+                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                    anyError = true;
+                    continue; // skip the current json device
+                }
+
+                if (regItem.def == nullptr) {
+                    GlobalLogger.Error(F("FATAL regitem.def == nullptr"));
+                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                    anyError = true;
+                    continue; // skip the current json device
+                }
+                
+                if (regItem.def->jsonSchema == nullptr) {
+                    GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
+                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                    anyError = true;
+                    continue; // skip the current json device
+                }
+                validateDevice(jsonItem, regItem.def->jsonSchema, anyError);
+            }
         }
 
     }

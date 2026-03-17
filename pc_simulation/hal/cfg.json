@@ -23,7 +23,7 @@
 	      {"uid":"a","romid":"28:61:64:35:1B:71:C1:40","note":"uppe"},
 	      {"uid":"b","romid":"28:61:64:35:1B:75:6B:AA","note":"nere"},
 	      "the following is just here to test new devices command, currently disabled to make it work",
-	      {"disabled":true,"uid":"D3","romid":"228:61:64:34:83:74:BE:84","note":"nere"}
+	      {"disabled":true,"uid":"D3","romid":"28:61:64:34:83:74:BE:84","note":"nere"}
 	    ]},
 	    {"disabled":true,"uid":"b","pin":26,"note":"mitten","items":[
 	      {"uid":"a","romid":"28:61:64:35:18:18:C3:F0","note":"ute fram"},

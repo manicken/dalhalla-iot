@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot ScriptVariable::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase ScriptVariable::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)

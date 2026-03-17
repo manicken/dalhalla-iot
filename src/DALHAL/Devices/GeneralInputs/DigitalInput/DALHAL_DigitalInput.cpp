@@ -31,8 +31,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot DigitalInput::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase DigitalInput::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)

@@ -33,7 +33,7 @@ namespace DALHAL {
     AsyncWebServer* WebSocketAPI::asyncWebserver = nullptr;
     AsyncWebSocket* WebSocketAPI::asyncWebSocket = nullptr;
 
-    static const char HTML_WS_CONSOLE[] = R"rawliteral(
+    static constexpr char HTML_WS_CONSOLE[] __attribute__((section(".rodata"))) = R"rawliteral(
 <!DOCTYPE html>
 <html>
   <style>

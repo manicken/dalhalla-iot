@@ -30,8 +30,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot OneWireTempBusAtRoot::RegistryDefine = {
-        Registry::UseRootUID::Optional,
+    constexpr Registry::DefineBase OneWireTempBusAtRoot::RegistryDefine = {
+        
         Create,
         OneWireTempBus::VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)

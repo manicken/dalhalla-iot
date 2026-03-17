@@ -33,8 +33,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot REGO600::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase REGO600::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(REGO600)

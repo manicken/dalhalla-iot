@@ -29,8 +29,8 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
-    constexpr Registry::DefineRoot AnalogInput::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase AnalogInput::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)

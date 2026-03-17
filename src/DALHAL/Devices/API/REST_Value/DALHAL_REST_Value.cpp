@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot REST_Value::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase REST_Value::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         nullptr /* no events available on obsolete device*/

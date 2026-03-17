@@ -27,39 +27,12 @@
 #include <stdlib.h>
 #include <DALHAL/Core/Types/DALHAL_UID.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include "DALHAL_JSON_SchemaFieldBase.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        enum class FieldType {
-            AnyOfGroup,
-            UID,
-            UID_Path,
-            Int,
-            UInt,
-            Float,
-            String,
-            Array,
-            Object,
-            HardwarePin,
-            HardwarePinOrVirtualPin
-        };
-
-        enum class FieldFlag {
-            Required,
-            Optional,
-            AnyOfGroup // the higher group defines
-        };
-
-        struct FieldBase {
-            const char* name;    // flash string
-            FieldType type;
-            FieldFlag flag;
-
-            constexpr FieldBase(const char* n, FieldType t, FieldFlag f)
-                : name(n), type(t), flag(f) {}
-        };
 
         struct FieldInt : FieldBase {
             int32_t minValue;
@@ -104,8 +77,8 @@ namespace DALHAL {
         };
 
         struct FieldUID : FieldString {
-            constexpr FieldUID()
-                : FieldString(DALHAL_KEYNAME_UID, FieldType::UID, FieldFlag::Required, nullptr, HAL_UID::Size) {}
+            constexpr FieldUID(FieldFlag f)
+                : FieldString(DALHAL_KEYNAME_UID, FieldType::UID, f, nullptr, HAL_UID::Size) {}
         };
         
 
@@ -121,45 +94,66 @@ namespace DALHAL {
                 : FieldBase(n, FieldType::HardwarePinOrVirtualPin, f), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 
-        
-
-        // FieldGroup is a logical unit of fields where the group may be optional, 
-        // and if present, at least one child field must exist. 
-        // The group's presence can be overridden by ModeSelector rules.
+        /**
+         * AnyOfGroup is a logical unit of fields where the group may be optional, 
+         * and if present, at least one child field must exist. 
+         * The group's presence can be overridden by ModeSelector rules.
+         */
         struct AnyOfGroup : FieldBase {
             const FieldBase* const* fields;
             constexpr AnyOfGroup(const char* outputName, FieldFlag f, const FieldBase* const* fields)
                 : FieldBase(outputName, FieldType::AnyOfGroup, f), fields(fields) {}
         };
 
-        struct ModeConjunctionDefine {
-            const FieldBase* fieldRef;
-            bool required; // true = must exist, false = must explicit NOT exist
-        };
+        
 
-        struct ModeSelector {
-            const char* name; // optional
-            const ModeConjunctionDefine* conjunctions; // nullptr terminated
-            constexpr ModeSelector(const char* name, const ModeConjunctionDefine* conjunctions)
-                : name(name), conjunctions(conjunctions) {}
-        };
-
-        struct Device {
-            const FieldBase* const* fields;
-            const ModeSelector* modes;
-        };
-
+        /** 
+         * FieldArray represents a homogeneous array where every element must conform 
+         * to the same JsonSchema::Device definition. This is used for structured data 
+         * with a fixed schema (no type selection per element).
+         */
         struct FieldArray : FieldBase {
             const JsonSchema::Device* subtype;
             constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
                 : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
         };
 
+        /**
+         * FieldRegistryArray represents a polymorphic array where each element is a device 
+         * selected from a Registry::Item table. Each entry resolves its type at runtime 
+         * (typically via a type field) and is validated/created using the corresponding 
+         * registry definition.
+         */
+        struct FieldRegistryArray : FieldBase {
+            const Registry::Item* subtypes;
+            constexpr FieldRegistryArray(const char* n, FieldFlag f, const Registry::Item* subtypes)
+                : FieldBase(n, FieldType::Array, f), subtypes(subtypes) {}
+        };
+        
+        /**
+         * used for ordinary JSON objects, i.e. enclosed by {}
+         */
         struct FieldObject : FieldBase {
             const JsonSchema::Device* subtype;
             constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
                 : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
         };
+
+        struct FieldHexBytes : FieldString {
+            uint8_t byteCount;
+
+            constexpr FieldHexBytes(const char* name,
+                                FieldFlag flag,
+                                const char* defaultValue,
+                                uint8_t byteCount)
+                : FieldString(name, FieldType::HexBytes, flag, defaultValue, 0),
+                byteCount(byteCount) {}
+        };
+
+
+        extern const FieldString typeField;
+        extern const FieldUID uidFieldRequired;
+        extern const FieldUID uidFieldOptional;
 
     } // namespace JsonSchema
 }

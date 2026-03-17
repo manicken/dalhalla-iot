@@ -26,7 +26,9 @@
 namespace DALHAL {
     
     namespace JsonSchema {
-        constexpr FieldUID uidField{};
+        constexpr FieldUID uidFieldRequired{FieldFlag::Required};
+        constexpr FieldUID uidFieldOptional{FieldFlag::Optional};
+
         constexpr FieldString typeField = {DALHAL_KEYNAME_TYPE, FieldType::String, FieldFlag::Required, nullptr, 0};
         
         constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
@@ -66,7 +68,7 @@ namespace DALHAL {
 
         constexpr const FieldBase* templateFields[] = {
             &typeField,
-            &uidField,
+            &uidFieldRequired,
             &refreshTimeGroupFields,
             &sourceField,
             &eventSourceField,

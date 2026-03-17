@@ -25,6 +25,7 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_SchemaFieldBase.h>
 
 #include <ArduinoJson.h> // this dependency can be removed when I begin to use the new config scheme validator
 
@@ -49,18 +50,22 @@ namespace DALHAL {
             Optional,
             Void
         };
+
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
-            HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function;
+            HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function; // soon to be obsolete in favor of jsonSchema
+            const JsonSchema::Device* jsonSchema;
             const EventDescriptor* reactiveTable;
-
+            
+            // Verify_JSON_Function variants, soon to be obsolete in favor of JsonSchema
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
                 HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
             ) :
                 Create_Function(Create_Function),
                 Verify_JSON_Function(Verify_JSON_Function),
-                reactiveTable(nullptr)
+                jsonSchema(nullptr),
+                reactiveTable(nullptr)                
             {}
 
             constexpr DefineBase(
@@ -70,30 +75,29 @@ namespace DALHAL {
             ) :
                 Create_Function(Create_Function),
                 Verify_JSON_Function(Verify_JSON_Function),
+                jsonSchema(nullptr),
                 reactiveTable(reactiveTable)
             {}
-        };
-
-        struct DefineRoot : public DefineBase {
-            UseRootUID useRootUID;
-
-            constexpr DefineRoot(
-                UseRootUID useRootUID,
+            // JsonSchema variants
+            constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
+                const JsonSchema::Device* jsonSchema
             ) :
-                DefineBase(Create_Function, Verify_JSON_Function),
-                useRootUID(useRootUID)
+                Create_Function(Create_Function),
+                Verify_JSON_Function(nullptr),
+                jsonSchema(jsonSchema),
+                reactiveTable(nullptr)                
             {}
 
-            constexpr DefineRoot(
-                UseRootUID useRootUID,
+            constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
+                const JsonSchema::Device* jsonSchema,
                 const EventDescriptor* reactiveTable
             ) :
-                DefineBase(Create_Function, Verify_JSON_Function, reactiveTable),
-                useRootUID(useRootUID)
+                Create_Function(Create_Function),
+                Verify_JSON_Function(nullptr),
+                jsonSchema(jsonSchema),
+                reactiveTable(reactiveTable)
             {}
         };
         

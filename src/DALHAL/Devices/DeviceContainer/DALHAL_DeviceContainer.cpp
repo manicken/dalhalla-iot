@@ -30,8 +30,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot DeviceContainer::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase DeviceContainer::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         nullptr /* no events available */

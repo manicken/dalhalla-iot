@@ -33,8 +33,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot I2C_Master::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase I2C_Master::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)

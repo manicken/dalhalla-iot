@@ -67,7 +67,7 @@ namespace DALHAL {
 
     class LatchingRelay : public LatchingRelay_DeviceBase {
     public: // public static fields and exposed external structures
-        static const Registry::DefineRoot RegistryDefine;
+        static const Registry::DefineBase RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         

@@ -32,8 +32,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot Actuator::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase Actuator::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)

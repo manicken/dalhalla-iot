@@ -37,8 +37,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot HomeAssistant::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         nullptr /* no events available */

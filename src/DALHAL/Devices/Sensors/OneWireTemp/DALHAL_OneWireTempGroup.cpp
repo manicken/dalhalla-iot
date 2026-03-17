@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot OneWireTempGroup::RegistryDefine = {
-        Registry::UseRootUID::Optional,
+    constexpr Registry::DefineBase OneWireTempGroup::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)

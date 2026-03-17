@@ -29,8 +29,8 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
-        constexpr Registry::DefineRoot _Template_::RegistryDefine = {
-                Registry::UseRootUID::Mandatory,
+        constexpr Registry::DefineBase _Template_::RegistryDefine = {
+                
                 Create,
                 VerifyJSON,
                 DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)

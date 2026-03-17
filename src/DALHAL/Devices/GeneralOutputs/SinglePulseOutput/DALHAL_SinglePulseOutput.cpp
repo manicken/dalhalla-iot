@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot SinglePulseOutput::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)

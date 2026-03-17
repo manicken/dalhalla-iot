@@ -37,8 +37,8 @@
 
 namespace DALHAL {
 
-    constexpr Registry::DefineRoot ThingSpeak::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase ThingSpeak::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)

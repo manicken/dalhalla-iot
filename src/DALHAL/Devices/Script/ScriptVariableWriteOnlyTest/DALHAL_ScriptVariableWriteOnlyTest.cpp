@@ -28,8 +28,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
 namespace DALHAL {
-    constexpr Registry::DefineRoot ScriptVariableWriteOnlyTest::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase ScriptVariableWriteOnlyTest::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR)

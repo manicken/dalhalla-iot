@@ -32,8 +32,8 @@
 
 namespace DALHAL {
     
-    constexpr Registry::DefineRoot OneWireTempDeviceAtRoot::RegistryDefine = {
-        Registry::UseRootUID::Mandatory,
+    constexpr Registry::DefineBase OneWireTempDeviceAtRoot::RegistryDefine = {
+        
         Create,
         VerifyJSON,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)

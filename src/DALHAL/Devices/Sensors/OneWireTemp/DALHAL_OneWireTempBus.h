@@ -74,7 +74,7 @@ namespace DALHAL {
 
     class OneWireTempBusAtRoot : public OneWireTempBus {
     public: // public static fields and exposed external structures
-        static const Registry::DefineRoot RegistryDefine;
+        static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
 
     private:
