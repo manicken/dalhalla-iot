@@ -44,7 +44,7 @@ using TX433_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class TX433 : public TX433_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

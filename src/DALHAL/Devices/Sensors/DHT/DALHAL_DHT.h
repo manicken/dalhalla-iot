@@ -55,7 +55,7 @@ using DHTDeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class DHT : public DHTDeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

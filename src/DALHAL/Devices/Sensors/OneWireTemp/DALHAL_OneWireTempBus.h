@@ -46,7 +46,7 @@ using OneWireTempBus_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class OneWireTempBus : public OneWireTempBus_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static bool VerifyJSON(const JsonVariant &jsonObj);
 
     private:
@@ -73,7 +73,7 @@ namespace DALHAL {
     };
 
     class OneWireTempBusAtRoot : public OneWireTempBus {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
 

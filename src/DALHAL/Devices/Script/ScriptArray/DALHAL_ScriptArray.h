@@ -42,7 +42,7 @@ using ScriptArray_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class ScriptArray : public ScriptArray_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

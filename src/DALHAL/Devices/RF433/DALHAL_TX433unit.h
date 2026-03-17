@@ -51,7 +51,7 @@ namespace DALHAL {
     };
 
     class TX433unit : public TX433unit_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static bool VerifyJSON(const JsonVariant &jsonObj);
 
     private:

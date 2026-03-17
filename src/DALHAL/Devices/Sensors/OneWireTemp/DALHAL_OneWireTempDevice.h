@@ -68,7 +68,7 @@ namespace DALHAL {
     } OneWireAddress;
 
     class OneWireTempDevice : public OneWireTempDevice_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static bool VerifyJSON(const JsonVariant &jsonObj);
     
     public:
@@ -88,7 +88,7 @@ namespace DALHAL {
     };
 
     class OneWireTempDeviceAtRoot : public OneWireTempDevice {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

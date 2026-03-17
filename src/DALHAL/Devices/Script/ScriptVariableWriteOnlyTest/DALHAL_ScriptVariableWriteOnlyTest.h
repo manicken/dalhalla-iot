@@ -43,7 +43,7 @@ using ScriptVariableWriteOnlyTest_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class ScriptVariableWriteOnlyTest : public ScriptVariableWriteOnlyTest_DeviceBase {
-    public:
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
@@ -53,7 +53,7 @@ namespace DALHAL {
 
     public:
         ScriptVariableWriteOnlyTest(DeviceCreateContext& context);
-        
+
         HALOperationResult write(const HALValue& val) override;
 
         String ToString() override;
