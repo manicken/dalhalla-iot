@@ -150,7 +150,7 @@ namespace DALHAL {
 #endif
         return HALOperationResult::Success;
     }
-/*
+
     HALOperationResult ScriptArray::BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val) {
         return static_cast<ScriptArray*>(device)->read(bracketSubscriptVal, val);
     }
@@ -165,6 +165,6 @@ namespace DALHAL {
     Device::BracketOpWrite_FuncType ScriptArray::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) {
         return ScriptArray::BracketWrite_Func; // functionname not used at the moment
     }
-*/
+
 
 }

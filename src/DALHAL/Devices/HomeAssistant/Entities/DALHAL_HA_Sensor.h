@@ -41,8 +41,14 @@
 namespace DALHAL {
 
     class Sensor : public Device {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
 
     private:
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+
         PubSubClient& mqttClient;
         CachedDeviceRead* cdr;
         TopicBasePath topicBasePath;
@@ -51,30 +57,17 @@ namespace DALHAL {
         uint32_t refreshMs;
         uint32_t lastMs;
         bool wasOnline;
+
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
-
-        HALOperationResult read(HALValue& val) override;
-        HALOperationResult write(const HALValue& val) override;
-        
-        /** called regulary from the main loop */
-        void loop() override;
-        /** called when all hal devices has been loaded */
-        void begin() override;
-
-        static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-
-        static const Registry::DefineBase RegistryDefine;/* = {
-            Registry::UseRootUID::Void,
-            Create,
-            VerifyJSON
-        };*/
-
         Sensor(HA_CreateFunctionContext& context);
         ~Sensor();
 
+        void begin() override;
+        void loop() override;
 
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
+   
         String ToString() override;
     };
 }

@@ -38,33 +38,30 @@
 namespace DALHAL {
 
     class Switch : public Device {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const char* PAYLOAD_ON;
+        static const char* PAYLOAD_OFF;
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
         TopicBasePath topicBasePath;
 
         bool momentary;
+
     public:
-        static const char* PAYLOAD_ON;
-        static const char* PAYLOAD_OFF;
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+        Switch(HA_CreateFunctionContext& context);
+        ~Switch();
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
-        
-        static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineBase RegistryDefine;/* = {
-            Registry::UseRootUID::Void,
-            Create,
-            VerifyJSON
-        };*/
-        Switch(HA_CreateFunctionContext& context);
-        ~Switch();
-
 
         String ToString() override;
     };

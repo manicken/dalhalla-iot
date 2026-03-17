@@ -42,21 +42,22 @@ using ScriptArray_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class ScriptArray : public ScriptArray_DeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
+        static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);
+        static HALOperationResult BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val);
+
         HALValue* values;
         int valueCount = 0;
         bool readOnly = false;
-    public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
-        };*/
 
-        /** called when all hal devices has been loaded */
+    public:
+        ScriptArray(DeviceCreateContext& context);
+
         void begin() override;
 
         HALOperationResult read(const HALReadStringRequestValue& val) override;
@@ -64,14 +65,8 @@ namespace DALHAL {
         HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
         HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
 
-        //static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);
-        //static HALOperationResult BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val);
-
-        //BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
-        //BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
-        
-        ScriptArray(DeviceCreateContext& context);
+        BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
+        BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
 
         String ToString() override;
     };

@@ -46,31 +46,32 @@ using REGO600_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class REGO600 : public REGO600_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         uint32_t refreshTimeMs = 0;
         uint8_t rxPin = 0;
         uint8_t txPin = 0;
+
         /** this is only logical devices */
-        int registerItemCount = 0; // used by both registerItems and requestList
         Device** registerItems = nullptr;
+        int registerItemCount = 0; // used by both registerItems and requestList
         Drivers::REGO600::Request** requestList = nullptr;
         Drivers::REGO600* rego600 = nullptr;
+    
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(REGO600)
-        };*/
         REGO600(DeviceCreateContext& context);
         ~REGO600();
-        void loop() override;
+
         void begin() override;
+        void loop() override;
+        
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+
         String ToString() override;
 
-        /** used to find sub/leaf devices @ "group devices" */
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
     };
 }

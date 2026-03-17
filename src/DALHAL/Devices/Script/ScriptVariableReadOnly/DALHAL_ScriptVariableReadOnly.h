@@ -36,18 +36,17 @@
 namespace DALHAL {
 
     class ScriptVariableReadOnly : public Device {
-    private:
-        HALValue value;
     public:
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available 
-        };*/
+
+    private:
+        HALValue value;
+
+    public:
         ScriptVariableReadOnly(DeviceCreateContext& context);
+        
         HALOperationResult read(HALValue& val) override;
 
         String ToString() override;

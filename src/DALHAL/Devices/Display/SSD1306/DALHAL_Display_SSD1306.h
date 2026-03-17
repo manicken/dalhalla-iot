@@ -40,28 +40,23 @@
 namespace DALHAL {
 
     class Display_SSD1306 : public Device {
+    public: // public static fields and exposed external structures
+        static const I2C_RegistryDefine RegistryDefine;
+        static Device* Create(DeviceCreateContext& context);
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static bool HasAddress(uint8_t addr);
+
     private:
         Adafruit_SSD1306* display;
 
         Device** elements;
         int elementCount;
-    public:
-        // here we could implement functions for to use with spi interface as well
 
-        static Device* Create(DeviceCreateContext& context);
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static bool HasAddress(uint8_t addr);
-        static const I2C_RegistryDefine RegistryDefine;/* = {
-            Create,
-            VerifyJSON,
-            HasAddress
-        };*/
-
-        
+    public:        
         Display_SSD1306(I2C_Master_CreateFunctionContext& context);
         ~Display_SSD1306();
 
-        HALOperationResult write(const HALWriteStringRequestValue& val);
+        HALOperationResult write(const HALWriteStringRequestValue& val) override;
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void loop() override;
 

@@ -43,17 +43,15 @@ namespace DALHAL {
 
 #if defined(ESP32) || defined(_WIN32)
     class AnalogInput : public AnalogInput_DeviceBase {
-    private:
-        uint8_t pin = 0;
-    public:
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
-        };*/
+        
+    private:
+        uint8_t pin = 0;
+
+    public:
         AnalogInput(DeviceCreateContext& context);
         ~AnalogInput();
         void loop() override;

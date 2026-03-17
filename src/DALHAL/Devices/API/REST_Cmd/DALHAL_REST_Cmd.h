@@ -35,7 +35,7 @@
 namespace DALHAL {
 
     class REST_Cmd : public DALHAL::Device {
-    public: // static fields and exposed external structures
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

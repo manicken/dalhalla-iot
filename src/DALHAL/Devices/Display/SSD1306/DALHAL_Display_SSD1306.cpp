@@ -59,6 +59,7 @@ namespace DALHAL {
         if (textSize == 0) textSize = 1;
 
         display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
+
         delay(200);
         if (display->begin(SSD1306_SWITCHCAPVCC, addr))
         {

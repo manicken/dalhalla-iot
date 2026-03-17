@@ -46,20 +46,22 @@ using OneWireTempBus_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class OneWireTempBus : public OneWireTempBus_DeviceBase {
+    public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+
     private:
         uint8_t pin;
         OneWire* oneWire = nullptr;
         DallasTemperature* dTemp = nullptr;
         bool haveDeviceWithRomID(OneWireAddress addr);
-    public:
+
         int deviceCount = 0;
         Device **devices;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
+    public:    
         OneWireTempBus(DeviceCreateContext& context);
         ~OneWireTempBus();
-        
-        OneWireTempDevice* GetFirstDevice();
+
         /** this function will search the devices to find the device with the uid */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void requestTemperatures();
@@ -71,18 +73,14 @@ namespace DALHAL {
     };
 
     class OneWireTempBusAtRoot : public OneWireTempBus {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         OneWireTempAutoRefresh autoRefresh;
 
     public:
-        
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Optional,
-            Create,
-            OneWireTempBus::VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
-        };*/
         OneWireTempBusAtRoot(DeviceCreateContext& context);
         ~OneWireTempBusAtRoot();
 

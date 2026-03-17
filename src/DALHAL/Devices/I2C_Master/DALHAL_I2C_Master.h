@@ -45,37 +45,32 @@ namespace DALHAL {
 
 
     class I2C_Master : public I2C_Master_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
+        TwoWire* wire;
+        Device** devices;
+        int deviceCount;
+
         uint8_t sckpin = 0;
         uint8_t sdapin = 0;
         uint32_t freq = 0;
 
-        Device** devices;
-        int deviceCount;
-
-        TwoWire* wire;
-
     public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
-        };*/
         I2C_Master(DeviceCreateContext& context);
         ~I2C_Master();
 
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void loop() override;
+
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         HALOperationResult read(const HALReadStringRequestValue& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
 
         String ToString() override;
     };
-
     
 }

@@ -57,7 +57,7 @@ using ThingSpeak_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class ThingSpeak : public ThingSpeak_DeviceBase {
-    public: // static fields and exposed external structures
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);

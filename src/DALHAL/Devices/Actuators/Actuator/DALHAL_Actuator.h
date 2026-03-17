@@ -70,45 +70,20 @@ using Actuator_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class Actuator : public Actuator_DeviceBase {
-    public: // static fields and exposed external structures
+    public: // public static fields and exposed external structures
         static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         
+    private:
+        // private Static functions
         static void IRAM_ATTR endstop_isr(void* arg);
-
-        enum class State : uint32_t {
-            Idle,
-            MovingToMin,
-            MovingToMax,
-            TimeoutFault
-        };
-        enum class Location : int32_t { Unknown = -1, Min = 0, Max = 1 };
-        
-    public:
-        Actuator(DeviceCreateContext& context);
-        ~Actuator();
-
-        void setup();
-        virtual void loop() override;
-
-        virtual HALOperationResult write(const HALValue& val) override;
-        virtual HALOperationResult read(HALValue& val) override;
-
-        virtual HALOperationResult read(const HALReadStringRequestValue& val);
-
         static HALOperationResult exec_drive_to_min(Device* device);
         static HALOperationResult exec_drive_to_max(Device* device);
         static HALOperationResult exec_stop(Device* device);
         static HALOperationResult exec_reset(Device* device);
 
-        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
-        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        virtual HALOperationResult exec(const ZeroCopyString& cmd);
-
-        virtual String ToString() override;
-
-    private:
+        // private structures/enums/types
         union DrivePins {
             struct { gpio_num_t a, b; } hbridge;
             struct { gpio_num_t dir, enable; } diren;
@@ -121,19 +96,17 @@ namespace DALHAL {
             Set,
             Clear
         };
-
-        void reset();
-        void stopDrive();
-        void driveToMin();
-        void driveToMax();
-        bool endMinActive() const;
-        bool endMaxActive() const;
-
-        void disableEndstopInterrupts();
-        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
-
-    public:
-
+        enum class State : uint32_t {
+            Idle,
+            MovingToMin,
+            MovingToMax,
+            TimeoutFault
+        };
+        enum class Location : int32_t { 
+            Unknown = -1, 
+            Min = 0, 
+            Max = 1 
+        };
         struct ISR_DATA {
             volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
             void (* volatile gpio_reg_func)(uint32_t) = nullptr;
@@ -143,7 +116,7 @@ namespace DALHAL {
             volatile Location location = Location::Unknown;
         };
 
-    private:
+        // private member data
         ISR_DATA isr_data;
 
         State state = State::Idle;
@@ -160,6 +133,34 @@ namespace DALHAL {
         uint32_t motionStartMs;
         uint32_t timeoutMs;
 
+        // private member functions
+        void reset();
+        void stopDrive();
+        void driveToMin();
+        void driveToMax();
+        bool endMinActive() const;
+        bool endMaxActive() const;
+
+        void disableEndstopInterrupts();
+        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
+        
+    public:
+        Actuator(DeviceCreateContext& context);
+        ~Actuator();
+
+        void setup();
+        virtual void loop() override;
+
+        virtual HALOperationResult write(const HALValue& val) override;
+        virtual HALOperationResult read(HALValue& val) override;
+
+        virtual HALOperationResult read(const HALReadStringRequestValue& val);
+
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
+        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
+        virtual HALOperationResult exec(const ZeroCopyString& cmd);
+
+        virtual String ToString() override;
     };
 
 } // namespace DALHAL

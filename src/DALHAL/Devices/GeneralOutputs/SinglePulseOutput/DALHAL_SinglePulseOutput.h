@@ -43,22 +43,23 @@ using SinglePulseOutput_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class SinglePulseOutput : public SinglePulseOutput_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
+        static void pulseTicker_Callback(SinglePulseOutput* context);
+        static HALOperationResult exec(Device* device);
+
         uint8_t pin = 0;
         uint32_t pulseLength = 0;
         uint8_t inactiveState = 0;
         Ticker pulseTicker;
+
         void endPulse();
-        static void pulseTicker_Callback(SinglePulseOutput* context);
+        
     public:
-        static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
-        };*/
         SinglePulseOutput(DeviceCreateContext& context);
         ~SinglePulseOutput();
 
@@ -66,7 +67,7 @@ namespace DALHAL {
         HALOperationResult write(const HALValue& val) override;
         HALOperationResult exec() override;
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-        static HALOperationResult exec(Device* device);
+        
         String ToString() override;
     };
 

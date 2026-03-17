@@ -33,7 +33,7 @@
 namespace DALHAL {
 
     class DeviceContainer : public Device {
-    public: // static fields and exposed external structures
+    public: // public static fields and exposed external structures
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         static const Registry::DefineRoot RegistryDefine;

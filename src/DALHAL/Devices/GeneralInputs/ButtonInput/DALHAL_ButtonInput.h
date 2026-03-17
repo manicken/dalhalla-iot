@@ -42,40 +42,32 @@ using ButtonInput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
-class ButtonInput : public ButtonInput_DeviceBase {
-public:
-    // Factory and JSON validation
-    static Device* Create(DeviceCreateContext& context);
-    static bool VerifyJSON(const JsonVariant &jsonObj);
-    static const Registry::DefineRoot RegistryDefine;/* = {
-        Registry::UseRootUID::Mandatory,
-        Create,
-        VerifyJSON,
-        DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
-    };*/
+    class ButtonInput : public ButtonInput_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static Device* Create(DeviceCreateContext& context);
+        static bool VerifyJSON(const JsonVariant &jsonObj);
 
-    // Constructor
-    ButtonInput(DeviceCreateContext& context);
-    ~ButtonInput();
+    private:
+        uint8_t pin;
+        uint32_t debounceMs;
+        bool activeLow;
 
-    // DAL interface
-    HALOperationResult read(HALValue &val) override;
-    String ToString() override;
+        bool stableState;       // debounced button state
+        bool lastRaw;           // last raw read
+        uint32_t lastChangeMs;  // last change timestamp
 
-    // Call in main loop for debounce + toggle
-    void loop();
+        CachedDeviceAccess* toggleTarget; // optional external action
 
-private:
-    uint8_t pin;
-    uint32_t debounceMs;
-    bool activeLow;
+    public:
+        ButtonInput(DeviceCreateContext& context);
+        ~ButtonInput();
 
-    bool stableState;       // debounced button state
-    bool lastRaw;           // last raw read
-    uint32_t lastChangeMs;  // last change timestamp
+        HALOperationResult read(HALValue &val) override;
+        String ToString() override;
 
-    //bool toggleState;       // TEMP: internal toggle variable
-    CachedDeviceAccess* toggleTarget; // optional external action
-};
+        void loop();
+
+    };
 
 } // namespace DALHAL

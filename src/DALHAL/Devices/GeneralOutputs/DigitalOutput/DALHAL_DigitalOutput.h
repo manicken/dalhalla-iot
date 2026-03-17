@@ -42,18 +42,16 @@ using DigitalOutput_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class DigitalOutput : public DigitalOutput_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+        
     private:
         uint8_t pin = 0;
         uint32_t value = 0;
+
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
-        };*/
         DigitalOutput(DeviceCreateContext& context);
         ~DigitalOutput();
 

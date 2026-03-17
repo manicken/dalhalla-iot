@@ -46,16 +46,18 @@ using PWM_Servo_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
 class PWM_Servo : public PWM_Servo_DeviceBase {
-public: // static fields and exposed external structures
+public: // public static fields and exposed external structures
     static const Registry::DefineRoot RegistryDefine;
     static bool VerifyJSON(const JsonVariant &jsonObj);
     static Device* Create(DeviceCreateContext& context);
 
 private:
+    // private structures/enums/types
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
         PulseUS,     // raw microseconds
     };
+    // private member data
     uint8_t pin = 0;
     ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
 
@@ -73,14 +75,13 @@ private:
     uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
     uint32_t lastWriteMs = 0;
     bool autoOffActive = false;
+    // private member functions
+    uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
 
 public:
-    
     PWM_Servo(DeviceCreateContext& context);
     ~PWM_Servo();
     
-    
-
     void begin() override;
     void loop() override;
 
@@ -90,8 +91,7 @@ public:
     HALOperationResult read(HALValue& val) override;
 
     String ToString() override;
-private:
-    uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
+
 };
 
 } // namespace DALHAL

@@ -38,35 +38,32 @@
 namespace DALHAL {
 
     class Number : public Device {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
 
     private:
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+        
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
         TopicBasePath topicBasePath;
         HALValue currentValue;
+        
+        /** send back the current value to Home Assistant to notice user that the value was rejected */
+        void sendCurrentValue();
 
     public:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+        Number(HA_CreateFunctionContext& context);
+        ~Number();
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
-        
-        static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineBase RegistryDefine;/* = {
-            Registry::UseRootUID::Void,
-            Create,
-            VerifyJSON
-        };*/
-        Number(HA_CreateFunctionContext& context);
-        ~Number();
-
 
         String ToString() override;
-    private: 
-        /** send back the current value to Home Assistant to notice user that the value was rejected */
-        void sendCurrentValue();
+        
     };
 }

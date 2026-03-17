@@ -55,33 +55,31 @@ using DHTDeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class DHT : public DHTDeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
+        static bool isValidDHTModel(const char* model);
+        static HALOperationResult readTemperature(Device* context, HALValue &val);
+        static HALOperationResult readHumidity(Device* context, HALValue &val);
+
         DHTesp dht;
         uint8_t pin = 0;
         TempAndHumidity data;
         uint32_t refreshTimeMs = DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS;
         uint32_t lastUpdateMs = 0;
-        static bool isValidDHTModel(const char* model);
+        
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(DHT)
-        };*/
         DHT(DeviceCreateContext& context);
 
         String ToString() override;
         
         void loop() override; // will need loop for automatic polling as this device is slow
 
-        static HALOperationResult readTemperature(Device* context, HALValue &val);
-        static HALOperationResult readHumidity(Device* context, HALValue &val);
         ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
         
-
         HALOperationResult read(HALValue &val) override;
         HALOperationResult read(const HALReadValueByCmd &val) override;
         HALOperationResult read(const HALReadStringRequestValue &val) override;

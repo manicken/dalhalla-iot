@@ -38,29 +38,24 @@
 namespace DALHAL {
 
     class Button : public Device {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
 
     private:
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
         TopicBasePath topicBasePath;
 
     public:
-
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
-
-        HALOperationResult exec(const ZeroCopyString& cmd) override;
-        HALOperationResult exec() override;
-        
-        static bool VerifyJSON(const JsonVariant& jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineBase RegistryDefine;/* = {
-            Registry::UseRootUID::Void,
-            Create,
-            VerifyJSON
-        };*/
         Button(HA_CreateFunctionContext& context);
         ~Button();
 
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
+        HALOperationResult exec() override;
 
         String ToString() override;
     };

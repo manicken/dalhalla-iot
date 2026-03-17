@@ -44,24 +44,22 @@ using TX433_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class TX433 : public TX433_DeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         uint8_t pin = 0; // if pin would be used
         Device/*TX433unit*/** units;
         int unitCount;
+
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(TX433)
-        };*/
         TX433(DeviceCreateContext& context);
-        TX433(TX433&) = delete;
         ~TX433();
+
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-        HALOperationResult write(const HALWriteStringRequestValue &val);
+        HALOperationResult write(const HALWriteStringRequestValue &val) override;
 
         String ToString() override;
     };

@@ -42,19 +42,16 @@ using DigitalInput_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class DigitalInput : public DigitalInput_DeviceBase {
-    private:
-        uint8_t pin = 0;
-    public:
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)
-        };*/
+
+    private:
+        uint8_t pin = 0;
+
+    public:
         DigitalInput(DeviceCreateContext& context);
-        //~DigitalInput();
 
         HALOperationResult read(HALValue &val) override;
         String ToString() override;

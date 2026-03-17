@@ -41,6 +41,11 @@
 namespace DALHAL {
 
     class HomeAssistant : public Device {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant& jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         std::string deviceID;
         std::string username;
@@ -69,27 +74,13 @@ namespace DALHAL {
         void Connect();
         
     public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/*= {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available
-        };*/
-
-        /** called regulary from the main loop */
-        void loop() override;
-        /** called when all hal devices has been loaded */
-        void begin() override;
-        /** used to find sub/leaf devices @ "group devices" */
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-
-        
         HomeAssistant(DeviceCreateContext& context);
         ~HomeAssistant();
-
+        
+        void begin() override;
+        void loop() override;
+        
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         String ToString() override;
     };

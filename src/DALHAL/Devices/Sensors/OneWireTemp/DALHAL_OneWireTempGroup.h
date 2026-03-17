@@ -44,24 +44,20 @@ using OneWireTempGroup_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class OneWireTempGroup : public OneWireTempGroup_DeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
 
     private:
         OneWireTempAutoRefresh autoRefresh;
-        Device/*OneWireTempBus*/ **busses;
+        Device **busses;
         int busCount = 0;
 
         void requestTemperatures();
         void readAll();
 
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Optional,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
-        };*/
         OneWireTempGroup(DeviceCreateContext& context);
         ~OneWireTempGroup();
         

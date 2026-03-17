@@ -32,28 +32,30 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(SCRIPT_EVENT_DISPATCHER)
+#include "DALHAL_ScriptEventDispatcher_Reactive.h"
+using ScriptEventDispatcher_DeviceBase = DALHAL::ScriptEventDispatcher_Reactive;
+#else
+using ScriptEventDispatcher_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class ScriptEventDispatcher : public Device {
-    private:
-        uint32_t eventCounter = 0;
-        static HALOperationResult exec(Device* dev);
-        static bool event_check_func(void* context);
+    class ScriptEventDispatcher : public ScriptEventDispatcher_DeviceBase {
     public:
-        
+        static const Registry::DefineRoot RegistryDefine;
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            nullptr // no events available 
-        };*/
+
+    private:
+        static HALOperationResult exec(Device* dev);
+        
+    public:
         ScriptEventDispatcher(DeviceCreateContext& context);
 
         HALOperationResult exec() override;
         
-
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
 
         String ToString() override;

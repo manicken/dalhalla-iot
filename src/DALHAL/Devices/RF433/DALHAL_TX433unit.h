@@ -51,7 +51,13 @@ namespace DALHAL {
     };
 
     class TX433unit : public TX433unit_DeviceBase {
+    public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+
     private:
+        static bool VerifyFC_JSON(const JsonVariant &jsonObj);
+        static bool VerifyLC_JSON(const JsonVariant &jsonObj);
+
         /** this is set from root TX433 device and used when sending */
         const uint32_t pin;
         /** defines which type to send state to while using the standard write function */
@@ -63,14 +69,10 @@ namespace DALHAL {
         */
         bool fixedState=false;
 
-        static bool VerifyFC_JSON(const JsonVariant &jsonObj);
-        static bool VerifyLC_JSON(const JsonVariant &jsonObj);
     public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        
         TX433unit(DeviceCreateContext& context, const uint32_t pin);
-        TX433unit(TX433unit&) = delete;
-        HALOperationResult write(const HALValue &val);
+
+        HALOperationResult write(const HALValue &val) override;
 
         String ToString() override;
     };

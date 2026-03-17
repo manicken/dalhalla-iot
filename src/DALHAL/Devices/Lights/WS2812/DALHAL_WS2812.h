@@ -44,30 +44,28 @@ using WS2812_DeviceBase = DALHAL::Device;
 namespace DALHAL {
 
     class WS2812 : public WS2812_DeviceBase {
+    public: // public static fields and exposed external structures
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
+        static HALOperationResult writeBrightness(Device* context, const HALValue& val);
+        static HALOperationResult writeColor(Device* context, const HALValue& val);
+
         uint8_t pin = 0; // if pin would be used
         
     public:
-        WS2812FX* ws2812fx;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(WS2812)
-        };*/
+        WS2812FX* ws2812fx; // need to be public
 
+    public:
         WS2812(DeviceCreateContext& context);
+
+        void loop() override;
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
         Device::WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
-
-        static HALOperationResult writeBrightness(Device* context, const HALValue& val);
-        static HALOperationResult writeColor(Device* context, const HALValue& val);
-
-        void loop() override;
 
         String ToString() override;
     };

@@ -50,28 +50,23 @@ using ScriptVariable_ValueBase = DALHAL::HALValue;
 namespace DALHAL {
 
     class ScriptVariable : public ScriptVariable_DeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         ScriptVariable_ValueBase value;
 
     public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
-        };*/
         ScriptVariable(DeviceCreateContext& context);
+
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
+
         HALValue* GetValueDirectAccessPtr() override;
 
         String ToString() override;
-
-        
 
     };
 }

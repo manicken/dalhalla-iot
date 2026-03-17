@@ -48,12 +48,14 @@ using ScriptVariable_ValueBase = DALHAL::HALValue;
 namespace DALHAL {
     
     class REGO600register : public REGO600register_DeviceBase {
-        
-    public:
-        
-        ScriptVariable_ValueBase value;   // need to be public for the moment
+    public: // public static fields and exposed external structures
         static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
+
+    public: // member data
+        ScriptVariable_ValueBase value;   // need to be public for the moment
+        
+    public: // member functions
         REGO600register(DeviceCreateContext& context);
 
         HALOperationResult read(HALValue& val) override;

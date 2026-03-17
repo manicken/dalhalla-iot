@@ -68,14 +68,15 @@ namespace DALHAL {
     } OneWireAddress;
 
     class OneWireTempDevice : public OneWireTempDevice_DeviceBase {
-        
+    public:
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+    
     public:
         OneWireAddress romid;
         OneWireTempDeviceTempFormat format = OneWireTempDeviceTempFormat::Celsius;
         OneWireTempDevice_ValueBase value = 0.0f;
-
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        
+    
+    public:
         OneWireTempDevice(DeviceCreateContext& context);
         ~OneWireTempDevice();
         
@@ -87,6 +88,11 @@ namespace DALHAL {
     };
 
     class OneWireTempDeviceAtRoot : public OneWireTempDevice {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         OneWireTempAutoRefresh autoRefresh;
         uint8_t pin;
@@ -94,16 +100,8 @@ namespace DALHAL {
         DallasTemperature* dTemp = nullptr;
         void requestTemperatures();
         void readAll();
+
     public:
-        
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-        static const Registry::DefineRoot RegistryDefine;/* = {
-            Registry::UseRootUID::Mandatory,
-            Create,
-            VerifyJSON,
-            DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
-        };*/
         OneWireTempDeviceAtRoot(DeviceCreateContext& context);
         ~OneWireTempDeviceAtRoot();
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)

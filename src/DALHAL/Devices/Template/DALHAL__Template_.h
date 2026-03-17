@@ -43,22 +43,23 @@ using _Template__DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
     class _Template_ : public _Template__DeviceBase {
+    public:
+        static const Registry::DefineRoot RegistryDefine;
+        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static Device* Create(DeviceCreateContext& context);
+
     private:
         uint8_t pin = 0; // if pin would be used
 
-        /** 
-         * Monotonic event counter.
-         *
-         * Increments every time the event occurs. 
-         * Consumers store their own "last seen" value and compare against this,
-         * making the event safe for multiple independent consumers.
-         *
-         * This guarantees no event loss (unless counter wraps) and allows any
-         * number of consumers to detect the same event without interfering with
-         * each other.
-         */
-        uint32_t loopDoneCounter = 0;
     public:
+        _Template_(DeviceCreateContext& context);
+
+        /** called when all hal devices has been loaded */
+        void begin() override;
+        /** called regulary from the main loop */
+        void loop() override;
+        /** used to find sub/leaf devices @ "group devices" */
+        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
@@ -68,34 +69,18 @@ namespace DALHAL {
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
         HALOperationResult read(const HALReadValueByCmd& val) override;
         HALOperationResult write(const HALWriteValueByCmd& val) override;
+
+        HALValue* GetValueDirectAccessPtr() override;
         ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
         WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
         BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
         BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
-        HALValue* GetValueDirectAccessPtr() override;
-        /** called regulary from the main loop */
-        void loop() override;
-        /** called when all hal devices has been loaded */
-        void begin() override;
-        /** used to find sub/leaf devices @ "group devices" */
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-
+        
         /** Executes a device action that requires no parameters. */
         HALOperationResult exec() override ;
         /** Executes a device action with a provided command string. */
         HALOperationResult exec(const ZeroCopyString& cmd) override ;
-
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
-
-        static const Registry::DefineRoot RegistryDefine;
-
-        _Template_(DeviceCreateContext& context);
-
-
 
         String ToString() override;
     };

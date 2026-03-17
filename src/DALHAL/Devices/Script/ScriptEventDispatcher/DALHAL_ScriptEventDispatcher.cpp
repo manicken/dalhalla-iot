@@ -32,13 +32,12 @@ namespace DALHAL {
         Registry::UseRootUID::Mandatory,
         Create,
         VerifyJSON,
-        nullptr /* no events available */
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
     };
     
-    ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : Device(context.deviceType) {
+    ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        eventCounter = 0;
     }
 
     bool ScriptEventDispatcher::VerifyJSON(const JsonVariant &jsonObj) {
@@ -50,12 +49,16 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptEventDispatcher::exec() {
-        eventCounter++;
+#if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
     
     /*static*/HALOperationResult ScriptEventDispatcher::exec(Device* device) {
-        static_cast<ScriptEventDispatcher*>(device)->eventCounter++;
+#if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
+        static_cast<ScriptEventDispatcher*>(device)->triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
