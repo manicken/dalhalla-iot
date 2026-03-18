@@ -98,7 +98,8 @@ namespace DALHAL {
     constexpr JsonSchema::JsonObjectScheme JsonObjectSchemeLatchingRelayDevice = {
         "LatchingRelay",
         fields,
-        modes
+        modes,
+        nullptr // no constraints
     };
 
 }

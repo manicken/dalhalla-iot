@@ -45,14 +45,34 @@ namespace DALHAL {
         constexpr FieldFloat minValField = {"minVal", FieldFlag::Optional, 0, 0, 0};
         constexpr FieldFloat maxValField = {"maxVal", FieldFlag::Optional, 0, 0, 0};
 
-        // TODO need special check validator
-        // so that i can check if 
-        // minVal < maxVal 
-        // and
-        // minPulseLength < maxPulseLength
-        // and
-        // minPulseLength <= startPulseLength
-        // and
-        // startPulseLength <= maxPulseLength
+        constexpr FieldConstraint constraints[] = {
+            {&minValField, FieldConstraint::Type::LessThan, &maxValField},
+            {&minPulseLengthField, FieldConstraint::Type::LessThan, &maxPulseLengthField},
+            {&minPulseLengthField, FieldConstraint::Type::LessThanOrEqual, &startPulseLengthField},
+            {&startPulseLengthField, FieldConstraint::Type::LessThanOrEqual, &maxPulseLengthField},
+            {nullptr, FieldConstraint::Type::Void, nullptr}
+        };
+
+        constexpr const JsonSchema::FieldBase* fields[] = {
+            &JsonSchema::typeField, // include this here as otherwise we will get unknown field found
+            &JsonSchema::uidFieldRequired,
+            &pinField,
+            &chField,
+            &minPulseLengthField, // actually pulse length cfg fields are individually optional
+            &maxPulseLengthField,
+            &startPulseLengthField,
+            &autoOffAfterMsField,
+            &pulseLengthOffsetField,
+            &minValField,// min and max value defined must be in a group as they must be defined together
+            &maxValField,
+        };
+
+        constexpr JsonSchema::JsonObjectScheme JsonObjectSchemePWM_ServoDevice = {
+            "PWM_Servo",
+            fields,
+            nullptr, // no modes right now
+            constraints
+        };
+
     }
 }

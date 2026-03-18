@@ -74,10 +74,30 @@ namespace DALHAL {
                 : name(name), conjunctions(conjunctions) {}
         };
 
+        struct FieldConstraint {
+            enum class Type {
+                Void,
+                LessThan,
+                GreaterThan,
+                LessThanOrEqual,
+                GreaterThanOrEqual                
+            };
+
+            const FieldBase* fieldA;
+            Type type;
+            const FieldBase* fieldB;
+            constexpr FieldConstraint(const FieldBase* fieldA, Type type, const FieldBase* fieldB):
+                fieldA(fieldA),
+                type(type),
+                fieldB(fieldB)
+                {}
+        };
+
         struct JsonObjectScheme {
             const char* typeName;
             const FieldBase* const* fields;
             const ModeSelector* modes;
+            const FieldConstraint* constraints;
         };
     }
 
