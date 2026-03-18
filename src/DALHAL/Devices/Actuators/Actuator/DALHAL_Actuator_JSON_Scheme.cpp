@@ -42,8 +42,8 @@ namespace DALHAL {
     constexpr JsonSchema::FieldHardwarePin pin_direnable_break_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK, JsonSchema::FieldFlag::ModeDefine, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
 
     // input pins
-    constexpr JsonSchema::FieldObject minEndStopField = { "MinEndStop", JsonSchema::FieldFlag::Optional, &InputPinScheme };
-    constexpr JsonSchema::FieldObject maxEndStopField = { "MaxEndStop", JsonSchema::FieldFlag::Optional, &InputPinScheme };
+    constexpr JsonSchema::FieldObject minEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP, JsonSchema::FieldFlag::Optional, &InputPinScheme };
+    constexpr JsonSchema::FieldObject maxEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP, JsonSchema::FieldFlag::Optional, &InputPinScheme };
 
 
     constexpr JsonSchema::FieldUInt timeout_ms_field = {DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS, JsonSchema::FieldFlag::Optional, 1, 0, DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS}; // default 10 seconds
@@ -55,7 +55,7 @@ namespace DALHAL {
     constexpr JsonSchema::AllOfGroup hbridgeModeOC_GroupFields = {"hbridgeModeOC", JsonSchema::FieldFlag::ModeDefine, hbridgeModeOC_GroupItems}; // here hbridgeModeOC defines what name to use for the BSON output
     
     constexpr const JsonSchema::FieldBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
-    constexpr JsonSchema::AllOfGroup direnableMode_GroupFields = {"direnableMode", JsonSchema::FieldFlag::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
+    constexpr JsonSchema::AllOfGroup direnableMode_GroupFields = {"dir_enableMode", JsonSchema::FieldFlag::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
 
     constexpr JsonSchema::ModeConjunctionDefine conjunctions_hBridgeAB_Mode[] = {
         { &hbridgeModeAB_GroupFields, true },  // group must exist for this mode

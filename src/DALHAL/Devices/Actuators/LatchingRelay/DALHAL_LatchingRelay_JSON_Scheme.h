@@ -25,23 +25,22 @@
 
 
 // for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
-// for dir/enable/(optional break) pin mode
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A        "pinA"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B        "pinB"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET     "pinSet"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET    "pinRst"
+// for dir/enable pin mode
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR      "pinDir"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE   "pinEnable"
 
 // 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP "MinEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP "MaxEndStop"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE "ResetState"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE "SetState"
 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
-#define DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS 10000
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS "timeoutMs"
+#define DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS 500
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_SchemaFieldBase.h>
 namespace DALHAL {
-    extern const JsonSchema::JsonObjectScheme JsonObjectSchemeActuatorDevice;
+    extern const JsonSchema::JsonObjectScheme JsonObjectSchemeLatchingRelayDevice;
 }

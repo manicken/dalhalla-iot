@@ -28,14 +28,20 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL_LatchingRelay_JSON_Scheme.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase LatchingRelay::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonObjectSchemeLatchingRelayDevice,
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
+
+    Device* LatchingRelay::Create(DeviceCreateContext& context) {
+        return new LatchingRelay(context);
+    }
 
 #if !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
@@ -125,42 +131,44 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // we only need to check any of the pins to exist to determine the mode
         if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A)) {
             // H-bridge mode raw a/b pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
-            mode = DriveMode::HBridge;
-        } else if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN)) {
+            pins.direct.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
+            pins.direct.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
+            mode = DriveMode::Direct;
+        } else if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET)) {
             // H-bridge mode open/close pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
-            mode = DriveMode::HBridge;
+            pins.direct.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET);
+            pins.direct.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET);
+            mode = DriveMode::Direct;
         } else if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR)) {
             pins.data_enable.data = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
             pins.data_enable.enable = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
             mode = DriveMode::DataEnable;
         } 
         // reserved for future modes
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP)) {
-            pinFeedbackReset = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
-        } else {
-            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP)) {
-            pinFeedbackSet = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
+        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE)) {
+            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE];
+            pinFeedbackSet = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
+            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
+                pinFeedbackSetActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
+            } else {
+                pinFeedbackSetActiveHigh = true;
+            }
         } else {
             pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
+            pinFeedbackSetActiveHigh = true;
         }
 
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinFeedbackResetActiveHigh = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].as<bool>();
+        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE)) {
+            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE];
+            pinFeedbackReset = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
+            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
+                pinFeedbackResetActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
+            } else {
+                pinFeedbackResetActiveHigh = true;
+            }
         } else {
-            pinFeedbackResetActiveHigh = true; // default
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinFeedbackSetActiveHigh = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].as<bool>();
-        } else {
-            pinFeedbackSetActiveHigh = true; // default
+            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
+            pinFeedbackResetActiveHigh = true;
         }
 
         if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
@@ -176,9 +184,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // FREE all used pins by setting them to INPUTS
         uint64_t mask = 0;
 
-        if (mode == DriveMode::HBridge) {
-            mask |= (1ULL << pins.hbridge.a);
-            mask |= (1ULL << pins.hbridge.b);
+        if (mode == DriveMode::Direct) {
+            mask |= (1ULL << pins.direct.a);
+            mask |= (1ULL << pins.direct.b);
         } else if (mode == DriveMode::DataEnable) {
             mask |= (1ULL << pins.data_enable.data);
             mask |= (1ULL << pins.data_enable.enable);
@@ -202,133 +210,6 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    bool LatchingRelay::VerifyJSON(const JsonVariant &jsonObj) {
-        bool anyError = false;
-
-        bool have_pin_hbridge_a = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
-        bool have_pin_hbridge_b = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
-        bool have_pin_hbridge_open = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
-        bool have_pin_hbridge_close = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
-        bool have_pin_dir = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
-        bool have_pin_enable = jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
-
-        bool hbridge_mode_ab = have_pin_hbridge_a && have_pin_hbridge_b;
-        bool hbridge_mode_ab_exor = have_pin_hbridge_a ^ have_pin_hbridge_b;
-        bool hbridge_mode_open_close = have_pin_hbridge_open && have_pin_hbridge_close;
-        bool hbridge_mode_open_close_exor = have_pin_hbridge_open ^ have_pin_hbridge_close;
-        bool dir_enable_mode = have_pin_dir && have_pin_enable;
-        bool dir_enable_mode_exor = have_pin_dir ^ have_pin_enable;
-
-        
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID); // used for eventual errors
-
-        // Check for invalid configs
-        if (hbridge_mode_ab_exor || hbridge_mode_open_close_exor) {
-            GlobalLogger.Error(F("Incomplete H-Bridge pin config"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_HBridge");
-            anyError = true;
-        }
-        if (dir_enable_mode_exor) {
-            GlobalLogger.Error(F("Incomplete Dir/Enable pin config"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_DirEnable");
-            anyError = true;
-        }
-        bool hbridge_invalid = hbridge_mode_ab && hbridge_mode_open_close;
-        if (hbridge_invalid) {
-            GlobalLogger.Error(F("Both h-bridge pin config options cannot be used at the same time"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_HBridge");
-            anyError = true;
-        }
-        bool any_hbridge_active = (hbridge_mode_ab || hbridge_mode_open_close) && !hbridge_invalid;
-        
-        int32_t pin_a_open_dir = -1; // set to unused, is either: a/open/dir
-        int32_t pin_b_close_enable = -1; // set to unused, is either: b/close/enable
-        int32_t pin_dir_enable_break = -1; // set to unused, is only: break in dir/enable mode
-        int32_t pin_min_endstop = -1; // set to unused, is min endstop
-        int32_t pin_max_endstop = -1; // set to unused, is max endstop
-        
-        // Determine mode
-        if (any_hbridge_active && !dir_enable_mode) {
-            // this defines a valid mode
-            //mode = DriveMode::HBridge;
-            if (hbridge_mode_ab) {
-                pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
-                pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
-            } else if (hbridge_mode_open_close) {
-                pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_OPEN);
-                pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_CLOSE);
-            } 
-            // reserverved for more modes in the future
-            // could have open/close to make more sense in door/fluid operations
-
-        } else if (!any_hbridge_active && dir_enable_mode) {
-            // this defines a valid mode
-            //mode = DriveMode::DirEnable;
-            pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
-            pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
-            if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_BREAK)) {
-                pin_dir_enable_break = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_BREAK);
-            }
-        } else {
-            GlobalLogger.Error(F("Ambiguous or invalid motor driver config"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_AmbiguousMode");
-            anyError = true;
-        }
-
-        if ((pin_a_open_dir != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_a_open_dir, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("LatchingRelay_VJ_pin_a_open_dir");
-            anyError = true;
-        }
-        if ((pin_b_close_enable != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_b_close_enable, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("LatchingRelay_VJ_pin_b_close_enable");
-            anyError = true;
-        }
-        if ((pin_dir_enable_break != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_dir_enable_break, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("LatchingRelay_VJ_pin_dir_enable_break");
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP)) {
-            int32_t pin_min_endstop = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
-            if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_min_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("LatchingRelay_VJ_" DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP);
-                anyError = true;
-            }
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP)) {
-            int32_t pin_max_endstop = GetAsINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
-            if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_max_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("LatchingRelay_VJ_" DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP);
-                anyError = true;
-            }
-        }
-        
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_" DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH);
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_" DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH);
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS) && jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS].is<uint32_t>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS " is not uint32"), uidStr);
-            SET_ERR_LOC("LatchingRelay_VJ_" DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS);
-            anyError = true;
-        }
-
-        return anyError == false;
-    }
-
-    Device* LatchingRelay::Create(DeviceCreateContext& context) {
-        return new LatchingRelay(context);
-    }
-
     void LatchingRelay::setup() {
 
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
@@ -342,11 +223,11 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
             io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
             gpio_config(&io_conf);
-        } else if (mode == DriveMode::HBridge) {
+        } else if (mode == DriveMode::Direct) {
             gpio_config_t io_conf{};
             io_conf.intr_type = GPIO_INTR_DISABLE;
             io_conf.mode = GPIO_MODE_OUTPUT;
-            io_conf.pin_bit_mask = (1ULL << pins.hbridge.a) | (1ULL << pins.hbridge.b);
+            io_conf.pin_bit_mask = (1ULL << pins.direct.a) | (1ULL << pins.direct.b);
             io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
             io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
             gpio_config(&io_conf);
@@ -589,9 +470,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         motionStartMs = 0;
         disableFeedbackSignalInterrupts();
 
-        if (mode == DriveMode::HBridge) {
-            gpio_set_level(pins.hbridge.a, 0);
-            gpio_set_level(pins.hbridge.b, 0);
+        if (mode == DriveMode::Direct) {
+            gpio_set_level(pins.direct.a, 0);
+            gpio_set_level(pins.direct.b, 0);
         } else if (mode == DriveMode::DataEnable) {
             gpio_set_level(pins.data_enable.enable, 0);
         }
@@ -602,10 +483,10 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableFeedbackSignalInterrupts();
         state = State::DrivingReset;
         isr_data.location = Location::Unknown;
-        if (mode == DriveMode::HBridge) {
-            gpio_set_level(pins.hbridge.b, 0);
-            gpio_set_level(pins.hbridge.a, 1);            
-            configureISRData(pins.hbridge.a, GpioRegType::Clear);
+        if (mode == DriveMode::Direct) {
+            gpio_set_level(pins.direct.b, 0);
+            gpio_set_level(pins.direct.a, 1);            
+            configureISRData(pins.direct.a, GpioRegType::Clear);
         } else if (mode == DriveMode::DataEnable) {
             gpio_set_level(pins.data_enable.data, 0);
             gpio_set_level(pins.data_enable.enable, 1);
@@ -623,10 +504,10 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableFeedbackSignalInterrupts();
         state = State::DrivingSet;
         isr_data.location = Location::Unknown;
-        if (mode == DriveMode::HBridge) {
-            gpio_set_level(pins.hbridge.a, 0);
-            gpio_set_level(pins.hbridge.b, 1);
-            configureISRData(pins.hbridge.b, GpioRegType::Clear);
+        if (mode == DriveMode::Direct) {
+            gpio_set_level(pins.direct.a, 0);
+            gpio_set_level(pins.direct.b, 1);
+            configureISRData(pins.direct.b, GpioRegType::Clear);
         } else if (mode == DriveMode::DataEnable) {
             gpio_set_level(pins.data_enable.data, 0);
             gpio_set_level(pins.data_enable.enable, 1);
@@ -680,14 +561,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         ret += DeviceConstStrings::type;
         ret += this->Type;
         ret += "\",";
-        if (mode == DriveMode::HBridge) {
-            ret += "\"mode\":\"h-bridge\"";
+        if (mode == DriveMode::Direct) {
+            ret += "\"mode\":\"Direct\"";
             ret += ',';
             ret += "\"pin a\":";
-            ret += std::to_string(pins.hbridge.a).c_str();
+            ret += std::to_string(pins.direct.a).c_str();
             ret += ',';
             ret += "\"pin b\":";
-            ret += std::to_string(pins.hbridge.b).c_str();
+            ret += std::to_string(pins.direct.b).c_str();
         } else if (mode == DriveMode::DataEnable) {
             ret += "\"mode\":\"data_enable\"";
             ret += ',';

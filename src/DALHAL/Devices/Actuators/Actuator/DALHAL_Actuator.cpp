@@ -34,11 +34,14 @@
 namespace DALHAL {
 
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
-        
         Create,
-        /*VerifyJSON,*/ &JsonObjectSchemeActuatorDevice,
+        &JsonObjectSchemeActuatorDevice,
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
     };
+
+    Device* Actuator::Create(DeviceCreateContext& context) {
+        return new Actuator(context);
+    }
 
 
 #if !defined(esp32c3) && !defined(esp32c6)
@@ -209,132 +212,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
         }
     }
-/*
-    bool Actuator::VerifyJSON(const JsonVariant &jsonObj) {
-        bool anyError = false;
 
-        bool have_pin_hbridge_a = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-        bool have_pin_hbridge_b = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
-        bool have_pin_hbridge_open = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-        bool have_pin_hbridge_close = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
-        bool have_pin_dir = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-        bool have_pin_enable = jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
-
-        bool hbridge_mode_ab = have_pin_hbridge_a && have_pin_hbridge_b;
-        bool hbridge_mode_ab_exor = have_pin_hbridge_a ^ have_pin_hbridge_b;
-        bool hbridge_mode_open_close = have_pin_hbridge_open && have_pin_hbridge_close;
-        bool hbridge_mode_open_close_exor = have_pin_hbridge_open ^ have_pin_hbridge_close;
-        bool dir_enable_mode = have_pin_dir && have_pin_enable;
-        bool dir_enable_mode_exor = have_pin_dir ^ have_pin_enable;
-
-        
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID); // used for eventual errors
-
-        // Check for invalid configs
-        if (hbridge_mode_ab_exor || hbridge_mode_open_close_exor) {
-            GlobalLogger.Error(F("Incomplete H-Bridge pin config"), uidStr);
-            SET_ERR_LOC("ACTUATOR_VJ_HBridge");
-            anyError = true;
-        }
-        if (dir_enable_mode_exor) {
-            GlobalLogger.Error(F("Incomplete Dir/Enable pin config"), uidStr);
-            SET_ERR_LOC("ACTUATOR_VJ_DirEnable");
-            anyError = true;
-        }
-        bool hbridge_invalid = hbridge_mode_ab && hbridge_mode_open_close;
-        if (hbridge_invalid) {
-            GlobalLogger.Error(F("Both h-bridge pin config options cannot be used at the same time"), uidStr);
-            SET_ERR_LOC("ACTUATOR_VJ_HBridge");
-            anyError = true;
-        }
-        bool any_hbridge_active = (hbridge_mode_ab || hbridge_mode_open_close) && !hbridge_invalid;
-        
-        int32_t pin_a_open_dir = -1; // set to unused, is either: a/open/dir
-        int32_t pin_b_close_enable = -1; // set to unused, is either: b/close/enable
-        int32_t pin_dir_enable_break = -1; // set to unused, is only: break in dir/enable mode
-        int32_t pin_min_endstop = -1; // set to unused, is min endstop
-        int32_t pin_max_endstop = -1; // set to unused, is max endstop
-        
-        // Determine mode
-        if (any_hbridge_active && !dir_enable_mode) {
-            // this defines a valid mode
-            //mode = DriveMode::HBridge;
-            if (hbridge_mode_ab) {
-                pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-                pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
-            } else if (hbridge_mode_open_close) {
-                pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-                pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
-            } 
-            // reserverved for more modes in the future
-            // could have open/close to make more sense in door/fluid operations
-
-        } else if (!any_hbridge_active && dir_enable_mode) {
-            // this defines a valid mode
-            //mode = DriveMode::DirEnable;
-            pin_a_open_dir = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-            pin_b_close_enable = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
-            if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK)) {
-                pin_dir_enable_break = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK);
-            }
-        } else {
-            GlobalLogger.Error(F("Ambiguous or invalid motor driver config"), uidStr);
-            SET_ERR_LOC("ACTUATOR_VJ_AmbiguousMode");
-            anyError = true;
-        }
-
-        if ((pin_a_open_dir != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_a_open_dir, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_a_open_dir");
-            anyError = true;
-        }
-        if ((pin_b_close_enable != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_b_close_enable, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_b_close_enable");
-            anyError = true;
-        }
-        if ((pin_dir_enable_break != -1) && GPIO_manager::CheckIfPinAvailableAndReserve(pin_dir_enable_break, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)) == false) {
-            SET_ERR_LOC("Actuator_VJ_pin_dir_enable_break");
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP)) {
-            int32_t pin_min_endstop = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
-            if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_min_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
-                anyError = true;
-            }
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP)) {
-            int32_t pin_max_endstop = GetAsINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
-            if (GPIO_manager::CheckIfPinAvailableAndReserve(pin_max_endstop, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)) == false) {
-                SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
-                anyError = true;
-            }
-        }
-        
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH);
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH " is not a bool"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH);
-            anyError = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS].is<uint32_t>() == false) {
-            GlobalLogger.Error(F(DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS " is not uint32"), uidStr);
-            SET_ERR_LOC("Actuator_VJ_" DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS);
-            anyError = true;
-        }
-
-        return anyError == false;
-    }
-*/
-    Device* Actuator::Create(DeviceCreateContext& context) {
-        return new Actuator(context);
-    }
+    
 
     void Actuator::setup() {
 
