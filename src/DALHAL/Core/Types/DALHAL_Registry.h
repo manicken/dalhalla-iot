@@ -54,7 +54,7 @@ namespace DALHAL {
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
             HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function; // soon to be obsolete in favor of jsonSchema
-            const JsonSchema::Device* jsonSchema;
+            const JsonSchema::JsonObjectScheme* jsonSchema;
             const EventDescriptor* reactiveTable;
             
             // Verify_JSON_Function variants, soon to be obsolete in favor of JsonSchema
@@ -81,7 +81,7 @@ namespace DALHAL {
             // JsonSchema variants
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                const JsonSchema::Device* jsonSchema
+                const JsonSchema::JsonObjectScheme* jsonSchema
             ) :
                 Create_Function(Create_Function),
                 Verify_JSON_Function(nullptr),
@@ -91,7 +91,7 @@ namespace DALHAL {
 
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                const JsonSchema::Device* jsonSchema,
+                const JsonSchema::JsonObjectScheme* jsonSchema,
                 const EventDescriptor* reactiveTable
             ) :
                 Create_Function(Create_Function),

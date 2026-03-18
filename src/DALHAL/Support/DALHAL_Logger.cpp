@@ -27,6 +27,8 @@
 #include <iostream>
 #endif
 
+#include <DALHAL/API/DALHAL_WebSocketAPI.h>
+
 Logger GlobalLogger;
 
 #define LOGGER_GET_TIME time(nullptr)
@@ -43,6 +45,47 @@ LogEntry::LogEntry() : timestamp(0),
       text(nullptr),
       isCode(true),
       source(nullptr) {}
+
+    std::string LogEntry::ToString() const {
+        
+        // build timestamp prefix
+        struct tm* timeinfo = localtime(&timestamp);
+        char buf[128]; // buffer for one log line
+
+        int len = snprintf(buf, sizeof(buf), "[%02d/%02d %02d:%02d:%02d]",
+            timeinfo->tm_mday, timeinfo->tm_mon+1,
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+        // append level
+        switch (level) {
+            case Loglevel::Info: len += snprintf(buf+len, sizeof(buf)-len, "[INFO] "); break;
+            case Loglevel::Warn: len += snprintf(buf+len, sizeof(buf)-len, "[WARN] "); break;
+            case Loglevel::Error: len += snprintf(buf+len, sizeof(buf)-len, "[ERR] "); break;
+        }
+
+        // append source
+        if (source != nullptr)
+            len += snprintf(buf+len, sizeof(buf)-len, "{%s} ", source);
+
+        // append repeat count
+        if (repeatCount > 0)
+            len += snprintf(buf+len, sizeof(buf)-len, "(%d) ", repeatCount);
+
+        // append message or error code
+        if (isCode)
+            len += snprintf(buf+len, sizeof(buf)-len, "Error Code: 0x%X", errorCode);
+        else
+            len += snprintf(buf+len, sizeof(buf)-len, "%s", message);
+
+        // append optional text
+        if (text != nullptr)
+            len += snprintf(buf+len, sizeof(buf)-len, "%s", text);
+
+        // final newline
+        if (len < sizeof(buf)) buf[len++] = '\n';
+        buf[len] = '\0';
+        return std::string(buf);
+    }
 
     bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const 
     {
@@ -184,96 +227,126 @@ Logger::Logger() {
 }
 
 void Logger::Error(uint32_t code) {
-    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, nullptr, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, nullptr, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Error(const __FlashStringHelper* msg) {
-    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, nullptr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, nullptr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Error(uint32_t code, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, text, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, text, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, text, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, text, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
-    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, zcStr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, zcStr);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, zcStr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, zcStr);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 
 void Logger::Info(uint32_t code) {
-    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, nullptr, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, nullptr, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Info(const __FlashStringHelper* msg) {
-    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, nullptr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, nullptr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Info(uint32_t code, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, text, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, text, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Info(const __FlashStringHelper* msg, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, text, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, text, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
-    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, zcStr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, zcStr);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, zcStr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, zcStr);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 
 void Logger::Warn(uint32_t code) {
-    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, nullptr, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, nullptr, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Warn(const __FlashStringHelper* msg) {
-    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, nullptr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, nullptr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Warn(uint32_t code, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, text, true))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, text, true) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
-    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, text, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, text);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, text, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, text);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
-    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, zcStr, false))
-        return;
-    buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, zcStr);
-    advance();
+    if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, zcStr, false) == false) {
+        buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, zcStr);
+        advance();
+    }
+    std::string entryStr = getLastEntry().ToString();
+    DALHAL::WebSocketAPI::SendMessage(entryStr);
 }
 
 
@@ -346,6 +419,9 @@ void Logger::printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew) {
         if (onlyPrintNew && entry.isNew == false) continue;
         entry.isNew = false;
 
+        cb(entry.ToString());
+        /*
+
         // build timestamp prefix
         struct tm* timeinfo = localtime(&entry.timestamp);
         char buf[128]; // buffer for one log line
@@ -384,7 +460,7 @@ void Logger::printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew) {
         buf[len] = '\0';
 
         // send via callback
-        cb(std::string(buf));
+        cb(std::string(buf));*/
     }
 }
 

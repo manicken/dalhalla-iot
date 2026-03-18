@@ -65,6 +65,7 @@ struct LogEntry {
       LogEntry& operator=(const LogEntry&) = delete;
 
       String MessageToString() const;
+      std::string ToString() const;
   };
 
 class Logger {

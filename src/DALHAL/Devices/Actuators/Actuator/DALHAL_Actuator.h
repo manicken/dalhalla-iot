@@ -33,23 +33,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-// for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
-// for dir/enable/(optional break) pin mode
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
-
-// 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP "pinMinEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP "pinMaxEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH "pinMinEndStopActiveHigh"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH "pinMaxEndStopActiveHigh"
-
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
+#include "DALHAL_Actuator_JSON_Scheme.h"
 
 #define DALHAL_DEVICE_ACTUATOR_CMD_OPEN   "open"
 #define DALHAL_DEVICE_ACTUATOR_CMD_CLOSE  "close"
@@ -72,7 +56,7 @@ namespace DALHAL {
     class Actuator : public Actuator_DeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
+        //static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         
     private:
@@ -127,8 +111,8 @@ namespace DALHAL {
         gpio_num_t pinMinEndStop;
         gpio_num_t pinMaxEndStop;
 
-        bool pinEndMinActiveHigh;
-        bool pinEndMaxActiveHigh;
+        bool pinMinEndStopActiveHigh;
+        bool pinMaxEndStopActiveHigh;
 
         uint32_t motionStartMs;
         uint32_t timeoutMs;

@@ -29,13 +29,14 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
         
         Create,
-        VerifyJSON,
+        /*VerifyJSON,*/ &JsonObjectSchemeActuatorDevice,
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
     };
 
@@ -142,28 +143,32 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             mode = DriveMode::DirEnable;
         } 
         // reserved for future modes
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP)) {
-            pinMinEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
+
+
+        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP)) {
+            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP];
+            pinMinEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
+            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
+                pinMinEndStopActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
+            } else {
+                pinMinEndStopActiveHigh = true;
+            }
         } else {
             pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP);
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP)) {
-            pinMaxEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
-        } else {
-            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
-            printf("\r\nWarning %s is not set in json\r\n",DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP);
+            pinMinEndStopActiveHigh = true;
         }
 
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinEndMinActiveHigh = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MIN_END_STOP_ACTIVE_HIGH].as<bool>();
+        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP)) {
+            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP];
+            pinMaxEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
+            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
+                pinMaxEndStopActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
+            } else {
+                pinMaxEndStopActiveHigh = true;
+            }
         } else {
-            pinEndMinActiveHigh = true; // default
-        }
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH) && jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].is<bool>()) {
-            pinEndMaxActiveHigh = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_MAX_END_STOP_ACTIVE_HIGH].as<bool>();
-        } else {
-            pinEndMaxActiveHigh = true; // default
+            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
+            pinMaxEndStopActiveHigh = true;
         }
 
         if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
@@ -204,7 +209,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
         }
     }
-
+/*
     bool Actuator::VerifyJSON(const JsonVariant &jsonObj) {
         bool anyError = false;
 
@@ -326,7 +331,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
         return anyError == false;
     }
-
+*/
     Device* Actuator::Create(DeviceCreateContext& context) {
         return new Actuator(context);
     }
@@ -359,7 +364,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // --------------------------
         if (pinMinEndStop != GPIO_NUM_NC) {
             gpio_config_t io_conf{};
-            io_conf.intr_type = pinEndMinActiveHigh
+            io_conf.intr_type = pinMinEndStopActiveHigh
                                 ? GPIO_INTR_POSEDGE
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
@@ -374,7 +379,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
         if (pinMaxEndStop != GPIO_NUM_NC) {
             gpio_config_t io_conf{};
-            io_conf.intr_type = pinEndMaxActiveHigh
+            io_conf.intr_type = pinMaxEndStopActiveHigh
                                 ? GPIO_INTR_POSEDGE
                                 : GPIO_INTR_NEGEDGE;
             io_conf.mode = GPIO_MODE_INPUT;
@@ -631,7 +636,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     bool Actuator::endMinActive() const {
         // 1) Physical pin says active
         int level = (pinMinEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMinEndStop):0;
-        bool pinActive = pinEndMinActiveHigh ? (level == 1) : (level == 0);
+        bool pinActive = pinMinEndStopActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
             return true;
@@ -648,7 +653,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     bool Actuator::endMaxActive() const {
         // 1) Physical pin says active
         int level = (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMaxEndStop):0;
-        bool pinActive = pinEndMaxActiveHigh ? (level == 1) : (level == 0);
+        bool pinActive = pinMaxEndStopActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
             return true;

@@ -29,8 +29,10 @@ namespace DALHAL {
     namespace JsonSchema {
         enum class FieldType {
             AnyOfGroup,
+            AllOfGroup,
             UID,
             UID_Path,
+            Bool,
             Int,
             UInt,
             Float,
@@ -46,7 +48,9 @@ namespace DALHAL {
         enum class FieldFlag {
             Required,
             Optional,
-            AnyOfGroup // the higher group defines
+            AnyOfGroup, // the higher group defines
+            AllOfGroup, // the higher group defines
+            ModeDefine // Mode defines
         };
 
         struct FieldBase {
@@ -70,7 +74,8 @@ namespace DALHAL {
                 : name(name), conjunctions(conjunctions) {}
         };
 
-        struct Device {
+        struct JsonObjectScheme {
+            const char* typeName;
             const FieldBase* const* fields;
             const ModeSelector* modes;
         };

@@ -62,7 +62,7 @@ namespace DALHAL {
         static void begin();
         static bool setupMgr();
         // JSON I/O
-        static bool ParseJSON(const JsonArray& jsonArray);
+        static bool ParseJSON(const JsonVariant& jsonArray);
         static bool ReadJSON(const char* path);
         static void CleanUp();
 

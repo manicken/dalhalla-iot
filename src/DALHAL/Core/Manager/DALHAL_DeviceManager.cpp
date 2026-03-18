@@ -31,6 +31,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+
 namespace DALHAL {
 
     Device** DeviceManager::devices = nullptr;
@@ -123,13 +125,23 @@ namespace DALHAL {
         DALHAL::DeviceManager::deviceCount = 0;
     }
 
-    bool DeviceManager::ParseJSON(const JsonArray &jsonArray) {
+    bool DeviceManager::ParseJSON(const JsonVariant &jsonArray) {
         //Serial.println("PArse json thianasoidnoasidnasoidnsaiodnsaodinasdoiandoisandiosndoiasnd");
+        GPIO_manager::ClearAllReservations(); // when devices are verified they also reservate the pins to include checks for duplicate use
+        bool anyError = false;
+        JsonSchema::ValidateFromRegisterContext validateContext(JsonSchema::ValidateFromRegisterContext::State::Enabled);
+        JsonSchema::validateFromRegister(jsonArray, DeviceRegistry, validateContext, anyError);
+        if (anyError) {
+            GlobalLogger.Error(F("The loaded JSON cfg contains errors"));
+            GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
+            return false;
+        }
+/*
         uint32_t deviceCount = 0;
         int arraySize = jsonArray.size();
         bool* validDevices = new bool[arraySize]; // dont' forget the delete[] call at end of function
-        GPIO_manager::ClearAllReservations(); // when devices are verified they also reservate the pins to include checks for duplicate use
-
+        
+       
         // First pass: count valid entries
         for (int i=0;i<arraySize;i++) {
 
@@ -142,21 +154,25 @@ namespace DALHAL {
             bool valid = VerifyDeviceJson(jsonItem);
 
             validDevices[i] = valid;
-            if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
+            if (valid == false) return false; // strict mode is allways on DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
             deviceCount++;
         }
-        CleanUp();
+            */
         
+        int deviceCount = validateContext.validDevicesCount;
         
         if (deviceCount == 0) {
             GlobalLogger.Error(F("The loaded JSON cfg does not contain any valid devices!\n" 
                                  "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
             return false;
         }
+        
+        // delete/cleanup prev configuration if any
+        CleanUp();
         printf("\nTrying to allocate for %d devices\n", deviceCount);
-
+        
         // Allocate space for all devices
-        devices = new Device*[deviceCount]();
+        devices = new (std::nothrow) Device*[deviceCount]();
         
         if (devices == nullptr) {
             GlobalLogger.Error(F("Failed to allocate device array"));
@@ -165,9 +181,11 @@ namespace DALHAL {
         printf("\nOK\n");
         DALHAL::DeviceManager::deviceCount = deviceCount;
 
+        bool* validDevices = validateContext.validDevicesArray; // just get non owning ptr
         GPIO_manager::ClearAllReservations(); 
         // Second pass: actually create and store devices
         uint32_t index = 0;
+        int arraySize = validateContext.validDevicesArraySize;
         for (int i=0;i<arraySize;i++) {
             JsonVariant jsonItem = jsonArray[i];
             //if (VerifyDeviceJson(jsonItem) == false) continue; // ************************************************************ now as we dont run this again the pins are not allocated anymore but we don't really need to take care of that as it's part of the validate device check anyway
@@ -176,7 +194,7 @@ namespace DALHAL {
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created devices: "), devCountStr.c_str());
-        delete[] validDevices; // free memory
+        //delete[] validDevices; // free memory
         return true;
     }
 
@@ -276,15 +294,17 @@ namespace DALHAL {
 
         std::string memUsage = std::to_string(jsonDoc.memoryUsage()) + " of " + std::to_string(jsonDoc.capacity());
         GlobalLogger.Info(F("jsonDoc.memoryUsage="), memUsage.c_str());
-        if (!jsonDoc.is<JsonArray>())
+
+        
+        /*if (!jsonDoc.is<JsonArray>())
         {
             delete[] jsonBuffer;
             GlobalLogger.Error(F("jsonDoc root is not a JsonArray"));
             return false;
         }
         const JsonArray& jsonItems = jsonDoc.as<JsonArray>();
-
-        bool parseOk = ParseJSON(jsonItems);
+*/
+        bool parseOk = ParseJSON(jsonDoc);
 
         delete[] jsonBuffer;
 

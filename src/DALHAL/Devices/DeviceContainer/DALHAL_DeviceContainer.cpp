@@ -27,6 +27,8 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 namespace DALHAL {
 
@@ -101,7 +103,16 @@ namespace DALHAL {
             SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
         }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
+        bool anyError = false;
+        JsonSchema::ValidateFromRegisterContext validateContext(JsonSchema::ValidateFromRegisterContext::State::Enabled);
+        JsonSchema::validateFromRegister(jsonObj[DALHAL_KEYNAME_ITEMS], DeviceRegistry, validateContext, anyError);
+        if (anyError) {
+            GlobalLogger.Error(F("JSON cfg contains errors"));
+            GlobalLogger.setLastEntrySource("DeviceContainer::VerifyJSON");
+            return false;
+        }
+
+        /*if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
             GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
             SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
             return false;
@@ -119,7 +130,7 @@ namespace DALHAL {
             if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
             if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
-        }
+        }*/
         return true;
     }
 

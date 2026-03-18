@@ -32,6 +32,56 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        struct ValidateFromRegisterContext {
+
+            enum class State {
+                Enabled,
+                Disabled
+            };
+            bool* validDevicesArray = nullptr;
+            int validDevicesArraySize = 0;
+            int validDevicesCount = 0;
+            State state = State::Disabled;
+
+            inline void Init(int validDevicesArraySize) {
+                if (state == State::Disabled) return;
+
+                delete[] validDevicesArray;
+                this->validDevicesArraySize = validDevicesArraySize;
+                validDevicesArray = new bool[validDevicesArraySize]();
+                validDevicesCount = 0;
+            }
+            ValidateFromRegisterContext(State state): state(state) { }
+            ValidateFromRegisterContext() = delete;
+            ValidateFromRegisterContext(const ValidateFromRegisterContext&) = delete;
+
+            // move functionality
+            ValidateFromRegisterContext(ValidateFromRegisterContext&& other) noexcept {
+                validDevicesArray = other.validDevicesArray;
+                validDevicesArraySize = other.validDevicesArraySize;
+                validDevicesCount = other.validDevicesCount;
+                state = other.state;
+
+                other.validDevicesArray = nullptr;
+                other.validDevicesArraySize = 0;
+                other.validDevicesCount = 0;
+            }
+
+            ~ValidateFromRegisterContext() {
+                delete[] validDevicesArray;
+            }
+
+            void SetDevice(int index, bool value) {
+                if ((state == State::Enabled) && validDevicesArray && (index >= 0) && (index < validDevicesArraySize)) {
+                    
+                    if (value && !validDevicesArray[index]) {
+                        ++validDevicesCount;
+                    }
+                    validDevicesArray[index] = value;
+                }
+            }
+        };
+
         bool isKnownField(const char* key, const FieldBase* const* fields);
         // Helper to validate FieldString / FieldUID
         void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError);
@@ -39,12 +89,14 @@ namespace DALHAL {
         void validateField(const JsonVariant& j, const FieldBase* field, bool& anyError);
         // Validate AnyOfGroup
         void validateAnyOfGroup(const JsonVariant& j, const AnyOfGroup* group, bool& anyError);
+        // Validate AllOfGroup
+        void validateAllOfGroup(const JsonVariant& j, const AllOfGroup* group, bool& anyError);
         // Validate ModeSelector
         int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
         // Validate a full device
-        /*int*/ void validateDevice(const JsonVariant& j, const JsonSchema::Device* device, bool& anyError);
+        /*int*/ void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError);
         // Validate the JSON array against the given device registry.
-        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, bool& anyError);
+        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, ValidateFromRegisterContext& context, bool& anyError);
 
     }
 

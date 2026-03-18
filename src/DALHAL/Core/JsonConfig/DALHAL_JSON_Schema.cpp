@@ -75,7 +75,8 @@ namespace DALHAL {
             nullptr
         };
 
-        constexpr JsonSchema::Device templateDevice = {
+        constexpr JsonSchema::JsonObjectScheme templateJsonObject = {
+            "template",
             templateFields,
             templateDeviceModes
         };

@@ -34,54 +34,96 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        //************************************* */
+        //*******  Native JSON Types ********** */
+        //************************************* */
+
         struct FieldInt : FieldBase {
             int32_t minValue;
             int32_t maxValue;
             int32_t defaultValue;
-
+            // can be used when inherited and used as a subtupe
             constexpr FieldInt(const char* n, FieldType t, FieldFlag f, int32_t minValue, int32_t maxValue, int32_t defaultValue)
                 : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            // explicit select type to int
+            constexpr FieldInt(const char* n, FieldFlag f, int32_t minValue, int32_t maxValue, int32_t defaultValue)
+                : FieldBase(n, FieldType::Int, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldUInt : FieldBase {
             uint32_t minValue;
             uint32_t maxValue;
             uint32_t defaultValue;
-
+            // can be used when inherited and used as a subtupe
             constexpr FieldUInt(const char* n, FieldType t, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
                 : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            // explicit select type to uint
+            constexpr FieldUInt(const char* n, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
+                : FieldBase(n, FieldType::UInt, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldFloat : FieldBase {
             float minValue;
             float maxValue;
             float defaultValue;
-
+            // can be used when inherited and used as a subtupe
             constexpr FieldFloat(const char* n, FieldType t, FieldFlag f, float minValue, float maxValue, float defaultValue)
                 : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            // explicit select type to float
+            constexpr FieldFloat(const char* n, FieldFlag f, float minValue, float maxValue, float defaultValue)
+                : FieldBase(n, FieldType::Float, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldBool : FieldBase {
             bool defaultValue;
-
+            // can be used when inherited and used as a subtupe
             constexpr FieldBool(const char* n, FieldType t, FieldFlag f, bool defaultValue)
                 : FieldBase(n, t, f), defaultValue(defaultValue) {}
+            // explicit select type to bool
+            constexpr FieldBool(const char* n, FieldFlag f, bool defaultValue)
+                : FieldBase(n, FieldType::Bool, f), defaultValue(defaultValue) {}
         };
 
         struct FieldString : FieldBase {
             const char* defaultValue;  // flash string default
             uint16_t maxLength;
-
+            // can be used when inherited and used as a subtupe
             constexpr FieldString(const char* n, FieldType t, FieldFlag f, const char* defVal, uint16_t maxLen)
                 : FieldBase(n, t, f), defaultValue(defVal), maxLength(maxLen) {}
+            // explicit select type to string
+            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, uint16_t maxLen)
+                : FieldBase(n, FieldType::String, f), defaultValue(defVal), maxLength(maxLen) {}
         };
+
+        /**
+         * used for ordinary JSON objects, i.e. enclosed by {}
+         */
+        struct FieldObject : FieldBase {
+            const JsonSchema::JsonObjectScheme* subtype;
+            constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
+                : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
+        };
+
+        /** 
+         * FieldArray represents a homogeneous array where every element must conform 
+         * to the same JsonSchema::Device definition. This is used for structured data 
+         * with a fixed schema (no type selection per element).
+         */
+        struct FieldArray : FieldBase {
+            const JsonSchema::JsonObjectScheme* subtype;
+            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
+                : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
+        };
+
+        //************************************* */
+        //*********  Logical Types ************ */
+        //************************************* */
 
         struct FieldUID : FieldString {
             constexpr FieldUID(FieldFlag f)
                 : FieldString(DALHAL_KEYNAME_UID, FieldType::UID, f, nullptr, HAL_UID::Size) {}
         };
         
-
         struct FieldHardwarePin : FieldBase {
             uint16_t mode;
             constexpr FieldHardwarePin(const char* n, FieldFlag f, uint16_t mode)
@@ -105,17 +147,15 @@ namespace DALHAL {
                 : FieldBase(outputName, FieldType::AnyOfGroup, f), fields(fields) {}
         };
 
-        
-
-        /** 
-         * FieldArray represents a homogeneous array where every element must conform 
-         * to the same JsonSchema::Device definition. This is used for structured data 
-         * with a fixed schema (no type selection per element).
+        /**
+         * AllOfGroup is a logical unit of fields where the group may be optional, 
+         * and if present, all child field must exist. 
+         * The group's presence can be overridden by ModeSelector rules.
          */
-        struct FieldArray : FieldBase {
-            const JsonSchema::Device* subtype;
-            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
-                : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
+        struct AllOfGroup : FieldBase {
+            const FieldBase* const* fields;
+            constexpr AllOfGroup(const char* outputName, FieldFlag f, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::AllOfGroup, f), fields(fields) {}
         };
 
         /**
@@ -130,15 +170,6 @@ namespace DALHAL {
                 : FieldBase(n, FieldType::Array, f), subtypes(subtypes) {}
         };
         
-        /**
-         * used for ordinary JSON objects, i.e. enclosed by {}
-         */
-        struct FieldObject : FieldBase {
-            const JsonSchema::Device* subtype;
-            constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::Device* subtype)
-                : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
-        };
-
         struct FieldHexBytes : FieldString {
             uint8_t byteCount;
 
@@ -150,10 +181,11 @@ namespace DALHAL {
                 byteCount(byteCount) {}
         };
 
-
+        // Common use fields
         extern const FieldString typeField;
         extern const FieldUID uidFieldRequired;
         extern const FieldUID uidFieldOptional;
+        extern const AnyOfGroup refreshTimeGroupFields;
 
     } // namespace JsonSchema
 }

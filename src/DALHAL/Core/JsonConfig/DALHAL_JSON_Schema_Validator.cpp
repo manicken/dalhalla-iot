@@ -28,6 +28,8 @@
 
 #include <ArduinoJSON.h>
 #include <DALHAL/Support/ConvertHelper.h>
+
+
 //using json = JsonVariant;
  
 namespace DALHAL {
@@ -46,6 +48,13 @@ namespace DALHAL {
 
                 if (f->type == FieldType::AnyOfGroup) {
                     const AnyOfGroup* group = static_cast<const AnyOfGroup*>(f);
+
+                    for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (strcmp(key, group->fields[g]->name) == 0)
+                            return true;
+                    }
+                } else if (f->type == FieldType::AllOfGroup) {
+                    const AllOfGroup* group = static_cast<const AllOfGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
                         if (strcmp(key, group->fields[g]->name) == 0)
@@ -191,17 +200,18 @@ namespace DALHAL {
                 }
                 case FieldType::Array: {
                     auto f = static_cast<const FieldArray*>(field);
-                    validateDevice(value, f->subtype, anyError);
+                    validateJsonObject(value, f->subtype, anyError);
                     return;
                 }
                 case FieldType::RegistryArray: {
                     auto f = static_cast<const FieldRegistryArray*>(field);
-                    validateFromRegister(value, f->subtypes, anyError);
+                    ValidateFromRegisterContext tmpContext(ValidateFromRegisterContext::State::Disabled);
+                    validateFromRegister(value, f->subtypes, tmpContext, anyError);
                     break;
                 }
                 case FieldType::Object: {
                     auto f = static_cast<const FieldObject*>(field);
-                    validateDevice(value, f->subtype, anyError);
+                    validateJsonObject(value, f->subtype, anyError);
                     break;
                 }
                 case FieldType::HexBytes: {
@@ -252,6 +262,36 @@ namespace DALHAL {
             }
         }
 
+        void validateAllOfGroup(const JsonVariant& j, const AllOfGroup* group, bool& anyError)
+        {
+            if (!group) { return; }
+
+            int foundCount = 0;
+            int totalCount = 0;
+
+            for (size_t i = 0; group->fields[i] != nullptr; ++i) {
+                const FieldBase* f = group->fields[i];
+                totalCount++;
+
+                if (j.containsKey(f->name)) {
+                    foundCount++;
+                    validateField(j, f, anyError);
+                }
+            }
+
+            // 🚨 core rule
+            if (foundCount != 0 && foundCount != totalCount) {
+                GlobalLogger.Error(F("AllOfGroup partially defined"));
+                anyError = true;
+                return;
+            }
+
+            if (foundCount == 0 && group->flag == FieldFlag::Required) {
+                GlobalLogger.Error(F("Required AllOfGroup missing"));
+                anyError = true;
+            }
+        }
+
         // Validate ModeSelector
         int evaluateModes(const JsonVariant& j, const ModeSelector* modes)
         {
@@ -278,6 +318,24 @@ namespace DALHAL {
                             }
                         }
                     }
+                    else if (conj.fieldRef->type == FieldType::AllOfGroup)
+                    {
+                        const AllOfGroup* group =
+                            static_cast<const AllOfGroup*>(conj.fieldRef);
+
+                        int found = 0;
+                        int total = 0;
+
+                        for (int g = 0; group->fields[g] != nullptr; ++g)
+                        {
+                            total++;
+                            if (j.containsKey(group->fields[g]->name))
+                                found++;
+                        }
+
+                        // ✅ group "exists" ONLY if fully present
+                        exists = (found == total && total > 0);
+                    }
                     else
                     {
                         exists = j.containsKey(conj.fieldRef->name);
@@ -301,33 +359,36 @@ namespace DALHAL {
             return matchedMode;
         }
 
-        // Validate a full device
-        /*int*/ void validateDevice(const JsonVariant& j, const JsonSchema::Device* devScheme, bool& anyError)
+        // Validate a complete JSON Object
+        /*int*/ void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError)
         {
             // 1. Check unknown fields
             for (const JsonPair& kv : j.as<JsonObject>()) {
                 const char* key = kv.key().c_str();
 
-                if (!isKnownField(key, devScheme->fields)) {
+                if (!isKnownField(key, jsonObjectScheme->fields)) {
                     GlobalLogger.Warn(F("Unknown config field:"), key);
+                    GlobalLogger.setLastEntrySource(jsonObjectScheme->typeName);
                     // as this should not render the json invalid
                     // anyError is not set
                 }
             }
 
             // 2. Validate each field
-            for (int i = 0; devScheme->fields[i] != nullptr; ++i) {
-                const FieldBase* f = devScheme->fields[i];
+            for (int i = 0; jsonObjectScheme->fields[i] != nullptr; ++i) {
+                const FieldBase* f = jsonObjectScheme->fields[i];
 
                 if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
                     validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), anyError);
+                } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
+                    validateAllOfGroup(j, static_cast<const AllOfGroup*>(f), anyError);
                 } else {
                     validateField(j, f, anyError);
                 }
             }
 
             // 3. Evaluate modes
-            int mode = evaluateModes(j, devScheme->modes);
+            int mode = evaluateModes(j, jsonObjectScheme->modes);
             if (mode == -1) {
                 GlobalLogger.Error(F("No valid configuration mode found"));
                 anyError = true;
@@ -339,7 +400,7 @@ namespace DALHAL {
         }
 
         // Validate the JSON array against the given device registry.
-        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, bool& anyError) {
+        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, ValidateFromRegisterContext& context, bool& anyError) {
 
             if (jsonArray.is<JsonArray>() == false) {
                 GlobalLogger.Error(F("Json register field is not a array"));
@@ -355,10 +416,11 @@ namespace DALHAL {
                 return; // can't continue here
             }
             uint32_t itemCount = items.size();
-
+            context.Init(itemCount);
+            
             for (uint32_t i = 0; i < itemCount; ++i) {
                 const JsonVariant& jsonItem = items[i];
-
+                context.SetDevice(i, false); // allways set to false first
                 if (jsonItem.is<const char*>()) { continue; } // comment item
                 if (DALHAL::Device::DisabledInJson(jsonItem)) { continue; } // disabled
 
@@ -385,12 +447,41 @@ namespace DALHAL {
                 }
                 
                 if (regItem.def->jsonSchema == nullptr) {
+                    // TODO remove use of obsolete function Verify_JSON_Function
+                    if (regItem.def->Verify_JSON_Function == nullptr) {
                     GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
                     GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                     anyError = true;
                     continue; // skip the current json device
+                    }
+                    // TODO remove use of obsolete function Verify_JSON_Function
+                    if (jsonItem.containsKey(DALHAL_KEYNAME_UID) == false) {
+                        GlobalLogger.Error(F("uid field missing"));
+                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+                        anyError = true;
+                        continue; // skip the current json device
+                    }
+                    bool uidFoundError = false;
+                    validateStringField(jsonItem[DALHAL_KEYNAME_UID], &uidFieldRequired, uidFoundError);
+                    if (uidFoundError) {
+                        anyError = true;
+                        continue;
+                    }
+                    if (regItem.def->Verify_JSON_Function(jsonItem) == false) {
+                        anyError = true;
+                        continue;
+                    } else {
+                        context.SetDevice(i, true);
+                    }
+                    continue;
                 }
-                validateDevice(jsonItem, regItem.def->jsonSchema, anyError);
+                bool validatedJsonObjectAnyError = false;
+                validateJsonObject(jsonItem, regItem.def->jsonSchema, validatedJsonObjectAnyError);
+                if (validatedJsonObjectAnyError) {
+                    anyError = true;
+                } else {
+                    context.SetDevice(i, true);
+                }
             }
         }
 
