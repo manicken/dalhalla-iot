@@ -27,12 +27,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_OneWireTempGroup_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase OneWireTempGroup::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::OneWireTempGroup,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
     };
 
@@ -40,35 +41,6 @@ namespace DALHAL {
         return new OneWireTempGroup(context);
     }
 
-    bool OneWireTempGroup::VerifyJSON(const JsonVariant &jsonObj) {
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            return false;
-        }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            return false;
-        }
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY("OneWireTempGroup"));
-            return false;
-        }
-        int itemCount = items.size();
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) continue; // comment item
-            if (Device::DisabledInJson(item) == true) continue; // disabled
-            if (OneWireTempBus::VerifyJSON(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            validItemCount++;
-        }
-        if (validItemCount == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("OneWireTempGroup"));
-            return false;
-        }
-        return true;
-    }
     OneWireTempGroup::OneWireTempGroup(DeviceCreateContext& context) : OneWireTempGroup_DeviceBase(context.deviceType),
         autoRefresh(
             [this]() { requestTemperatures(); },
@@ -90,9 +62,7 @@ namespace DALHAL {
             const JsonVariant& item = items[i];
             if (IsConstChar(item) == true) { validBusses[i] = false; continue; } // comment item
             if (Device::DisabledInJson(item) == true) { validBusses[i] = false; continue; } // disabled
-            bool valid = OneWireTempBus::VerifyJSON(item);
-            validBusses[i] = valid;
-            if (valid == false) continue;
+            validBusses[i] = true; // allways valid in strict mode (i.e. validation scheme ensure that)
             busCount++;
         }
         busses = new Device*[busCount]();

@@ -23,15 +23,16 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+
 
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        extern const AnyOfGroup refreshTimeGroupFields;
-        extern const AnyOfGroup refreshTimeGroupFieldsRequired;
         
+        /** this is used when the device is directly at the root/or considered a root device, which this allways is */
+        extern const JsonObjectScheme OneWireTempGroup;
+
     }
-    
+
 }

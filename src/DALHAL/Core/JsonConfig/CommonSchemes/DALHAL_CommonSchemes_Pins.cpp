@@ -29,6 +29,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
         
+        constexpr FieldHardwarePin InputOutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) | static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
+
 
         constexpr FieldHardwarePin InputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
         constexpr FieldBool InputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, FieldFlag::Optional, false };

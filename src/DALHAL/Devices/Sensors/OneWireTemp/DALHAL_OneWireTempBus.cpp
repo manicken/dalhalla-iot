@@ -28,45 +28,15 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL_OneWireTempBus_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase OneWireTempBusAtRoot::RegistryDefine = {
-        
         Create,
-        OneWireTempBus::VerifyJSON,
+        &JsonSchema::OneWireTempBusAtRoot,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
     };
-
-    bool OneWireTempBus::VerifyJSON(const JsonVariant &jsonObj) {
-        
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            return false;
-        }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            return false;
-        }
-        const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) { GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY("OneWireTempBus")); return false;}
-        int itemCount = (int)items.size();
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) continue; // comment item
-            if (Device::DisabledInJson(item) == true) continue; // disabled
-            if (OneWireTempDevice::VerifyJSON(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            validItemCount++;
-        }
-        if (validItemCount == 0) { GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("OneWireTempBus")); return false; }
-        
-        //if (jsonObj.containsKey(DALHAL_KEYNAME_PIN) == false) { GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_PIN)); return false; }
-        //if (jsonObj[DALHAL_KEYNAME_PIN].is<uint8_t>() == false)  { GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_PIN)); return false; }
-        
-        //uint8_t pin = jsonObj[DALHAL_KEYNAME_PIN].as<uint8_t>(); 
-        //return GPIO_manager::CheckIfPinAvailableAndReserve(pin, (static_cast<uint8_t>(GPIO_manager::PinMode::OUT) | static_cast<uint8_t>(GPIO_manager::PinMode::IN)));
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
-    }
 
     OneWireTempBus::OneWireTempBus(DeviceCreateContext& context) : OneWireTempBus_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
@@ -88,9 +58,7 @@ namespace DALHAL {
             const JsonVariant& item = items[i];
             if (IsConstChar(item) == true) { validDevices[i] = false; continue; } // comment item
             if (Device::DisabledInJson(item) == true) { validDevices[i] = false; continue; } // disabled
-            bool valid = OneWireTempDevice::VerifyJSON(items[i]);
-            validDevices[i] = valid;
-            if (valid == false) continue;
+            validDevices[i] = true; // allways valid in strict mode (i.e. validation scheme ensure that)
             deviceCount++;
         }
         devices = new (std::nothrow) Device*[static_cast<size_t>(deviceCount)]();

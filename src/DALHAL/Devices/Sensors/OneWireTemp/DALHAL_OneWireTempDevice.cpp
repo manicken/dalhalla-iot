@@ -30,12 +30,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL_OneWireTempDevice_JSON_Scheme.h"
+
 namespace DALHAL {
     
     constexpr Registry::DefineBase OneWireTempDeviceAtRoot::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::OneWireTempDeviceAtRoot,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
     };
 
@@ -45,16 +46,6 @@ namespace DALHAL {
     //  ██    ██ ██  ██ ██ ██          ██ ███ ██ ██ ██   ██ ██             ██    ██      ██  ██  ██ ██          ██   ██ ██       ██  ██  ██ ██      ██      
     //   ██████  ██   ████ ███████      ███ ███  ██ ██   ██ ███████        ██    ███████ ██      ██ ██          ██████  ███████   ████   ██  ██████ ███████ 
     //                                                                                                                                                     
-
-    bool OneWireTempDevice::VerifyJSON(const JsonVariant &jsonObj) {
-        
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_1WTD_VERIFY_JSON); return false; }
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_ONE_WIRE_ROMID)){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_1WTD_VERIFY_JSON); return false; }
-        
-        const char* romIdStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
-        if (strlen(romIdStr) == 0) { GlobalLogger.Error(F("OneWireTempDevice romId is zero lenght")); return false; }
-        return Convert::HexToBytes(romIdStr, nullptr, 8);
-    }
 
     OneWireTempDevice::OneWireTempDevice(DeviceCreateContext& context) : OneWireTempDevice_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
@@ -131,11 +122,6 @@ namespace DALHAL {
 
     Device* OneWireTempDeviceAtRoot::Create(DeviceCreateContext& context) {
         return new OneWireTempDeviceAtRoot(context);
-    }
-
-    bool OneWireTempDeviceAtRoot::VerifyJSON(const JsonVariant &jsonObj) {
-        if (OneWireTempDevice::VerifyJSON(jsonObj) == false) return false;
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
     OneWireTempDeviceAtRoot::OneWireTempDeviceAtRoot(DeviceCreateContext& context) 

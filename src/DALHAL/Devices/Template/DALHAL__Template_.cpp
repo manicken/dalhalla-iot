@@ -28,21 +28,18 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL__Template__JSON_Scheme.h"
+
 namespace DALHAL {
         constexpr Registry::DefineBase _Template_::RegistryDefine = {
                 
                 Create,
-                VerifyJSON,
+                &JsonSchema::_Template_,
                 DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)
         };
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-    }
-
-    bool _Template_::VerifyJSON(const JsonVariant &jsonObj) {
-        // this is a check only to verify that the pin cfg exist
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
     Device* _Template_::Create(DeviceCreateContext& context) {

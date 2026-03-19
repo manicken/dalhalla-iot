@@ -35,6 +35,7 @@ namespace DALHAL {
     namespace JsonSchema {
         extern const FieldHardwarePin InputPinField;
         extern const FieldHardwarePin OutputPinField;
+        extern const FieldHardwarePin InputOutputPinField;
 
         extern const JsonObjectScheme InputPinScheme;
         extern const JsonObjectScheme OutputPinScheme;

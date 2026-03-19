@@ -47,7 +47,7 @@ namespace DALHAL {
 
     class OneWireTempBus : public OneWireTempBus_DeviceBase {
     public: // public static fields and exposed external structures
-        static bool VerifyJSON(const JsonVariant &jsonObj);
+        //static bool VerifyJSON(const JsonVariant &jsonObj);
 
     private:
         uint8_t pin;

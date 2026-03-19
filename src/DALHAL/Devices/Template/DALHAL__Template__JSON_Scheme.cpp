@@ -21,21 +21,37 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_CommonSchemes_Time.h"
+#include "DALHAL__Template__JSON_Scheme.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
+        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
 
-        constexpr AnyOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldFlag::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        constexpr AnyOfGroup   refreshTimeGroupFieldsRequired = {"refreshtimems", FieldFlag::Required, refreshGroupItems};
+        constexpr const FieldBase* fields[] = {
+            &typeField,         // DALHAL_CommonSchemes_Base
+            &uidFieldRequired,  // DALHAL_CommonSchemes_Base
+            &pinField,
+        };
+
+        constexpr JsonObjectScheme _Template_ = {
+            "_Template_",
+            fields,
+            nullptr, // no modes
+            nullptr,  // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
+        };
+
     }
 
 }

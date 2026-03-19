@@ -1,0 +1,20 @@
+bool HA_DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
+bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
+bool BinarySensor::VerifyJSON(const JsonVariant &jsonObj) {
+bool Button::VerifyJSON(const JsonVariant &jsonObj) {
+bool Number::VerifyJSON(const JsonVariant &jsonObj) {
+bool Sensor::VerifyJSON(const JsonVariant &jsonObj)
+bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
+bool I2C_Master::VerifyJSON(const JsonVariant &jsonObj) {
+bool PCF8574x::VerifyJSON(const JsonVariant &jsonObj) {
+bool WS2812::VerifyJSON(const JsonVariant &jsonObj) {
+bool REGO600::VerifyJSON(const JsonVariant &jsonObj) {
+bool REGO600register::VerifyJSON(const JsonVariant &jsonObj)
+bool TX433::VerifyJSON(const JsonVariant &jsonObj)
+bool TX433unit::VerifyJSON(const JsonVariant &jsonObj)
+bool ScriptArray::VerifyJSON(const JsonVariant &jsonObj)
+bool ScriptEventDispatcher::VerifyJSON(const JsonVariant &jsonObj)
+bool ScriptVariable::VerifyJSON(const JsonVariant &jsonObj)
+bool ScriptVariableReadOnly::VerifyJSON(const JsonVariant &jsonObj)
+bool ScriptVariableWriteOnlyTest::VerifyJSON(const JsonVariant &jsonObj)
+bool DHT::VerifyJSON(const JsonVariant &jsonObj)

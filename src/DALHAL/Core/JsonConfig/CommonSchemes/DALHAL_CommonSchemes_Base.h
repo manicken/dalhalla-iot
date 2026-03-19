@@ -28,6 +28,7 @@
 #define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
 #define DALHAL_COMMON_CFG_NAME_TYPE "type"
 #define DALHAL_COMMON_CFG_NAME_UID "uid"
+#define DALHAL_COMMON_CFG_NAME_NOTE "note"
 
 namespace DALHAL {
 
@@ -36,6 +37,8 @@ namespace DALHAL {
         extern const FieldString typeField;
         extern const FieldUID uidFieldRequired;
         extern const FieldUID uidFieldOptional;
+        /** note this field is only for the GUI to optionally describe this device */
+        extern const FieldString noteField;
         
     }
     
