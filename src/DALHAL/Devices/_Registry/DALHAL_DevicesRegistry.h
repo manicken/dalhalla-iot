@@ -30,6 +30,6 @@
 
 namespace DALHAL {
     
-    extern const Registry::Item DeviceRegistry[];
+    extern const Registry::Item RootDevicesRegistry[];
 
 }

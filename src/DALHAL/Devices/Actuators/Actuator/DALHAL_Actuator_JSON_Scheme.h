@@ -46,7 +46,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectScheme ActuatorDevice;
+        extern const JsonObjectScheme Actuator;
 
     }
 }

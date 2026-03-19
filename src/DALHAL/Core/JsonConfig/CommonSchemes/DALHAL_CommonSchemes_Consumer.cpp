@@ -51,13 +51,13 @@ namespace DALHAL {
             { &eventSourceField, false },      // event_source must NOT exist
             { nullptr, false}
         };
-        constexpr ModeSelector templateDeviceModes[] = {
+        
+        constexpr ModeSelector consumerDeviceModes[] = {
             {"refresh mode", refreshModeConjunctions},
             {"event mode", eventModeConjunctions},
             {"script mode", scriptModeConjunctions},
             {nullptr, nullptr}
         };
-        
     }
 
 }

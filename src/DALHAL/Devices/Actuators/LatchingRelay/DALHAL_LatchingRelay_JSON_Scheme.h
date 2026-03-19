@@ -45,7 +45,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectScheme LatchingRelayDevice;
+        extern const JsonObjectScheme LatchingRelay;
 
     }
 }

@@ -27,12 +27,16 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_SinglePulseOutput_JSON_Scheme.h"
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::SinglePulseOutput,
         DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
     };
     
@@ -40,19 +44,18 @@ namespace DALHAL {
         return new SinglePulseOutput(context);
     }
 
-    bool SinglePulseOutput::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
-    }
-
     SinglePulseOutput::SinglePulseOutput(DeviceCreateContext& context) : SinglePulseOutput_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
         uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
-        inactiveState = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_INACTIVE_STATE, 0);
+        activeLevel = jsonObj.containsKey("activeLevel") && strcmp(jsonObj["activeLevel"], DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW) == 0;
+        // use the following to make sure that it's explicit defined states
+        if (activeLevel == 1) inactiveLevel = 0;
+        else inactiveLevel = 1;
         // pulseLength is optional as it can be given by the write function
         pulseLength = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, 0);
         pinMode(pin, OUTPUT); // output
-        digitalWrite(pin, inactiveState);
+        digitalWrite(pin, inactiveLevel);
     }
 
     SinglePulseOutput::~SinglePulseOutput() { 
@@ -108,7 +111,7 @@ namespace DALHAL {
     HALOperationResult SinglePulseOutput::exec() {
         if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
         pulseTicker.detach();
-        digitalWrite(pin, !inactiveState);
+        digitalWrite(pin, activeLevel);
         pulseTicker.once_ms(pulseLength, pulseTicker_Callback, this);
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, EXEC)
         triggerExec();
@@ -117,7 +120,7 @@ namespace DALHAL {
     }
 
     void SinglePulseOutput::endPulse() {
-        digitalWrite(pin, inactiveState);
+        digitalWrite(pin, inactiveLevel);
         pulseTicker.detach();
     }
 

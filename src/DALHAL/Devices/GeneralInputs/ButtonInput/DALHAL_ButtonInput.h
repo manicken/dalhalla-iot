@@ -46,12 +46,11 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
-        static bool VerifyJSON(const JsonVariant &jsonObj);
 
     private:
         uint8_t pin;
         uint32_t debounceMs;
-        bool activeLow;
+        uint8_t activeLevel;
 
         bool stableState;       // debounced button state
         bool lastRaw;           // last raw read

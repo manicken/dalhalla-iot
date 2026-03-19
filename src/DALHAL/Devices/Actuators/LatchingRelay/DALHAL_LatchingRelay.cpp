@@ -37,7 +37,7 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase LatchingRelay::RegistryDefine = {
         Create,
-        &JsonSchema::LatchingRelayDevice,
+        &JsonSchema::LatchingRelay,
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
 

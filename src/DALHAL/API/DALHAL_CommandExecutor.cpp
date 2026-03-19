@@ -148,7 +148,7 @@ namespace DALHAL {
             }
             else if (zcCommand.EqualsIC("printRegistry")) {
                 if (cb != nullptr) {
-                    std::string ret = Registry::ToString(DeviceRegistry);
+                    std::string ret = Registry::ToString(RootDevicesRegistry);
                     cb(ret);
                 }
             }

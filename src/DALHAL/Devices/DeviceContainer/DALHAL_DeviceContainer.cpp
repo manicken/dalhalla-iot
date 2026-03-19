@@ -30,12 +30,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
+#include "DALHAL_DeviceContainer_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase DeviceContainer::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::DeviceContainer,
         nullptr /* no events available */
     };
     
@@ -47,10 +48,13 @@ namespace DALHAL {
             delete[] devices;
         }
     }
-
+    // MAJOR TODO
+    // fix DeviceManager PArseJson so that it can load into any devices array, and thus can be reused for any register
+    // then fix DeviceContainer and other things loading devices so that they can use that instead
     DeviceContainer::DeviceContainer(DeviceCreateContext& context) : Device(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
+
         const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         
         uint32_t deviceCountTmp = 0;
@@ -95,43 +99,6 @@ namespace DALHAL {
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
 
         delete[] validDevices; // free memory
-    }
-
-    bool DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        bool anyError = false;
-        JsonSchema::ValidateFromRegisterContext validateContext(JsonSchema::ValidateFromRegisterContext::State::Enabled);
-        JsonSchema::validateFromRegister(jsonObj[DALHAL_KEYNAME_ITEMS], DeviceRegistry, validateContext, anyError);
-        if (anyError) {
-            GlobalLogger.Error(F("JSON cfg contains errors"));
-            GlobalLogger.setLastEntrySource("DeviceContainer::VerifyJSON");
-            return false;
-        }
-
-        /*if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY());
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        int arraySize = items.size();
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& jsonItem = items[i];
-            if (IsConstChar(jsonItem) == true) { continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
-            bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
-            if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
-        }*/
-        return true;
     }
 
     Device* DeviceContainer::Create(DeviceCreateContext& context) {

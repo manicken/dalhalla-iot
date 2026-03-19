@@ -28,6 +28,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_ThingSpeak_JSON_Scheme.h"
 
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
@@ -38,9 +39,8 @@
 namespace DALHAL {
 
     constexpr Registry::DefineBase ThingSpeak::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ThingSpeak,
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
     };
 
@@ -156,77 +156,6 @@ namespace DALHAL {
         triggerExec();
 #endif
         return HALOperationResult::Success;
-    }
-
-    bool ThingSpeak::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON); return false; }
-        if (!ValidateJsonStringField(jsonObj, "key")){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON); return false; }
-
-        const char* keyStr = GetAsConstChar(jsonObj, "key");
-        if (strlen(keyStr) != 16) {
-            GlobalLogger.Error(F("key lenght != 16"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-            return false;
-        }
-        
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-            return false;
-        }
-        
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonObject>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not a object"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-            return false;
-        }
-        JsonObject items = jsonObj[DALHAL_KEYNAME_ITEMS];
-        if (items.size() == 0) {
-            GlobalLogger.Error(F("items object is empty"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-            return false;
-        }
-        for (JsonPair kv : items) {
-            const char* indexStr = kv.key().c_str();
-            const char* valueStr = kv.value().as<const char*>();
-
-            // validate that index is numeric
-            for (const char* p = indexStr; *p; p++) {
-                if (!isdigit(*p)) {
-                    GlobalLogger.Error(F("Invalid item index: "), indexStr);
-                    SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-                    return false;
-                }
-            }
-
-            int fieldIndex = atoi(indexStr);
-            if (fieldIndex < 1 || fieldIndex > DALHAL_THINGSPEAK_MAX_FIELDS) {
-                GlobalLogger.Error(F("Invalid field index: "), indexStr);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-                return false;
-            }
-
-            // validate that value is non-empty
-            if (valueStr == nullptr || *valueStr == '\0') {
-                GlobalLogger.Error(F("Empty item value for index: "), indexStr);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-                return false;
-            }
-
-            // validate that the device exists, 
-            // cannot be done here as devices are not loaded at this stage
-            // and we do actually need the device instances to make the checks
-            // to fix it the whole system need complete rewrite
-            /*CachedDeviceRead cdr;
-            ZeroCopyString zcStrUidPathAndFuncName(valueStr);
-            if (cdr.Set(zcStrUidPathAndFuncName) == false) {
-                GlobalLogger.Error(F("could not find device: "), indexStr);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_THINGSPEAK_VERIFY_JSON);
-                return false;
-            }*/
-        }
-        
-        return true;
     }
 
     Device* ThingSpeak::Create(DeviceCreateContext& context) {

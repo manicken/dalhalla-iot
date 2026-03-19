@@ -28,21 +28,18 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_DigitalOutput_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase DigitalOutput::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::DigitalOutput,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
     };
     
     Device* DigitalOutput::Create(DeviceCreateContext& context) {
         return new DigitalOutput(context);
-    }
-
-    bool DigitalOutput::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT));
     }
 
     DigitalOutput::DigitalOutput(DeviceCreateContext& context) : DigitalOutput_DeviceBase(context.deviceType) {

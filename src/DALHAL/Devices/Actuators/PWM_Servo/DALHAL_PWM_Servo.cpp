@@ -80,39 +80,7 @@ namespace DALHAL {
         Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
         Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
     }
-/*
-    bool PWM_Servo::VerifyJSON(const JsonVariant &jsonObj) {
-        bool anyError = false;
-        if (!jsonObj.containsKey("pin")) {
-            GlobalLogger.Error(F("cfg have no pin"));
-            GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
-            anyError = true;
-        }
-        if (!jsonObj.containsKey("ch")) {
-            GlobalLogger.Error(F("cfg have no ch"));
-            GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
-            anyError = true;
-        }
-        anyError |= GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) == false;
-        bool hasMin = ValidateFloat(jsonObj, "minVal");
-        bool hasMax = ValidateFloat(jsonObj, "maxVal");
 
-        if (hasMin != hasMax) {
-            GlobalLogger.Error(F("cfg must define both minVal and maxVal"));
-            GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
-            anyError = true;
-        } else if (hasMin && hasMax) {
-            float minVal = jsonObj["minVal"].as<float>();
-            float maxVal = jsonObj["maxVal"].as<float>();
-            if (minVal >= maxVal) {
-                GlobalLogger.Error(F("minVal cannot be greater or equal to maxVal"));
-                GlobalLogger.setLastEntrySource(VERIFY_JSON_SOURCE);
-                anyError = true;
-            }
-        }
-        return (anyError == false);
-    }
-*/
     Device* PWM_Servo::Create(DeviceCreateContext& context) {
         return new PWM_Servo(context);
     }

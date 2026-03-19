@@ -84,14 +84,36 @@ namespace DALHAL {
         };
 
         struct FieldString : FieldBase {
-            const char* defaultValue;  // flash string default
+            enum class AllowedValuesPolicy {
+                Strict,
+                IgnoreCase,
+                Void
+            };
+
+            const char* defaultValue;  // flash string default, or more like what to present at GUI
+            uint16_t minLength;
             uint16_t maxLength;
+
+            const char* const* allowedValues; // nullptr = no restriction
+            AllowedValuesPolicy allowedValuesPolicy;
+
             // can be used when inherited and used as a subtupe
             constexpr FieldString(const char* n, FieldType t, FieldFlag f, const char* defVal, uint16_t maxLen)
-                : FieldBase(n, t, f), defaultValue(defVal), maxLength(maxLen) {}
+                : FieldBase(n, t, f), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
             // explicit select type to string
             constexpr FieldString(const char* n, FieldFlag f, const char* defVal, uint16_t maxLen)
-                : FieldBase(n, FieldType::String, f), defaultValue(defVal), maxLength(maxLen) {}
+                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+
+            // can be used when inherited and used as a subtupe
+            constexpr FieldString(const char* n, FieldType t, FieldFlag f, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(n, t, f), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            // explicit select type to string
+            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+
+            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
+                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
+            
         };
 
         /**
@@ -99,8 +121,10 @@ namespace DALHAL {
          */
         struct FieldObject : FieldBase {
             const JsonSchema::JsonObjectScheme* subtype;
+            
             constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
                 : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
+            
         };
 
         /** 
@@ -110,8 +134,12 @@ namespace DALHAL {
          */
         struct FieldArray : FieldBase {
             const JsonSchema::JsonObjectScheme* subtype;
+            EmptyPolicy emptyPolicy;
+
             constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
-                : FieldBase(n, FieldType::Array, f), subtype(subtype) {}
+                : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(EmptyPolicy::Warn) {}
+            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype, EmptyPolicy emptyPolicy)
+                : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(emptyPolicy) {}
         };
 
         //************************************* */
@@ -165,8 +193,10 @@ namespace DALHAL {
          */
         struct FieldRegistryArray : FieldBase {
             const Registry::Item* subtypes;
+
             constexpr FieldRegistryArray(const char* n, FieldFlag f, const Registry::Item* subtypes)
                 : FieldBase(n, FieldType::Array, f), subtypes(subtypes) {}
+
         };
         
         struct FieldHexBytes : FieldString {
@@ -176,7 +206,7 @@ namespace DALHAL {
                                 FieldFlag flag,
                                 const char* defaultValue,
                                 uint8_t byteCount)
-                : FieldString(name, FieldType::HexBytes, flag, defaultValue, 0),
+                : FieldString(name, FieldType::HexBytes, flag, defaultValue, byteCount*2, 0),
                 byteCount(byteCount) {}
         };
 

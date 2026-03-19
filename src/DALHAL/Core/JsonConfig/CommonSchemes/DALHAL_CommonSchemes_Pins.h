@@ -27,12 +27,19 @@
 
 #define DALHAL_COMMON_CFG_NAME_PIN "pin"
 #define DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH "ActiveHigh"
+#define DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW "low"
+#define DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH "high"
+
 namespace DALHAL {
 
     namespace JsonSchema {
+        extern const FieldHardwarePin InputPinField;
+        extern const FieldHardwarePin OutputPinField;
 
         extern const JsonObjectScheme InputPinScheme;
         extern const JsonObjectScheme OutputPinScheme;
+
+        static constexpr const char* activeLevelStrings[] = {DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, nullptr};
 
     }
     

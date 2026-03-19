@@ -45,7 +45,6 @@ namespace DALHAL {
     class SinglePulseOutput : public SinglePulseOutput_DeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant& jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
     private:
@@ -54,7 +53,8 @@ namespace DALHAL {
 
         uint8_t pin = 0;
         uint32_t pulseLength = 0;
-        uint8_t inactiveState = 0;
+        uint8_t activeLevel = 1;
+        uint8_t inactiveLevel = 0;
         Ticker pulseTicker;
 
         void endPulse();

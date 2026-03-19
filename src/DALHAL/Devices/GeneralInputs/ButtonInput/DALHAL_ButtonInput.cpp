@@ -28,142 +28,139 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 
+#include "DALHAL_ButtonInput_JSON_Scheme.h"
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+
 namespace DALHAL {
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ButtonInput,
         DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
     };
 
-// Factory method
-Device* ButtonInput::Create(DeviceCreateContext& context) {
-    return new ButtonInput(context);
-}
-
-// JSON validation
-bool ButtonInput::VerifyJSON(const JsonVariant &jsonObj) {
-    
-    return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(
-        jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
-}
-
-ButtonInput::~ButtonInput() {
-    if (toggleTarget != nullptr) {
-        delete toggleTarget;
-        toggleTarget = nullptr;
+    // Factory method
+    Device* ButtonInput::Create(DeviceCreateContext& context) {
+        return new ButtonInput(context);
     }
-}
 
-// Constructor
-ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
-{
-    const JsonVariant& jsonObj = *(context.jsonObjItem);
-    pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
-    uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
-
-    // Optional debounce, default 30ms
-    debounceMs = jsonObj.containsKey("debounce_ms") ? jsonObj["debounce_ms"].as<uint32_t>() : 30;
-
-    // Active level (default HIGH)
-    activeLow = jsonObj.containsKey("active") && strcmp(jsonObj["active"], "low") == 0;
-
-    GPIO_manager::ReservePin(pin);
-    pinMode(pin, activeLow ? INPUT_PULLUP : INPUT);
-
-    // Initial states
-    stableState = digitalRead(pin);
-    lastRaw = stableState;
-    lastChangeMs = millis();
-
-    // Optional external action target
-    if (jsonObj.containsKey("on_press")) {
-        toggleTarget = new CachedDeviceAccess();
-        if (toggleTarget->Set(jsonObj["on_press"].as<const char*>()) == false) {
+    ButtonInput::~ButtonInput() {
+        if (toggleTarget != nullptr) {
             delete toggleTarget;
             toggleTarget = nullptr;
         }
     }
-}
 
-// Loop: call from main scheduler
-void ButtonInput::loop() {
-    bool raw = digitalRead(pin);
-    uint32_t now = millis();
+    // Constructor
+    ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
+    {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
+        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
+        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
 
-    // Detect raw changes
-    if (raw != lastRaw) {
-        lastRaw = raw;
-        lastChangeMs = now;
+        // Optional debounce, default 30ms
+        debounceMs = jsonObj.containsKey("debounce_ms") ? jsonObj["debounce_ms"].as<uint32_t>() : 30;
+
+        // Active level (default HIGH)
+        activeLevel = jsonObj.containsKey("activeLevel") && strcmp(jsonObj["activeLevel"], DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW) == 0;
+
+        GPIO_manager::ReservePin(pin);
+        pinMode(pin, activeLevel ? INPUT_PULLDOWN : INPUT_PULLUP);
+
+        // Initial states
+        stableState = digitalRead(pin);
+        lastRaw = stableState;
+        lastChangeMs = millis();
+
+        // Optional external action target
+        if (jsonObj.containsKey("on_press")) {
+            toggleTarget = new CachedDeviceAccess();
+            if (toggleTarget->Set(jsonObj["on_press"].as<const char*>()) == false) {
+                delete toggleTarget;
+                toggleTarget = nullptr;
+            }
+        }
     }
 
-    // If stable long enough and state changed
-    if ((now - lastChangeMs) >= debounceMs && raw != stableState) {
-        stableState = raw;
+    // Loop: call from main scheduler
+    void ButtonInput::loop() {
+        bool raw = digitalRead(pin);
+        uint32_t now = millis();
 
-        bool pressed = activeLow ? !stableState : stableState;
+        // Detect raw changes
+        if (raw != lastRaw) {
+            lastRaw = raw;
+            lastChangeMs = now;
+        }
 
-        if (pressed) {
+        // If stable long enough and state changed
+        if ((now - lastChangeMs) >= debounceMs && raw != stableState) {
+            stableState = raw;
+
+            bool pressed = activeLevel ? stableState : !stableState;
+
+            if (pressed) {
 #if HAS_REACTIVE_CUSTOM(BUTTON_INPUT)
-            triggerPress();
+                triggerPress();
 #endif
-            // Optional: call external device/action directly
-            if (toggleTarget != nullptr) {
-                HALValue currValue;
-                HALOperationResult res = toggleTarget->ReadSimple(currValue);
-                if (res != HALOperationResult::Success) {
-                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
-                    return;
-                } 
-                HALValue newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
-                toggleTarget->WriteSimple(newVal);
-                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
-            } else {
-                WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
-            }
+                // Optional: call external device/action directly
+                if (toggleTarget != nullptr) {
+                    HALValue currValue;
+                    HALOperationResult res = toggleTarget->ReadSimple(currValue);
+                    if (res != HALOperationResult::Success) {
+                        WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
+                        return;
+                    } 
+                    HALValue newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
+                    toggleTarget->WriteSimple(newVal);
+                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
+                } else {
+                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
+                }
 
-        } else {
+            } else {
 #if HAS_REACTIVE_CUSTOM(BUTTON_INPUT)
-            triggerRelease();
+                triggerRelease();
+#endif
+            }
+#if HAS_REACTIVE_STATE_CHANGE(BUTTON_INPUT)
+            triggerStateChange();
 #endif
         }
-#if HAS_REACTIVE_STATE_CHANGE(BUTTON_INPUT)
-        triggerStateChange();
-#endif
     }
-}
 
-// Read: returns the toggle state
-HALOperationResult ButtonInput::read(HALValue &val) {
-    if (toggleTarget == nullptr) {
-        return HALOperationResult::DeviceNotFound;
+    // Read: returns the toggle state
+    HALOperationResult ButtonInput::read(HALValue &val) {
+        if (toggleTarget == nullptr) {
+            return HALOperationResult::DeviceNotFound;
+        }
+        HALValue currValue;
+        HALOperationResult res = toggleTarget->ReadSimple(currValue);
+        if (res != HALOperationResult::Success) {
+            Serial.printf("[ButtonInput] %s pressed, toggleState could not execute", decodeUID(uid).c_str());
+            return res;
+        } 
+        val = currValue;
+        return HALOperationResult::Success;
     }
-    HALValue currValue;
-    HALOperationResult res = toggleTarget->ReadSimple(currValue);
-    if (res != HALOperationResult::Success) {
-        Serial.printf("[ButtonInput] %s pressed, toggleState could not execute", decodeUID(uid).c_str());
-        return res;
-    } 
-    val = currValue;
-    return HALOperationResult::Success;
-}
 
-// ToString for JSON dump/debug
-String ButtonInput::ToString() {
-    String ret;
-    ret += DeviceConstStrings::uid;
-    ret += decodeUID(uid).c_str();
-    ret += "\",";
+    // ToString for JSON dump/debug
+    String ButtonInput::ToString() {
+        String ret;
+        ret += DeviceConstStrings::uid;
+        ret += decodeUID(uid).c_str();
+        ret += "\",";
 
-    ret += DeviceConstStrings::type;
-    ret += this->Type;
-    ret += ",";
+        ret += DeviceConstStrings::type;
+        ret += this->Type;
+        ret += ",";
 
-    ret += DeviceConstStrings::pin;
-    ret += std::to_string(pin).c_str();
+        ret += DeviceConstStrings::pin;
+        ret += std::to_string(pin).c_str();
 
 
-    return ret;
-}
+        return ret;
+    }
 
 } // namespace DALHAL

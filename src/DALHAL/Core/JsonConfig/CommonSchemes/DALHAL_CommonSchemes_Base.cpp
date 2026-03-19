@@ -34,6 +34,8 @@ namespace DALHAL {
 
         constexpr FieldString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldType::String, FieldFlag::Required, nullptr, 0};
 
+        constexpr FieldBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldFlag::Optional, false};
+
     }
 
 }

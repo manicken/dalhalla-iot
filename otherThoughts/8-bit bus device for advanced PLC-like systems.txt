@@ -19,3 +19,9 @@ VCC is the system voltage and is used for the normal bus signals currently 3v3
 
 (G)  D   D   D   D  (G)  D   D   D   D  (G)  A   A   A   A   A   A   A   A  (G)
 (G) RST (G) CLK (G) _RD _WR (G) I2C I2C (G) INT INT INT INT (G) VCC VCC VCC (G)
+
+
+
+
+
+(G) D D D D (G) D D D D (G) A A A A A A A A (G) _RD _WR (G) I2C I2C (G) INT INT INT VCC VCC (G)

@@ -114,11 +114,13 @@ namespace DALHAL {
             nullptr
         };
 
-        constexpr JsonObjectScheme ActuatorDevice = {
-            "ActuatorDevice",
+        constexpr JsonObjectScheme Actuator = {
+            "Actuator",
             fields,
             modes,
-            nullptr // no constraints
+            nullptr, // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
         };
 
     }

@@ -55,6 +55,20 @@ namespace DALHAL {
         };
         const char* FieldFlagToString(FieldFlag flag);
 
+        enum class UnknownFieldPolicy {
+            Ignore,
+            Warn,
+            Error
+        };
+        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy);
+
+        enum class EmptyPolicy {
+            Ignore,
+            Warn,
+            Error
+        };
+        const char* EmptyPolicyToString(EmptyPolicy policy);
+
         struct FieldBase {
             const char* name;    // flash string
             FieldType type;
@@ -101,6 +115,14 @@ namespace DALHAL {
             const FieldBase* const* fields;
             const ModeSelector* modes;
             const FieldConstraint* constraints;
+            EmptyPolicy emptyPolicy;
+            UnknownFieldPolicy unknownFieldPolicy;
+
+            constexpr JsonObjectScheme(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints):
+                typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(EmptyPolicy::Warn), unknownFieldPolicy(UnknownFieldPolicy::Warn) {}
+            
+            constexpr JsonObjectScheme(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints, EmptyPolicy emptyPolicy, UnknownFieldPolicy unknownFieldPolicy):
+                typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(emptyPolicy), unknownFieldPolicy(unknownFieldPolicy) {}
         };
     }
 

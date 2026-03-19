@@ -26,7 +26,7 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
+
 
 #include "DALHAL_Display_SSD1306_Element.h"
 
@@ -43,7 +43,6 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const I2C_RegistryDefine RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static bool HasAddress(uint8_t addr);
 
     private:

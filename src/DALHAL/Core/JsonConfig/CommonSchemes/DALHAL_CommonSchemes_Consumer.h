@@ -31,8 +31,7 @@ namespace DALHAL {
 
         extern const FieldString sourceField;
         extern const FieldString eventSourceField;
-        extern const ModeSelector templateDeviceModes;
-        
+        extern const ModeSelector consumerDeviceModes[];
     }
     
 }

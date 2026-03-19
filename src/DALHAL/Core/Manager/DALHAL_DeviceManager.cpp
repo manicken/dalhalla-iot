@@ -72,7 +72,7 @@ namespace DALHAL {
 
     Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant& jsonObj) {
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
-        const Registry::Item& regItem = Registry::GetItem(DeviceRegistry, type);
+        const Registry::Item& regItem = Registry::GetItem(RootDevicesRegistry, type);
         if (regItem.typeName == nullptr) {
             // should never happen as VerifyJson is called before and do actually verify that this function should work
             GlobalLogger.Error(F("CreateDeviceFromJSON - something is very wrong if this happens"));
@@ -94,7 +94,7 @@ namespace DALHAL {
 
         const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
 
-        const Registry::Item& regItem = Registry::GetItem(DeviceRegistry, type);
+        const Registry::Item& regItem = Registry::GetItem(RootDevicesRegistry, type);
         if (regItem.typeName == nullptr) {
             GlobalLogger.Error(F("VerifyDeviceJson - could not find type:"),type);
             return false;
@@ -130,7 +130,7 @@ namespace DALHAL {
         GPIO_manager::ClearAllReservations(); // when devices are verified they also reservate the pins to include checks for duplicate use
         bool anyError = false;
         JsonSchema::ValidateFromRegisterContext validateContext(JsonSchema::ValidateFromRegisterContext::State::Enabled);
-        JsonSchema::validateFromRegister(jsonArray, DeviceRegistry, validateContext, anyError);
+        JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, validateContext, anyError);
         if (anyError) {
             GlobalLogger.Error(F("The loaded JSON cfg contains errors"));
             GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");

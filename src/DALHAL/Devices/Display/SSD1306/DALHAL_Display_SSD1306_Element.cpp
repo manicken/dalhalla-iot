@@ -53,14 +53,6 @@ namespace DALHAL {
             cdaSource = nullptr;
     }
 
-    bool Display_SSD1306_Element::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_ELM_VERIFY_JSON); return false; }
-        if (!ValidateJsonStringField(jsonObj, "label")){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_ELM_VERIFY_JSON); return false; }
-        if (ValidateUINT8(jsonObj, "x") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_ELM_VERIFY_JSON); return false;  }
-        if (ValidateUINT8(jsonObj, "y") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_ELM_VERIFY_JSON); return false;  }
-        return true;
-    }
-
     String Display_SSD1306_Element::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;

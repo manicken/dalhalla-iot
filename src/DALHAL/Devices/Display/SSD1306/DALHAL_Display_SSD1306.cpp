@@ -23,6 +23,8 @@
 
 #include "DALHAL_Display_SSD1306.h"
 
+#include <ArduinoJson.h>
+
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
@@ -30,11 +32,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include "DALHAL_Display_SSD1306_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr I2C_RegistryDefine Display_SSD1306::RegistryDefine = {
         Create,
-        VerifyJSON,
+        &JsonSchema::Display_SSD1306,
         HasAddress
     };
 
@@ -74,17 +78,13 @@ namespace DALHAL {
         const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
 
         int itemCount = items.size();
-        bool* validItems = new bool[itemCount];
         // first pass count valid items
         size_t validItemCount = 0;
         for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) { validItems[i] = false; continue; }// comment item
-            if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
-
-            if (Display_SSD1306_Element::VerifyJSON(item) == false) { validItems[i] = false; continue; }
+            const JsonVariant& item = items[i];
+            if (IsConstChar(item) == true) { continue; } // comment item
+            if (Device::DisabledInJson(item) == true) { continue; } // disabled
             validItemCount++;
-            validItems[i] = true;
         }
         // second pass actually create the devices
         elementCount = validItemCount;
@@ -93,12 +93,13 @@ namespace DALHAL {
         DeviceCreateContext createContext;
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (validItems[i] == false) continue;
+            if (IsConstChar(item) == true) continue;
+            if (Device::DisabledInJson(item) == true) continue;
+
             createContext.jsonObjItem = &item;
             createContext.deviceType = "I2C_DISP_SSD1306_ELM";
             elements[index++] = new Display_SSD1306_Element(createContext);
         }
-        delete[] validItems;
     }
 
     Display_SSD1306::~Display_SSD1306() {
@@ -112,52 +113,6 @@ namespace DALHAL {
             elementCount = 0;
         }
         delete display;
-    }
-
-    bool Display_SSD1306::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON); return false; }
-
-        bool anyError = false;
-        
-        anyError = false == ValidateUINT32(jsonObj, "width");
-        anyError = false == ValidateUINT32(jsonObj, "height");
-        anyError = false == ValidateJsonStringField(jsonObj, "addr");
-        
-
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY());
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-        int itemCount = items.size();
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) continue; // comment item
-            if (Device::DisabledInJson(item) == true) continue; // disabled
-            
-            if (Display_SSD1306_Element::VerifyJSON(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            validItemCount++;
-
-        }
-        if (validItemCount == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID(""));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-
-        return anyError == false;
     }
 
     String Display_SSD1306::ToString() {

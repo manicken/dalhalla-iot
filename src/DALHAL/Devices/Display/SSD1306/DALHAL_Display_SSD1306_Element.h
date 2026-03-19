@@ -43,7 +43,6 @@ namespace DALHAL {
         uint8_t xPos;
         uint8_t yPos;
 
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         Display_SSD1306_Element(Display_SSD1306_Element&) = delete;
         Display_SSD1306_Element(DeviceCreateContext& context);
 
@@ -51,14 +50,4 @@ namespace DALHAL {
 
         String ToString() override;
     };
-/* the following is just to make Display_SSD1306_Element more streamlined without using cdaSource
-    however as the DisplayElements would not be so many, it maybe not matter
-    class Display_SSD_ElementFromSource : public Display_SSD1306_Element {
-    private:
-        
-    public:
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        Display_SSD_ElementFromSource(DeviceCreateContext& context);
-    };
-    */
 }

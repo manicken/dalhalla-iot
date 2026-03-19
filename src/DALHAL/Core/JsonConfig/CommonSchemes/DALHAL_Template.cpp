@@ -41,7 +41,10 @@ namespace DALHAL {
         constexpr JsonSchema::JsonObjectScheme templateJsonObject = {
             "template",
             templateFields,
-            &templateDeviceModes
+            consumerDeviceModes,
+            nullptr, // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
         };
     }
 

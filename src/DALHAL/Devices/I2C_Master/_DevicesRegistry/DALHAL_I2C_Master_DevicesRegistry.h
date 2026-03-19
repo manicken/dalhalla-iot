@@ -29,6 +29,8 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+
 namespace DALHAL {
 
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
@@ -51,6 +53,25 @@ namespace DALHAL {
             const EventDescriptor* reactiveTable
         ) : 
             Registry::DefineBase(Create_Function, Verify_JSON_Function, reactiveTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectScheme* jsonSchema,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectScheme* jsonSchema,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function,
+            const EventDescriptor* reactiveTable
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, reactiveTable),
             HasAddress_Function(HasAddress_Function)
         {}
 

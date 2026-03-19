@@ -27,19 +27,16 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_REST_Cmd_JSON_Scheme.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h> // for DALHAL_COMMON_CFG_NAME_UID
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase REST_Cmd::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::REST_Cmd,
         nullptr // no events available on obsolete device
     };
-
-    bool REST_Cmd::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, "url") == false){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_REMOTE_FETCH_REST_VERIFY_JSON); return false; }
-        return true;
-    }
 
     Device* REST_Cmd::Create(DeviceCreateContext& context) {
         return new REST_Cmd(context);
@@ -48,8 +45,8 @@ namespace DALHAL {
     REST_Cmd::REST_Cmd(DeviceCreateContext& context) : DALHAL::Device(context.deviceType)
     {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        remoteUrl = GetAsConstChar(jsonObj, "url");
+        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_COMMON_CFG_NAME_UID));
+        remoteUrl = GetAsConstChar(jsonObj, DALHAL_DEVICE_REST_CMD_CFG_NAME_URL);
     }
 
     DALHAL::HALOperationResult REST_Cmd::exec() {

@@ -93,8 +93,10 @@ namespace DALHAL {
         void validateAllOfGroup(const JsonVariant& j, const AllOfGroup* group, bool& anyError);
         // Validate ModeSelector
         int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
+        // Validate a JsonArray
+        void validateJsonArray(const JsonVariant& j, const FieldArray* field, bool& anyError);
         // Validate a full device
-        /*int*/ void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError);
+        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError);
         // Validate the JSON array against the given device registry.
         void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, ValidateFromRegisterContext& context, bool& anyError);
 

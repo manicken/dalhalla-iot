@@ -85,14 +85,52 @@ namespace DALHAL {
             ZeroCopyString zcStr = value.as<const char*>(); // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
             size_t strLen = zcStr.Length(); // use of lenght here is fast
-            if (strLen == 0) {
-                GlobalLogger.Error(F("Field string cannot be empty:"), f->name);
+
+            if (f->allowedValues != nullptr) {
+                if (strLen == 0) { // fast fail
+                    anyError = true;
+                    GlobalLogger.Error(F("String is empty @ allowedValues mode: "), f->name);
+                    GlobalLogger.setLastEntrySource("validateStringField");
+                    return;
+                }
+                if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::Void) {
+                    anyError = true;
+                    GlobalLogger.Error(F("SchemaError f->allowedValuesPolicy == Void"),f->name);
+                    GlobalLogger.setLastEntrySource("validateStringField");
+                    return;
+                }
+                bool match = false;
+                for (int i = 0; f->allowedValues[i] != nullptr; ++i) {
+                    const char* allowed = f->allowedValues[i];
+
+                    if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::Strict) {
+                        if (zcStr.Equals(allowed)) {
+                            match = true;
+                            break;
+                        }
+                    } else if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::IgnoreCase) {
+                        if (zcStr.EqualsIC(allowed)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!match) {
+                    GlobalLogger.Error(F("Invalid value for field:"), f->name);
+                    anyError = true;
+                }
+                return;
+            }
+
+            if (strLen < f->minLength) {
+                GlobalLogger.Error(F("String shorter than minLength:"), f->name);
                 GlobalLogger.setLastEntrySource("validateStringField");
                 anyError = true;
                 return;
             }
             if (f->maxLength > 0 && strLen > f->maxLength) {
-                GlobalLogger.Error(F("Field exceeds maxLength:"), f->name);
+                GlobalLogger.Error(F("String exceeds maxLength:"), f->name);
                 GlobalLogger.setLastEntrySource("validateStringField");
                 anyError = true;
                 return;
@@ -201,22 +239,20 @@ namespace DALHAL {
                     validateStringField(value, static_cast<const FieldString*>(field), anyError);
                     return;
                 }
+                case FieldType::Object: {
+                    validateJsonObject(value, static_cast<const FieldObject*>(field)->subtype, anyError);
+                    break;
+                }
                 case FieldType::Array: {
-                    auto f = static_cast<const FieldArray*>(field);
-                    validateJsonObject(value, f->subtype, anyError);
+                    validateJsonArray(value, static_cast<const FieldArray*>(field), anyError);
                     return;
                 }
                 case FieldType::RegistryArray: {
-                    auto f = static_cast<const FieldRegistryArray*>(field);
                     ValidateFromRegisterContext tmpContext(ValidateFromRegisterContext::State::Disabled);
-                    validateFromRegister(value, f->subtypes, tmpContext, anyError);
+                    validateFromRegister(value, static_cast<const FieldRegistryArray*>(field)->subtypes, tmpContext, anyError);
                     break;
                 }
-                case FieldType::Object: {
-                    auto f = static_cast<const FieldObject*>(field);
-                    validateJsonObject(value, f->subtype, anyError);
-                    break;
-                }
+                
                 case FieldType::HexBytes: {
                     
                     bool anyErrorTemp = false;
@@ -440,14 +476,35 @@ namespace DALHAL {
         }
 
         // Validate a complete JSON Object
-        /*int*/ void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError)
+        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError)
         {
+            if (j.size() == 0) {
+                if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Warn) {
+                    GlobalLogger.Warn(F("JsonObject is empty: "), jsonObjectScheme->typeName);
+                    GlobalLogger.setLastEntrySource("validateJsonObject");
+                } else if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Error) {
+                    anyError = true;
+                    GlobalLogger.Error(F("JsonObject is empty: "), jsonObjectScheme->typeName);
+                    GlobalLogger.setLastEntrySource("validateJsonObject");
+                } /*else if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Ignore) {
+                    // simply do nothing
+                }*/
+                return;
+            }
+            
             // 1. Check unknown fields
             for (const JsonPair& kv : j.as<JsonObject>()) {
                 const char* key = kv.key().c_str();
 
                 if (!isKnownField(key, jsonObjectScheme->fields)) {
-                    GlobalLogger.Warn(F("Unknown config field:"), key);
+                    if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Ignore) {
+                        continue;
+                    } else if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
+                        GlobalLogger.Warn(F("Unknown config field:"), key);
+                    } else if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Error) {
+                        GlobalLogger.Error(F("Unknown config field:"), key);
+                        anyError = true;
+                    }                    
                     GlobalLogger.setLastEntrySource(jsonObjectScheme->typeName);
                     // as this should not render the json invalid
                     // anyError is not set
@@ -481,6 +538,33 @@ namespace DALHAL {
             evaluateConstraints(j, jsonObjectScheme->constraints, anyError);
 
             //return anyError ? -1 : mode; // dont think this is ever needed
+        }
+
+        void validateJsonArray(const JsonVariant& j, const FieldArray* field, bool& anyError)
+        {
+            if (!j.is<JsonArray>()) {
+                GlobalLogger.Error(F("Field is not an array"), field->name);
+                anyError = true;
+                return;
+            }
+
+            const JsonArray& arr = j.as<JsonArray>();
+
+            // Empty policy (THIS is where it belongs for arrays)
+            if (arr.size() == 0) {
+                if (field->emptyPolicy == EmptyPolicy::Error) {
+                    GlobalLogger.Error(F("Array is empty"), field->name);
+                    anyError = true;
+                } else if (field->emptyPolicy == EmptyPolicy::Warn) {
+                    GlobalLogger.Warn(F("Array is empty"), field->name);
+                }
+                return;
+            }
+
+            // Validate each element
+            for (JsonVariant item : arr) {
+                validateJsonObject(item, field->subtype, anyError);
+            }
         }
 
         // Validate the JSON array against the given device registry.

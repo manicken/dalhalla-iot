@@ -51,10 +51,10 @@ namespace DALHAL {
         constexpr FieldUInt timeout_ms_field = {DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS, FieldFlag::Optional, 1, 0, DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS}; // default 10 seconds
 
         constexpr const FieldBase* directModeAB_GroupItems[] = {&pin_direct_a_field, &pin_direct_b_field, nullptr};
-        constexpr AllOfGroup directModeAB_GroupFields = {"directModeAB", FieldFlag::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output
+        constexpr AllOfGroup directModeAB_GroupFields = {"directModeAB", FieldFlag::ModeDefine, directModeAB_GroupItems }; // here hbridgeModeAB defines what name to use for the BSON output
         
         constexpr const FieldBase* directModeSR_GroupItems[] = {&pin_direct_set_field, &pin_direct_reset_field, nullptr};
-        constexpr AllOfGroup directModeSR_GroupFields = {"directModeOC", FieldFlag::ModeDefine, hbridgeModeOC_GroupItems}; // here hbridgeModeOC defines what name to use for the BSON output
+        constexpr AllOfGroup directModeSR_GroupFields = {"directModeOC", FieldFlag::ModeDefine, directModeSR_GroupItems }; // here hbridgeModeOC defines what name to use for the BSON output
         
         constexpr const FieldBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
         constexpr AllOfGroup direnableMode_GroupFields = {"dir_enableMode", FieldFlag::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
@@ -99,11 +99,13 @@ namespace DALHAL {
             nullptr
         };
 
-        constexpr JsonObjectScheme LatchingRelayDevice = {
+        constexpr JsonObjectScheme LatchingRelay = {
             "LatchingRelay",
             fields,
             modes,
-            nullptr // no constraints
+            nullptr, // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
         };
 
     }

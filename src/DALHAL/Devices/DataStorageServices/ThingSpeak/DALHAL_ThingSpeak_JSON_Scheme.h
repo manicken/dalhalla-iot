@@ -23,20 +23,18 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
-#define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
-#define DALHAL_COMMON_CFG_NAME_TYPE "type"
-#define DALHAL_COMMON_CFG_NAME_UID "uid"
+#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS "firstUpdateAfterSeconds"
+#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER "testserver"
+#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY "key"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldString typeField;
-        extern const FieldUID uidFieldRequired;
-        extern const FieldUID uidFieldOptional;
-        
+        extern const JsonObjectScheme ThingSpeak;
+
     }
-    
+
 }

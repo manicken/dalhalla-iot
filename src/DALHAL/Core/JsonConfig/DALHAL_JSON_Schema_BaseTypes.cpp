@@ -72,6 +72,27 @@ namespace DALHAL {
                 default: return "Unknown";
             }
         }
+
+        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy) {
+            switch (policy)
+            {
+                case UnknownFieldPolicy::Error: return "Error";
+                case UnknownFieldPolicy::Ignore: return "Ignore";
+                case UnknownFieldPolicy::Warn: return "Warn";
+                //case UnknownFieldPolicy: return "";
+                default: return "Unknown";
+            }
+        }
+        const char* EmptyPolicyToString(EmptyPolicy policy) {
+            switch (policy)
+            {
+                case EmptyPolicy::Error: return "Error";
+                case EmptyPolicy::Ignore: return "Ignore";
+                case EmptyPolicy::Warn: return "Warn";
+                //case CanBeEmptyPolicy: return "";
+                default: return "Unknown";
+            }
+        }
     }
 
 }

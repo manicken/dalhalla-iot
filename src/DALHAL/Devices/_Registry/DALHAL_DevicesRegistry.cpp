@@ -76,7 +76,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Item DeviceRegistry[] = {
+    constexpr Registry::Item RootDevicesRegistry[] = {
 
          /** ---------------- Script-backed Devices ---------------- */
         {"VAR", &ScriptVariable::RegistryDefine},

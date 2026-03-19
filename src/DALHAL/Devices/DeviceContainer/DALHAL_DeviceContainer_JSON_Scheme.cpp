@@ -21,22 +21,37 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DALHAL_DeviceContainer_JSON_Scheme.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
-#define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
-#define DALHAL_COMMON_CFG_NAME_TYPE "type"
-#define DALHAL_COMMON_CFG_NAME_UID "uid"
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldString typeField;
-        extern const FieldUID uidFieldRequired;
-        extern const FieldUID uidFieldOptional;
-        
+        constexpr FieldRegistryArray itemsField = {"items", FieldFlag::Required, RootDevicesRegistry};
+
+        constexpr const FieldBase* fields[] = {
+            &typeField,         // DALHAL_CommonSchemes_Base
+            &uidFieldRequired,  // DALHAL_CommonSchemes_Base
+            &itemsField
+        };
+
+        constexpr JsonObjectScheme DeviceContainer = {
+            "DeviceContainer",
+            fields,
+            nullptr, // no modes
+            nullptr,  // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
+        };
+
     }
-    
+
 }

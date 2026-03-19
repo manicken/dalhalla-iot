@@ -58,8 +58,8 @@ namespace DALHAL {
         };
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // 
-            &uidFieldRequired,
+            &typeField,         // DALHAL_CommonSchemes_Base
+            &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &pinField,
             &chField,
             &minPulseLengthField, // actually pulse length cfg fields are individually optional
@@ -75,7 +75,9 @@ namespace DALHAL {
             "PWM_Servo",
             fields,
             nullptr, // no modes right now
-            constraints
+            constraints,
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
         };
 
     }

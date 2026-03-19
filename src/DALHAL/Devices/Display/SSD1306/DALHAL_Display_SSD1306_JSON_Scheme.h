@@ -23,20 +23,14 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-
-#define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
-#define DALHAL_COMMON_CFG_NAME_TYPE "type"
-#define DALHAL_COMMON_CFG_NAME_UID "uid"
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldString typeField;
-        extern const FieldUID uidFieldRequired;
-        extern const FieldUID uidFieldOptional;
-        
+        extern const JsonObjectScheme Display_SSD1306;
+
     }
-    
+
 }

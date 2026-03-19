@@ -28,21 +28,18 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL_AnalogInput_JSON_Scheme.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase AnalogInput::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::AnalogInput,
         DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
     };
     
 #if defined(ESP32) || defined(_WIN32)
     Device* AnalogInput::Create(DeviceCreateContext& context) {
         return new AnalogInput(context);
-    }
-
-    bool AnalogInput::VerifyJSON(const JsonVariant &jsonObj) {
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, static_cast<uint8_t>(GPIO_manager::PinFunc::IN));
     }
 
     AnalogInput::AnalogInput(DeviceCreateContext& context) : AnalogInput_DeviceBase(context.deviceType) {
