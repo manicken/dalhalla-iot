@@ -21,32 +21,19 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DALHAL_CommonSchemes_Base.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
 
-// for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
-// for dir/enable/(optional break) pin mode
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
-
-// 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP "MinEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP "MaxEndStop"
-
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
-#define DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS 10000
-
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectScheme ActuatorDevice;
+        constexpr FieldUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldFlag::Required};
+        constexpr FieldUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldFlag::Optional};
+
+        constexpr FieldString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldType::String, FieldFlag::Required, nullptr, 0};
 
     }
+
 }

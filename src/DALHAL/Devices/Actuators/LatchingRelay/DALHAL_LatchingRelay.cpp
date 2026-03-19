@@ -29,13 +29,15 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include "DALHAL_LatchingRelay_JSON_Scheme.h"
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase LatchingRelay::RegistryDefine = {
         Create,
-        &JsonObjectSchemeLatchingRelayDevice,
+        &JsonSchema::LatchingRelayDevice,
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
 

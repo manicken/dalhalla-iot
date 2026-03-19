@@ -23,14 +23,18 @@
 
 #include "DALHAL_PWM_Servo_JSON_Scheme.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_SchemaFieldBase.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
+
     namespace JsonSchema {
+
         constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
 
         constexpr FieldUInt chField = {DALHAL_DEVICE_PWM_SERVO_CFG_NAME_CH, FieldFlag::Required, 0, 7, 0};
@@ -53,9 +57,9 @@ namespace DALHAL {
             {nullptr, FieldConstraint::Type::Void, nullptr}
         };
 
-        constexpr const JsonSchema::FieldBase* fields[] = {
-            &JsonSchema::typeField, // include this here as otherwise we will get unknown field found
-            &JsonSchema::uidFieldRequired,
+        constexpr const FieldBase* fields[] = {
+            &typeField,         // 
+            &uidFieldRequired,
             &pinField,
             &chField,
             &minPulseLengthField, // actually pulse length cfg fields are individually optional
@@ -67,7 +71,7 @@ namespace DALHAL {
             &maxValField,
         };
 
-        constexpr JsonSchema::JsonObjectScheme JsonObjectSchemePWM_ServoDevice = {
+        constexpr JsonObjectScheme PWM_ServoDevice = {
             "PWM_Servo",
             fields,
             nullptr, // no modes right now
@@ -75,4 +79,5 @@ namespace DALHAL {
         };
 
     }
+
 }

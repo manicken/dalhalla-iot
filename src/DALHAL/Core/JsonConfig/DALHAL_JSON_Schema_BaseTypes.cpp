@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_SchemaFieldBase.h"
+#include "DALHAL_JSON_Schema_BaseTypes.h"
 
 namespace DALHAL {
 

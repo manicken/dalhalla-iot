@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "DALHAL_JSON_Schema.h"
+#include "DALHAL_JSON_Schema_Types.h"
 
 #include <ArduinoJSON.h>
 using json = JsonVariant;

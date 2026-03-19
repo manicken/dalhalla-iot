@@ -21,32 +21,28 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Time.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Consumer.h>
 
-
-// for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
-// for dir/enable/(optional break) pin mode
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
-
-// 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP "MinEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP "MaxEndStop"
-
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
-#define DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS 10000
-
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 namespace DALHAL {
 
     namespace JsonSchema {
+        
+        constexpr const FieldBase* templateFields[] = {
+            &typeField,
+            &uidFieldRequired,
+            &refreshTimeGroupFields,
+            &sourceField,
+            &eventSourceField,
+            nullptr
+        };
 
-        extern const JsonObjectScheme ActuatorDevice;
-
+        constexpr JsonSchema::JsonObjectScheme templateJsonObject = {
+            "template",
+            templateFields,
+            &templateDeviceModes
+        };
     }
+
 }

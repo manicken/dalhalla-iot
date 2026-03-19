@@ -30,6 +30,8 @@
 #include <ArduinoJSON.h>
 #include <DALHAL/Support/ConvertHelper.h>
 
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+
 
 //using json = JsonVariant;
  
@@ -477,7 +479,7 @@ namespace DALHAL {
 
             // 4. Evaluate constraints
             evaluateConstraints(j, jsonObjectScheme->constraints, anyError);
-            
+
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
 
@@ -512,7 +514,7 @@ namespace DALHAL {
                     anyError = true;
                     continue; // skip the current json device
                 }
-                const char* type_cStr = jsonItem[DALHAL_KEYNAME_TYPE];
+                const char* type_cStr = jsonItem[DALHAL_COMMON_CFG_NAME_TYPE];
                 const Registry::Item& regItem = Registry::GetItem(reg, type_cStr);
                 if (regItem.typeName == nullptr) {
                     GlobalLogger.Error(F("could not find type:"),type_cStr);
@@ -530,6 +532,7 @@ namespace DALHAL {
                 
                 if (regItem.def->jsonSchema == nullptr) {
                     // TODO remove use of obsolete function Verify_JSON_Function
+                    // can only be done when all devices use json schema
                     if (regItem.def->Verify_JSON_Function == nullptr) {
                     GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
                     GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
@@ -537,14 +540,15 @@ namespace DALHAL {
                     continue; // skip the current json device
                     }
                     // TODO remove use of obsolete function Verify_JSON_Function
-                    if (jsonItem.containsKey(DALHAL_KEYNAME_UID) == false) {
+                    // can only be done when all devices use json schema
+                    if (jsonItem.containsKey(DALHAL_COMMON_CFG_NAME_UID) == false) {
                         GlobalLogger.Error(F("uid field missing"));
                         GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                         anyError = true;
                         continue; // skip the current json device
                     }
                     bool uidFoundError = false;
-                    validateStringField(jsonItem[DALHAL_KEYNAME_UID], &uidFieldRequired, uidFoundError);
+                    validateStringField(jsonItem[DALHAL_COMMON_CFG_NAME_UID], &uidFieldRequired, uidFoundError);
                     if (uidFoundError) {
                         anyError = true;
                         continue;

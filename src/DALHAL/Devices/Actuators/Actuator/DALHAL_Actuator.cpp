@@ -29,13 +29,15 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
         Create,
-        &JsonObjectSchemeActuatorDevice,
+        &JsonSchema::ActuatorDevice,
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
     };
 

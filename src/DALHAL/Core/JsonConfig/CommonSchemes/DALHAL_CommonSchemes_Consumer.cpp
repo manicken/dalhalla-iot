@@ -21,23 +21,15 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema.h"
+#include "DALHAL_CommonSchemes_Consumer.h"
+
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include "DALHAL_CommonSchemes_Time.h"
 
 namespace DALHAL {
-    
+
     namespace JsonSchema {
-        constexpr FieldUID uidFieldRequired{FieldFlag::Required};
-        constexpr FieldUID uidFieldOptional{FieldFlag::Optional};
 
-        constexpr FieldString typeField = {DALHAL_KEYNAME_TYPE, FieldType::String, FieldFlag::Required, nullptr, 0};
-        
-        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldType::UInt, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldType::Float, FieldFlag::AnyOfGroup, 1, 0, 0 }; // zero max mean infinite
-        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
-
-        constexpr AnyOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldFlag::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        
         constexpr FieldString sourceField = { "source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
         constexpr FieldString eventSourceField = { "event_source", FieldType::UID_Path, FieldFlag::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
         
@@ -59,27 +51,13 @@ namespace DALHAL {
             { &eventSourceField, false },      // event_source must NOT exist
             { nullptr, false}
         };
-        constexpr const ModeSelector templateDeviceModes[] = {
+        constexpr ModeSelector templateDeviceModes[] = {
             {"refresh mode", refreshModeConjunctions},
             {"event mode", eventModeConjunctions},
             {"script mode", scriptModeConjunctions},
             {nullptr, nullptr}
         };
-
-        constexpr const FieldBase* templateFields[] = {
-            &typeField,
-            &uidFieldRequired,
-            &refreshTimeGroupFields,
-            &sourceField,
-            &eventSourceField,
-            nullptr
-        };
-
-        constexpr JsonSchema::JsonObjectScheme templateJsonObject = {
-            "template",
-            templateFields,
-            templateDeviceModes
-        };
-
+        
     }
+
 }

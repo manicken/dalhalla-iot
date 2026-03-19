@@ -22,17 +22,23 @@
 */
 
 #include "DALHAL_CommonSchemes_Pins.h"
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 namespace DALHAL {
-    constexpr JsonSchema::FieldHardwarePin InputPinField = { DALHAL_COMMON_CFG_NAME_PIN, JsonSchema::FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
-    constexpr JsonSchema::FieldBool InputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, JsonSchema::FieldFlag::Optional, false };
-    constexpr const JsonSchema::FieldBase* InputFields[] = { &InputPinField, &InputActiveHighField, nullptr };
-    constexpr JsonSchema::JsonObjectScheme InputPinScheme = { "InputPinScheme", InputFields, nullptr };
 
-    constexpr JsonSchema::FieldHardwarePin OutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, JsonSchema::FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
-    constexpr JsonSchema::FieldBool OutputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, JsonSchema::FieldFlag::Optional, false };
-    constexpr const JsonSchema::FieldBase* OutputFields[] = { &OutputPinField, &OutputActiveHighField, nullptr };
-    constexpr JsonSchema::JsonObjectScheme OutputPinScheme = { "OutputPinScheme", OutputFields, nullptr };
+    namespace JsonSchema {
+
+        constexpr FieldHardwarePin InputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
+        constexpr FieldBool InputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, FieldFlag::Optional, false };
+        constexpr const FieldBase* InputFields[] = { &InputPinField, &InputActiveHighField, nullptr };
+        constexpr JsonObjectScheme InputPinScheme = { "InputPinScheme", InputFields, nullptr };
+
+        constexpr FieldHardwarePin OutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
+        constexpr FieldBool OutputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, FieldFlag::Optional, false };
+        constexpr const FieldBase* OutputFields[] = { &OutputPinField, &OutputActiveHighField, nullptr };
+        constexpr JsonObjectScheme OutputPinScheme = { "OutputPinScheme", OutputFields, nullptr };
+
+    }
+    
 }

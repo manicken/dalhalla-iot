@@ -34,14 +34,15 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
-#define VERIFY_JSON_SOURCE "PWM_Servo::VerifyJSON"
+#include "DALHAL_PWM_Servo_JSON_Scheme.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase PWM_Servo::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::PWM_ServoDevice,
         DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)
     };
 
@@ -79,7 +80,7 @@ namespace DALHAL {
         Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
         Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
     }
-
+/*
     bool PWM_Servo::VerifyJSON(const JsonVariant &jsonObj) {
         bool anyError = false;
         if (!jsonObj.containsKey("pin")) {
@@ -111,7 +112,7 @@ namespace DALHAL {
         }
         return (anyError == false);
     }
-
+*/
     Device* PWM_Servo::Create(DeviceCreateContext& context) {
         return new PWM_Servo(context);
     }

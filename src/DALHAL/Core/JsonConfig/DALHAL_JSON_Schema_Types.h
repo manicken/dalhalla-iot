@@ -26,9 +26,8 @@
 
 #include <stdlib.h>
 #include <DALHAL/Core/Types/DALHAL_UID.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
-#include "DALHAL_JSON_SchemaFieldBase.h"
+#include "DALHAL_JSON_Schema_BaseTypes.h"
 
 namespace DALHAL {
 
@@ -120,8 +119,8 @@ namespace DALHAL {
         //************************************* */
 
         struct FieldUID : FieldString {
-            constexpr FieldUID(FieldFlag f)
-                : FieldString(DALHAL_KEYNAME_UID, FieldType::UID, f, nullptr, HAL_UID::Size) {}
+            constexpr FieldUID(const char* n, FieldFlag f)
+                : FieldString(n, FieldType::UID, f, nullptr, HAL_UID::Size) {}
         };
         
         struct FieldHardwarePin : FieldBase {
@@ -181,11 +180,6 @@ namespace DALHAL {
                 byteCount(byteCount) {}
         };
 
-        // Common use fields
-        extern const FieldString typeField;
-        extern const FieldUID uidFieldRequired;
-        extern const FieldUID uidFieldOptional;
-        extern const AnyOfGroup refreshTimeGroupFields;
-
     } // namespace JsonSchema
+
 }
