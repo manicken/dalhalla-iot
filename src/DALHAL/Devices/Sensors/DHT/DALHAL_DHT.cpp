@@ -30,22 +30,16 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_DHT_JSON_Scheme.h"
+
 namespace DALHAL {
     
     constexpr Registry::DefineBase DHT::RegistryDefine = {
         
         Create,
-        VerifyJSON,
+        &JsonSchema::DHT,
         DALHAL_REACTIVE_EVENT_TABLE(DHT)
     };
-
-    bool DHT::isValidDHTModel(const char* modelStr) {
-        return 
-            (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_DHT11) == 0)  ||
-            (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_DHT22) == 0) ||
-            (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_AM2302) == 0) ||
-            (strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_RHT03) == 0);
-    }
 
     DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
@@ -71,18 +65,6 @@ namespace DALHAL {
         dht.setup(pin,model);
         lastUpdateMs = millis()-refreshTimeMs; // direct update
 
-    }
-
-    bool DHT::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_DHT_MODEL) == false){ SET_ERR_LOC(DALHAL_ERROR_SOURCE_DHT_VERIFY_JSON); return false; }
-        //const char* modelStr = jsonObj[DALHAL_KEYNAME_DHT_MODEL].as<const char*>();
-        const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_DHT_MODEL); // this take 8bytes less than above
-
-        if (!modelStr || isValidDHTModel(modelStr) == false) {
-            GlobalLogger.Error(F("DHT model invalid/missing: "), modelStr);
-            return false;
-        }
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)));
     }
 
     Device* DHT::Create(DeviceCreateContext& context) {

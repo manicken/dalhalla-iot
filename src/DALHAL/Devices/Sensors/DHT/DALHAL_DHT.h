@@ -32,15 +32,6 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
-
-
-
-#define DALHAL_KEYNAME_DHT_MODEL          "model"
-// DHT models
-#define DALHAL_TYPE_DHT_MODEL_DHT11       "DHT11"
-#define DALHAL_TYPE_DHT_MODEL_DHT22       "DHT22"
-#define DALHAL_TYPE_DHT_MODEL_AM2302      "AM2302"
-#define DALHAL_TYPE_DHT_MODEL_RHT03       "RTH03"
  /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
 #define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000
 
@@ -57,7 +48,6 @@ namespace DALHAL {
     class DHT : public DHTDeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
     private:
