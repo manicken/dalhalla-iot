@@ -44,6 +44,7 @@ namespace DALHAL {
             HardwarePin,
             HardwarePinOrVirtualPin
         };
+        const char* FieldTypeToString(FieldType type);
 
         enum class FieldFlag {
             Required,
@@ -52,6 +53,7 @@ namespace DALHAL {
             AllOfGroup, // the higher group defines
             ModeDefine // Mode defines
         };
+        const char* FieldFlagToString(FieldFlag flag);
 
         struct FieldBase {
             const char* name;    // flash string
@@ -92,6 +94,7 @@ namespace DALHAL {
                 fieldB(fieldB)
                 {}
         };
+        const char* FieldConstraintTypeToString(FieldConstraint::Type type);
 
         struct JsonObjectScheme {
             const char* typeName;

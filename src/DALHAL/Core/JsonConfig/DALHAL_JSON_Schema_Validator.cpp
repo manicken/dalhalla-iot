@@ -25,6 +25,7 @@
 #include "DALHAL/Core/Manager/DALHAL_GPIO_Manager.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 
 #include <ArduinoJSON.h>
 #include <DALHAL/Support/ConvertHelper.h>
@@ -293,63 +294,47 @@ namespace DALHAL {
         }
 
         // Validate ModeSelector
-        int evaluateModes(const JsonVariant& j, const ModeSelector* modes)
-        {
+        int evaluateModes(const JsonVariant& j, const ModeSelector* modes) {
             int matchedMode = -1;
-            for (int i = 0; modes[i].name != nullptr; ++i)
-            {
+            for (int i = 0; modes[i].name != nullptr; ++i) {
                 const ModeSelector& mode = modes[i];
                 bool modeValid = true;
-                for (int c = 0; mode.conjunctions[c].fieldRef != nullptr; ++c)
-                {
+                for (int c = 0; mode.conjunctions[c].fieldRef != nullptr; ++c) {
                     const ModeConjunctionDefine& conj = mode.conjunctions[c];
                     bool exists = false;
-                    if (conj.fieldRef->type == FieldType::AnyOfGroup)
-                    {
-                        const AnyOfGroup* group =
-                            static_cast<const AnyOfGroup*>(conj.fieldRef);
+                    if (conj.fieldRef->type == FieldType::AnyOfGroup) {
+                        const AnyOfGroup* group = static_cast<const AnyOfGroup*>(conj.fieldRef);
 
-                        for (int g = 0; group->fields[g] != nullptr; ++g)
-                        {
-                            if (j.containsKey(group->fields[g]->name))
-                            {
+                        for (int g = 0; group->fields[g] != nullptr; ++g) {
+                            if (j.containsKey(group->fields[g]->name)) {
                                 exists = true;
                                 break;
                             }
                         }
                     }
-                    else if (conj.fieldRef->type == FieldType::AllOfGroup)
-                    {
-                        const AllOfGroup* group =
-                            static_cast<const AllOfGroup*>(conj.fieldRef);
-
+                    else if (conj.fieldRef->type == FieldType::AllOfGroup) {
+                        const AllOfGroup* group = static_cast<const AllOfGroup*>(conj.fieldRef);
                         int found = 0;
                         int total = 0;
 
-                        for (int g = 0; group->fields[g] != nullptr; ++g)
-                        {
+                        for (int g = 0; group->fields[g] != nullptr; ++g) {
                             total++;
-                            if (j.containsKey(group->fields[g]->name))
+                            if (j.containsKey(group->fields[g]->name)) {
                                 found++;
+                            }
                         }
-
                         // ✅ group "exists" ONLY if fully present
                         exists = (found == total && total > 0);
-                    }
-                    else
-                    {
+                    } else {
                         exists = j.containsKey(conj.fieldRef->name);
                     }
-                    if (conj.required != exists)
-                    {
+                    if (conj.required != exists) {
                         modeValid = false;
                         break;
                     }
                 }
-                if (modeValid)
-                {
-                    if (matchedMode != -1)
-                    {
+                if (modeValid) {
+                    if (matchedMode != -1) {
                         // multiple modes match -> ambiguous
                         return -2;
                     }
@@ -357,6 +342,99 @@ namespace DALHAL {
                 }
             }
             return matchedMode;
+        }
+
+        bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const FieldConstraint& fcItem) {
+            bool tempAnyError = false;
+            validateField(j, fcItem.fieldA, tempAnyError);
+            validateField(j, fcItem.fieldB, tempAnyError);
+            if (tempAnyError) {
+                GlobalLogger.Warn(F("both FieldConstraint fields must be valid"));
+                GlobalLogger.setLastEntrySource("evaluateConstraints_PrevalidateFields");
+                return false;
+            }
+            return true;
+        }
+
+        void evaluateConstraints(const JsonVariant& j, const FieldConstraint* constraints, bool& anyError) {
+            if (constraints == nullptr) return;
+
+            for (int i=0; constraints[i].type != FieldConstraint::Type::Void; ++i) {
+                const FieldConstraint& fcItem = constraints[i];
+                if (fcItem.fieldA->type != fcItem.fieldB->type) {
+                    GlobalLogger.Warn(F("SchemaError - both FieldConstraint fields must be of the same type"));
+                    GlobalLogger.setLastEntrySource("evaluateConstraints");
+                    continue;
+                }
+                HALValue valA;
+                HALValue valB;
+                // now both are the same type so it wont matter which one we check the type against
+                if (fcItem.fieldA->type == FieldType::UInt) {
+                    // first validate so that the basic values are in range and that it's the correct type
+                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                        continue;
+                    }
+                    auto fA = static_cast<const FieldUInt*>(fcItem.fieldA);
+                    auto fB = static_cast<const FieldUInt*>(fcItem.fieldB);
+                    valA = j.containsKey(fA->name)?j[fA->name].as<uint32_t>():fA->defaultValue;
+                    valB = j.containsKey(fB->name)?j[fB->name].as<uint32_t>():fB->defaultValue;
+                } else if (fcItem.fieldA->type == FieldType::Int) {
+                    // first validate so that the basic values are in range and that it's the correct type
+                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                        continue;
+                    }
+                    auto fA = static_cast<const FieldInt*>(fcItem.fieldA);
+                    auto fB = static_cast<const FieldInt*>(fcItem.fieldB);
+                    valA = j.containsKey(fA->name)?j[fA->name].as<int32_t>():fA->defaultValue;
+                    valB = j.containsKey(fB->name)?j[fB->name].as<int32_t>():fB->defaultValue;
+
+                } else if (fcItem.fieldA->type == FieldType::Float) {
+                    // first validate so that the basic values are in range and that it's the correct type
+                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                        continue;
+                    }
+                    auto fA = static_cast<const FieldFloat*>(fcItem.fieldA);
+                    auto fB = static_cast<const FieldFloat*>(fcItem.fieldB);
+                    valA = j.containsKey(fA->name)?j[fA->name].as<float>():fA->defaultValue;
+                    valB = j.containsKey(fB->name)?j[fB->name].as<float>():fB->defaultValue;
+
+                }/* else if (fcItem.fieldA->type == FieldType::Bool) { // could make sense in some situations
+                    // keep it unimplemented for now
+                } */else {
+                    GlobalLogger.Warn(F("SchemaError - FieldConstraint fieldtype unsupported: "), FieldTypeToString(fcItem.fieldA->type));
+                    GlobalLogger.setLastEntrySource("evaluateConstraints");
+                    continue;
+                }
+
+                if (fcItem.type == FieldConstraint::Type::GreaterThan) {
+                    if ((valA > valB) == false) {
+                        anyError = true;
+                        std::string err = fcItem.fieldA->name + std::string(" > ") + fcItem.fieldB->name;
+                        GlobalLogger.Error(F("Constraint failed: "), err.c_str());
+                    }
+                } else if (fcItem.type == FieldConstraint::Type::GreaterThanOrEqual) {
+                    if ((valA >= valB) == false) {
+                        anyError = true;
+                        std::string err = fcItem.fieldA->name + std::string(" >= ") + fcItem.fieldB->name;
+                        GlobalLogger.Error(F("Constraint failed: "), err.c_str());
+                    }
+                } else if (fcItem.type == FieldConstraint::Type::LessThan) {
+                    if ((valA < valB) == false) {
+                        anyError = true;
+                        std::string err = fcItem.fieldA->name + std::string(" < ") + fcItem.fieldB->name;
+                        GlobalLogger.Error(F("Constraint failed: "), err.c_str());
+                    }
+                } else if (fcItem.type == FieldConstraint::Type::LessThanOrEqual) {
+                    if ((valA <= valB) == false) {
+                        anyError = true;
+                        std::string err = fcItem.fieldA->name + std::string(" <= ") + fcItem.fieldB->name;
+                        GlobalLogger.Error(F("Constraint failed: "), err.c_str());
+                    }
+                } else {
+                    GlobalLogger.Error(F("SchemaError - Constraint type not found: "), FieldConstraintTypeToString(fcItem.type));
+                }
+
+            }
         }
 
         // Validate a complete JSON Object
