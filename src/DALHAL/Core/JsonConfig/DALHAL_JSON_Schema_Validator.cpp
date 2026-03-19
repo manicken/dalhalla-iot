@@ -474,6 +474,10 @@ namespace DALHAL {
                 GlobalLogger.Error(F("Configuration matches multiple modes"));
                 anyError = true;
             }
+
+            // 4. Evaluate constraints
+            evaluateConstraints(j, jsonObjectScheme->constraints, anyError);
+            
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
 
