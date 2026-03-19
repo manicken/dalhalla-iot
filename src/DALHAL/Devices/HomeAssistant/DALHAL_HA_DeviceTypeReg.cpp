@@ -5,7 +5,7 @@
 
   Provides IoT firmware building blocks for home automation and smart sensors.
 
-  Copyright (c) 2025 Jannik Svensson
+  Copyright (C) 2026 Jannik Svensson
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
