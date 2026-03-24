@@ -21,33 +21,33 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DALHAL_ScriptEventDispatcher_JSON_Scheme.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
-#include <Arduino.h> // Needed for String class
-
-#include <string>
-#include <ArduinoJson.h>
-
-
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
 
 namespace DALHAL {
 
-    class ScriptVariableReadOnly : public Device {
-    public: // public static fields and exposed external structures
-        static const Registry::DefineBase RegistryDefine;
-        static Device* Create(DeviceCreateContext& context);
+    namespace JsonSchema {
 
-    private:
-        HALValue value;
+        constexpr const FieldBase* fields[] = {
+            &typeField,         // DALHAL_CommonSchemes_Base
+            &uidFieldRequired,  // DALHAL_CommonSchemes_Base
+        };
 
-    public:
-        ScriptVariableReadOnly(DeviceCreateContext& context);
+        constexpr JsonObjectScheme ScriptEventDispatcher = {
+            "ScriptEventDispatcher",
+            fields,
+            nullptr, // no modes
+            nullptr,  // no constraints
+            EmptyPolicy::Warn,
+            UnknownFieldPolicy::Warn,
+        };
 
-        HALOperationResult read(HALValue& val) override;
+    }
 
-        String ToString() override;
-    };
 }

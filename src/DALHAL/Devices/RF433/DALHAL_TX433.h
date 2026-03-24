@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "DALHAL_TX433unit.h"
+#include "DALHAL_TX433_Unit.h"
 
 #include <Arduino.h> // Needed for String class
 #include <ArduinoJson.h>
@@ -46,12 +46,11 @@ namespace DALHAL {
     class TX433 : public TX433_DeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
     private:
         uint8_t pin = 0; // if pin would be used
-        Device/*TX433unit*/** units;
+        Device** units;
         int unitCount;
 
     public:

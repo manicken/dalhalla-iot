@@ -28,31 +28,18 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include "DALHAL_TX433_UnitTypeRegistry.h"
+
+#include "DALHAL_TX433_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase TX433::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::TX433,
         DALHAL_REACTIVE_EVENT_TABLE(TX433)
     };
-
-    bool TX433::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_VERIFY_JSON); return false; }
-
-        if (jsonObj.containsKey(DALHAL_KEYNAME_TX433_UNITS) && jsonObj[DALHAL_KEYNAME_TX433_UNITS].is<JsonArray>()) {
-            JsonArray units = jsonObj[DALHAL_KEYNAME_TX433_UNITS].as<JsonArray>();
-            int unitCount = units.size();
-            for (int i=0;i<unitCount;i++) {
-                const JsonVariant& unit = units[i];
-                if (IsConstChar(unit) == true) continue; // comment item
-                if (Device::DisabledInJson(unit) == true) continue; // disabled
-                if (TX433unit::VerifyJSON(unit) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            }
-        }
-        // this is a check only to verify that the pin cfg exist
-        return GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)));
-    }
 
     Device* TX433::Create(DeviceCreateContext& context) {
         return new TX433(context);
@@ -73,21 +60,23 @@ namespace DALHAL {
                 const JsonVariant& unit = _units[i];
                 if (IsConstChar(unit) == true) { validUnits[i] = false;  continue; }  // comment item
                 if (Device::DisabledInJson(unit) == true) { validUnits[i] = false;  continue; } // disabled
-                bool valid = TX433unit::VerifyJSON(unit);
-                validUnits[i] = valid;
-                if (valid == false) continue;
+                validUnits[i] = true; // allways valid in strict mode
                 unitCount++;
             }
             // second pass create units(devices)
             units = new Device*[unitCount](); /*TX433unit*/
             uint32_t index = 0;
-            DeviceCreateContext createContext;
-            createContext.deviceType = "TX433unit";
+            TX433_Unit_CreateFunctionContext createContext(pin);
             for (int i=0;i<_unitCount;i++) {
                 if (validUnits[i] == false) continue;
                 const JsonVariant& item = _units[i];
                 createContext.jsonObjItem = &item;
-                units[index++] = new TX433unit(createContext, pin); // here type is not used so we just take it from current to avoid creating new const strings, or use nullstr do also work
+                const char* type_cStr = item[DALHAL_COMMON_CFG_NAME_TYPE].as<const char*>();
+                const Registry::Item& regItem = Registry::GetItem(TX433_UnitTypeRegistry, type_cStr);
+                // here it's safe to use regItem as JSON validation ensure that device type exists
+                createContext.deviceType = regItem.typeName;
+
+                units[index++] = regItem.def->Create_Function(createContext);
             }
             delete[] validUnits;
         }

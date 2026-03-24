@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_TX433unit_Reactive.h"
+#include "DALHAL_TX433_Unit_Reactive.h"
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {

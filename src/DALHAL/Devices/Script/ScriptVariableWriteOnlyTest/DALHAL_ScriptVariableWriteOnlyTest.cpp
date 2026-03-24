@@ -27,11 +27,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_ScriptVariableWriteOnlyTest_JSON_Scheme.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariableWriteOnlyTest::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ScriptVariableWriteOnlyTest,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR)
     };
     
@@ -39,12 +40,6 @@ namespace DALHAL {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
         value = GetAsUINT32(jsonObj, "val",0);
-    }
-
-    bool ScriptVariableWriteOnlyTest::VerifyJSON(const JsonVariant &jsonObj) {
-        // could add type def later if wanted
-        // also nonvolatile storage could be a mode
-        return true;
     }
 
     Device* ScriptVariableWriteOnlyTest::Create(DeviceCreateContext& context) {

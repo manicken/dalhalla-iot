@@ -27,12 +27,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_ScriptVariable_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase ScriptVariable::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ScriptVariable,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
     };
 
@@ -44,12 +45,6 @@ namespace DALHAL {
         value.setCallbacks(this, GenericValueCallback<ScriptVariable_DeviceBase>, nullptr);
 #endif
         DeviceCreateContext ctx(context);
-    }
-
-    bool ScriptVariable::VerifyJSON(const JsonVariant &jsonObj) {
-        // could add type def later if wanted
-        // also nonvolatile storage could be a mode
-        return true;
     }
 
     Device* ScriptVariable::Create(DeviceCreateContext& context) {

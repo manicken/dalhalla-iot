@@ -37,7 +37,7 @@
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(TX433_UNIT)
-#include "DALHAL_TX433unit_Reactive.h"
+#include "DALHAL_TX433_Unit_Reactive.h"
 using TX433unit_DeviceBase = DALHAL::TX433unit_Reactive;
 #else
 using TX433unit_DeviceBase = DALHAL::Device;
@@ -45,18 +45,29 @@ using TX433unit_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    struct TX433_Unit_CreateFunctionContext : DeviceCreateContext {
+        const uint32_t pin;
+        TX433_Unit_CreateFunctionContext(const uint32_t pin) : DeviceCreateContext(), pin(pin) {}
+    };
+
     enum class TX433_MODEL {
         FixedCode,
         LearningCode
     };
 
-    class TX433unit : public TX433unit_DeviceBase {
+    class TX433_Unit : public TX433unit_DeviceBase {
     public: // public static fields and exposed external structures
-        static bool VerifyJSON(const JsonVariant &jsonObj);
+        static const Registry::DefineBase LCTypeRegistryDefine; // learning code
+        static const Registry::DefineBase SFCTypeRegistryDefine; // simple fixed code
+        static const Registry::DefineBase AFCTypeRegistryDefine; // advanced fixed code
+        static Device* Create(DeviceCreateContext& context);
+
+    public: // public static fields and exposed external structures
+        //static bool VerifyJSON(const JsonVariant &jsonObj);
 
     private:
-        static bool VerifyFC_JSON(const JsonVariant &jsonObj);
-        static bool VerifyLC_JSON(const JsonVariant &jsonObj);
+        //static bool VerifyFC_JSON(const JsonVariant &jsonObj);
+        //static bool VerifyLC_JSON(const JsonVariant &jsonObj);
 
         /** this is set from root TX433 device and used when sending */
         const uint32_t pin;
@@ -70,7 +81,7 @@ namespace DALHAL {
         bool fixedState=false;
 
     public:
-        TX433unit(DeviceCreateContext& context, const uint32_t pin);
+        TX433_Unit(TX433_Unit_CreateFunctionContext& context);
 
         HALOperationResult write(const HALValue &val) override;
 

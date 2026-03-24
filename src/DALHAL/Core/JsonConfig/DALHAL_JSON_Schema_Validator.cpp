@@ -247,6 +247,10 @@ namespace DALHAL {
                     validateJsonArray(value, static_cast<const FieldArray*>(field), anyError);
                     return;
                 }
+                case FieldType::ArrayPrimitive: {
+                    validateJsonArrayPrimitive(value, static_cast<const FieldArrayPrimitive*>(field), anyError);
+                    return;
+                }
                 case FieldType::RegistryArray: {
                     ValidateFromRegisterContext tmpContext(ValidateFromRegisterContext::State::Disabled);
                     validateFromRegister(value, static_cast<const FieldRegistryArray*>(field)->subtypes, tmpContext, anyError);
@@ -271,6 +275,26 @@ namespace DALHAL {
                         anyError = true;
                     }
                     break;
+                }
+                case FieldType::Number: {
+                    auto f = static_cast<const FieldNumber*>(field);
+                    if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat) && value.is<float>()) {
+                        // accept as float
+                        return;
+                    } else if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowInt) && value.is<int>()) {
+                        // accept as signed int
+                        return;
+                    } else if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt) && value.is<uint>()) {
+                        // accept as unsigned int
+                        return;
+                    } else {
+                        // reject
+                        GlobalLogger.Error(F("validateField Number parse error"));
+                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+                        anyError = true;
+                        return;
+                    }
+                        
                 }
                 case FieldType::AnyOfGroup:
                     // handled by validateAnyOfGroup
@@ -564,6 +588,50 @@ namespace DALHAL {
             // Validate each element
             for (JsonVariant item : arr) {
                 validateJsonObject(item, field->subtype, anyError);
+            }
+        }
+
+        void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::FieldArrayPrimitive* field, bool& anyError)
+        {
+            using namespace JsonSchema;
+
+            if (!j.is<JsonArray>()) {
+                GlobalLogger.Error(F("Field is not an array"), field->name);
+                anyError = true;
+                return;
+            }
+
+            const JsonArray& arr = j.as<JsonArray>();
+
+            // Empty policy
+            if (arr.size() == 0) {
+                if (field->emptyPolicy == EmptyPolicy::Error) {
+                    GlobalLogger.Error(F("Array is empty"), field->name);
+                    anyError = true;
+                } else if (field->emptyPolicy == EmptyPolicy::Warn) {
+                    GlobalLogger.Warn(F("Array is empty"), field->name);
+                }
+                return;
+            }
+
+            // Validate each element against primitiveTypeFlags
+            for (JsonVariant item : arr) {
+                bool valid = false;
+
+                if (item.is<int>()) {
+                    valid = field->primitiveTypeFlags & PrimitiveTypeFlags::AllowInt;
+                } else if (item.is<unsigned int>()) {
+                    valid = field->primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt;
+                } else if (item.is<float>() || item.is<double>()) {
+                    valid = field->primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat;
+                } else if (item.is<bool>()) {
+                    valid = field->primitiveTypeFlags & PrimitiveTypeFlags::AllowBool;
+                }
+
+                if (!valid) {
+                    GlobalLogger.Error(F("Array element has invalid type"), field->name);
+                    anyError = true;
+                }
             }
         }
 

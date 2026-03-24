@@ -305,18 +305,21 @@ namespace RF433
         const char* btnStr = DALHAL::GetAsConstChar(jsonObj,"btn");
         const char* stateStr = DALHAL::GetAsConstChar(jsonObj,"state");
 
-        arch_word_t ch = chStr[0];
-        arch_word_t button = btnStr[0];
+        char ch = chStr[0];
+        char button = btnStr[0];
 
         uint32_t data = 0;
-        if (ch & 0x01) data |= (1u << 11);
-        else if (ch & 0x02) data |= (1u << 10);
-        else if (ch & 0x04) data |= (1u << 9);
-        else if (ch & 0x08) data |= (1u << 8);
-        if (button & 0x01) data |= (1u << 7);
-        else if (button & 0x02) data |= (1u << 6);
-        else if (button & 0x04) data |= (1u << 5);
-        else if (button & 0x08) data |= (1u << 4);
+
+        if (ch == '1') data |= (1u << 11);
+        else if (ch == '2') data |= (1u << 10);
+        else if (ch == '3') data |= (1u << 9);
+        else if (ch == '4') data |= (1u << 8);
+
+        if (button == '1') data |= (1u << 7);
+        else if (button == '2') data |= (1u << 6);
+        else if (button == '3') data |= (1u << 5);
+        else if (button == '4') data |= (1u << 4);
+        
         if (stateStr[0] == '1') data |= (1u << 0);
         return data;
     }

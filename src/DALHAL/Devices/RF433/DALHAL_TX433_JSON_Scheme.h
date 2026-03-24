@@ -23,31 +23,14 @@
 
 #pragma once
 
-
-#include <Arduino.h> // Needed for String class
-
-#include <string>
-#include <ArduinoJson.h>
-
-
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
 namespace DALHAL {
 
-    class ScriptVariableReadOnly : public Device {
-    public: // public static fields and exposed external structures
-        static const Registry::DefineBase RegistryDefine;
-        static Device* Create(DeviceCreateContext& context);
+    namespace JsonSchema {
 
-    private:
-        HALValue value;
+        extern const JsonObjectScheme TX433;
 
-    public:
-        ScriptVariableReadOnly(DeviceCreateContext& context);
+    }
 
-        HALOperationResult read(HALValue& val) override;
-
-        String ToString() override;
-    };
 }

@@ -27,21 +27,18 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_ScriptEventDispatcher_JSON_Scheme.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptEventDispatcher::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ScriptEventDispatcher,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
     };
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-    }
-
-    bool ScriptEventDispatcher::VerifyJSON(const JsonVariant &jsonObj) {
-        return true;
     }
 
     Device* ScriptEventDispatcher::Create(DeviceCreateContext& context) {

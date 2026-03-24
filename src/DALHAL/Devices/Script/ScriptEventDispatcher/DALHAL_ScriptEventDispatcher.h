@@ -45,7 +45,6 @@ namespace DALHAL {
     class ScriptEventDispatcher : public ScriptEventDispatcher_DeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
     private:

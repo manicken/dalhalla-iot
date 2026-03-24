@@ -27,11 +27,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_ScriptArray_JSON_Scheme.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptArray::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::ScriptArray,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
     };
     
@@ -54,20 +55,6 @@ namespace DALHAL {
         if (jsonObj.containsKey("readonly")) {
             readOnly = jsonObj["readonly"];
         }
-    }
-
-    bool ScriptArray::VerifyJSON(const JsonVariant &jsonObj) {
-        const JsonArray jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        int arraySize = jsonArray.size();
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& item = jsonArray[i];
-            if ((item.is<uint32_t>() || item.is<int32_t>() || item.is<float>()) == false) {
-                GlobalLogger.Error(F("invalid array value type at index:"), std::to_string(i).c_str() );
-                GlobalLogger.setLastEntrySource("ScriptArray VJ");
-                return false;
-            }
-        }
-        return true;
     }
 
     Device* ScriptArray::Create(DeviceCreateContext& context) {

@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_TX433unit.h"
+#include "DALHAL_TX433_Unit.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -31,16 +31,42 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-namespace DALHAL {
+#include "DALHAL_TX433_Unit_TypeLC_JSON_Scheme.h"
+#include "DALHAL_TX433_Unit_TypeSFC_JSON_Scheme.h"
+#include "DALHAL_TX433_Unit_TypeAFC_JSON_Scheme.h"
 
-    bool TX433unit::VerifyFC_JSON(const JsonVariant &jsonObj) {
+namespace DALHAL {
+    constexpr Registry::DefineBase TX433_Unit::LCTypeRegistryDefine = {
+        Create,
+        &JsonSchema::TX433_Unit_TypeLC,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+    };
+    
+    constexpr Registry::DefineBase TX433_Unit::SFCTypeRegistryDefine = {
+        Create,
+        &JsonSchema::TX433_Unit_TypeSFC,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+    };
+    
+    constexpr Registry::DefineBase TX433_Unit::AFCTypeRegistryDefine = {
+        Create,
+        &JsonSchema::TX433_Unit_TypeAFC,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+    };
+
+    Device* TX433_Unit::Create(DeviceCreateContext& context) {
+        return new TX433_Unit(static_cast<TX433_Unit_CreateFunctionContext&>(context));
+    }
+    
+
+   /* bool TX433_Unit::VerifyFC_JSON(const JsonVariant &jsonObj) {
         if (!ValidateJsonStringField(jsonObj,"ch")) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_FC_JSON); return false; }
         if (!ValidateJsonStringField(jsonObj,"btn")) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_FC_JSON); return false; }
         //if (!ValidateJsonStringField(jsonObj,"state")) return false;
         return true;
-    }
+    }*/
     
-    TX433unit::TX433unit(DeviceCreateContext& context, const uint32_t pin) : TX433unit_DeviceBase(context.deviceType), pin(pin) {
+    TX433_Unit::TX433_Unit(TX433_Unit_CreateFunctionContext& context) : TX433unit_DeviceBase(context.deviceType), pin(context.pin) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
@@ -63,26 +89,7 @@ namespace DALHAL {
         fixedState = (jsonObj.containsKey(DALHAL_KEYNAME_TX433_STATE) && IsUINT32(jsonObj,DALHAL_KEYNAME_TX433_STATE));
     }
 
-    bool TX433unit::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_JSON); return false; }
-        if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_TX433_MODEL) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_JSON); return false; }
-
-        const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_MODEL);
-
-        if (strcasecmp(modelStr, "lc") == 0) {
-            if (!RF433::VerifyLC_JSON(jsonObj)) { return false; }
-        } else if (strcasecmp(modelStr, "sfc") == 0) {
-           if (!VerifyFC_JSON(jsonObj)) { return false; }
-        } else if (strcasecmp(modelStr, "afc") == 0) {
-           if (!VerifyFC_JSON(jsonObj)) { return false; }
-        } else {
-            GlobalLogger.Error(F("TX433unit - invalid model type: "),modelStr);
-            return false;
-        }
-        return true;
-    }
-
-    HALOperationResult TX433unit::write(const HALValue &val) {
+    HALOperationResult TX433_Unit::write(const HALValue &val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         RF433::init(pin); // ensure that the correct pin is used and that it's set to a output
@@ -108,7 +115,7 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String TX433unit::ToString() {
+    String TX433_Unit::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();

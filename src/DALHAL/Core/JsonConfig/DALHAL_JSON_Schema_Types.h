@@ -65,12 +65,32 @@ namespace DALHAL {
             float minValue;
             float maxValue;
             float defaultValue;
+            // used to define when minValue/maxValue are not defined
+            constexpr FieldFloat(const char* n, FieldFlag f, float defaultValue) : FieldBase(n, FieldType::Float, f), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
             // can be used when inherited and used as a subtupe
             constexpr FieldFloat(const char* n, FieldType t, FieldFlag f, float minValue, float maxValue, float defaultValue)
                 : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
             // explicit select type to float
             constexpr FieldFloat(const char* n, FieldFlag f, float minValue, float maxValue, float defaultValue)
                 : FieldBase(n, FieldType::Float, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+        };
+
+        enum PrimitiveTypeFlags : uint8_t {
+            AllowAll   = 0xFF,
+            AllowNumbers = (1 << 0) | (1 << 1) | (1 << 2),
+            AllowInt   = 1 << 0,
+            AllowUInt  = 1 << 1,
+            AllowFloat = 1 << 2,
+            AllowBool = 1 << 3,
+        };
+
+        struct FieldNumber : FieldBase {
+            uint8_t primitiveTypeFlags;
+
+            //constexpr FieldNumber(const char* n, FieldFlag f) : FieldBase(n, FieldType::Number, f), primitiveTypeFlags(PrimitiveTypeFlags::AllowNumbers) {}
+
+            constexpr FieldNumber(const char* n, FieldFlag f, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowNumbers) : FieldBase(n, FieldType::Number, f), primitiveTypeFlags(primitiveTypeFlags) {}
+
         };
 
         struct FieldBool : FieldBase {
@@ -140,6 +160,21 @@ namespace DALHAL {
                 : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(EmptyPolicy::Warn) {}
             constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype, EmptyPolicy emptyPolicy)
                 : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(emptyPolicy) {}
+        };
+        
+        /** 
+         * FieldArrayPrimitive represents a JSON array where each element is a native JSON type:
+         * Number (int, float), Bool, or String.
+         * Used for unstructured arrays like your "arr1" example.
+         */
+        struct FieldArrayPrimitive : FieldBase {
+            uint8_t primitiveTypeFlags;
+            EmptyPolicy emptyPolicy;
+
+            // Number-only array
+            constexpr FieldArrayPrimitive(const char* n, FieldFlag f, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowAll, EmptyPolicy emptyPolicy = EmptyPolicy::Warn)
+                : FieldBase(n, FieldType::Array, f), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
+            {}
         };
 
         //************************************* */
