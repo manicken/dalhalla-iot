@@ -66,6 +66,7 @@ namespace DALHAL {
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &refreshTimeGroupFields,
             &itemsField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme ThingSpeak = {

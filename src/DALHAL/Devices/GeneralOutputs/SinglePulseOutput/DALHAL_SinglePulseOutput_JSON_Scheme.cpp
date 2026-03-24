@@ -47,7 +47,7 @@ namespace DALHAL {
             &pinField,
             &pulseLengthField,
             &activeLevelField,
-
+            nullptr,
         };
 
         constexpr JsonObjectScheme SinglePulseOutput = {

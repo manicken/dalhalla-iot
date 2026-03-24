@@ -37,6 +37,7 @@ namespace DALHAL {
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
+            nullptr,
         };
 
         constexpr JsonObjectScheme ScriptEventDispatcher = {

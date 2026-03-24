@@ -42,7 +42,8 @@ namespace DALHAL {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &OutputPinField,
-            &unitsField
+            &unitsField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme TX433 = {

@@ -68,6 +68,7 @@ namespace DALHAL {
             &grp_btnField,
             &btnField,
             &stateField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme TX433_Unit_TypeLC = {

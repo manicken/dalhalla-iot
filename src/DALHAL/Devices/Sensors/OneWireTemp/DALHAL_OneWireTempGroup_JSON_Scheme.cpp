@@ -48,6 +48,7 @@ namespace DALHAL {
                                              // if it should not depend on automatic refresh, it do need a cmd that start a conversion
                                              // that then emit a reactive event when the convertion is done
             &itemsField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme OneWireTempGroup = { // allways at root

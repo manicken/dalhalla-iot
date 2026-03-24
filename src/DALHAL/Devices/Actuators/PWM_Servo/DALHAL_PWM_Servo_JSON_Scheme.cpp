@@ -69,6 +69,7 @@ namespace DALHAL {
             &pulseLengthOffsetField,
             &minValField,// min and max value defined must be in a group as they must be defined together
             &maxValField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme PWM_ServoDevice = {

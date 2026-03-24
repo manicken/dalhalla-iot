@@ -44,6 +44,7 @@ namespace DALHAL {
             &noteField,         // DALHAL_CommonSchemes_Base, GUI optional note field
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &itemsField,
+            nullptr,
         };
 
         constexpr const FieldBase* fieldsAtRoot[] = {
@@ -55,6 +56,7 @@ namespace DALHAL {
                                              // that then emit a reactive event when the convertion is done
             &InputOutputPinField,
             &itemsField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme OneWireTempBus = {

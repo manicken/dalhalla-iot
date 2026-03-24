@@ -42,6 +42,7 @@ namespace DALHAL {
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &urlField,
             &refreshTimeGroupFields,
+            nullptr,
         };
 
         constexpr JsonObjectScheme REST_Value = {

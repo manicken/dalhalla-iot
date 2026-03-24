@@ -47,7 +47,8 @@ namespace DALHAL {
             &pinField,
             &debounceMsField,
             &activeLevelField,
-            &on_pressField
+            &on_pressField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme ButtonInput = {

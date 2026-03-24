@@ -41,6 +41,7 @@ namespace DALHAL {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &valueField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme ScriptVariableReadOnly = {

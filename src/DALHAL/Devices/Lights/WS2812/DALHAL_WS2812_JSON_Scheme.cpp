@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_DigitalOutput_JSON_Scheme.h"
+#include "DALHAL_WS2812_JSON_Scheme.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
@@ -31,21 +31,43 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
 
+#include <WS2812FX.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldFlag::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
+        constexpr const char* formats[] = {"RGB",  "RBG",  "GRB",  "GBR",  "BRG",  "BGR",
+                                           "WRGB", "WRBG", "WGRB", "WGBR", "WBRG", "WBGR",
+                                           "RWGB", "RWBG", "GWRB", "GWBR", "BWRG", "BWGR",
+                                           "RGWB", "RBWG", "GRWB", "GBWR", "BRWG", "BGWR",
+                                           "RGBW", "RBGW", "GRBW", "GBRW", "BRGW", "BGRW",
+                                            nullptr};
+
+        constexpr const char* ifspeeds[] = {"KHZ800", "KHZ400", nullptr};
+
+        constexpr FieldUInt ledcountField = {"ledcount", FieldFlag::Required, 1, 0, 1};
+        constexpr FieldString formatField = {"format", FieldFlag::Required, "RGB", formats, FieldString::AllowedValuesPolicy::IgnoreCase};
+        constexpr FieldString ifspeedField = {"ifspeed", FieldFlag::Optional, "KHZ800", ifspeeds, FieldString::AllowedValuesPolicy::IgnoreCase};
+        constexpr FieldUInt brightnessField = {"brightness", FieldFlag::Optional, 1, 127, 127};
+        constexpr FieldUInt modeField = {"mode", FieldFlag::Optional, 0, MODE_COUNT, 0};
+        constexpr FieldUInt fxspeedField = {"fxspeed", FieldFlag::Optional, 0, 65535, 3000};
 
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
-            &pinField,
+            &OutputPinField,
+            &ledcountField,
+            &formatField,
+            &ifspeedField,
+            &brightnessField,
+            &modeField,
+            &fxspeedField,
             nullptr,
         };
 
-        constexpr JsonObjectScheme DigitalOutput = {
-            "DigitalOutput",
+        constexpr JsonObjectScheme WS2812 = {
+            "WS2812",
             fields,
             nullptr, // no modes
             nullptr,  // no constraints

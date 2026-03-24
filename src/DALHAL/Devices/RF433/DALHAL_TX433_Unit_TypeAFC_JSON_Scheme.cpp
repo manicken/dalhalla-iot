@@ -45,6 +45,7 @@ namespace DALHAL {
             &chField,
             &btnField,
             &stateField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme TX433_Unit_TypeAFC = {

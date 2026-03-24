@@ -41,6 +41,7 @@ namespace DALHAL {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &pinField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme DigitalInput = {

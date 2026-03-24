@@ -41,6 +41,7 @@ namespace DALHAL {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &urlField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme REST_Cmd = {

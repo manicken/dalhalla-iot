@@ -43,6 +43,7 @@ namespace DALHAL {
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
             &readonlyField,
             &items,
+            nullptr,
         };
 
         constexpr JsonObjectScheme ScriptArray = {

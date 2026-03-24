@@ -40,7 +40,8 @@ namespace DALHAL {
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemes_Base
             &uidFieldRequired,  // DALHAL_CommonSchemes_Base
-            &itemsField
+            &itemsField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme DeviceContainer = {

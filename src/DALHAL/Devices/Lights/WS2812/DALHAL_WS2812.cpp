@@ -28,12 +28,13 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_WS2812_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase WS2812::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::WS2812,
         DALHAL_REACTIVE_EVENT_TABLE(WS2812)
     };
     
@@ -223,19 +224,6 @@ namespace DALHAL {
     void WS2812::loop() {
         //if (ws2812fx->getMode() != 0) // only service when non static mode
             ws2812fx->service();
-    }
-
-    bool WS2812::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ 
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_WS2812_VERIFY_JSON);
-            return false;
-        }
-        if (false == GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, (static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)))) {
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_WS2812_VERIFY_JSON);
-            return false;
-        }
-        
-        return true;
     }
 
     Device* WS2812::Create(DeviceCreateContext& context) {

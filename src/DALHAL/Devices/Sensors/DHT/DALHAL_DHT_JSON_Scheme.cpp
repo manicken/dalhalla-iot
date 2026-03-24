@@ -53,6 +53,7 @@ namespace DALHAL {
             &modelField,
             &refreshTimeGroupFieldsRequired,
             &InputOutputPinField,
+            nullptr,
         };
 
         constexpr JsonObjectScheme DHT = {
