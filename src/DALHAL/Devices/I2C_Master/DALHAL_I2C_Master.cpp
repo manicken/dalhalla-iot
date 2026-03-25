@@ -31,12 +31,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/ConvertHelper.h>
 
+#include "DALHAL_I2C_Master_JSON_Schema.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase I2C_Master::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::I2C_Master,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
     };
     
@@ -119,71 +120,6 @@ namespace DALHAL {
 #endif
         pinMode(sckpin, INPUT);
         pinMode(sdapin, INPUT);
-    }
-
-    bool I2C_Master::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sckpin", static_cast<uint8_t>(GPIO_manager::PinFunc::OUT))) {
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        if (!GPIO_manager::ValidateJsonAndCheckIfPinAvailableAndReserve(jsonObj, "sdapin", static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) {
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY());
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        int itemCount = items.size();
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) continue; // comment item
-            if (Device::DisabledInJson(item) == true) continue; // disabled
-            if (ValidateJsonStringField(item, DALHAL_KEYNAME_TYPE) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            
-            const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type);
-            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
-            
-            if (regItem.typeName == nullptr) {
-                GlobalLogger.Error(F("VerifyI2CDeviceJson - could not find type:"),type);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-                return false;
-            }
-            
-            if (regItem.def->Verify_JSON_Function == nullptr) {
-                GlobalLogger.Error(F("VerifyI2CDeviceJson - Verify_JSON_Function nullptr:"),type);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-                return false;
-            }
-            if (regItem.def->Create_Function == nullptr) {
-                GlobalLogger.Error(F("VerifyI2CDeviceJson - Create_Function nullptr:"),type);
-                SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-                return false;
-            }
-            if (regItem.def->Verify_JSON_Function(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            validItemCount++;
-
-        }
-        if (validItemCount == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("I2C_Master"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        return true;
     }
 
     Device* I2C_Master::Create(DeviceCreateContext& context) {

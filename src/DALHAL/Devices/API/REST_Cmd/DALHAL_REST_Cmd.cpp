@@ -27,8 +27,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include "DALHAL_REST_Cmd_JSON_Scheme.h"
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h> // for DALHAL_COMMON_CFG_NAME_UID
+#include "DALHAL_REST_Cmd_JSON_Schema.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h> // for DALHAL_COMMON_CFG_NAME_UID
 
 namespace DALHAL {
 

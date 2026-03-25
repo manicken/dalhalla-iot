@@ -42,11 +42,11 @@ namespace DALHAL {
             int32_t maxValue;
             int32_t defaultValue;
             // can be used when inherited and used as a subtupe
-            constexpr FieldInt(const char* n, FieldType t, FieldFlag f, int32_t minValue, int32_t maxValue, int32_t defaultValue)
-                : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldInt(const char* name, FieldType type, FieldPolicy policy, int32_t minValue, int32_t maxValue, int32_t defaultValue)
+                : FieldBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
             // explicit select type to int
-            constexpr FieldInt(const char* n, FieldFlag f, int32_t minValue, int32_t maxValue, int32_t defaultValue)
-                : FieldBase(n, FieldType::Int, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldInt(const char* name, FieldPolicy policy, int32_t minValue, int32_t maxValue, int32_t defaultValue)
+                : FieldBase(name, FieldType::Int, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldUInt : FieldBase {
@@ -54,11 +54,11 @@ namespace DALHAL {
             uint32_t maxValue;
             uint32_t defaultValue;
             // can be used when inherited and used as a subtupe
-            constexpr FieldUInt(const char* n, FieldType t, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
-                : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldUInt(const char* name, FieldType type, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
+                : FieldBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
             // explicit select type to uint
-            constexpr FieldUInt(const char* n, FieldFlag f, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
-                : FieldBase(n, FieldType::UInt, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
+                : FieldBase(name, FieldType::UInt, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         struct FieldFloat : FieldBase {
@@ -66,13 +66,14 @@ namespace DALHAL {
             float maxValue;
             float defaultValue;
             // used to define when minValue/maxValue are not defined
-            constexpr FieldFloat(const char* n, FieldFlag f, float defaultValue) : FieldBase(n, FieldType::Float, f), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
+            constexpr FieldFloat(const char* name, FieldPolicy policy, float defaultValue) 
+                : FieldBase(name, FieldType::Float, policy), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
             // can be used when inherited and used as a subtupe
-            constexpr FieldFloat(const char* n, FieldType t, FieldFlag f, float minValue, float maxValue, float defaultValue)
-                : FieldBase(n, t, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldFloat(const char* name, FieldType type, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
+                : FieldBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
             // explicit select type to float
-            constexpr FieldFloat(const char* n, FieldFlag f, float minValue, float maxValue, float defaultValue)
-                : FieldBase(n, FieldType::Float, f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr FieldFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
+                : FieldBase(name, FieldType::Float, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
         enum PrimitiveTypeFlags : uint8_t {
@@ -87,20 +88,19 @@ namespace DALHAL {
         struct FieldNumber : FieldBase {
             uint8_t primitiveTypeFlags;
 
-            //constexpr FieldNumber(const char* n, FieldFlag f) : FieldBase(n, FieldType::Number, f), primitiveTypeFlags(PrimitiveTypeFlags::AllowNumbers) {}
-
-            constexpr FieldNumber(const char* n, FieldFlag f, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowNumbers) : FieldBase(n, FieldType::Number, f), primitiveTypeFlags(primitiveTypeFlags) {}
+            constexpr FieldNumber(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowNumbers) 
+                : FieldBase(name, FieldType::Number, policy), primitiveTypeFlags(primitiveTypeFlags) {}
 
         };
 
         struct FieldBool : FieldBase {
             bool defaultValue;
             // can be used when inherited and used as a subtupe
-            constexpr FieldBool(const char* n, FieldType t, FieldFlag f, bool defaultValue)
-                : FieldBase(n, t, f), defaultValue(defaultValue) {}
+            constexpr FieldBool(const char* name, FieldType type, FieldPolicy policy, bool defaultValue)
+                : FieldBase(name, type, policy), defaultValue(defaultValue) {}
             // explicit select type to bool
-            constexpr FieldBool(const char* n, FieldFlag f, bool defaultValue)
-                : FieldBase(n, FieldType::Bool, f), defaultValue(defaultValue) {}
+            constexpr FieldBool(const char* name, FieldPolicy policy, bool defaultValue)
+                : FieldBase(name, FieldType::Bool, policy), defaultValue(defaultValue) {}
         };
 
         struct FieldString : FieldBase {
@@ -118,21 +118,21 @@ namespace DALHAL {
             AllowedValuesPolicy allowedValuesPolicy;
 
             // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* n, FieldType t, FieldFlag f, const char* defVal, uint16_t maxLen)
-                : FieldBase(n, t, f), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, const char* defVal, uint16_t maxLen)
+                : FieldBase(name, type, policy), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
             // explicit select type to string
-            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, uint16_t maxLen)
-                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, uint16_t maxLen)
+                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
 
             // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* n, FieldType t, FieldFlag f, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(n, t, f), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(name, type, policy), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
             // explicit select type to string
-            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
 
-            constexpr FieldString(const char* n, FieldFlag f, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
-                : FieldBase(n, FieldType::String, f), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
+            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
+                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
             
         };
 
@@ -140,10 +140,10 @@ namespace DALHAL {
          * used for ordinary JSON objects, i.e. enclosed by {}
          */
         struct FieldObject : FieldBase {
-            const JsonSchema::JsonObjectScheme* subtype;
+            const JsonSchema::JsonObjectSchema* subtype;
             
-            constexpr FieldObject(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
-                : FieldBase(n, FieldType::Object, f), subtype(subtype) {}
+            constexpr FieldObject(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
+                : FieldBase(name, FieldType::Object, policy), subtype(subtype) {}
             
         };
 
@@ -153,13 +153,13 @@ namespace DALHAL {
          * with a fixed schema (no type selection per element).
          */
         struct FieldArray : FieldBase {
-            const JsonSchema::JsonObjectScheme* subtype;
+            const JsonSchema::JsonObjectSchema* subtype;
             EmptyPolicy emptyPolicy;
 
-            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype)
-                : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(EmptyPolicy::Warn) {}
-            constexpr FieldArray(const char* n, FieldFlag f, const JsonSchema::JsonObjectScheme* subtype, EmptyPolicy emptyPolicy)
-                : FieldBase(n, FieldType::Array, f), subtype(subtype), emptyPolicy(emptyPolicy) {}
+            constexpr FieldArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
+                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(EmptyPolicy::Warn) {}
+            constexpr FieldArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(emptyPolicy) {}
         };
         
         /** 
@@ -172,8 +172,8 @@ namespace DALHAL {
             EmptyPolicy emptyPolicy;
 
             // Number-only array
-            constexpr FieldArrayPrimitive(const char* n, FieldFlag f, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowAll, EmptyPolicy emptyPolicy = EmptyPolicy::Warn)
-                : FieldBase(n, FieldType::Array, f), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
+            constexpr FieldArrayPrimitive(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowAll, EmptyPolicy emptyPolicy = EmptyPolicy::Warn)
+                : FieldBase(name, FieldType::Array, policy), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
             {}
         };
 
@@ -182,20 +182,20 @@ namespace DALHAL {
         //************************************* */
 
         struct FieldUID : FieldString {
-            constexpr FieldUID(const char* n, FieldFlag f)
-                : FieldString(n, FieldType::UID, f, nullptr, HAL_UID::Size) {}
+            constexpr FieldUID(const char* name, FieldPolicy policy)
+                : FieldString(name, FieldType::UID, policy, nullptr, HAL_UID::Size) {}
         };
         
         struct FieldHardwarePin : FieldBase {
             uint16_t mode;
-            constexpr FieldHardwarePin(const char* n, FieldFlag f, uint16_t mode)
-                : FieldBase(n, FieldType::HardwarePin, f), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
+            constexpr FieldHardwarePin(const char* name, FieldPolicy policy, uint16_t mode)
+                : FieldBase(name, FieldType::HardwarePin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 
         struct FieldHardwarePinOrVirtualPIN : FieldBase {
             uint16_t mode;
-            constexpr FieldHardwarePinOrVirtualPIN(const char* n, FieldFlag f, uint16_t mode)
-                : FieldBase(n, FieldType::HardwarePinOrVirtualPin, f), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
+            constexpr FieldHardwarePinOrVirtualPIN(const char* name, FieldPolicy policy, uint16_t mode)
+                : FieldBase(name, FieldType::HardwarePinOrVirtualPin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 
         /**
@@ -205,8 +205,8 @@ namespace DALHAL {
          */
         struct AnyOfGroup : FieldBase {
             const FieldBase* const* fields;
-            constexpr AnyOfGroup(const char* outputName, FieldFlag f, const FieldBase* const* fields)
-                : FieldBase(outputName, FieldType::AnyOfGroup, f), fields(fields) {}
+            constexpr AnyOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::AnyOfGroup, policy), fields(fields) {}
         };
 
         /**
@@ -216,8 +216,8 @@ namespace DALHAL {
          */
         struct AllOfGroup : FieldBase {
             const FieldBase* const* fields;
-            constexpr AllOfGroup(const char* outputName, FieldFlag f, const FieldBase* const* fields)
-                : FieldBase(outputName, FieldType::AllOfGroup, f), fields(fields) {}
+            constexpr AllOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::AllOfGroup, policy), fields(fields) {}
         };
 
         /**
@@ -229,8 +229,8 @@ namespace DALHAL {
         struct FieldRegistryArray : FieldBase {
             const Registry::Item* subtypes;
 
-            constexpr FieldRegistryArray(const char* n, FieldFlag f, const Registry::Item* subtypes)
-                : FieldBase(n, FieldType::Array, f), subtypes(subtypes) {}
+            constexpr FieldRegistryArray(const char* name, FieldPolicy policy, const Registry::Item* subtypes)
+                : FieldBase(name, FieldType::Array, policy), subtypes(subtypes) {}
 
         };
         
@@ -238,10 +238,10 @@ namespace DALHAL {
             uint8_t byteCount;
 
             constexpr FieldHexBytes(const char* name,
-                                FieldFlag flag,
+                                FieldPolicy policy,
                                 const char* defaultValue,
                                 uint8_t byteCount)
-                : FieldString(name, FieldType::HexBytes, flag, defaultValue, byteCount*2, 0),
+                : FieldString(name, FieldType::HexBytes, policy, defaultValue, byteCount*2, 0),
                 byteCount(byteCount) {}
         };
 

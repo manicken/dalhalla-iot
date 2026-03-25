@@ -98,7 +98,7 @@ namespace DALHAL {
         // Validate a simple JsonArray of primitives such as bool,uint,int,float
         void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::FieldArrayPrimitive* field, bool& anyError);
         // Validate a full device
-        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError);
+        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError);
         // Validate the JSON array against the given device registry.
         void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, ValidateFromRegisterContext& context, bool& anyError);
 

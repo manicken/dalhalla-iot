@@ -27,10 +27,10 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include "DALHAL_SinglePulseOutput_JSON_Scheme.h"
+#include "DALHAL_SinglePulseOutput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
 namespace DALHAL {
 

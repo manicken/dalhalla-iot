@@ -27,7 +27,7 @@
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
-#include <ArduinoJson.h> // this dependency can be removed when I begin to use the new config scheme validator
+#include <ArduinoJson.h> // this dependency can be removed when I begin to use the new config schema validator
 
 #include <string>
 
@@ -54,7 +54,7 @@ namespace DALHAL {
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
             HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function; // soon to be obsolete in favor of jsonSchema
-            const JsonSchema::JsonObjectScheme* jsonSchema;
+            const JsonSchema::JsonObjectSchema* jsonSchema;
             const EventDescriptor* reactiveTable;
             
             // Verify_JSON_Function variants, soon to be obsolete in favor of JsonSchema
@@ -81,7 +81,7 @@ namespace DALHAL {
             // JsonSchema variants
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                const JsonSchema::JsonObjectScheme* jsonSchema
+                const JsonSchema::JsonObjectSchema* jsonSchema
             ) :
                 Create_Function(Create_Function),
                 Verify_JSON_Function(nullptr),
@@ -91,7 +91,7 @@ namespace DALHAL {
 
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
-                const JsonSchema::JsonObjectScheme* jsonSchema,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
                 const EventDescriptor* reactiveTable
             ) :
                 Create_Function(Create_Function),

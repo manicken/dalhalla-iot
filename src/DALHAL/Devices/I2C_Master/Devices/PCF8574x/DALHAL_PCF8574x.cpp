@@ -30,11 +30,14 @@
 #include <DALHAL/Support/ConvertHelper.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include "DALHAL_PCF8574x_JSON_Schema.h"
+
 namespace DALHAL {
 
     constexpr I2C_RegistryDefine PCF8574x::RegistryDefine = {
         Create,
-        VerifyJSON,
+        &JsonSchema::PCF8574x,
+        DALHAL_REACTIVE_EVENT_TABLE(I2C_DEVICE_PCF8574X),
         HasAddress
     };
 
@@ -50,18 +53,6 @@ namespace DALHAL {
         const char* addrStr = GetAsConstChar(jsonObj, "addr");
         addr = static_cast<uint8_t>(std::strtoul(addrStr, nullptr, 16));
 
-    }
-
-    bool PCF8574x::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)){ 
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-        if (false == ValidateJsonStringField(jsonObj, "addr")) {
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_DISPLAY_SSD1306_VERIFY_JSON);
-            return false;
-        }
-        return true;
     }
 
     Device* PCF8574x::Create(DeviceCreateContext& context) {

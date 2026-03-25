@@ -28,7 +28,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include "DALHAL__Template__JSON_Scheme.h"
+#include "DALHAL__Template__JSON_Schema.h"
 
 namespace DALHAL {
         constexpr Registry::DefineBase _Template_::RegistryDefine = {
@@ -61,14 +61,14 @@ namespace DALHAL {
 
     void _Template_::loop() {}
     void _Template_::begin() {
-#if HAS_REACTIVE(TEMPLATE, BEGIN)
+#if HAS_REACTIVE_BEGIN(TEMPLATE)
         triggerBegin();
 #endif        
     }
     DeviceFindResult _Template_::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     HALOperationResult _Template_::read(HALValue& val) {
-#if HAS_REACTIVE(TEMPLATE, READ)
+#if HAS_REACTIVE_READ(TEMPLATE)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
@@ -76,55 +76,55 @@ namespace DALHAL {
     HALOperationResult _Template_::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-#if HAS_REACTIVE(TEMPLATE, WRITE)
+#if HAS_REACTIVE_WRITE(TEMPLATE)
         triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     };
     HALOperationResult _Template_::read(const HALValue& bracketSubscriptVal, HALValue& val) {
-#if HAS_REACTIVE(TEMPLATE, BRACKET_READ)
+#if HAS_REACTIVE_BRACKET_READ(TEMPLATE)
         triggerBracketRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
-#if HAS_REACTIVE(TEMPLATE, BRACKET_WRITE)
+#if HAS_REACTIVE_BRACKET_WRITE(TEMPLATE)
         triggerBracketWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::read(const HALReadStringRequestValue& val) {
-#if HAS_REACTIVE(TEMPLATE, READ)
+#if HAS_REACTIVE_READ(TEMPLATE)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::write(const HALWriteStringRequestValue& val) {
-#if HAS_REACTIVE(TEMPLATE, WRITE)
+#if HAS_REACTIVE_WRITE(TEMPLATE)
         triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::read(const HALReadValueByCmd& val) {
-#if HAS_REACTIVE(TEMPLATE, READ)
+#if HAS_REACTIVE_READ(TEMPLATE)
         triggerRead();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::write(const HALWriteValueByCmd& val) {
-#if HAS_REACTIVE(TEMPLATE, WRITE)
+#if HAS_REACTIVE_WRITE(TEMPLATE)
         triggerWrite();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::exec() {
-#if HAS_REACTIVE(TEMPLATE, EXEC)
+#if HAS_REACTIVE_EXEC(TEMPLATE)
         triggerExec();
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
     HALOperationResult _Template_::exec(const ZeroCopyString& cmd) {
-#if HAS_REACTIVE(TEMPLATE, EXEC)
+#if HAS_REACTIVE_EXEC(TEMPLATE)
         triggerExec();
 #endif
         return HALOperationResult::UnsupportedOperation;

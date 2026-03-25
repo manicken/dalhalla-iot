@@ -30,7 +30,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include "DALHAL_DHT_JSON_Scheme.h"
+#include "DALHAL_DHT_JSON_Schema.h"
 
 namespace DALHAL {
     

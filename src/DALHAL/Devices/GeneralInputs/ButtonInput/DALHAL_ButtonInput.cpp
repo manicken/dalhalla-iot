@@ -28,10 +28,10 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 
-#include "DALHAL_ButtonInput_JSON_Scheme.h"
+#include "DALHAL_ButtonInput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
 namespace DALHAL {
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {

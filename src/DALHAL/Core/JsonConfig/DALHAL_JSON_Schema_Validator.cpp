@@ -30,7 +30,7 @@
 #include <ArduinoJSON.h>
 #include <DALHAL/Support/ConvertHelper.h>
 
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
 
 //using json = JsonVariant;
@@ -144,7 +144,7 @@ namespace DALHAL {
 
             // Handle required/optional
             if (!j.containsKey(field->name)) {
-                if (field->flag == FieldFlag::Required) {
+                if (field->flag == FieldPolicy::Required) {
                     GlobalLogger.Error(F("Required field missing"));
                     GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                     anyError = true;
@@ -319,7 +319,7 @@ namespace DALHAL {
                 }
             }
 
-            if (!found && group->flag == FieldFlag::Required) {
+            if (!found && group->flag == FieldPolicy::Required) {
                 GlobalLogger.Error(F("None of the AnyOfGroup fields present"));
                 anyError = true;
             }
@@ -349,7 +349,7 @@ namespace DALHAL {
                 return;
             }
 
-            if (foundCount == 0 && group->flag == FieldFlag::Required) {
+            if (foundCount == 0 && group->flag == FieldPolicy::Required) {
                 GlobalLogger.Error(F("Required AllOfGroup missing"));
                 anyError = true;
             }
@@ -500,17 +500,17 @@ namespace DALHAL {
         }
 
         // Validate a complete JSON Object
-        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectScheme* jsonObjectScheme, bool& anyError)
+        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError)
         {
             if (j.size() == 0) {
-                if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Warn) {
-                    GlobalLogger.Warn(F("JsonObject is empty: "), jsonObjectScheme->typeName);
+                if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
+                    GlobalLogger.Warn(F("JsonObject is empty: "), jsonObjectSchema->typeName);
                     GlobalLogger.setLastEntrySource("validateJsonObject");
-                } else if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Error) {
+                } else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Error) {
                     anyError = true;
-                    GlobalLogger.Error(F("JsonObject is empty: "), jsonObjectScheme->typeName);
+                    GlobalLogger.Error(F("JsonObject is empty: "), jsonObjectSchema->typeName);
                     GlobalLogger.setLastEntrySource("validateJsonObject");
-                } /*else if (jsonObjectScheme->emptyPolicy == EmptyPolicy::Ignore) {
+                } /*else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Ignore) {
                     // simply do nothing
                 }*/
                 return;
@@ -520,24 +520,24 @@ namespace DALHAL {
             for (const JsonPair& kv : j.as<JsonObject>()) {
                 const char* key = kv.key().c_str();
 
-                if (!isKnownField(key, jsonObjectScheme->fields)) {
-                    if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Ignore) {
+                if (!isKnownField(key, jsonObjectSchema->fields)) {
+                    if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Ignore) {
                         continue;
-                    } else if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
+                    } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
                         GlobalLogger.Warn(F("Unknown config field:"), key);
-                    } else if (jsonObjectScheme->unknownFieldPolicy == UnknownFieldPolicy::Error) {
+                    } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Error) {
                         GlobalLogger.Error(F("Unknown config field:"), key);
                         anyError = true;
                     }                    
-                    GlobalLogger.setLastEntrySource(jsonObjectScheme->typeName);
+                    GlobalLogger.setLastEntrySource(jsonObjectSchema->typeName);
                     // as this should not render the json invalid
                     // anyError is not set
                 }
             }
 
             // 2. Validate each field
-            for (int i = 0; jsonObjectScheme->fields[i] != nullptr; ++i) {
-                const FieldBase* f = jsonObjectScheme->fields[i];
+            for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
+                const FieldBase* f = jsonObjectSchema->fields[i];
 
                 if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
                     validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), anyError);
@@ -549,7 +549,7 @@ namespace DALHAL {
             }
 
             // 3. Evaluate modes
-            int mode = evaluateModes(j, jsonObjectScheme->modes);
+            int mode = evaluateModes(j, jsonObjectSchema->modes);
             if (mode == -1) {
                 GlobalLogger.Error(F("No valid configuration mode found"));
                 anyError = true;
@@ -559,7 +559,7 @@ namespace DALHAL {
             }
 
             // 4. Evaluate constraints
-            evaluateConstraints(j, jsonObjectScheme->constraints, anyError);
+            evaluateConstraints(j, jsonObjectSchema->constraints, anyError);
 
             //return anyError ? -1 : mode; // dont think this is ever needed
         }

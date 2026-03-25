@@ -48,14 +48,14 @@ namespace DALHAL {
                 default: return "Unknown";
             }
         }
-        const char* FieldFlagToString(FieldFlag flag) {
+        const char* FieldFlagToString(FieldPolicy flag) {
             switch (flag)
             {
-                case FieldFlag::AllOfGroup: return "AllOfGroup";
-                case FieldFlag::AnyOfGroup: return "AnyOfGroup";
-                case FieldFlag::ModeDefine: return "ModeDefine";
-                case FieldFlag::Optional: return "Optional";
-                case FieldFlag::Required: return "Required";
+                case FieldPolicy::AllOfGroup: return "AllOfGroup";
+                case FieldPolicy::AnyOfGroup: return "AnyOfGroup";
+                case FieldPolicy::ModeDefine: return "ModeDefine";
+                case FieldPolicy::Optional: return "Optional";
+                case FieldPolicy::Required: return "Required";
                 //case FieldFlag: return "";
                 default: return "Unknown";
             }

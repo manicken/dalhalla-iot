@@ -33,7 +33,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-//#include "DALHAL_Actuator_JSON_Scheme.h"
+//#include "DALHAL_Actuator_JSON_Schema.h"
 
 #define DALHAL_DEVICE_ACTUATOR_CMD_OPEN   "open"
 #define DALHAL_DEVICE_ACTUATOR_CMD_CLOSE  "close"

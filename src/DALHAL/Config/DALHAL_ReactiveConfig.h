@@ -106,7 +106,7 @@
 // DeviceContainer
 #define DALHAL_REACTIVE_CFG_CONTAINER             (DALHAL_REACTIVE_FEATURE_NONE) /* nothing to implement */
 // Display
-
+#define DALHAL_REACTIVE_CFG_DISPLAY_SSD1306       (DALHAL_REACTIVE_FEATURE_WRITE) /* implemented */
 // General Inputs
 #define DALHAL_REACTIVE_CFG_ANALOG_INPUT          (DALHAL_REACTIVE_FEATURE_VALUE_CHANGE | DALHAL_REACTIVE_FEATURE_READ) /* implemented */
 #define DALHAL_REACTIVE_CFG_BUTTON_INPUT          (DALHAL_REACTIVE_FEATURE_STATE_CHANGE | DALHAL_REACTIVE_FEATURE_CUSTOM) /* implemented */
@@ -156,7 +156,7 @@
 // DeviceContainer
 #define DALHAL_REACTIVE_CFG_CONTAINER             (DALHAL_REACTIVE_FEATURE_ALL) /* nothing to implement */
 // Display
-
+#define DALHAL_REACTIVE_CFG_DISPLAY_SSD1306       (DALHAL_REACTIVE_FEATURE_ALL) /* implemented */
 // General Inputs
 #define DALHAL_REACTIVE_CFG_ANALOG_INPUT          (DALHAL_REACTIVE_FEATURE_ALL) /* implemented */
 #define DALHAL_REACTIVE_CFG_BUTTON_INPUT          (DALHAL_REACTIVE_FEATURE_ALL) /* implemented */

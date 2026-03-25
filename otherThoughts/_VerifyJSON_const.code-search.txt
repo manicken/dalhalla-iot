@@ -5,7 +5,3 @@ bool Button::VerifyJSON(const JsonVariant &jsonObj) {
 bool Number::VerifyJSON(const JsonVariant &jsonObj) {
 bool Sensor::VerifyJSON(const JsonVariant &jsonObj)
 bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
-
-bool I2C_Master::VerifyJSON(const JsonVariant &jsonObj) {
-bool PCF8574x::VerifyJSON(const JsonVariant &jsonObj) {
-

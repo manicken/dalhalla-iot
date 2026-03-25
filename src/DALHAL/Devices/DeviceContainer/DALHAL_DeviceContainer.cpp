@@ -30,7 +30,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
-#include "DALHAL_DeviceContainer_JSON_Scheme.h"
+#include "DALHAL_DeviceContainer_JSON_Schema.h"
 
 namespace DALHAL {
 

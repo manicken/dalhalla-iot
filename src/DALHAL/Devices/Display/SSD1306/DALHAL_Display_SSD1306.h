@@ -37,9 +37,17 @@
 #include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#if USING_REACTIVE(_TEMPLATE_)
+#include "DALHAL_Display_SSD1306_Reactive.h"
+using Display_SSD1306_DeviceBase = DALHAL::Display_SSD1306_Reactive;
+#else
+using Display_SSD1306_DeviceBase = DALHAL::Device;
+#endif
+
 namespace DALHAL {
 
-    class Display_SSD1306 : public Device {
+    class Display_SSD1306 : public Display_SSD1306_DeviceBase {
     public: // public static fields and exposed external structures
         static const I2C_RegistryDefine RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

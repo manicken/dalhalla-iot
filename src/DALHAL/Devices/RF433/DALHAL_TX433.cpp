@@ -28,10 +28,10 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include "DALHAL_TX433_UnitTypeRegistry.h"
 
-#include "DALHAL_TX433_JSON_Scheme.h"
+#include "DALHAL_TX433_JSON_Schema.h"
 
 namespace DALHAL {
 

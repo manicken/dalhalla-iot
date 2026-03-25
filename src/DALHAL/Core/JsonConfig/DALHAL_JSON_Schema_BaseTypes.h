@@ -48,14 +48,14 @@ namespace DALHAL {
         };
         const char* FieldTypeToString(FieldType type);
 
-        enum class FieldFlag {
+        enum class FieldPolicy {
             Required,
             Optional,
             AnyOfGroup, // the higher group defines
             AllOfGroup, // the higher group defines
             ModeDefine // Mode defines
         };
-        const char* FieldFlagToString(FieldFlag flag);
+        const char* FieldFlagToString(FieldPolicy flag);
 
         enum class UnknownFieldPolicy {
             Ignore,
@@ -74,10 +74,10 @@ namespace DALHAL {
         struct FieldBase {
             const char* name;    // flash string
             FieldType type;
-            FieldFlag flag;
+            FieldPolicy policy;
 
-            constexpr FieldBase(const char* n, FieldType t, FieldFlag f)
-                : name(n), type(t), flag(f) {}
+            constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy)
+                : name(n), type(t), policy(policy) {}
         };
 
         struct ModeConjunctionDefine {
@@ -112,7 +112,7 @@ namespace DALHAL {
         };
         const char* FieldConstraintTypeToString(FieldConstraint::Type type);
 
-        struct JsonObjectScheme {
+        struct JsonObjectSchema {
             const char* typeName;
             const FieldBase* const* fields;
             const ModeSelector* modes;
@@ -120,10 +120,10 @@ namespace DALHAL {
             EmptyPolicy emptyPolicy;
             UnknownFieldPolicy unknownFieldPolicy;
 
-            constexpr JsonObjectScheme(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints):
+            constexpr JsonObjectSchema(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints):
                 typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(EmptyPolicy::Warn), unknownFieldPolicy(UnknownFieldPolicy::Warn) {}
             
-            constexpr JsonObjectScheme(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints, EmptyPolicy emptyPolicy, UnknownFieldPolicy unknownFieldPolicy):
+            constexpr JsonObjectSchema(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints, EmptyPolicy emptyPolicy, UnknownFieldPolicy unknownFieldPolicy):
                 typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(emptyPolicy), unknownFieldPolicy(unknownFieldPolicy) {}
         };
     }

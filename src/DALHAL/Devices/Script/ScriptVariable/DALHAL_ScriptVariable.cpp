@@ -27,7 +27,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include "DALHAL_ScriptVariable_JSON_Scheme.h"
+#include "DALHAL_ScriptVariable_JSON_Schema.h"
 
 namespace DALHAL {
 

@@ -34,9 +34,9 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
-#include "DALHAL_PWM_Servo_JSON_Scheme.h"
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemes/DALHAL_CommonSchemes_Pins.h>
+#include "DALHAL_PWM_Servo_JSON_Schema.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
 namespace DALHAL {
 

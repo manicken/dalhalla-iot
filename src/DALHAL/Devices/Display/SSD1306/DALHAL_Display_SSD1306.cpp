@@ -32,13 +32,14 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include "DALHAL_Display_SSD1306_JSON_Scheme.h"
+#include "DALHAL_Display_SSD1306_JSON_Schema.h"
 
 namespace DALHAL {
 
     constexpr I2C_RegistryDefine Display_SSD1306::RegistryDefine = {
         Create,
         &JsonSchema::Display_SSD1306,
+        DALHAL_REACTIVE_EVENT_TABLE(DISPLAY_SSD1306),
         HasAddress
     };
 
@@ -50,7 +51,7 @@ namespace DALHAL {
         return new Display_SSD1306(static_cast<I2C_Master_CreateFunctionContext&>(context));
     }
     
-    Display_SSD1306::Display_SSD1306(I2C_Master_CreateFunctionContext& context) : Device(context.deviceType) {
+    Display_SSD1306::Display_SSD1306(I2C_Master_CreateFunctionContext& context) : Display_SSD1306_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);
@@ -157,6 +158,9 @@ namespace DALHAL {
         } else {
             return HALOperationResult::UnsupportedCommand;
         }
+#if HAS_REACTIVE_WRITE(DISPLAY_SSD1306)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 

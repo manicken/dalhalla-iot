@@ -31,9 +31,9 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include "DALHAL_TX433_Unit_TypeLC_JSON_Scheme.h"
-#include "DALHAL_TX433_Unit_TypeSFC_JSON_Scheme.h"
-#include "DALHAL_TX433_Unit_TypeAFC_JSON_Scheme.h"
+#include "DALHAL_TX433_Unit_TypeLC_JSON_Schema.h"
+#include "DALHAL_TX433_Unit_TypeSFC_JSON_Schema.h"
+#include "DALHAL_TX433_Unit_TypeAFC_JSON_Schema.h"
 
 namespace DALHAL {
     constexpr Registry::DefineBase TX433_Unit::LCTypeRegistryDefine = {

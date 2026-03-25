@@ -28,7 +28,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include "DALHAL_AnalogInput_JSON_Scheme.h"
+#include "DALHAL_AnalogInput_JSON_Schema.h"
 
 namespace DALHAL {
     constexpr Registry::DefineBase AnalogInput::RegistryDefine = {

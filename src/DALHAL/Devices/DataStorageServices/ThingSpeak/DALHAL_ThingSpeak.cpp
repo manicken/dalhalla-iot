@@ -28,7 +28,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include "DALHAL_ThingSpeak_JSON_Scheme.h"
+#include "DALHAL_ThingSpeak_JSON_Schema.h"
 
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>

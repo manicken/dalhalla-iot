@@ -46,7 +46,6 @@ namespace DALHAL {
     class PCF8574x : public PCF8574x_DeviceBase {
     public: // public static fields and exposed external structures
         static const I2C_RegistryDefine RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
         static bool HasAddress(uint8_t addr);
 
