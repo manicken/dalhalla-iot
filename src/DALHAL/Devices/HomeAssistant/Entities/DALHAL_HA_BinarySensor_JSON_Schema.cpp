@@ -21,32 +21,36 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_DeviceContainer_JSON_Schema.h"
+#include "DALHAL_HA_BinarySensor_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
+        constexpr FieldString nameField = {"name", FieldPolicy::Required, nullptr, 0};
+        constexpr FieldObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
 
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemas_Base
             &uidFieldRequired,  // DALHAL_CommonSchemas_Base
-            &itemsField,
+            &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+            &nameField, 
+            &discoveryField,
             nullptr,
         };
 
-        constexpr JsonObjectSchema DeviceContainer = {
-            "DeviceContainer",
+        constexpr JsonObjectSchema HA_BinarySensor = {
+            "HA_BinarySensor",
             fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
+            consumerDeviceModes, // DALHAL_CommonSchemas_Consumer
+            nullptr, // no constraints
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,
         };

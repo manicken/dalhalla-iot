@@ -30,10 +30,12 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_HA_Button_JSON_Schema.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase Button::RegistryDefine = {
         Create,
-        VerifyJSON
+        &JsonSchema::HA_Button,
     };
 
     void Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
@@ -67,20 +69,6 @@ namespace DALHAL {
     }
     Button::~Button() {
         delete cda;
-    }
-
-    bool Button::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_SENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "target")) {
-            //ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
-            /*CachedDeviceAccess cdaTmp;
-            if (cdaTmp.Set(zcSrcDeviceUidStr) == false) {
-                SET_ERR_LOC("HA_SENSOR_VJ");
-                return false;
-            }*/
-        }
-        return true;
     }
 
     Device* Button::Create(DeviceCreateContext& context) {

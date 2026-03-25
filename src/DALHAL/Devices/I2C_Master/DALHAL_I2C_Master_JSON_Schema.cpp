@@ -38,7 +38,7 @@ namespace DALHAL {
         constexpr FieldHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
         constexpr FieldHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)};
 
-        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry};
+        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemas_Base

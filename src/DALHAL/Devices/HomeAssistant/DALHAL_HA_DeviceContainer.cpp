@@ -30,10 +30,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
+#include "DALHAL_HA_DeviceContainer_JSON_Schema.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase HA_DeviceContainer::RegistryDefine = {
         Create,
-        VerifyJSON
+        &JsonSchema::HA_DeviceContainer,
     };
     
     HA_DeviceContainer::~HA_DeviceContainer() {
@@ -61,8 +63,8 @@ namespace DALHAL {
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            bool valid = regItem.def->Verify_JSON_Function(jsonItem);
-            validDevices[i] = valid;
+            
+            validDevices[i] = true; // allways valid in strict mode
             deviceCountTmp++;
         }
         
@@ -99,36 +101,6 @@ namespace DALHAL {
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
 
         delete[] validDevices; // free memory
-    }
-
-    bool HA_DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ITEMS) == false) {
-            GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) {
-            GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY());
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_I2C_VERIFY_JSON);
-            return false;
-        }
-        int arraySize = items.size();
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& jsonItem = items[i];
-            if (IsConstChar(jsonItem) == true) { continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
-            const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            bool valid = regItem.def->Verify_JSON_Function(jsonItem);
-            if (valid == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
-        }
-        return true;
     }
 
     Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {

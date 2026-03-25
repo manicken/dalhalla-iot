@@ -34,7 +34,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldRegistryArray unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry};
+        constexpr FieldRegistryArray unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry, "ROOT.TX433"};
 
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemas_Base

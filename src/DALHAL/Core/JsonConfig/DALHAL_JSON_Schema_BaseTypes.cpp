@@ -32,31 +32,35 @@ namespace DALHAL {
                 case FieldType::AllOfGroup: return "AllOfGroup";
                 case FieldType::AnyOfGroup: return "AnyOfGroup";
                 case FieldType::Array: return "Array";
+                case FieldType::ArrayPrimitive: return "ArrayPrimitive";
                 case FieldType::Bool: return "Bool";
                 case FieldType::Float: return "Float";
                 case FieldType::HardwarePin: return "HardwarePin";
                 case FieldType::HardwarePinOrVirtualPin: return "HardwarePinOrVirtualPin";
                 case FieldType::HexBytes: return "HexBytes";
                 case FieldType::Int: return "Int";
+                case FieldType::Number: return "Number";
                 case FieldType::Object: return "Object";
                 case FieldType::RegistryArray: return "RegistryArray";
                 case FieldType::String: return "String";
+                case FieldType::StringConstraint: return "StringConstraint";
                 case FieldType::UID: return "UID";
                 case FieldType::UID_Path: return "UID_Path";
                 case FieldType::UInt: return "UInt";
+                
                 //case FieldType: return "";
                 default: return "Unknown";
             }
         }
-        const char* FieldFlagToString(FieldPolicy flag) {
-            switch (flag)
+        const char* FieldPolicyToString(FieldPolicy policy) {
+            switch (policy)
             {
                 case FieldPolicy::AllOfGroup: return "AllOfGroup";
                 case FieldPolicy::AnyOfGroup: return "AnyOfGroup";
                 case FieldPolicy::ModeDefine: return "ModeDefine";
                 case FieldPolicy::Optional: return "Optional";
                 case FieldPolicy::Required: return "Required";
-                //case FieldFlag: return "";
+                //case FieldPolicy: return "";
                 default: return "Unknown";
             }
         }

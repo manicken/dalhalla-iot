@@ -23,37 +23,14 @@
 
 #pragma once
 
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
-
-#include <Arduino.h> // Needed for String class
-
-#include <string>
-#include <ArduinoJson.h>
-#include <PubSubClient.h> // uses a modded PubSubClient placed in /lib folder
-
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
 namespace DALHAL {
 
-    class HA_DeviceContainer : public Device {
-    public: // public static fields and exposed external structures
-        static const Registry::DefineBase RegistryDefine;
-        static Device* Create(DeviceCreateContext& context);
+    namespace JsonSchema {
 
-    private:
-        Device** devices;
-        int deviceCount;
+        extern const JsonObjectSchema HA_Switch;
 
-    public:
-        HA_DeviceContainer(HA_CreateFunctionContext& context);
-        ~HA_DeviceContainer();
+    }
 
-        void begin() override;
-        void loop() override;
-
-        DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-
-        String ToString() override;
-    };
 }

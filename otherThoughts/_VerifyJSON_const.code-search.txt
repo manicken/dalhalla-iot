@@ -1,7 +1,3 @@
-bool HA_DeviceContainer::VerifyJSON(const JsonVariant &jsonObj) {
+
 bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
-bool BinarySensor::VerifyJSON(const JsonVariant &jsonObj) {
-bool Button::VerifyJSON(const JsonVariant &jsonObj) {
-bool Number::VerifyJSON(const JsonVariant &jsonObj) {
-bool Sensor::VerifyJSON(const JsonVariant &jsonObj)
-bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
+

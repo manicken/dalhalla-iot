@@ -21,19 +21,19 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_DeviceContainer_JSON_Schema.h"
+#include "DALHAL_HA_DeviceContainer_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
+#include "DALHAL_HA_DeviceTypeReg.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
+        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
         constexpr const FieldBase* fields[] = {
             &typeField,         // DALHAL_CommonSchemas_Base
@@ -42,8 +42,8 @@ namespace DALHAL {
             nullptr,
         };
 
-        constexpr JsonObjectSchema DeviceContainer = {
-            "DeviceContainer",
+        constexpr JsonObjectSchema HA_DeviceContainer = {
+            "HA_DeviceContainer",
             fields,
             nullptr, // no modes
             nullptr,  // no constraints

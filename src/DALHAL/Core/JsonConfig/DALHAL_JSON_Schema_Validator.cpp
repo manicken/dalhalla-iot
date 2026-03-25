@@ -519,6 +519,8 @@ namespace DALHAL {
         // Validate a complete JSON Object
         void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError)
         {
+            if (jsonObjectSchema == nullptr) return; // allow any content
+
             if (j.size() == 0) {
                 if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
                     GlobalLogger.Warn(F("JsonObject is empty: "), jsonObjectSchema->typeName);

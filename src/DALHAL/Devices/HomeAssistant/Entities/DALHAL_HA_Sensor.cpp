@@ -32,11 +32,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_HA_Sensor_JSON_Schema.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase Sensor::RegistryDefine = {
         Create,
-        VerifyJSON
+        &JsonSchema::HA_Sensor,
     };
 
     void Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
@@ -80,87 +82,6 @@ namespace DALHAL {
     Sensor::~Sensor() {
         delete reactiveEvent;
         delete cdr;
-    }
-
-    bool Sensor::VerifyJSON(const JsonVariant &jsonObj)
-    {
-        bool anyError = false;
-
-        if (!ValidateJsonStringField(jsonObj, "uid")) {
-            SET_ERR_LOC("HA_SENSOR_VJ"); // can be set here because ValidateJsonStringField uses GlobalLogger on error
-            anyError = true;
-        }
-
-        if (!ValidateJsonStringField(jsonObj, "name")) {
-            SET_ERR_LOC("HA_SENSOR_VJ"); // can be set here because ValidateJsonStringField uses GlobalLogger on error
-            anyError = true;
-        }
-
-        bool haveRefreshMs = ParseRefreshTimeMs(jsonObj, 0) != 0;
-        bool haveValueSource = false;
-        bool haveEventSource = false;
-
-        ZeroCopyString zcSrcDeviceUidStr;
-
-        // ---- SOURCE (optional) ----
-        if (ValidateJsonStringField(jsonObj, "source")) {
-            zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
-
-            CachedDeviceRead cdr;
-            if (!cdr.Set(zcSrcDeviceUidStr)) {
-                GlobalLogger.Error(F("source device error"), zcSrcDeviceUidStr);
-                SET_ERR_LOC("HA_SENSOR_VJ");
-                anyError = true;
-            } else {
-                haveValueSource = true;
-            }
-        }
-
-        // ---- EVENT SOURCE (optional but not without "value"-source) ----
-        if (ValidateJsonStringField(jsonObj, "eventSource")) {
-
-            if (!haveValueSource) {
-                // eventSource without source makes no sense
-                GlobalLogger.Error(F("eventSource without 'value'-source defined"));
-                SET_ERR_LOC("HA_SENSOR_VJ");
-                anyError = true;
-            } else {
-                ZeroCopyString zcEvtDeviceUidStr = GetAsConstChar(jsonObj, "eventSource");
-
-                HALOperationResult res =
-                    DeviceManager::ValidateDeviceEvent(zcEvtDeviceUidStr);
-
-                if (res != HALOperationResult::Success) {
-                    GlobalLogger.Error(F("eventSource error"));
-                    SET_ERR_LOC(HALOperationResultToString(res));
-                    anyError = true;
-                } else {
-                    haveEventSource = true;
-                }
-            }
-        }
-
-        // ---- refreshTime requires source ----
-        if (haveRefreshMs && !haveValueSource) {
-            GlobalLogger.Error(F("haveRefreshMs without source"));
-            SET_ERR_LOC("HA_SENSOR_VJ");
-            anyError = true;
-        }
-
-        // ---- Scenario B: source only, no refreshTime, no eventSource ----
-        if (haveValueSource && !haveRefreshMs && !haveEventSource) {
-
-            HALOperationResult res =
-                DeviceManager::ValidateDeviceEvent(zcSrcDeviceUidStr);
-
-            if (res != HALOperationResult::Success) {
-                GlobalLogger.Error(F("source without events do not work without refreshTime or eventSource"));
-                SET_ERR_LOC(HALOperationResultToString(res));
-                anyError = true;
-            }
-        }
-
-        return !anyError;
     }
 
     Device* Sensor::Create(DeviceCreateContext& context) {

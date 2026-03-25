@@ -236,9 +236,10 @@ namespace DALHAL {
          */
         struct FieldRegistryArray : FieldBase {
             const Registry::Item* subtypes;
+            const char* regPath;
 
-            constexpr FieldRegistryArray(const char* name, FieldPolicy policy, const Registry::Item* subtypes)
-                : FieldBase(name, FieldType::Array, policy), subtypes(subtypes) {}
+            constexpr FieldRegistryArray(const char* name, FieldPolicy policy, const Registry::Item* subtypes, const char* regPath)
+                : FieldBase(name, FieldType::Array, policy), subtypes(subtypes), regPath(regPath) {}
 
         };
         

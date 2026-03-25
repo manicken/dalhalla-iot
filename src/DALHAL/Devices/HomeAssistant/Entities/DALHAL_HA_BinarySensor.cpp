@@ -31,10 +31,12 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_HA_BinarySensor_JSON_Schema.h"
+
 namespace DALHAL {
     constexpr Registry::DefineBase BinarySensor::RegistryDefine = {
         Create,
-        VerifyJSON
+        &JsonSchema::HA_BinarySensor,
     };
 
     void BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
@@ -80,20 +82,6 @@ namespace DALHAL {
     }
     BinarySensor::~BinarySensor() {
         delete cdr;
-    }
-
-    bool BinarySensor::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, "uid") == false) { SET_ERR_LOC("HA_BiSENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "name") == false) { SET_ERR_LOC("HA_BiSENSOR_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "source")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
-            CachedDeviceRead cdr;
-            if (cdr.Set(zcSrcDeviceUidStr) == false) {
-                SET_ERR_LOC("HA_BiSENSOR_VJ");
-                return false;
-            }
-        }
-        return true;
     }
 
     Device* BinarySensor::Create(DeviceCreateContext& context) {
