@@ -56,7 +56,7 @@ namespace DALHAL {
         busCount = 0;
         const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         int itemCount = items.size();
-        bool* validBusses = new bool[itemCount]; // must store this as OneWireTempBus::VerifyJSON cannot be run twice as the first time it actually reserve pin use
+        bool* validBusses = new bool[itemCount];
         // first pass count valid busses
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];

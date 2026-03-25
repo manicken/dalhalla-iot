@@ -134,7 +134,7 @@ namespace DALHAL {
     {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
-        GPIO_manager::ReservePin(pin); // this is in most cases taken care of in OneWireTempBus::VerifyJSON but there are situations where it's needed
+        GPIO_manager::ReservePin(pin);
 
         oneWire = new OneWire(pin);
         dTemp = new DallasTemperature(oneWire);

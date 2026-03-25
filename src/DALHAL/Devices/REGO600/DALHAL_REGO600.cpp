@@ -60,9 +60,6 @@ namespace DALHAL {
             const JsonVariant item = items[i];
             if (IsConstChar(item) == true) { validItems[i] = false; continue; } // comment item
             if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
-#ifndef DALHAL_VALIDATE_JSON_STRICT
-            if (REGO600register::VerifyJSON(item) == false) { validItems[i] = false; continue; }
-#endif
             validItems[i] = true;
             registerItemCount++;
         }

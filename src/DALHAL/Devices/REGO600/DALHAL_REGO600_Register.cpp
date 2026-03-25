@@ -41,11 +41,7 @@ namespace DALHAL {
 #endif
     }
 /* keep this here as in the future we may want to use Drivers::REGO600::SystemRegisterTableLockup(regName);
-   
-    bool REGO600_Register::VerifyJSON(const JsonVariant &jsonObj) {
-        bool anyError = false;
-        if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
-        if (ValidateJsonStringField(jsonObj, "regname") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
+    if (ValidateJsonStringField(jsonObj, "regname") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
         const char* regName = GetAsConstChar(jsonObj, "regname");
         const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
         if (entry == nullptr) {
