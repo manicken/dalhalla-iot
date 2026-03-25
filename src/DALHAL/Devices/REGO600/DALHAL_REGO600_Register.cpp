@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_REGO600register.h"
+#include "DALHAL_REGO600_Register.h"
 #include <DALHAL/Drivers/REGO600.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
@@ -31,7 +31,7 @@
 
 namespace DALHAL {
     
-    REGO600register::REGO600register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
+    REGO600_Register::REGO600_Register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
@@ -40,8 +40,9 @@ namespace DALHAL {
         value.setCallbacks(this, GenericValueCallback<REGO600register_DeviceBase>, nullptr);
 #endif
     }
-
-    bool REGO600register::VerifyJSON(const JsonVariant &jsonObj) {
+/* keep this here as in the future we may want to use Drivers::REGO600::SystemRegisterTableLockup(regName);
+   
+    bool REGO600_Register::VerifyJSON(const JsonVariant &jsonObj) {
         bool anyError = false;
         if (ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID) == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
         if (ValidateJsonStringField(jsonObj, "regname") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
@@ -55,17 +56,14 @@ namespace DALHAL {
         
         return anyError == false;
     }
+*/
 
-    Device* REGO600register::Create(DeviceCreateContext& context) {
-        return new REGO600register(context);
-    }
-
-    HALOperationResult REGO600register::read(HALValue& val) {
+    HALOperationResult REGO600_Register::read(HALValue& val) {
         val = value;
         return HALOperationResult::Success;
     }
 
-    String REGO600register::ToString() {
+    String REGO600_Register::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();

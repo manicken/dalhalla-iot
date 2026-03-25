@@ -9,6 +9,3 @@ bool Switch::VerifyJSON(const JsonVariant &jsonObj) {
 bool I2C_Master::VerifyJSON(const JsonVariant &jsonObj) {
 bool PCF8574x::VerifyJSON(const JsonVariant &jsonObj) {
 
-bool REGO600::VerifyJSON(const JsonVariant &jsonObj) {
-bool REGO600register::VerifyJSON(const JsonVariant &jsonObj)
-

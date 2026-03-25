@@ -32,7 +32,7 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include "DALHAL_REGO600register.h"
+#include "DALHAL_REGO600_Register.h"
 #include <DALHAL/Drivers/REGO600.h>
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
@@ -48,7 +48,6 @@ namespace DALHAL {
     class REGO600 : public REGO600_DeviceBase {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static bool VerifyJSON(const JsonVariant &jsonObj);
         static Device* Create(DeviceCreateContext& context);
 
     private:

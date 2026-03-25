@@ -32,8 +32,8 @@
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(REGO600_REGISTRY_ITEM)
-#include "DALHAL_REGO600register_Reactive.h"
-using REGO600register_DeviceBase = DALHAL::REGO600register_Reactive;
+#include "DALHAL_REGO600_Register_Reactive.h"
+using REGO600register_DeviceBase = DALHAL::REGO600_Register_Reactive;
 #else
 using REGO600register_DeviceBase = DALHAL::Device;
 #endif
@@ -47,16 +47,14 @@ using ScriptVariable_ValueBase = DALHAL::HALValue;
 
 namespace DALHAL {
     
-    class REGO600register : public REGO600register_DeviceBase {
+    class REGO600_Register : public REGO600register_DeviceBase {
     public: // public static fields and exposed external structures
-        static bool VerifyJSON(const JsonVariant &jsonObj);
-        static Device* Create(DeviceCreateContext& context);
 
     public: // member data
         ScriptVariable_ValueBase value;   // need to be public for the moment
         
     public: // member functions
-        REGO600register(DeviceCreateContext& context);
+        REGO600_Register(DeviceCreateContext& context);
 
         HALOperationResult read(HALValue& val) override;
         String ToString() override;

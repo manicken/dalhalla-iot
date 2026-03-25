@@ -31,12 +31,13 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include "DALHAL_REGO600_JSON_Scheme.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase REGO600::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::REGO600,
         DALHAL_REACTIVE_EVENT_TABLE(REGO600)
     };
     
@@ -75,7 +76,7 @@ namespace DALHAL {
             if (validItems[i] == false) continue;
             const JsonVariant& item = items[i];
             createContext.jsonObjItem = &item;
-            REGO600register* itemReg = new REGO600register(createContext);
+            REGO600_Register* itemReg = new REGO600_Register(createContext);
 
             const char* regName = GetAsConstChar(item, "regname");
             const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
@@ -133,34 +134,6 @@ namespace DALHAL {
             triggerCycleComplete();
         }
 #endif
-    }
-
-    bool REGO600::VerifyJSON(const JsonVariant &jsonObj) {
-        if (!ValidateUINT8(jsonObj,DALHAL_KEYNAME_RXPIN)) return false;
-        if (!ValidateUINT8(jsonObj,DALHAL_KEYNAME_TXPIN)) return false;
-        uint8_t rxPin = GetAsUINT8(jsonObj, DALHAL_KEYNAME_RXPIN);
-        if (!GPIO_manager::CheckIfPinAvailableAndReserve(rxPin, static_cast<uint8_t>(GPIO_manager::PinFunc::IN))) return false;
-        uint8_t txPin = GetAsUINT8(jsonObj, DALHAL_KEYNAME_TXPIN);
-        if (!GPIO_manager::CheckIfPinAvailableAndReserve(txPin, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT))) return false;
-        if (!jsonObj.containsKey(DALHAL_KEYNAME_ITEMS)) { GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_ITEMS)); return false; }
-        
-        if (jsonObj[DALHAL_KEYNAME_ITEMS].is<JsonArray>() == false) {
-            GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_ITEMS " not array"));
-            return false;
-        }
-        const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        if (items.size() == 0) { GlobalLogger.Error(DALHAL_ERR_ITEMS_EMPTY("REGO600")); return false;}
-        int itemCount = items.size();
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) continue; // comment item
-            if (Device::DisabledInJson(item) == true) continue; // disabled
-            if (REGO600register::VerifyJSON(item) == false) DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION;
-            validItemCount++;
-        }
-        if (validItemCount == 0) { GlobalLogger.Error(DALHAL_ERR_ITEMS_NOT_VALID("REGO600")); return false; }
-        return true;
     }
 
     Device* REGO600::Create(DeviceCreateContext& context) {
