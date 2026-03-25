@@ -1,3 +1,0 @@
-
-bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
-

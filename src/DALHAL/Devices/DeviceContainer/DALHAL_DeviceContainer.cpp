@@ -66,8 +66,8 @@ namespace DALHAL {
             JsonVariant jsonItem = jsonArray[i];
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-            bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
-            validDevices[i] = valid;
+           // bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
+            validDevices[i] = true;
             deviceCountTmp++;
         }
         

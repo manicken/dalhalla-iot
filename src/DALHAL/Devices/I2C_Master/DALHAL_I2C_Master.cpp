@@ -81,7 +81,7 @@ namespace DALHAL {
             const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type);
             //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            //if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }

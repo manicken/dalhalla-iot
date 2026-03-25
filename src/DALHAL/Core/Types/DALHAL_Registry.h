@@ -43,7 +43,7 @@ namespace DALHAL {
     namespace Registry {
         //typedef Device* (*HAL_DEVICE_CREATE_FUNC)(const JsonVariant &json, const char* type, void* context);
         typedef Device* (*HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context);
-        typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &jsonObj);
+        //typedef bool (*HAL_DEVICE_VERIFY_JSON_FUNC)(const JsonVariant &jsonObj);
 
         enum class UseRootUID {
             Mandatory,
@@ -53,12 +53,12 @@ namespace DALHAL {
 
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
-            HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function; // soon to be obsolete in favor of jsonSchema
+           // HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function; // soon to be obsolete in favor of jsonSchema
             const JsonSchema::JsonObjectSchema* jsonSchema;
             const EventDescriptor* reactiveTable;
             
             // Verify_JSON_Function variants, soon to be obsolete in favor of JsonSchema
-            constexpr DefineBase(
+            /*constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
                 HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function
             ) :
@@ -77,14 +77,14 @@ namespace DALHAL {
                 Verify_JSON_Function(Verify_JSON_Function),
                 jsonSchema(nullptr),
                 reactiveTable(reactiveTable)
-            {}
+            {}*/
             // JsonSchema variants
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
                 const JsonSchema::JsonObjectSchema* jsonSchema
             ) :
                 Create_Function(Create_Function),
-                Verify_JSON_Function(nullptr),
+                //Verify_JSON_Function(nullptr),
                 jsonSchema(jsonSchema),
                 reactiveTable(nullptr)                
             {}
@@ -95,7 +95,7 @@ namespace DALHAL {
                 const EventDescriptor* reactiveTable
             ) :
                 Create_Function(Create_Function),
-                Verify_JSON_Function(nullptr),
+                //Verify_JSON_Function(nullptr),
                 jsonSchema(jsonSchema),
                 reactiveTable(reactiveTable)
             {}

@@ -247,7 +247,7 @@ namespace DALHAL {
             
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+           // if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
             validItemCount++;
             validItems[i] = true;
         }
@@ -331,7 +331,7 @@ namespace DALHAL {
         const char* type_cStr = GetAsConstChar(jsonObjItem, DALHAL_KEYNAME_TYPE);
         const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
         // no nullcheck is needed as ValidateJSON ensures that all types are correct
-        if (regItem.def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
+        //if (regItem.def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
         return true;
     }
 

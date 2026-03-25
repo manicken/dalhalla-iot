@@ -88,7 +88,7 @@ namespace DALHAL {
         createContext.deviceType = regItem.typeName;
         return regItem.def->Create_Function(createContext);
     }
-    bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
+    /*bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
         
         if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_TYPE)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
@@ -102,12 +102,12 @@ namespace DALHAL {
 
         if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
 
-        if (regItem.def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
+        //if (regItem.def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
         if (regItem.def->Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
 
-        return regItem.def->Verify_JSON_Function(jsonObj);
+        //return regItem.def->Verify_JSON_Function(jsonObj);
 
-    }
+    }*/
 
     void DeviceManager::CleanUp() {
         //printf("\n&&&&&&&&&&&&&&&&&&&&&&&& CLEANUP OF LOADED DEVICES &&&&&&&&&&&&&&&&&&&&&&\n");

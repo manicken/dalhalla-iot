@@ -53,7 +53,7 @@ namespace DALHAL {
 
     public:
         static Device* CreateDeviceFromJSON(const JsonVariant& json);
-        static bool VerifyDeviceJson(const JsonVariant& jsonObj);
+        //static bool VerifyDeviceJson(const JsonVariant& jsonObj);
 
         // getters
         static int DeviceCount();

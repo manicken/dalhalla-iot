@@ -704,12 +704,12 @@ namespace DALHAL {
                 if (regItem.def->jsonSchema == nullptr) {
                     // TODO remove use of obsolete function Verify_JSON_Function
                     // can only be done when all devices use json schema
-                    if (regItem.def->Verify_JSON_Function == nullptr) {
+                    //if (regItem.def->Verify_JSON_Function == nullptr) {
                     GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
                     GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                     anyError = true;
                     continue; // skip the current json device
-                    }
+                    /*}
                     // TODO remove use of obsolete function Verify_JSON_Function
                     // can only be done when all devices use json schema
                     if (jsonItem.containsKey(DALHAL_COMMON_CFG_NAME_UID) == false) {
@@ -730,7 +730,7 @@ namespace DALHAL {
                     } else {
                         context.SetDevice(i, true);
                     }
-                    continue;
+                    continue;*/
                 }
                 bool validatedJsonObjectAnyError = false;
                 validateJsonObject(jsonItem, regItem.def->jsonSchema, validatedJsonObjectAnyError);
