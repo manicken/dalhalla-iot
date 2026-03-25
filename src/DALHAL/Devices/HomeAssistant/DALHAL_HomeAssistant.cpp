@@ -35,28 +35,15 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include "DALHAL_HomeAssistant_JSON_Schema.h"
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
-        
         Create,
-        VerifyJSON,
+        &JsonSchema::HomeAssistant,
         nullptr /* no events available */
     };
-
-    bool HomeAssistant::VerifyJSON(const JsonVariant &jsonObj) {
-        if (ValidateJsonStringField(jsonObj, "deviceId") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
-        if (ValidateJsonStringField(jsonObj, "host") == false) { SET_ERR_LOC("HA_ROOT_VJ"); return false; }
-        if (jsonObj.containsKey("groups")) {
-            if (jsonObj["groups"].is<JsonArray>()) return true;
-            GlobalLogger.Error(F("HASS cfg groups is not a array"));
-        } else if (jsonObj.containsKey("items")) {
-            if (jsonObj["items"].is<JsonArray>()) return true;
-            GlobalLogger.Error(F("HASS cfg items is not a array"));
-        }
-        GlobalLogger.Error(F("HASS cfg do not contain either groups or items array"));
-        return false;
-    }
 
     Device* HomeAssistant::Create(DeviceCreateContext& context) {
         return new HomeAssistant(context);
