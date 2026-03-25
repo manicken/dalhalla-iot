@@ -28,16 +28,13 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
+#include <DALHAL/Drivers/REGO600.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr const char* registerNames[] = {"GT1", "GT2", "GT3", "GT4", "GT5", "GT6", "GT8", "GT9", "GT10", "GT11", 
-                                       "GT3X", 
-                                       "P3", "COMP", "EL3", "EL6", "P1", "P2", "VXV", "ALARM", nullptr};
-
-        constexpr FieldString regnameField = {"regname", FieldPolicy::Required, "gt1", registerNames, FieldString::AllowedValuesPolicy::IgnoreCase};
+        constexpr FieldStringConstraint regnameField = {"regname", FieldPolicy::Required, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray};
 
         constexpr const FieldBase* fields[] = {
             &uidFieldRequired,  // DALHAL_CommonSchemas_Base

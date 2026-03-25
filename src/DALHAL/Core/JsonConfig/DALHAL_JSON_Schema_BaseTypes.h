@@ -38,6 +38,7 @@ namespace DALHAL {
             UInt,
             Float,
             String,
+            StringConstraint,
             HexBytes,      // note can be use with or without delimiters but only consistent usage is allowed so for example 2845:56:67 is not allowed, however currently the delimiter type is not fixed so it can be 28:45.56-67
             Array,         // homogeneous type
             ArrayPrimitive, // homogeneous type of primitives defined by allowence flags (and can mix different primitive types such as bool, uint, int and float)

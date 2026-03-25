@@ -144,7 +144,7 @@ namespace DALHAL {
 
             // Handle required/optional
             if (!j.containsKey(field->name)) {
-                if (field->flag == FieldPolicy::Required) {
+                if (field->policy == FieldPolicy::Required) {
                     GlobalLogger.Error(F("Required field missing"));
                     GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                     anyError = true;
@@ -233,11 +233,28 @@ namespace DALHAL {
                     }
                     return;
                 }
+                case FieldType::String:
                 case FieldType::UID:
-                case FieldType::UID_Path: {
+                case FieldType::UID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
                     validateStringField(value, static_cast<const FieldString*>(field), anyError);
                     return;
+                }
+                case FieldType::StringConstraint: {
+                    
+                    bool anyErrorTemp = false;
+                    validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
+                    if (anyErrorTemp) {
+                        anyError = true;
+                        return;
+                    }
+                    const char* cStr = value.as<const char*>();
+
+                    auto f = static_cast<const FieldStringConstraint*>(field);
+                    bool valid = f->validate(cStr);
+                    if (valid) return;
+                    anyError = true;
+                    break;
                 }
                 case FieldType::Object: {
                     validateJsonObject(value, static_cast<const FieldObject*>(field)->subtype, anyError);
@@ -319,7 +336,7 @@ namespace DALHAL {
                 }
             }
 
-            if (!found && group->flag == FieldPolicy::Required) {
+            if (!found && group->policy == FieldPolicy::Required) {
                 GlobalLogger.Error(F("None of the AnyOfGroup fields present"));
                 anyError = true;
             }
@@ -349,7 +366,7 @@ namespace DALHAL {
                 return;
             }
 
-            if (foundCount == 0 && group->flag == FieldPolicy::Required) {
+            if (foundCount == 0 && group->policy == FieldPolicy::Required) {
                 GlobalLogger.Error(F("Required AllOfGroup missing"));
                 anyError = true;
             }

@@ -144,6 +144,27 @@ namespace Drivers {
         return nullptr;
     }
 
+    bool REGO600::SystemRegisterTable_ItemExists(const char* name) {
+        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
+            if (strcasecmp(SystemRegisterTable[i].name, name) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    std::string REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray() {
+        std::string ret = "[";
+        bool first = true;
+        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
+            if (first == false) {
+                ret += ',';
+            } else { first = false; }
+            ret += '"'; ret += SystemRegisterTable[i].name; ret += '"';
+        }
+        ret += ']';
+        return ret;
+    }
+
     // Constructor for linked values here the type is allways Value
     REGO600::Request::Request(const OpCodeInfo& _info, const RegoLookupEntry& _def, DALHAL::HALValue& externalValue) 
         : info(_info), 

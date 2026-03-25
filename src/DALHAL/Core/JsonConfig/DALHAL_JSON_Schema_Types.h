@@ -136,6 +136,14 @@ namespace DALHAL {
             
         };
 
+        struct FieldStringConstraint : FieldString {
+            bool (*validate)(const char*);
+            std::string (*describe)();
+
+            constexpr FieldStringConstraint(const char* name, FieldPolicy policy, bool (*validate)(const char*), std::string (*describe)()) 
+            : FieldString(name, policy, nullptr, 0), validate(validate), describe(describe) {}
+        };
+
         /**
          * used for ordinary JSON objects, i.e. enclosed by {}
          */

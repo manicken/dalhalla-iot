@@ -120,6 +120,9 @@ namespace Drivers {
         static const RegoLookupEntry* SystemRegisterTableLockup(const char* name);
         // Declaration of the fallback entry
         static const RegoLookupEntry ManualRawEntry;
+
+        static bool SystemRegisterTable_ItemExists(const char* name);
+        static std::string SystemRegisterTable_GetAllNamesAsJsonStringArray();
         
         struct Request {
             
