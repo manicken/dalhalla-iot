@@ -36,8 +36,7 @@ namespace DALHAL {
 
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &valueField,
             nullptr,
         };

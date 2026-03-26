@@ -34,6 +34,7 @@
 #include "DALHAL_TX433_Unit_TypeLC_JSON_Schema.h"
 #include "DALHAL_TX433_Unit_TypeSFC_JSON_Schema.h"
 #include "DALHAL_TX433_Unit_TypeAFC_JSON_Schema.h"
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
 namespace DALHAL {
     constexpr Registry::DefineBase TX433_Unit::LCTypeRegistryDefine = {
@@ -68,19 +69,19 @@ namespace DALHAL {
     
     TX433_Unit::TX433_Unit(TX433_Unit_CreateFunctionContext& context) : TX433unit_DeviceBase(context.deviceType), pin(context.pin) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
+        const char* uidStr = jsonObj[DALHAL_COMMON_CFG_NAME_UID].as<const char*>();
         uid = encodeUID(uidStr);
-        const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_MODEL);
+        const char* typeStr = GetAsConstChar(jsonObj, DALHAL_COMMON_CFG_NAME_TYPE);
         
-        if (strcasecmp(modelStr, "lc") == 0) {
+        if (strcasecmp(typeStr, "lc") == 0) {
             staticData = RF433::Get433_LC_Data(jsonObj);
             model = TX433_MODEL::LearningCode;
         }
-        else if (strcasecmp(modelStr, "sfc") == 0) {
+        else if (strcasecmp(typeStr, "sfc") == 0) {
             staticData = RF433::Get433_SFC_Data(jsonObj);
             model = TX433_MODEL::FixedCode;
         }
-        else if (strcasecmp(modelStr, "afc") == 0) {
+        else if (strcasecmp(typeStr, "afc") == 0) {
             staticData = RF433::Get433_AFC_Data(jsonObj);
             model = TX433_MODEL::FixedCode;
         }

@@ -50,7 +50,7 @@ LogEntry::LogEntry() : timestamp(0),
         
         // build timestamp prefix
         struct tm* timeinfo = localtime(&timestamp);
-        char buf[128]; // buffer for one log line
+        char buf[1024]; // buffer for one log line
 
         int len = snprintf(buf, sizeof(buf), "[%02d/%02d %02d:%02d:%02d]",
             timeinfo->tm_mday, timeinfo->tm_mon+1,
@@ -233,6 +233,7 @@ void Logger::Error(uint32_t code) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, nullptr, false) == false) {
@@ -241,6 +242,7 @@ void Logger::Error(const __FlashStringHelper* msg) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Error(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, text, true) == false) {
@@ -249,6 +251,7 @@ void Logger::Error(uint32_t code, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, text, false) == false) {
@@ -257,6 +260,7 @@ void Logger::Error(const __FlashStringHelper* msg, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, zcStr, false) == false) {
@@ -265,6 +269,7 @@ void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString&
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 
 void Logger::Info(uint32_t code) {
@@ -274,6 +279,7 @@ void Logger::Info(uint32_t code) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, nullptr, false) == false) {
@@ -282,6 +288,7 @@ void Logger::Info(const __FlashStringHelper* msg) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Info(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, text, true) == false) {
@@ -290,6 +297,7 @@ void Logger::Info(uint32_t code, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, text, false) == false) {
@@ -298,6 +306,7 @@ void Logger::Info(const __FlashStringHelper* msg, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, zcStr, false) == false) {
@@ -306,6 +315,7 @@ void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& 
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 
 void Logger::Warn(uint32_t code) {
@@ -315,6 +325,7 @@ void Logger::Warn(uint32_t code) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, nullptr, false) == false) {
@@ -323,6 +334,7 @@ void Logger::Warn(const __FlashStringHelper* msg) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Warn(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, text, true) == false) {
@@ -331,6 +343,7 @@ void Logger::Warn(uint32_t code, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, text, false) == false) {
@@ -339,6 +352,7 @@ void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, zcStr, false) == false) {
@@ -347,6 +361,7 @@ void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& 
     }
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::SendMessage(entryStr);
+    Serial.println(entryStr.c_str());
 }
 
 

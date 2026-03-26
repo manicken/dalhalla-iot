@@ -34,12 +34,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        extern const FieldBool disabledField;
         extern const FieldString typeField;
         extern const FieldUID uidFieldRequired;
         extern const FieldUID uidFieldOptional;
         /** note this field is only for the GUI to optionally describe this device */
         extern const FieldString noteField;
         
+        extern const FieldsGroup disabled_uidreq_note_group;
+        extern const FieldsGroup disabled_type_uidreq_note_group;
     }
     
 }

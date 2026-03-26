@@ -39,7 +39,7 @@ namespace DALHAL {
         constexpr FieldString labelField = {"label", FieldPolicy::Optional, nullptr, 0};
         constexpr FieldString sourceField = {"source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
 
-        constexpr const FieldBase* elementFields[] = {&typeField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
+        constexpr const FieldBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
 
         constexpr JsonObjectSchema elementObject = {"SSD1306 element", elementFields, nullptr, nullptr, EmptyPolicy::Warn, UnknownFieldPolicy::Warn};
 
@@ -52,8 +52,10 @@ namespace DALHAL {
         
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &widthField,
+            &heightField,
+            &addrField,
             &itemsField,
             nullptr,
         };

@@ -234,22 +234,13 @@ namespace DALHAL {
     void HomeAssistant::ConstructDevicesNonGrouped(const JsonVariant& jsonObj) {
         const JsonArray& jsonArrayItems = jsonObj["items"];
         int arrayCount = jsonArrayItems.size();
-        bool* validItems = new bool[arrayCount];
+
         int validItemCount = 0;
         // first pass count and check valid items
         for (int i=0;i<arrayCount;i++) {
             const JsonVariant& item = jsonArrayItems[i];
-            if (IsConstChar(item) == true) { validItems[i] = false; continue; }// comment item
-            if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
-            if (ValidateJsonStringField(item, DALHAL_KEYNAME_TYPE) == false) { validItems[i] = false; continue; }
-            
-            const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            
-            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            // no nullcheck is needed as ValidateJSON ensures that all types are correct
-           // if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             validItemCount++;
-            validItems[i] = true;
         }
         deviceCount = validItemCount;
         devices = new Device*[deviceCount](); // create array and initialize all to nullptr
@@ -260,9 +251,9 @@ namespace DALHAL {
         createFuncContext.jsonGlobal = &groupObj;
         createFuncContext.jsonObjRoot = &jsonObj;
         for (int i=0;i<arrayCount;i++) {
-            if (validItems[i] == false) continue;
-
             const JsonVariant& item = jsonArrayItems[i];
+            if (Device::DisabledOrCommentItem(item)) { continue; }
+
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             
             const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
@@ -270,32 +261,30 @@ namespace DALHAL {
             createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
             devices[index++] = regItem.def->Create_Function(createFuncContext);
         }
-        delete[] validItems;
     }
 
     void HomeAssistant::ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj) {
         int count = 0;
         const JsonArray& jsonArrayGroups = jsonObj["groups"];
         int jsonArrayGroupsCount = jsonArrayGroups.size();
-        for (int i=0;i<jsonArrayGroupsCount;i++) {
-            count += jsonArrayGroups[i]["items"].size();
-        }
-        bool* validItems = new bool[count]();
-        int validItemIndex = 0;
-        int validItemCount = 0;
-        // first pass count and mark valid items
+        
+        
+        int activeItemCount = 0;
+        // first pass count enabled/"non comment" items
         for (int i=0;i<jsonArrayGroupsCount;i++) {
             const JsonArray& jsonArrayItems = jsonArrayGroups[i]["items"];
             int jsonArrayItemsCount = jsonArrayItems.size();
             for (int j=0;j<jsonArrayItemsCount;j++) {
-                bool valid = GetFlattenGroupsValidItem(jsonArrayItems[j]);
-                if (valid) validItemCount++;
-                validItems[validItemIndex++] = valid;
+                const JsonVariant& item = jsonArrayItems[j];
+                if (Device::DisabledOrCommentItem(item)) { continue; }
+                activeItemCount++;
             }
         }
-        deviceCount = validItemCount;
+
+        // second pass create actual enabled/"non comment" items
+        deviceCount = activeItemCount;
         devices = new Device*[deviceCount]();
-        validItemIndex = 0;
+
         int newItemIndex = 0;
         HA_CreateFunctionContext createFuncContext(mqttClient);
         for (int i=0;i<jsonArrayGroupsCount;i++) {
@@ -304,35 +293,19 @@ namespace DALHAL {
             int jsonArrayItemsCount = jsonArrayItems.size();
             createFuncContext.jsonGlobal = &jsonObjGrpItem;
             createFuncContext.jsonObjRoot = &jsonObj;
-            for (int j=0;j<jsonArrayItemsCount;j++) {
-                if (validItems[validItemIndex++] == false) continue;
 
+            for (int j=0;j<jsonArrayItemsCount;j++) {
                 const JsonVariant& item = jsonArrayItems[j];
+                if (Device::DisabledOrCommentItem(item)) { continue; }
+
                 const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
         
                 const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                 createFuncContext.jsonObjItem = &item;
                 createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
                 devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
-                yield();
             }
         }
-        delete[] validItems;
-    }
-
-    bool HomeAssistant::GetFlattenGroupsValidItem(const JsonVariant& jsonObjItem) {
-        // check if comment
-        if (IsConstChar(jsonObjItem) == true) { return false; }
-        // check if disabled
-        if (Device::DisabledInJson(jsonObjItem) == true) { return false; }
-        // check if type is a valid string
-        if (ValidateJsonStringField(jsonObjItem, DALHAL_KEYNAME_TYPE) == false) { return false; }
-        
-        const char* type_cStr = GetAsConstChar(jsonObjItem, DALHAL_KEYNAME_TYPE);
-        const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-        // no nullcheck is needed as ValidateJSON ensures that all types are correct
-        //if (regItem.def->Verify_JSON_Function(jsonObjItem) == false) { return false; }
-        return true;
     }
 
     HomeAssistant::~HomeAssistant() {

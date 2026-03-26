@@ -37,8 +37,7 @@ namespace DALHAL {
         constexpr FieldArrayPrimitive items = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &readonlyField,
             &items,
             nullptr,

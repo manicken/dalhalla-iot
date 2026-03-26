@@ -37,24 +37,6 @@ namespace DALHAL {
 
     struct I2C_RegistryDefine : public Registry::DefineBase {
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
-        /*constexpr I2C_RegistryDefine(
-            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
-            Registry::HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
-            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
-        ) : 
-            Registry::DefineBase(Create_Function, Verify_JSON_Function),
-            HasAddress_Function(HasAddress_Function)
-        {}
-
-        constexpr I2C_RegistryDefine(
-            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
-            Registry::HAL_DEVICE_VERIFY_JSON_FUNC Verify_JSON_Function,
-            const EventDescriptor* reactiveTable,
-            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
-        ) : 
-            Registry::DefineBase(Create_Function, Verify_JSON_Function, reactiveTable),
-            HasAddress_Function(HasAddress_Function)
-        {}*/
 
         constexpr I2C_RegistryDefine(
             Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
@@ -78,7 +60,7 @@ namespace DALHAL {
     };
 
     extern const Registry::Item I2C_DeviceRegistry[];
-    //const I2C_DeviceRegistryItem& GetI2C_DeviceTypeDef(const char* type);
+    
     // used by i2c scanner to describe which devices a adress belongs to
     std::string describeI2CAddress(uint8_t addr);
 

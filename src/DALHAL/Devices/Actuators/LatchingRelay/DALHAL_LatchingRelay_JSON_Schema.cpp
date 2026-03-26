@@ -88,8 +88,7 @@ namespace DALHAL {
         };
         // this list only validates each field so that it match specification
         constexpr const FieldBase* fields[] = {
-            &typeField,        // DALHAL_CommonSchemas_Base.h
-            &uidFieldRequired, // DALHAL_CommonSchemas_Base.h
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &directModeAB_GroupFields,
             &directModeSR_GroupFields,
             &direnableMode_GroupFields,

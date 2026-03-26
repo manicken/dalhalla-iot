@@ -37,8 +37,7 @@ namespace DALHAL {
         constexpr FieldRegistryArray unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry, "ROOT.TX433"};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group,
             &OutputPinField,
             &unitsField,
             nullptr,

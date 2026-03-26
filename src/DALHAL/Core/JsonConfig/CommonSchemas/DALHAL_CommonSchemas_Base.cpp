@@ -38,6 +38,26 @@ namespace DALHAL {
 
         constexpr FieldBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
 
+        constexpr const FieldBase* disabled_uidreq_note_group_items[] = { 
+            &disabledField, 
+            &uidFieldRequired, 
+            &noteField, 
+            nullptr
+        };
+        constexpr FieldsGroup disabled_uidreq_note_group = {
+            disabled_uidreq_note_group_items,
+            /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation
+        };
+
+        constexpr const FieldBase* disabled_type_uidreq_note_group_items[] = {
+            &disabled_uidreq_note_group,
+            &typeField,
+            nullptr
+        };
+        constexpr FieldsGroup disabled_type_uidreq_note_group = {
+            disabled_type_uidreq_note_group_items,
+            /*sizeof(disabled_type_uidreq_note_group_items)/sizeof(disabled_type_uidreq_note_group_items[0])*/ // future implementation
+        };
     }
 
 }

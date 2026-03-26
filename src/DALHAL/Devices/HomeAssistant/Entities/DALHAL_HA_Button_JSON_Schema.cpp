@@ -37,8 +37,7 @@ namespace DALHAL {
         constexpr FieldString targetField = {"target", FieldType::UID_Path, FieldPolicy::Required, nullptr, 0};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &targetField,
             &nameField, 
             &discoveryField,

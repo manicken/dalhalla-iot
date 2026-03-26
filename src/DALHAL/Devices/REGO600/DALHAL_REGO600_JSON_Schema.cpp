@@ -44,8 +44,7 @@ namespace DALHAL {
         constexpr FieldArray itemsField = {"items", FieldPolicy::Required, &REGO600_Register, EmptyPolicy::Error};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &rxpinField,
             &txpinField,
             &requestDelayMsField,

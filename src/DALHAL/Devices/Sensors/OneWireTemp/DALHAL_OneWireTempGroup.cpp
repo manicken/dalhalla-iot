@@ -56,13 +56,10 @@ namespace DALHAL {
         busCount = 0;
         const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         int itemCount = items.size();
-        bool* validBusses = new bool[itemCount];
         // first pass count valid busses
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (IsConstChar(item) == true) { validBusses[i] = false; continue; } // comment item
-            if (Device::DisabledInJson(item) == true) { validBusses[i] = false; continue; } // disabled
-            validBusses[i] = true; // allways valid in strict mode (i.e. validation scheme ensure that)
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             busCount++;
         }
         busses = new Device*[busCount]();
@@ -71,12 +68,12 @@ namespace DALHAL {
         DeviceCreateContext createContext;
         createContext.deviceType = "OneWireTempBus";
         for (int i=0;i<itemCount;i++) {
-            if (validBusses[i] == false) continue;
             const JsonVariant& item = items[i];
+            if (Device::DisabledOrCommentItem(item)) { continue; }
+
             createContext.jsonObjItem = &item;
             busses[index++] = new OneWireTempBus(createContext);
         }
-        delete[] validBusses;
     }
     OneWireTempGroup::~OneWireTempGroup() {
         if (busses != nullptr) {

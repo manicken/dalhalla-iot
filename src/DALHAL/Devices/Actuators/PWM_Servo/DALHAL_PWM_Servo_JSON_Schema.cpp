@@ -45,8 +45,8 @@ namespace DALHAL {
         constexpr FieldUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, 0, 0, 0};
         constexpr FieldUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, 0, 0, 0};
 
-        constexpr FieldFloat minValField = {"minVal", FieldPolicy::Optional, 0, 0, 0};
-        constexpr FieldFloat maxValField = {"maxVal", FieldPolicy::Optional, 0, 0, 0};
+        constexpr FieldFloat minValField = {"minVal", FieldPolicy::Optional, 0};
+        constexpr FieldFloat maxValField = {"maxVal", FieldPolicy::Optional, 100};
 
         constexpr FieldConstraint constraints[] = {
             {&minValField, FieldConstraint::Type::LessThan, &maxValField},
@@ -57,8 +57,7 @@ namespace DALHAL {
         };
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &pinField,
             &chField,
             &minPulseLengthField, // actually pulse length cfg fields are individually optional

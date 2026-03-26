@@ -37,7 +37,7 @@ namespace DALHAL {
         constexpr FieldStringConstraint regnameField = {"regname", FieldPolicy::Required, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray};
 
         constexpr const FieldBase* fields[] = {
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &regnameField,
             nullptr,
         };

@@ -53,14 +53,12 @@ namespace DALHAL {
 
         JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS];
         int itemCount = items.size();
-        bool* validItems = new bool[itemCount];
+
         registerItemCount = 0;
         // first pass count valid items
         for (int i=0;i<itemCount;i++) {
             const JsonVariant item = items[i];
-            if (IsConstChar(item) == true) { validItems[i] = false; continue; } // comment item
-            if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
-            validItems[i] = true;
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             registerItemCount++;
         }
         // second pass
@@ -70,8 +68,9 @@ namespace DALHAL {
         DeviceCreateContext createContext;
         createContext.deviceType = "REGO600reg";
         for (int i=0;i<itemCount;i++) {
-            if (validItems[i] == false) continue;
             const JsonVariant& item = items[i];
+            if (Device::DisabledOrCommentItem(item)) { continue; }
+
             createContext.jsonObjItem = &item;
             REGO600_Register* itemReg = new REGO600_Register(createContext);
 
@@ -91,7 +90,6 @@ namespace DALHAL {
             registerItems[index] = itemReg;
             index++;
         }
-        delete[] validItems;
         refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0); // default to zero, note here REGO600 constructor will calculate minimum based on registerItemCount
         unsigned long requestDelayMs = 10;
         if (jsonObj.containsKey("requestDelayMs") && jsonObj["requestDelayMs"].is<unsigned long>()) {

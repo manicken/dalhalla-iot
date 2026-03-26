@@ -35,6 +35,7 @@ namespace DALHAL {
                 case FieldType::ArrayPrimitive: return "ArrayPrimitive";
                 case FieldType::Bool: return "Bool";
                 case FieldType::Float: return "Float";
+                case FieldType::FieldsGroup: return  "FieldsGroup";
                 case FieldType::HardwarePin: return "HardwarePin";
                 case FieldType::HardwarePinOrVirtualPin: return "HardwarePinOrVirtualPin";
                 case FieldType::HexBytes: return "HexBytes";
@@ -55,6 +56,7 @@ namespace DALHAL {
         const char* FieldPolicyToString(FieldPolicy policy) {
             switch (policy)
             {
+                case FieldPolicy::FieldsGroup: return "FieldsGroup";
                 case FieldPolicy::AllOfGroup: return "AllOfGroup";
                 case FieldPolicy::AnyOfGroup: return "AnyOfGroup";
                 case FieldPolicy::ModeDefine: return "ModeDefine";

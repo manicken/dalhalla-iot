@@ -41,8 +41,7 @@ namespace DALHAL {
         constexpr FieldString on_pressField = { "on_press", FieldPolicy::Optional, nullptr, 0};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &pinField,
             &debounceMsField,
             &activeLevelField,

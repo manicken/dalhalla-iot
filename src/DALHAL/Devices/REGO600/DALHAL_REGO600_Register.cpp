@@ -40,19 +40,6 @@ namespace DALHAL {
         value.setCallbacks(this, GenericValueCallback<REGO600register_DeviceBase>, nullptr);
 #endif
     }
-/* keep this here as in the future we may want to use Drivers::REGO600::SystemRegisterTableLockup(regName);
-    if (ValidateJsonStringField(jsonObj, "regname") == false) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON); anyError = true; }
-        const char* regName = GetAsConstChar(jsonObj, "regname");
-        const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
-        if (entry == nullptr) {
-            GlobalLogger.Error(F("regname not found"), regName);
-            SET_ERR_LOC(DALHAL_ERROR_SOURCE_REGO600_REG_VERIFY_JSON);
-            anyError = true;
-        }
-        
-        return anyError == false;
-    }
-*/
 
     HALOperationResult REGO600_Register::read(HALValue& val) {
         val = value;

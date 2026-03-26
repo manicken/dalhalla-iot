@@ -67,23 +67,12 @@ namespace DALHAL {
         const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
 
         int itemCount = items.size();
-        bool* validItems = new bool[itemCount];
         // first pass count valid items
         size_t validItemCount = 0;
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (IsConstChar(item) == true) { validItems[i] = false; continue; }// comment item
-            if (Device::DisabledInJson(item) == true) { validItems[i] = false; continue; } // disabled
-            if (ValidateJsonStringField(item, DALHAL_KEYNAME_TYPE) == false) { validItems[i] = false; continue; }
-            
-            const char* type = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            
-            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type);
-            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type);
-            // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            //if (regItem.def->Verify_JSON_Function(item) == false) { validItems[i] = false; continue; }
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             validItemCount++;
-            validItems[i] = true;
         }
         // second pass actually create the devices
         deviceCount = validItemCount;
@@ -92,7 +81,7 @@ namespace DALHAL {
         I2C_Master_CreateFunctionContext createContext(*wire);
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (validItems[i] == false) continue;
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             
             const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
             //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type_cStr);
@@ -103,7 +92,6 @@ namespace DALHAL {
             
             devices[index++] = regItem.def->Create_Function(createContext); // regItem.typeName is a flash const so it's safe to use
         }
-        delete[] validItems;
     }
     I2C_Master::~I2C_Master() {
         if (devices != nullptr) {

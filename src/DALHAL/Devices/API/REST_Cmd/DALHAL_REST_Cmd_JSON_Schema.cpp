@@ -35,8 +35,7 @@ namespace DALHAL {
         constexpr FieldString urlField = { DALHAL_DEVICE_REST_CMD_CFG_NAME_URL, FieldPolicy::Required, nullptr, 0};
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &urlField,
             nullptr,
         };

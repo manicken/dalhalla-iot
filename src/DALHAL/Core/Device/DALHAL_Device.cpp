@@ -125,6 +125,10 @@ namespace DALHAL {
 
     HALValue* Device::GetValueDirectAccessPtr() { return nullptr; }
 
+    bool Device::DisabledOrCommentItem(const JsonVariant& jsonObj) {
+        return jsonObj.is<const char*>() || DisabledInJson(jsonObj);
+    }
+
     bool Device::DisabledInJson(const JsonVariant& jsonObj) {
         if (jsonObj.containsKey(DALHAL_KEYNAME_DISABLED) == false) return false;
         if (jsonObj[DALHAL_KEYNAME_DISABLED].is<bool>() == false) return false;

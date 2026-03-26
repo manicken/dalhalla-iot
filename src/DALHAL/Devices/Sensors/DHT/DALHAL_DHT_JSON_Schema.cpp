@@ -45,9 +45,7 @@ namespace DALHAL {
         constexpr const FieldString modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, models, FieldString::AllowedValuesPolicy::IgnoreCase};
 
         constexpr const FieldBase* fields[] = {
-            &noteField,         // DALHAL_CommonSchemas_Base, GUI optional note field
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &modelField,
             &refreshTimeGroupFieldsRequired,
             &InputOutputPinField,
@@ -55,7 +53,7 @@ namespace DALHAL {
         };
 
         constexpr JsonObjectSchema DHT = {
-            "OneWireTempDevice",
+            "DHT",
             fields,
             nullptr, // no modes
             nullptr,  // no constraints

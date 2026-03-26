@@ -102,6 +102,7 @@ namespace DALHAL {
 
         virtual String ToString();
 
+        static bool DisabledOrCommentItem(const JsonVariant& jsonObj);
         static bool DisabledInJson(const JsonVariant& jsonObj);
 
         static DeviceFindResult findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice, Device*& outDevice);

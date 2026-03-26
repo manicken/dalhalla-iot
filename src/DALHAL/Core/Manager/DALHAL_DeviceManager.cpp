@@ -88,26 +88,6 @@ namespace DALHAL {
         createContext.deviceType = regItem.typeName;
         return regItem.def->Create_Function(createContext);
     }
-    /*bool DeviceManager::VerifyDeviceJson(const JsonVariant &jsonObj) {
-        
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_TYPE)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
-
-        const char* type = jsonObj[DALHAL_KEYNAME_TYPE].as<const char*>();
-
-        const Registry::Item& regItem = Registry::GetItem(RootDevicesRegistry, type);
-        if (regItem.typeName == nullptr) {
-            GlobalLogger.Error(F("VerifyDeviceJson - could not find type:"),type);
-            return false;
-        }
-
-        if (!ValidateJsonStringField(jsonObj, DALHAL_KEYNAME_UID)) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_MGR_VERIFY_DEVICE); return false; }
-
-        //if (regItem.def->Verify_JSON_Function == nullptr){ GlobalLogger.Error(F("Verify_JSON_Function missing for:"),type); return false; }
-        if (regItem.def->Create_Function == nullptr){ GlobalLogger.Error(F("Create_Function missing for:"), type); return false; } // skip devices that dont have this defined
-
-        //return regItem.def->Verify_JSON_Function(jsonObj);
-
-    }*/
 
     void DeviceManager::CleanUp() {
         //printf("\n&&&&&&&&&&&&&&&&&&&&&&&& CLEANUP OF LOADED DEVICES &&&&&&&&&&&&&&&&&&&&&&\n");
@@ -129,41 +109,26 @@ namespace DALHAL {
         //Serial.println("PArse json thianasoidnoasidnasoidnsaiodnsaodinasdoiandoisandiosndoiasnd");
         GPIO_manager::ClearAllReservations(); // when devices are verified they also reservate the pins to include checks for duplicate use
         bool anyError = false;
-        JsonSchema::ValidateFromRegisterContext validateContext(JsonSchema::ValidateFromRegisterContext::State::Enabled);
-        JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, validateContext, anyError);
+        JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, anyError);
         if (anyError) {
             GlobalLogger.Error(F("The loaded JSON cfg contains errors"));
             GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
             return false;
         }
-/*
+
+        // First pass: count enabled/(non comment) entries
         uint32_t deviceCount = 0;
         int arraySize = jsonArray.size();
-        bool* validDevices = new bool[arraySize]; // dont' forget the delete[] call at end of function
-        
-       
-        // First pass: count valid entries
         for (int i=0;i<arraySize;i++) {
-
             JsonVariant jsonItem = jsonArray[i];
-
-            if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
-
-            if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-
-            bool valid = VerifyDeviceJson(jsonItem);
-
-            validDevices[i] = valid;
-            if (valid == false) return false; // strict mode is allways on DALHAL_VALIDATE_IN_LOOP_FAIL_OPERATION; // could either be continue; or return false depending if strict mode is on/off
+            if (IsConstChar(jsonItem) == true) { continue; } // comment item
+            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             deviceCount++;
         }
-            */
-        
-        int deviceCount = validateContext.validDevicesCount;
         
         if (deviceCount == 0) {
-            GlobalLogger.Error(F("The loaded JSON cfg does not contain any valid devices!\n" 
-                                 "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+            GlobalLogger.Error(F("The loaded JSON cfg does not contain any enabled/(non comment) items!"));
+            GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
             return false;
         }
         
@@ -181,20 +146,17 @@ namespace DALHAL {
         printf("\nOK\n");
         DALHAL::DeviceManager::deviceCount = deviceCount;
 
-        bool* validDevices = validateContext.validDevicesArray; // just get non owning ptr
         GPIO_manager::ClearAllReservations(); 
         // Second pass: actually create and store devices
         uint32_t index = 0;
-        int arraySize = validateContext.validDevicesArraySize;
         for (int i=0;i<arraySize;i++) {
             JsonVariant jsonItem = jsonArray[i];
-            //if (VerifyDeviceJson(jsonItem) == false) continue; // ************************************************************ now as we dont run this again the pins are not allocated anymore but we don't really need to take care of that as it's part of the validate device check anyway
-            if (validDevices[i] == false) continue;
+            if (IsConstChar(jsonItem) == true) { continue; } // comment item
+            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
             devices[index++] = CreateDeviceFromJSON(jsonItem);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created devices: "), devCountStr.c_str());
-        //delete[] validDevices; // free memory
         return true;
     }
 

@@ -30,18 +30,17 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr const FieldBase* templateFields[] = {
-            &typeField,
-            &uidFieldRequired,
-            &refreshTimeGroupFields,
-            &sourceField,
-            &eventSourceField,
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+            &sourceField,            // DALHAL_CommonSchemas_Consumer
+            &eventSourceField,       // DALHAL_CommonSchemas_Consumer
             nullptr
         };
 
         constexpr JsonSchema::JsonObjectSchema templateJsonObject = {
             "template",
             templateFields,
-            consumerDeviceModes,
+            consumerDeviceModes,     // DALHAL_CommonSchemas_Consumer
             nullptr, // no constraints
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,

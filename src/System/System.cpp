@@ -176,6 +176,9 @@ namespace System {
             HeartbeatLed::task();   // Non-blocking
 
             if (millis() >= failsafeLoopTimeoutMs_MaxEnd) {
+                Serial.println("\r\n***************************************\r\n");
+                Serial.println("\r\n***  Failsafe loop timeout reached  ***\r\n");
+                Serial.println("\r\n***************************************\r\n");
                 ESP.restart();
             }
             delay(10);              // Prevent WDT reset

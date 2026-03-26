@@ -62,7 +62,6 @@ namespace DALHAL {
         unsigned long lastReconnectAttempt = 0;
         const unsigned long reconnectInterval = 10000; // 10 seconds
 
-        bool GetFlattenGroupsValidItem(const JsonVariant& jsonObj);
         void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
         void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);
 

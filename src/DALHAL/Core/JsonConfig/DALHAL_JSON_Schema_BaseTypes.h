@@ -34,6 +34,7 @@ namespace DALHAL {
             ArrayPrimitive, // homogeneous type of primitives defined by allowence flags (and can mix different primitive types such as bool, uint, int and float)
             Bool,
             Float,
+            FieldsGroup,
             HardwarePin,
             HardwarePinOrVirtualPin,
             HexBytes,      // note can be use with or without delimiters but only consistent usage is allowed so for example 2845:56:67 is not allowed, however currently the delimiter type is not fixed so it can be 28:45.56-67
@@ -54,6 +55,7 @@ namespace DALHAL {
             Optional,
             AnyOfGroup, // the higher group defines
             AllOfGroup, // the higher group defines
+            FieldsGroup, // the individual items decides the policy as they where defined flat, group defines no policy
             ModeDefine // Mode defines
         };
         const char* FieldPolicyToString(FieldPolicy flag);

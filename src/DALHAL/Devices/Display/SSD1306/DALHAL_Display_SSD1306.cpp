@@ -83,8 +83,7 @@ namespace DALHAL {
         size_t validItemCount = 0;
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (IsConstChar(item) == true) { continue; } // comment item
-            if (Device::DisabledInJson(item) == true) { continue; } // disabled
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             validItemCount++;
         }
         // second pass actually create the devices
@@ -94,8 +93,7 @@ namespace DALHAL {
         DeviceCreateContext createContext;
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (IsConstChar(item) == true) continue;
-            if (Device::DisabledInJson(item) == true) continue;
+            if (Device::DisabledOrCommentItem(item)) { continue; }
 
             createContext.jsonObjItem = &item;
             createContext.deviceType = "I2C_DISP_SSD1306_ELM";

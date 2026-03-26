@@ -42,35 +42,89 @@ namespace DALHAL {
         const char* ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER = "JSON_Schema_Validator - validateFromRegister";
         const char* ERROR_SOURCE_STR_VALIDATE_FIELD = "JSON_Schema_Validator - validateField";
 
+        void serializeCollapsed(const JsonVariant& var, std::string& output) {
+            if (var.is<JsonObject>()) {
+                output += '{';
+                bool first = true;
+                for (auto kv : var.as<JsonObject>()) {
+                    if (!first) output += ',';
+                    first = false;
+
+                    output += '"';
+                    output += kv.key().c_str();
+                    output += "\":";
+
+                    if (kv.value().is<JsonObject>()) {
+                        output += "{...}"; // collapsed object
+                    } else if (kv.value().is<JsonArray>()) {
+                        output += "[...]"; // collapsed array
+                    } else {
+                        serializeJson(kv.value(), output); // primitive
+                    }
+                }
+                output += '}';
+            } else if (var.is<JsonArray>()) {
+                output += "[...]"; // array at root level
+            } else {
+                serializeJson(var, output); // primitive at root
+            }
+        }
+
         // this is only a helper/support function and do not use anyError
-        // as this could be jsut defined as a warning, depending on strict level requirements
-        bool isKnownField(const char* key, const FieldBase* const* fields)
+        // as this could be just defined as a warning, depending on strict level requirements
+        bool isUnknownField(const char* key, const FieldBase* const* fields)
         {
             for (int i = 0; fields[i] != nullptr; i++) {
                 const FieldBase* f = fields[i];
+
+                if (f == nullptr) {
+                    GlobalLogger.Warn(F("isKnownField - f == nullptr @ key: "), key);
+                    continue;
+                }
+                
 
                 if (f->type == FieldType::AnyOfGroup) {
                     const AnyOfGroup* group = static_cast<const AnyOfGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (group->fields[g]->name == nullptr) {
+                            GlobalLogger.Warn(F("AnyOfGroup - group->fields[g]->name == nullptr @ key: "), key);
+                            continue;
+                        }
                         if (strcmp(key, group->fields[g]->name) == 0)
-                            return true;
+                            return false; // isUnknownField
                     }
                 } else if (f->type == FieldType::AllOfGroup) {
                     const AllOfGroup* group = static_cast<const AllOfGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (group->fields[g]->name == nullptr) {
+                            GlobalLogger.Warn(F("AllOfGroup - group->fields[g]->name == nullptr @ key: "), key);
+                            continue;
+                        }
                         if (strcmp(key, group->fields[g]->name) == 0)
-                            return true;
+                            return false; // isUnknownField
+                    }
+                } else if (f->type == FieldType::FieldsGroup) {
+                    const FieldsGroup* group = static_cast<const FieldsGroup*>(f);
+                    if (!isUnknownField(key, group->fields)) { // recurse into the subgroup
+                        return false;
                     }
                 }
                 else {
+                    if (f->name == nullptr) {
+                        GlobalLogger.Warn(F("f->name == nullptr @ key: "), key);
+                        continue;
+                    }
+                    //Serial.println(key);
+                    //Serial.print(FieldTypeToString(f->type));
+                    //Serial.println(f->name);
                     if (strcmp(key, f->name) == 0)
-                        return true;
+                        return false; // isUnknownField
                 }
             }
 
-            return false;
+            return true; // isUnknownField
         }
 
         // Helper to validate FieldString / FieldUID
@@ -145,7 +199,9 @@ namespace DALHAL {
             // Handle required/optional
             if (!j.containsKey(field->name)) {
                 if (field->policy == FieldPolicy::Required) {
-                    GlobalLogger.Error(F("Required field missing"));
+                    std::string errMsg;
+                    serializeJson(j, errMsg);
+                    GlobalLogger.Error(F("Required field missing"), errMsg.c_str());
                     GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                     anyError = true;
                     return;
@@ -159,15 +215,19 @@ namespace DALHAL {
                 case FieldType::Int: {
                     auto f = static_cast<const FieldInt*>(field);
                     if (!value.is<int>()) {
-                        GlobalLogger.Error(F(" must be a integer"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" must be a integer"), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
                     int v = value.as<int>();
-                    if (v < f->minValue || v > f->maxValue) {
-                        GlobalLogger.Error(F(" out of range"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                    if ((v < f->minValue) || ((f->maxValue != 0) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" int out of range: "), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
@@ -176,15 +236,19 @@ namespace DALHAL {
                 case FieldType::UInt: {
                     auto f = static_cast<const FieldUInt*>(field);
                     if (!value.is<unsigned int>()) {
-                        GlobalLogger.Error(F(" must be unsigned int"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" must be unsigned int"), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
                     unsigned int v = value.as<unsigned int>();
-                    if (v < f->minValue || v > f->maxValue) {
-                        GlobalLogger.Error(F(" out of range"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                    if (((f->minValue != 0) && (v < f->minValue)) || ((f->maxValue != 0) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" uint out of range"), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
@@ -193,15 +257,19 @@ namespace DALHAL {
                 case FieldType::Float: {
                     auto f = static_cast<const FieldFloat*>(field);
                     if (!value.is<float>() && !value.is<double>() && !value.is<int>()) {
-                        GlobalLogger.Error(F(" must be a number"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" must be a number"), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
                     float v = value.as<float>();
-                    if (v < f->minValue || v > f->maxValue) {
-                        GlobalLogger.Error(F(" out of range"));
-                        GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                    if ((isnanf(f->minValue) == false) && (v < f->minValue) || ((isnanf(f->maxValue) == false) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" float out of range: "), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
                     }
@@ -209,13 +277,20 @@ namespace DALHAL {
                 }
                 case FieldType::HardwarePin: {
                     auto f = static_cast<const FieldHardwarePin*>(field);
-                    if (value.is<uint8_t>() == false) {
-                        GlobalLogger.Error(F("Harware Pin is not a valid value"));
-                        GlobalLogger.setLastEntrySource(f->name); //  safe as field name is a flash const and setLastEntrySource require "static" strings as it just store the ptr to the string
+                    if (value.is<int8_t>() == false) {
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F("Harware Pin is not a valid value"), errStr.c_str());
+                        //GlobalLogger.setLastEntrySource(f->name); //  safe as field name is a flash const and setLastEntrySource require "static" strings as it just store the ptr to the string
                     }
-                    uint8_t pin = value.as<uint8_t>();
-                    if (GPIO_manager::CheckIfPinAvailableAndReserve(pin, f->mode) == false)
+                    
+                    int8_t pin = value.as<int8_t>();
+                    if (pin < 0) { 
+                        return; // just ignore
+                    }
+                    if (GPIO_manager::CheckIfPinAvailableAndReserve(pin, f->mode) == false) {
                         anyError = true;
+                    }
                     return;
                 }
                 case FieldType::HardwarePinOrVirtualPin: {
@@ -257,7 +332,7 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::Object: {
-                    validateJsonObject(value, static_cast<const FieldObject*>(field)->subtype, anyError);
+                    validateJsonObject(value, field->name, static_cast<const FieldObject*>(field)->subtype, anyError);
                     break;
                 }
                 case FieldType::Array: {
@@ -269,8 +344,7 @@ namespace DALHAL {
                     return;
                 }
                 case FieldType::RegistryArray: {
-                    ValidateFromRegisterContext tmpContext(ValidateFromRegisterContext::State::Disabled);
-                    validateFromRegister(value, static_cast<const FieldRegistryArray*>(field)->subtypes, tmpContext, anyError);
+                    validateFromRegister(value, static_cast<const FieldRegistryArray*>(field)->subtypes, anyError);
                     break;
                 }
                 
@@ -287,8 +361,10 @@ namespace DALHAL {
                     // TODO implement settings for delimiter enforcement
                     bool parseOk = Convert::HexToBytes(cStr, nullptr, f->byteCount);
                     if (parseOk == false) {
-                        GlobalLogger.Error(F("validateField HexBytes parse error"));
-                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+                        std::string errMsg = "f->byteCount:" + std::to_string(f->byteCount);
+                        errMsg += " @ "; errMsg += cStr;
+                        GlobalLogger.Error(F("validateField HexBytes parse error: "), errMsg.c_str());
+                        //GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
                         anyError = true;
                     }
                     break;
@@ -307,22 +383,41 @@ namespace DALHAL {
                     } else {
                         // reject
                         GlobalLogger.Error(F("validateField Number parse error"));
-                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+                        //GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
                         anyError = true;
                         return;
                     }
                         
                 }
+                // virtual fields not handled here
                 case FieldType::AnyOfGroup:
-                    // handled by validateAnyOfGroup
-                    // as groups are not real fields
-                    // just a "collection" of multiple fields
+                case FieldType::AllOfGroup:
+                case FieldType::FieldsGroup:
                     break;
             }
         }
 
+        void validateGroup(const JsonVariant& j, const FieldsGroup* group, bool& anyError) {
+            if (!group) { return; } // failsafe just return
+
+            for (size_t i = 0; group->fields[i] != nullptr; ++i) {
+                const FieldBase* f = group->fields[i];
+
+                if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
+                    validateAnyOfGroup(j, group->name, static_cast<const AnyOfGroup*>(f), anyError);
+                } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
+                    validateAllOfGroup(j, group->name, static_cast<const AllOfGroup*>(f), anyError);
+                } else if (f->type == FieldType::FieldsGroup) {
+                    validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
+                } else {
+                    validateField(j, f, anyError);
+                }
+            }
+
+        }
+
         // Validate AnyOfGroup
-        void validateAnyOfGroup(const JsonVariant& j, const AnyOfGroup* group, bool& anyError)
+        void validateAnyOfGroup(const JsonVariant& j, const char* fieldName, const AnyOfGroup* group, bool& anyError)
         {
             if (!group) { return; } // failsafe just return
 
@@ -337,12 +432,17 @@ namespace DALHAL {
             }
 
             if (!found && group->policy == FieldPolicy::Required) {
-                GlobalLogger.Error(F("None of the AnyOfGroup fields present"));
+                std::string errMsg = group->name;
+                errMsg += " @ "; errMsg += fieldName;
+                //std::string jsonStr;
+                //serializeJson(j, jsonStr);
+                //errMsg += jsonStr;
+                GlobalLogger.Error(F("None of the AnyOfGroup fields present: "), errMsg.c_str());
                 anyError = true;
             }
         }
 
-        void validateAllOfGroup(const JsonVariant& j, const AllOfGroup* group, bool& anyError)
+        void validateAllOfGroup(const JsonVariant& j, const char* fieldName, const AllOfGroup* group, bool& anyError)
         {
             if (!group) { return; }
 
@@ -361,13 +461,17 @@ namespace DALHAL {
 
             // 🚨 core rule
             if (foundCount != 0 && foundCount != totalCount) {
-                GlobalLogger.Error(F("AllOfGroup partially defined"));
+                std::string errMsg = group->name;
+                errMsg += " @ "; errMsg += fieldName;
+                GlobalLogger.Error(F("AllOfGroup partially defined"), errMsg.c_str());
                 anyError = true;
                 return;
             }
 
             if (foundCount == 0 && group->policy == FieldPolicy::Required) {
-                GlobalLogger.Error(F("Required AllOfGroup missing"));
+                std::string errMsg = group->name;
+                errMsg += " @ "; errMsg += fieldName;
+                GlobalLogger.Error(F("Required AllOfGroup missing"), errMsg.c_str());
                 anyError = true;
             }
         }
@@ -517,18 +621,22 @@ namespace DALHAL {
         }
 
         // Validate a complete JSON Object
-        void validateJsonObject(const JsonVariant& j, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError)
+        void validateJsonObject(const JsonVariant& j, const char* fieldName, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError)
         {
-            if (jsonObjectSchema == nullptr) return; // allow any content
+            if (jsonObjectSchema == nullptr) { return; }// allow any content
 
             if (j.size() == 0) {
                 if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
-                    GlobalLogger.Warn(F("JsonObject is empty: "), jsonObjectSchema->typeName);
-                    GlobalLogger.setLastEntrySource("validateJsonObject");
+                    std::string errStr = jsonObjectSchema->typeName;
+                    errStr += " @ ";errStr += fieldName;
+                    GlobalLogger.Warn(F("JsonObject is empty: "), errStr.c_str());
+                    
                 } else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Error) {
                     anyError = true;
-                    GlobalLogger.Error(F("JsonObject is empty: "), jsonObjectSchema->typeName);
-                    GlobalLogger.setLastEntrySource("validateJsonObject");
+                    std::string errStr = jsonObjectSchema->typeName;
+                    errStr += " @ ";errStr += fieldName;
+                    GlobalLogger.Error(F("JsonObject is empty: "), errStr.c_str());
+                   
                 } /*else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Ignore) {
                     // simply do nothing
                 }*/
@@ -538,17 +646,29 @@ namespace DALHAL {
             // 1. Check unknown fields
             for (const JsonPair& kv : j.as<JsonObject>()) {
                 const char* key = kv.key().c_str();
+                if (key == nullptr) {
+                    GlobalLogger.Warn(F("key == nullptr: "), jsonObjectSchema->typeName);
+                    continue;
+                }
+                if (jsonObjectSchema->fields == nullptr) {
+                    GlobalLogger.Warn(F("jsonObjectSchema->fields == nullptr: "), key);
+                    continue;
+                }
 
-                if (!isKnownField(key, jsonObjectSchema->fields)) {
+                if (isUnknownField(key, jsonObjectSchema->fields)) {
                     if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Ignore) {
                         continue;
                     } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
-                        GlobalLogger.Warn(F("Unknown config field:"), key);
+                        std::string errMsg = key;
+                        errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        GlobalLogger.Warn(F("Unknown config field: "), errMsg.c_str());
                     } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Error) {
-                        GlobalLogger.Error(F("Unknown config field:"), key);
+                        std::string errMsg = key;
+                        errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        GlobalLogger.Error(F("Unknown config field: "), errMsg.c_str());
                         anyError = true;
                     }                    
-                    GlobalLogger.setLastEntrySource(jsonObjectSchema->typeName);
+                    
                     // as this should not render the json invalid
                     // anyError is not set
                 }
@@ -559,27 +679,32 @@ namespace DALHAL {
                 const FieldBase* f = jsonObjectSchema->fields[i];
 
                 if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
-                    validateAnyOfGroup(j, static_cast<const AnyOfGroup*>(f), anyError);
+                    validateAnyOfGroup(j, jsonObjectSchema->typeName, static_cast<const AnyOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
-                    validateAllOfGroup(j, static_cast<const AllOfGroup*>(f), anyError);
+                    validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const AllOfGroup*>(f), anyError);
+                } else if (f->type == FieldType::FieldsGroup) {
+                    validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
                 } else {
                     validateField(j, f, anyError);
                 }
             }
 
-            // 3. Evaluate modes
-            int mode = evaluateModes(j, jsonObjectSchema->modes);
-            if (mode == -1) {
-                GlobalLogger.Error(F("No valid configuration mode found"));
-                anyError = true;
-            } else if (mode == -2) {
-                GlobalLogger.Error(F("Configuration matches multiple modes"));
-                anyError = true;
+            // 3. Evaluate modes if available
+            if (jsonObjectSchema->modes) {
+                int mode = evaluateModes(j, jsonObjectSchema->modes);
+                if (mode == -1) {
+                    GlobalLogger.Error(F("No valid configuration mode found"));
+                    anyError = true;
+                } else if (mode == -2) {
+                    GlobalLogger.Error(F("Configuration matches multiple modes"));
+                    anyError = true;
+                }
             }
 
-            // 4. Evaluate constraints
-            evaluateConstraints(j, jsonObjectSchema->constraints, anyError);
-
+            // 4. Evaluate constraints if available
+            if (jsonObjectSchema->constraints) {
+                evaluateConstraints(j, jsonObjectSchema->constraints, anyError);
+            }
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
 
@@ -606,7 +731,8 @@ namespace DALHAL {
 
             // Validate each element
             for (JsonVariant item : arr) {
-                validateJsonObject(item, field->subtype, anyError);
+                if (item.is<const char*>()) continue; // comment item
+                validateJsonObject(item, field->name, field->subtype, anyError);
             }
         }
 
@@ -655,7 +781,7 @@ namespace DALHAL {
         }
 
         // Validate the JSON array against the given device registry.
-        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, ValidateFromRegisterContext& context, bool& anyError) {
+        void validateFromRegister(const JsonVariant& jsonArray, const Registry::Item* reg, bool& anyError) {
 
             if (jsonArray.is<JsonArray>() == false) {
                 GlobalLogger.Error(F("Json register field is not a array"));
@@ -671,12 +797,11 @@ namespace DALHAL {
                 return; // can't continue here
             }
             uint32_t itemCount = items.size();
-            context.Init(itemCount);
             
             for (uint32_t i = 0; i < itemCount; ++i) {
                 const JsonVariant& jsonItem = items[i];
-                context.SetDevice(i, false); // allways set to false first
                 if (jsonItem.is<const char*>()) { continue; } // comment item
+                // TODO make this optional so that we can validate disabled items as well
                 if (DALHAL::Device::DisabledInJson(jsonItem)) { continue; } // disabled
 
                 bool anyErrorTemp = false;
@@ -702,43 +827,13 @@ namespace DALHAL {
                 }
                 
                 if (regItem.def->jsonSchema == nullptr) {
-                    // TODO remove use of obsolete function Verify_JSON_Function
-                    // can only be done when all devices use json schema
-                    //if (regItem.def->Verify_JSON_Function == nullptr) {
                     GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
                     GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                     anyError = true;
                     continue; // skip the current json device
-                    /*}
-                    // TODO remove use of obsolete function Verify_JSON_Function
-                    // can only be done when all devices use json schema
-                    if (jsonItem.containsKey(DALHAL_COMMON_CFG_NAME_UID) == false) {
-                        GlobalLogger.Error(F("uid field missing"));
-                        GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
-                        anyError = true;
-                        continue; // skip the current json device
-                    }
-                    bool uidFoundError = false;
-                    validateStringField(jsonItem[DALHAL_COMMON_CFG_NAME_UID], &uidFieldRequired, uidFoundError);
-                    if (uidFoundError) {
-                        anyError = true;
-                        continue;
-                    }
-                    if (regItem.def->Verify_JSON_Function(jsonItem) == false) {
-                        anyError = true;
-                        continue;
-                    } else {
-                        context.SetDevice(i, true);
-                    }
-                    continue;*/
                 }
-                bool validatedJsonObjectAnyError = false;
-                validateJsonObject(jsonItem, regItem.def->jsonSchema, validatedJsonObjectAnyError);
-                if (validatedJsonObjectAnyError) {
-                    anyError = true;
-                } else {
-                    context.SetDevice(i, true);
-                }
+
+                validateJsonObject(jsonItem, reg->typeName, regItem.def->jsonSchema, anyError);
             }
         }
 

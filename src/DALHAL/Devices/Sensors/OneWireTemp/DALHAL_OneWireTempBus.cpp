@@ -52,13 +52,10 @@ namespace DALHAL {
         deviceCount = 0;
         const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
         int itemCount = items.size();
-        bool* validDevices = new bool[itemCount];
         // first pass count valid devices
         for (int i=0;i<itemCount;i++) {
             const JsonVariant& item = items[i];
-            if (IsConstChar(item) == true) { validDevices[i] = false; continue; } // comment item
-            if (Device::DisabledInJson(item) == true) { validDevices[i] = false; continue; } // disabled
-            validDevices[i] = true; // allways valid in strict mode (i.e. validation scheme ensure that)
+            if (Device::DisabledOrCommentItem(item)) { continue; }
             deviceCount++;
         }
         devices = new (std::nothrow) Device*[static_cast<size_t>(deviceCount)]();
@@ -67,12 +64,12 @@ namespace DALHAL {
         createContext.deviceType = "OneWireTempDevice";
 
         for (int i=0;i<itemCount;i++) {
-            if (validDevices[i] == false) continue;
             const JsonVariant& item = items[i];
+            if (Device::DisabledOrCommentItem(item)) { continue; }
+
             createContext.jsonObjItem = &item;
             devices[index++] = new OneWireTempDevice(createContext);
         }
-        delete[] validDevices;
     }
 
     OneWireTempBus::~OneWireTempBus() {

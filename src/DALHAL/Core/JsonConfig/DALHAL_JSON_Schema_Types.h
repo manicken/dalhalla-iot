@@ -41,6 +41,9 @@ namespace DALHAL {
             int32_t minValue;
             int32_t maxValue;
             int32_t defaultValue;
+            // used to define when minValue/maxValue are not defined
+            constexpr FieldInt(const char* name, FieldPolicy policy, int32_t defaultValue) 
+                : FieldBase(name, FieldType::Float, policy), minValue(-2147483648), maxValue(0), defaultValue(defaultValue) {}
             // can be used when inherited and used as a subtupe
             constexpr FieldInt(const char* name, FieldType type, FieldPolicy policy, int32_t minValue, int32_t maxValue, int32_t defaultValue)
                 : FieldBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
@@ -53,6 +56,9 @@ namespace DALHAL {
             uint32_t minValue;
             uint32_t maxValue;
             uint32_t defaultValue;
+            // used to define when minValue/maxValue are not defined
+            constexpr FieldUInt(const char* name, FieldPolicy policy, uint32_t defaultValue) 
+                : FieldBase(name, FieldType::Float, policy), minValue(0), maxValue(0), defaultValue(defaultValue) {}
             // can be used when inherited and used as a subtupe
             constexpr FieldUInt(const char* name, FieldType type, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
                 : FieldBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
@@ -141,7 +147,7 @@ namespace DALHAL {
             std::string (*describe)();
 
             constexpr FieldStringConstraint(const char* name, FieldPolicy policy, bool (*validate)(const char*), std::string (*describe)()) 
-            : FieldString(name, policy, nullptr, 0), validate(validate), describe(describe) {}
+            : FieldString(name, FieldType::StringConstraint, policy, nullptr, 0), validate(validate), describe(describe) {}
         };
 
         /**
@@ -181,7 +187,7 @@ namespace DALHAL {
 
             // Number-only array
             constexpr FieldArrayPrimitive(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowAll, EmptyPolicy emptyPolicy = EmptyPolicy::Warn)
-                : FieldBase(name, FieldType::Array, policy), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
+                : FieldBase(name, FieldType::ArrayPrimitive, policy), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
             {}
         };
 
@@ -227,6 +233,16 @@ namespace DALHAL {
             constexpr AllOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
                 : FieldBase(outputName, FieldType::AllOfGroup, policy), fields(fields) {}
         };
+        /**
+         * Group is a logical unit of fields where the policy is handled individually
+         * , just as if the fields where defined standalone flat
+         */
+        struct FieldsGroup : FieldBase {
+            const FieldBase* const* fields;
+            /*size_t fieldsCount;*/
+            constexpr FieldsGroup(const FieldBase* const* fields/*, size_t fieldsCount*/)
+                : FieldBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
+        };
 
         /**
          * FieldRegistryArray represents a polymorphic array where each element is a device 
@@ -239,7 +255,7 @@ namespace DALHAL {
             const char* regPath;
 
             constexpr FieldRegistryArray(const char* name, FieldPolicy policy, const Registry::Item* subtypes, const char* regPath)
-                : FieldBase(name, FieldType::Array, policy), subtypes(subtypes), regPath(regPath) {}
+                : FieldBase(name, FieldType::RegistryArray, policy), subtypes(subtypes), regPath(regPath) {}
 
         };
         

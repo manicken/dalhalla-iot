@@ -38,8 +38,8 @@ namespace DALHAL {
         constexpr FieldObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            //&disabled_type_uidreq_note_group,
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
             &nameField, 
             &discoveryField,

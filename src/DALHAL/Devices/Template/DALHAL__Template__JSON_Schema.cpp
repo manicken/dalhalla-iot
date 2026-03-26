@@ -38,8 +38,7 @@ namespace DALHAL {
         constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
 
         constexpr const FieldBase* fields[] = {
-            &typeField,         // DALHAL_CommonSchemas_Base
-            &uidFieldRequired,  // DALHAL_CommonSchemas_Base
+            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &pinField,
             nullptr,
         };
