@@ -77,12 +77,6 @@ namespace DALHAL {
             for (int i = 0; fields[i] != nullptr; i++) {
                 const FieldBase* f = fields[i];
 
-                if (f == nullptr) {
-                    GlobalLogger.Warn(F("isKnownField - f == nullptr @ key: "), key);
-                    continue;
-                }
-                
-
                 if (f->type == FieldType::AnyOfGroup) {
                     const AnyOfGroup* group = static_cast<const AnyOfGroup*>(f);
 
@@ -132,7 +126,7 @@ namespace DALHAL {
         {
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), f->name);
-                GlobalLogger.setLastEntrySource("validateStringField");
+                //GlobalLogger.setLastEntrySource("validateStringField");
                 anyError = true;
                 return;
             }
@@ -144,13 +138,13 @@ namespace DALHAL {
                 if (strLen == 0) { // fast fail
                     anyError = true;
                     GlobalLogger.Error(F("String is empty @ allowedValues mode: "), f->name);
-                    GlobalLogger.setLastEntrySource("validateStringField");
+                    //GlobalLogger.setLastEntrySource("validateStringField");
                     return;
                 }
                 if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::Void) {
                     anyError = true;
                     GlobalLogger.Error(F("SchemaError f->allowedValuesPolicy == Void"),f->name);
-                    GlobalLogger.setLastEntrySource("validateStringField");
+                    //GlobalLogger.setLastEntrySource("validateStringField");
                     return;
                 }
                 bool match = false;
@@ -533,7 +527,7 @@ namespace DALHAL {
             validateField(j, fcItem.fieldB, tempAnyError);
             if (tempAnyError) {
                 GlobalLogger.Warn(F("both FieldConstraint fields must be valid"));
-                GlobalLogger.setLastEntrySource("evaluateConstraints_PrevalidateFields");
+                //GlobalLogger.setLastEntrySource("evaluateConstraints_PrevalidateFields");
                 return false;
             }
             return true;
@@ -546,7 +540,7 @@ namespace DALHAL {
                 const FieldConstraint& fcItem = constraints[i];
                 if (fcItem.fieldA->type != fcItem.fieldB->type) {
                     GlobalLogger.Warn(F("SchemaError - both FieldConstraint fields must be of the same type"));
-                    GlobalLogger.setLastEntrySource("evaluateConstraints");
+                    //GlobalLogger.setLastEntrySource("evaluateConstraints");
                     continue;
                 }
                 HALValue valA;
@@ -585,7 +579,7 @@ namespace DALHAL {
                     // keep it unimplemented for now
                 } */else {
                     GlobalLogger.Warn(F("SchemaError - FieldConstraint fieldtype unsupported: "), FieldTypeToString(fcItem.fieldA->type));
-                    GlobalLogger.setLastEntrySource("evaluateConstraints");
+                    //GlobalLogger.setLastEntrySource("evaluateConstraints");
                     continue;
                 }
 

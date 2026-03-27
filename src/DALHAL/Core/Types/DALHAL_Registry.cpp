@@ -58,7 +58,9 @@ namespace DALHAL {
                         ret += '"'; ret += entry->name; ret += '"';
                     }
                 }
-                ret += "]}";
+                ret += ']';
+
+                ret += '}';
             }
             ret += "]}";
             return ret;

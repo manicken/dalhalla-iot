@@ -69,10 +69,10 @@ namespace DALHAL {
         const char* FieldConstraintTypeToString(FieldConstraint::Type type) {
             switch (type)
             {
-                case FieldConstraint::Type::GreaterThan: return "GreaterThan";
-                case FieldConstraint::Type::GreaterThanOrEqual: return "GreaterThanOrEqual";
-                case FieldConstraint::Type::LessThan: return "LessThan";
-                case FieldConstraint::Type::LessThanOrEqual: return "LessThanOrEqual";
+                case FieldConstraint::Type::GreaterThan: return ">";
+                case FieldConstraint::Type::GreaterThanOrEqual: return ">=";
+                case FieldConstraint::Type::LessThan: return "<";
+                case FieldConstraint::Type::LessThanOrEqual: return "<=";
                 case FieldConstraint::Type::Void: return "Void";
                 //case FieldConstraint::Type: return "";
                 default: return "Unknown";

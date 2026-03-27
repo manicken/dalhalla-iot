@@ -37,6 +37,8 @@
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #include <System/Info.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
+
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #elif defined(ESP32)
@@ -149,6 +151,13 @@ namespace DALHAL {
             else if (zcCommand.EqualsIC("printRegistry")) {
                 if (cb != nullptr) {
                     std::string ret = Registry::ToString(RootDevicesRegistry);
+                    cb(ret);
+                }
+            }
+            else if (zcCommand.EqualsIC("printJsonSchemas")) {
+                if (cb != nullptr) {
+                    std::string ret;
+                    JsonSchema::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, ret);
                     cb(ret);
                 }
             }

@@ -47,12 +47,13 @@ namespace DALHAL {
   <button onclick="ws.send('help');">help</button>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
     <button onclick="ws.send('hal/printRegistry');">Print Device Registry</button>
+    <button onclick="ws.send('hal/printJsonSchemas');">Print Json Schemas</button>
     <button onclick="ws.send('hal/getAvailableGPIOs');">get Available GPIOs</button>
-    <button onclick="ws.send('system/info');">get Info</button>
   </div>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
     <button onclick="ws.send('hal/printDevices');">Print Devices</button>
     <button onclick="ws.send('hal/printlog');">print log</button>
+    <button onclick="ws.send('system/info');">get Info</button>
   </div>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
     <button onclick="ws.send('hal/scripts/reload');">scripts reload</button>
@@ -195,6 +196,7 @@ document.getElementById('cmd').addEventListener('keydown', (e) => {
                     if (!c->canSend()) return;      // TCP buffer full / closing
 
                     c->text(body.c_str());
+                    
                 }
             });
             CommandExecutor_UNLOCK_QUEUE();
