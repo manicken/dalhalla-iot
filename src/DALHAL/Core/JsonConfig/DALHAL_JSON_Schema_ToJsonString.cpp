@@ -352,7 +352,6 @@ namespace DALHAL {
                 {
                     auto fa = static_cast<const FieldArray*>(f);
 
-                    out += ",\"array\":true";
                     out += ",\"emptyPolicy\":\"";
                     out += EmptyPolicyToString(fa->emptyPolicy);
                     out += "\"";

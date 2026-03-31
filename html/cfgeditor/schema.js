@@ -424,7 +424,6 @@ var schema = {
           "name": "items",
           "type": "Array",
           "required": true,
-          "array": true,
           "emptyPolicy": "Error",
           "subtype": {
             "type": "object",
@@ -462,7 +461,6 @@ var schema = {
                 "name": "items",
                 "type": "Array",
                 "required": true,
-                "array": true,
                 "emptyPolicy": "Error",
                 "subtype": {
                   "type": "object",
@@ -579,7 +577,6 @@ var schema = {
           "name": "items",
           "type": "Array",
           "required": true,
-          "array": true,
           "emptyPolicy": "Error",
           "subtype": {
             "type": "object",
@@ -917,7 +914,6 @@ var schema = {
           "name": "items",
           "type": "Array",
           "required": true,
-          "array": true,
           "emptyPolicy": "Error",
           "subtype": {
             "type": "object",
@@ -1500,7 +1496,6 @@ var schema = {
           "name": "groups",
           "type": "Array",
           "required": false,
-          "array": true,
           "emptyPolicy": "Warn",
           "subtype": {
             "type": "object",
@@ -2528,7 +2523,6 @@ var schema = {
           "name": "items",
           "type": "Array",
           "required": true,
-          "array": true,
           "emptyPolicy": "Warn",
           "subtype": {
             "type": "object",

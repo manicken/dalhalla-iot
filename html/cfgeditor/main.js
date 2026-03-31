@@ -130,18 +130,28 @@ function renderField(field, parentObj, container, path = "") {
         const list = document.createElement("div");
 
         parentObj[field.name].forEach((item, idx) => {
-        const itemDiv = document.createElement("div");
-        itemDiv.style.border = "1px solid #aaa";
-        itemDiv.style.margin = "5px";
-        field.subtype.fields.forEach(f => renderField(f, item, itemDiv, path + field.name + idx + "."));
-        list.appendChild(itemDiv);
+            const itemDiv = document.createElement("div");
+
+            itemDiv.style.border = "1px solid #aaa";
+            itemDiv.style.margin = "5px";
+
+            // debug INFO add simple label
+            const typeLabel = document.createElement("label");
+            typeLabel.innerText = field.subtype.name;
+            typeLabel.style.border = "1px solid #f11717";
+            typeLabel.style.padding = "1px";
+            itemDiv.appendChild(typeLabel);
+
+
+            field.subtype.fields.forEach(f => renderField(f, item, itemDiv, path + field.name + idx + "."));
+            list.appendChild(itemDiv);
         });
         const btn = document.createElement("button");
         btn.textContent = "Add Item";
         btn.onclick = () => {
-        const item = {};
-        parentObj[field.name].push(item);
-        renderForm();
+            const item = {};
+            parentObj[field.name].push(item);
+            renderForm();
         };
         wrapper.appendChild(btn);
         wrapper.appendChild(list);
@@ -173,6 +183,36 @@ function renderField(field, parentObj, container, path = "") {
         wrapper.appendChild(select);
         wrapper.appendChild(btn);
         wrapper.appendChild(list);
+    }
+    else if (field.type === "StringConstraint" && field.allowedValues) {
+        const select = document.createElement("select");
+
+        // Add empty option if default is "" or not required
+        if (!field.required || field.default === "") {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "-- select --";
+            select.appendChild(opt);
+        }
+
+        field.allowedValues.forEach(v => {
+            const opt = document.createElement("option");
+            opt.value = v;
+            opt.textContent = v;
+            select.appendChild(opt);
+        });
+
+        // Set value (existing data OR default)
+        const currentValue = parentObj[field.name] ?? field.default ?? "";
+        select.value = currentValue;
+
+        // Update data on change
+        select.onchange = () => {
+            parentObj[field.name] = select.value;
+        };
+
+        container.appendChild(select);
+        return;
     }
     // ===== ANY OF GROUP =====
     else if (field.type === "OneOfGroup") {
