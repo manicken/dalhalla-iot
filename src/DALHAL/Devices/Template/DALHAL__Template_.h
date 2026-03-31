@@ -52,6 +52,7 @@ namespace DALHAL {
 
     public:
         _Template_(DeviceCreateContext& context);
+        ~_Template_() override = default;
 
         /** called when all hal devices has been loaded */
         void begin() override;

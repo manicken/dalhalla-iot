@@ -77,7 +77,8 @@ namespace DALHAL {
 
     public:
         ThingSpeak(DeviceCreateContext& context);
-        ~ThingSpeak();
+        ~ThingSpeak() override;
+        
         HALOperationResult exec() override;
 
         String ToString() override;

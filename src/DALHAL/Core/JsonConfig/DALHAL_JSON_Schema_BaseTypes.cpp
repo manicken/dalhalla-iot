@@ -30,7 +30,7 @@ namespace DALHAL {
             switch (type)
             {
                 case FieldType::AllOfGroup: return "AllOfGroup";
-                case FieldType::AnyOfGroup: return "AnyOfGroup";
+                case FieldType::OneOfGroup: return "OneOfGroup";
                 case FieldType::Array: return "Array";
                 case FieldType::ArrayPrimitive: return "ArrayPrimitive";
                 case FieldType::Bool: return "Bool";
@@ -58,7 +58,7 @@ namespace DALHAL {
             {
                 case FieldPolicy::FieldsGroup: return "FieldsGroup";
                 case FieldPolicy::AllOfGroup: return "AllOfGroup";
-                case FieldPolicy::AnyOfGroup: return "AnyOfGroup";
+                case FieldPolicy::OneOfGroup: return "OneOfGroup";
                 case FieldPolicy::ModeDefine: return "ModeDefine";
                 case FieldPolicy::Optional: return "Optional";
                 case FieldPolicy::Required: return "Required";

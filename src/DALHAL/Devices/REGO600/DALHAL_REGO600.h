@@ -63,7 +63,7 @@ namespace DALHAL {
     
     public:
         REGO600(DeviceCreateContext& context);
-        ~REGO600();
+        ~REGO600() override;
 
         void begin() override;
         void loop() override;

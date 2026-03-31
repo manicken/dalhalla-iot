@@ -77,7 +77,6 @@ namespace DALHAL {
             ExpressionToken(const char* _start, const char* _end, ExpTokenType _type);
             void Set(const char* start, int length, ExpTokenType type);
             void Set(const char* _start, const char* _end, ExpTokenType _type);
-            ~ExpressionToken();
         };
         bool EqualsAny(ExpTokenType type, const ExpTokenType* candidates);
         struct ExpressionTokens {

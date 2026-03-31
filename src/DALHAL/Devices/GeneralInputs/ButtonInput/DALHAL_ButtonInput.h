@@ -60,7 +60,7 @@ namespace DALHAL {
 
     public:
         ButtonInput(DeviceCreateContext& context);
-        ~ButtonInput();
+        ~ButtonInput() override;
 
         HALOperationResult read(HALValue &val) override;
         String ToString() override;

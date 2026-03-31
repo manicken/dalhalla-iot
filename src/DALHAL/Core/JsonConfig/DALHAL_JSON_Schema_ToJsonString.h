@@ -35,7 +35,7 @@ namespace DALHAL {
         void buildJsonSchema(const JsonObjectSchema* schema, std::string& out);
         void buildField(const FieldBase* f, std::string& out);
         void buildPrimitiveField(const FieldBase* f, std::string& out);
-        void buildAnyOfGroup(const AnyOfGroup* group, std::string& out);
+        void buildOneOfGroup(const OneOfGroup* group, std::string& out);
         void buildAllOfGroup(const AllOfGroup* group, std::string& out);
     }
 

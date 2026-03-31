@@ -51,7 +51,7 @@ namespace DALHAL {
 
     public:
         Button(HA_CreateFunctionContext& context);
-        ~Button();
+        ~Button() override;
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         HALOperationResult exec() override;

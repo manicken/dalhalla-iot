@@ -56,6 +56,7 @@ namespace DALHAL {
 
     public:
         ScriptArray(DeviceCreateContext& context);
+        ~ScriptArray() override = default;
 
         void begin() override;
 

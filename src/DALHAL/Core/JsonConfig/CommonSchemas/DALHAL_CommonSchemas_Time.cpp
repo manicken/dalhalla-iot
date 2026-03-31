@@ -29,13 +29,13 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldPolicy::AnyOfGroup, 1}; // here we dont define min/max 
-        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::AnyOfGroup, 1.0f}; // here we dont define min/max 
-        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::AnyOfGroup, 1.0f}; // here we dont define min/max 
+        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldPolicy::OneOfGroup, 1}; // here we dont define min/max 
+        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
+        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
         constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
 
-        constexpr AnyOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldPolicy::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        constexpr AnyOfGroup   refreshTimeGroupFieldsRequired = {"refreshtimems", FieldPolicy::Required, refreshGroupItems};
+        constexpr OneOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldPolicy::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
+        constexpr OneOfGroup   refreshTimeGroupFieldsRequired = {"refreshtimems", FieldPolicy::Required, refreshGroupItems};
     }
 
 }

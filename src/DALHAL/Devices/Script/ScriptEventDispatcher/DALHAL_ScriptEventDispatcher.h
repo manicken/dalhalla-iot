@@ -52,6 +52,7 @@ namespace DALHAL {
         
     public:
         ScriptEventDispatcher(DeviceCreateContext& context);
+        ~ScriptEventDispatcher() override = default;
 
         HALOperationResult exec() override;
         

@@ -45,6 +45,7 @@ namespace DALHAL {
 
         Display_SSD1306_Element(Display_SSD1306_Element&) = delete;
         Display_SSD1306_Element(DeviceCreateContext& context);
+        ~Display_SSD1306_Element() override = default;
 
         HALOperationResult write(const HALValue& val) override;
 

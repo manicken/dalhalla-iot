@@ -55,7 +55,7 @@ namespace DALHAL {
 
     public:
         TX433(DeviceCreateContext& context);
-        ~TX433();
+        ~TX433() override;
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         HALOperationResult write(const HALWriteStringRequestValue &val) override;

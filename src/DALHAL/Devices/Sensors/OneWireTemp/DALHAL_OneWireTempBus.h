@@ -60,7 +60,7 @@ namespace DALHAL {
 
     public:    
         OneWireTempBus(DeviceCreateContext& context);
-        ~OneWireTempBus();
+        ~OneWireTempBus() override;
 
         /** this function will search the devices to find the device with the uid */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
@@ -82,7 +82,7 @@ namespace DALHAL {
 
     public:
         OneWireTempBusAtRoot(DeviceCreateContext& context);
-        ~OneWireTempBusAtRoot();
+        ~OneWireTempBusAtRoot() override;
 
         void loop() override;
         

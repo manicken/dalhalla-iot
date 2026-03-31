@@ -55,7 +55,7 @@ namespace DALHAL {
 
     public:
         Number(HA_CreateFunctionContext& context);
-        ~Number();
+        ~Number() override;
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

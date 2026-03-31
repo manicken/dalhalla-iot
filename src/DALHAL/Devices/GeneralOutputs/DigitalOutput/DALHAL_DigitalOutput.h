@@ -52,7 +52,7 @@ namespace DALHAL {
 
     public:
         DigitalOutput(DeviceCreateContext& context);
-        ~DigitalOutput();
+        ~DigitalOutput() override;
 
         HALOperationResult read(HALValue &val) override;
         HALOperationResult write(const HALValue &val) override;

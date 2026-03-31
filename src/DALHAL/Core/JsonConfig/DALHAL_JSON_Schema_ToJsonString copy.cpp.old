@@ -198,14 +198,14 @@ namespace DALHAL {
                     break;
                 }
 
-                case FieldType::AnyOfGroup:
+                case FieldType::OneOfGroup:
                 case FieldType::AllOfGroup:
                 case FieldType::FieldsGroup: {
 
                     const FieldBase* const* groupFields = nullptr;
 
-                    if (field->type == FieldType::AnyOfGroup) {
-                        groupFields = static_cast<const AnyOfGroup*>(field)->fields;
+                    if (field->type == FieldType::OneOfGroup) {
+                        groupFields = static_cast<const OneOfGroup*>(field)->fields;
                     } else if (field->type == FieldType::AllOfGroup) {
                         groupFields = static_cast<const AllOfGroup*>(field)->fields;
                     } else {

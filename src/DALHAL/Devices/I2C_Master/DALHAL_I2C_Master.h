@@ -60,7 +60,7 @@ namespace DALHAL {
 
     public:
         I2C_Master(DeviceCreateContext& context);
-        ~I2C_Master();
+        ~I2C_Master() override;
 
         void loop() override;
 

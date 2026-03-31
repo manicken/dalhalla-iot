@@ -59,6 +59,7 @@ namespace DALHAL {
 
     public:
         ScriptVariable(DeviceCreateContext& context);
+        ~ScriptVariable() override = default;
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

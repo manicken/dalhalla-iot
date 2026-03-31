@@ -124,7 +124,7 @@ namespace DALHAL {
     
     public:
         LatchingRelay(DeviceCreateContext& context);
-        ~LatchingRelay();
+        ~LatchingRelay() override;
 
         void setup();
         virtual void loop() override;

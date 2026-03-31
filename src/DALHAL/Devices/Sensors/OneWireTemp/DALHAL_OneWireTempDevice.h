@@ -78,7 +78,7 @@ namespace DALHAL {
     
     public:
         OneWireTempDevice(DeviceCreateContext& context);
-        ~OneWireTempDevice();
+        ~OneWireTempDevice() override;
         
         HALOperationResult read(HALValue& val) override;
 
@@ -103,7 +103,8 @@ namespace DALHAL {
 
     public:
         OneWireTempDeviceAtRoot(DeviceCreateContext& context);
-        ~OneWireTempDeviceAtRoot();
+        ~OneWireTempDeviceAtRoot() override;
+        
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         HALOperationResult write(const HALValue& val) override;
 #endif

@@ -213,14 +213,14 @@ namespace DALHAL {
         };
 
         /**
-         * AnyOfGroup is a logical unit of fields where the group may be optional, 
+         * OneOfGroup is a logical unit of fields where the group may be optional, 
          * and if present, at least one child field must exist. 
          * The group's presence can be overridden by ModeSelector rules.
          */
-        struct AnyOfGroup : FieldBase {
+        struct OneOfGroup : FieldBase {
             const FieldBase* const* fields;
-            constexpr AnyOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
-                : FieldBase(outputName, FieldType::AnyOfGroup, policy), fields(fields) {}
+            constexpr OneOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::OneOfGroup, policy), fields(fields) {}
         };
 
         /**

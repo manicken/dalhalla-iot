@@ -79,7 +79,7 @@ private:
 
 public:
     PWM_Servo(DeviceCreateContext& context);
-    ~PWM_Servo();
+    ~PWM_Servo() override;
     
     void begin() override;
     void loop() override;

@@ -223,9 +223,9 @@ namespace DALHAL {
                     return;
                 }
 
-                case FieldType::AnyOfGroup:
+                case FieldType::OneOfGroup:
                 {
-                    buildAnyOfGroup(static_cast<const AnyOfGroup*>(f), out);
+                    buildOneOfGroup(static_cast<const OneOfGroup*>(f), out);
                     return;
                 }
 
@@ -397,7 +397,7 @@ namespace DALHAL {
             out += "}";
         }
 
-        void buildAnyOfGroup(const AnyOfGroup* group, std::string& out)
+        void buildOneOfGroup(const OneOfGroup* group, std::string& out)
         {
             out += "{";
             
@@ -405,7 +405,7 @@ namespace DALHAL {
             out += group->name ? group->name : "AnyOf";
             out += "\",";
 
-            out += "\"type\":\"AnyOfGroup\",";
+            out += "\"type\":\"OneOfGroup\",";
 
             out += "\"required\":";
             out += (group->policy == FieldPolicy::Required) ? "true" : "false";

@@ -77,12 +77,12 @@ namespace DALHAL {
             for (int i = 0; fields[i] != nullptr; i++) {
                 const FieldBase* f = fields[i];
 
-                if (f->type == FieldType::AnyOfGroup) {
-                    const AnyOfGroup* group = static_cast<const AnyOfGroup*>(f);
+                if (f->type == FieldType::OneOfGroup) {
+                    const OneOfGroup* group = static_cast<const OneOfGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
                         if (group->fields[g]->name == nullptr) {
-                            GlobalLogger.Warn(F("AnyOfGroup - group->fields[g]->name == nullptr @ key: "), key);
+                            GlobalLogger.Warn(F("OneOfGroup - group->fields[g]->name == nullptr @ key: "), key);
                             continue;
                         }
                         if (strcmp(key, group->fields[g]->name) == 0)
@@ -384,7 +384,7 @@ namespace DALHAL {
                         
                 }
                 // virtual fields not handled here
-                case FieldType::AnyOfGroup:
+                case FieldType::OneOfGroup:
                 case FieldType::AllOfGroup:
                 case FieldType::FieldsGroup:
                     break;
@@ -397,8 +397,8 @@ namespace DALHAL {
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
                 const FieldBase* f = group->fields[i];
 
-                if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
-                    validateAnyOfGroup(j, group->name, static_cast<const AnyOfGroup*>(f), anyError);
+                if (f->type == FieldType::OneOfGroup) { // must validate this separate as it's a virtual group
+                    validateOneOfGroup(j, group->name, static_cast<const OneOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
                     validateAllOfGroup(j, group->name, static_cast<const AllOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {
@@ -410,8 +410,8 @@ namespace DALHAL {
 
         }
 
-        // Validate AnyOfGroup
-        void validateAnyOfGroup(const JsonVariant& j, const char* fieldName, const AnyOfGroup* group, bool& anyError)
+        // Validate OneOfGroup
+        void validateOneOfGroup(const JsonVariant& j, const char* fieldName, const OneOfGroup* group, bool& anyError)
         {
             if (!group) { return; } // failsafe just return
 
@@ -431,7 +431,7 @@ namespace DALHAL {
                 //std::string jsonStr;
                 //serializeJson(j, jsonStr);
                 //errMsg += jsonStr;
-                GlobalLogger.Error(F("None of the AnyOfGroup fields present: "), errMsg.c_str());
+                GlobalLogger.Error(F("None of the OneOfGroup fields present: "), errMsg.c_str());
                 anyError = true;
             }
         }
@@ -479,8 +479,8 @@ namespace DALHAL {
                 for (int c = 0; mode.conjunctions[c].fieldRef != nullptr; ++c) {
                     const ModeConjunctionDefine& conj = mode.conjunctions[c];
                     bool exists = false;
-                    if (conj.fieldRef->type == FieldType::AnyOfGroup) {
-                        const AnyOfGroup* group = static_cast<const AnyOfGroup*>(conj.fieldRef);
+                    if (conj.fieldRef->type == FieldType::OneOfGroup) {
+                        const OneOfGroup* group = static_cast<const OneOfGroup*>(conj.fieldRef);
 
                         for (int g = 0; group->fields[g] != nullptr; ++g) {
                             if (j.containsKey(group->fields[g]->name)) {
@@ -672,8 +672,8 @@ namespace DALHAL {
             for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
                 const FieldBase* f = jsonObjectSchema->fields[i];
 
-                if (f->type == FieldType::AnyOfGroup) { // must validate this separate as it's a virtual group
-                    validateAnyOfGroup(j, jsonObjectSchema->typeName, static_cast<const AnyOfGroup*>(f), anyError);
+                if (f->type == FieldType::OneOfGroup) { // must validate this separate as it's a virtual group
+                    validateOneOfGroup(j, jsonObjectSchema->typeName, static_cast<const OneOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
                     validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const AllOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {

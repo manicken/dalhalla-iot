@@ -82,6 +82,7 @@ namespace DALHAL {
 
     public:
         TX433_Unit(TX433_Unit_CreateFunctionContext& context);
+        ~TX433_Unit() override = default;
 
         HALOperationResult write(const HALValue &val) override;
 

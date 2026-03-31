@@ -52,7 +52,8 @@ namespace DALHAL {
 
     public:
         AnalogInput(DeviceCreateContext& context);
-        ~AnalogInput();
+        ~AnalogInput() override;
+        
         void loop() override;
         HALOperationResult read(HALValue &val) override;
         String ToString() override;

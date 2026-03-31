@@ -37,8 +37,8 @@ namespace DALHAL {
         void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError);
         // Validate a single field
         void validateField(const JsonVariant& j, const FieldBase* field, bool& anyError);
-        // Validate AnyOfGroup
-        void validateAnyOfGroup(const JsonVariant& j, const char* fieldName, const AnyOfGroup* group, bool& anyError);
+        // Validate OneOfGroup
+        void validateOneOfGroup(const JsonVariant& j, const char* fieldName, const OneOfGroup* group, bool& anyError);
         // Validate AllOfGroup
         void validateAllOfGroup(const JsonVariant& j, const char* fieldName, const AllOfGroup* group, bool& anyError);
         // Validate ModeSelector

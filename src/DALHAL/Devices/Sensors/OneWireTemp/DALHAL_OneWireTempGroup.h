@@ -58,7 +58,7 @@ namespace DALHAL {
 
     public:
         OneWireTempGroup(DeviceCreateContext& context);
-        ~OneWireTempGroup();
+        ~OneWireTempGroup() override;
         
         /** this function will search the busses and their devices to find the device with the uid */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;

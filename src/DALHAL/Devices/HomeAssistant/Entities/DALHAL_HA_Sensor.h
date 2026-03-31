@@ -59,7 +59,7 @@ namespace DALHAL {
 
     public:
         Sensor(HA_CreateFunctionContext& context);
-        ~Sensor();
+        ~Sensor() override;
 
         void begin() override;
         void loop() override;

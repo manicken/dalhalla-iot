@@ -51,6 +51,7 @@ namespace DALHAL {
 
     public:
         DigitalInput(DeviceCreateContext& context);
+        ~DigitalInput() override = default;
 
         HALOperationResult read(HALValue &val) override;
         String ToString() override;

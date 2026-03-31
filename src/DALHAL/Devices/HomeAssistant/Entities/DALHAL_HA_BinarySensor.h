@@ -58,7 +58,7 @@ namespace DALHAL {
 
     public:
         BinarySensor(HA_CreateFunctionContext& context);
-        ~BinarySensor();
+        ~BinarySensor() override;
         
         void begin() override;
         void loop() override;

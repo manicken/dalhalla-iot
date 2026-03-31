@@ -61,7 +61,7 @@ namespace DALHAL {
         
     public:
         SinglePulseOutput(DeviceCreateContext& context);
-        ~SinglePulseOutput();
+        ~SinglePulseOutput() override;
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

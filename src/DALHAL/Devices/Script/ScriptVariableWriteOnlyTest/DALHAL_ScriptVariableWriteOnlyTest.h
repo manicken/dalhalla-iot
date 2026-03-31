@@ -52,6 +52,7 @@ namespace DALHAL {
 
     public:
         ScriptVariableWriteOnlyTest(DeviceCreateContext& context);
+        ~ScriptVariableWriteOnlyTest() override = default;
 
         HALOperationResult write(const HALValue& val) override;
 

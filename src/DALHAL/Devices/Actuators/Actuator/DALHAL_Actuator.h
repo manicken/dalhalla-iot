@@ -129,7 +129,7 @@ namespace DALHAL {
         
     public:
         Actuator(DeviceCreateContext& context);
-        ~Actuator();
+        ~Actuator() override;
 
         void setup();
         virtual void loop() override;

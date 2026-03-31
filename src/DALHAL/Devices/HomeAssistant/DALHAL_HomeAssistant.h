@@ -73,7 +73,7 @@ namespace DALHAL {
         
     public:
         HomeAssistant(DeviceCreateContext& context);
-        ~HomeAssistant();
+        ~HomeAssistant() override;
         
         void begin() override;
         void loop() override;

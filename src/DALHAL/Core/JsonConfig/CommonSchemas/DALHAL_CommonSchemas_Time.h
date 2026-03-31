@@ -29,8 +29,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const AnyOfGroup refreshTimeGroupFields;
-        extern const AnyOfGroup refreshTimeGroupFieldsRequired;
+        extern const OneOfGroup refreshTimeGroupFields;
+        extern const OneOfGroup refreshTimeGroupFieldsRequired;
         
     }
     

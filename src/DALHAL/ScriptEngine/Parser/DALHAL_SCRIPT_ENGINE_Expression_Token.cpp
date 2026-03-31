@@ -77,9 +77,7 @@ namespace DALHAL {
             end = _start + length;
             type = _type;
         }
-        ExpressionToken::~ExpressionToken() {
-            // nothing to free here
-        }
+
         bool ExpressionToken::AnyType(const ExpTokenType* candidates) {
             while(*candidates != ExpTokenType::NotSet) {
                 if (type == *candidates) return true;

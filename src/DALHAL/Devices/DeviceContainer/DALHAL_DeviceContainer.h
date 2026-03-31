@@ -44,7 +44,7 @@ namespace DALHAL {
     public:
 
         DeviceContainer(DeviceCreateContext& context);
-        ~DeviceContainer();
+        ~DeviceContainer() override;
 
         /** called regulary from the main loop */
         void loop() override;

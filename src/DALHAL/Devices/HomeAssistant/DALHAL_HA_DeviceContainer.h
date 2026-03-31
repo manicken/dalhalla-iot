@@ -47,7 +47,7 @@ namespace DALHAL {
 
     public:
         HA_DeviceContainer(HA_CreateFunctionContext& context);
-        ~HA_DeviceContainer();
+        ~HA_DeviceContainer() override;
 
         void begin() override;
         void loop() override;

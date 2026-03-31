@@ -45,6 +45,7 @@ namespace DALHAL {
 
     public:
         ScriptVariableReadOnly(DeviceCreateContext& context);
+        ~ScriptVariableReadOnly() override = default;
 
         HALOperationResult read(HALValue& val) override;
 

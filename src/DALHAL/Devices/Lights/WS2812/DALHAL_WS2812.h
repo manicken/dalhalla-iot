@@ -59,6 +59,7 @@ namespace DALHAL {
 
     public:
         WS2812(DeviceCreateContext& context);
+        ~WS2812() override = default;
 
         void loop() override;
 

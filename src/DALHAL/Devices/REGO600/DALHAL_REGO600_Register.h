@@ -55,6 +55,7 @@ namespace DALHAL {
         
     public: // member functions
         REGO600_Register(DeviceCreateContext& context);
+        ~REGO600_Register() override = default;
 
         HALOperationResult read(HALValue& val) override;
         String ToString() override;

@@ -63,6 +63,7 @@ namespace DALHAL {
         
     public:
         DHT(DeviceCreateContext& context);
+        ~DHT() override = default;
 
         String ToString() override;
         

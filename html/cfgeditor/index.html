@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Device Config Editor</title>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: left;
+}
+th { background: #eee; }
+
+button { margin: 5px; }
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 400px;
+  margin: 50px auto;
+}
+</style>
+</head>
+<body>
+
+<h2>Device Config Editor</h2>
+
+<button onclick="openAddModal()">Add Device</button>
+
+<table>
+<thead>
+<tr>
+  <th>Enabled</th>
+  <th>Type</th>
+  <th>UID</th>
+  <th>Data</th>
+  <th>Note</th>
+  <th>Actions</th>
+</tr>
+</thead>
+<tbody id="deviceTable"></tbody>
+</table>
+
+<h3>Load JSON</h3>
+<textarea id="loadBox" style="width:100%;height:80px;"></textarea><br>
+<button onclick="loadJSON()">Load</button>
+
+<h3>Export JSON</h3>
+<textarea id="saveBox" style="width:100%;height:80px;"></textarea><br>
+<button onclick="saveJSON()">Generate</button>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Add Device</h3>
+
+    <label>Type:</label>
+    <select id="typeSelect" onchange="changeType()"></select>
+	<div id="modeContainer" style="margin-bottom:10px;">
+	  <label>Mode:</label>
+	  <select id="modeSelect" onchange="changeMode()"></select>
+	</div>
+
+    <div id="formArea"></div>
+
+    <button onclick="closeModal()">Cancel</button>
+    <button onclick="confirmAdd()">OK</button>
+  </div>
+</div>
+
+<script src="schema.js"></script>
+<script src="main.js"></script>
+<script src="examplecfg.js"></script>
+
+</body>
+</html>

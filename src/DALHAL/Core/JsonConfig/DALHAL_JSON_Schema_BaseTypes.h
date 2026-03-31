@@ -29,7 +29,7 @@ namespace DALHAL {
     namespace JsonSchema {
         enum class FieldType {
             AllOfGroup,
-            AnyOfGroup,
+            OneOfGroup,
             Array,         // homogeneous type
             ArrayPrimitive, // homogeneous type of primitives defined by allowence flags (and can mix different primitive types such as bool, uint, int and float)
             Bool,
@@ -53,7 +53,7 @@ namespace DALHAL {
         enum class FieldPolicy {
             Required,
             Optional,
-            AnyOfGroup, // the higher group defines
+            OneOfGroup, // the higher group defines
             AllOfGroup, // the higher group defines
             FieldsGroup, // the individual items decides the policy as they where defined flat, group defines no policy
             ModeDefine // Mode defines
