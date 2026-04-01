@@ -46,6 +46,7 @@ namespace DALHAL {
         };
         constexpr FieldsGroup disabled_uidreq_note_group = {
             disabled_uidreq_note_group_items,
+            Gui::UseInline,
             /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation
         };
 
@@ -56,6 +57,7 @@ namespace DALHAL {
         };
         constexpr FieldsGroup disabled_type_uidreq_note_group = {
             disabled_type_uidreq_note_group_items,
+            Gui::UseInline,
             /*sizeof(disabled_type_uidreq_note_group_items)/sizeof(disabled_type_uidreq_note_group_items[0])*/ // future implementation
         };
     }

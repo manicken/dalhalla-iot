@@ -142,6 +142,25 @@ namespace DALHAL {
             constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
                 : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
             
+            // using GUI flags
+
+            // can be used when inherited and used as a subtupe
+            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLen)
+                : FieldBase(name, type, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            // explicit select type to string
+            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLen)
+                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+
+            // can be used when inherited and used as a subtupe
+            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(name, type, policy, guiFlags), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+            // explicit select type to string
+            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLen, uint16_t maxLen)
+                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
+
+            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
+                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
+            
         };
 
         struct FieldStringConstraint : FieldString {
@@ -150,6 +169,9 @@ namespace DALHAL {
 
             constexpr FieldStringConstraint(const char* name, FieldPolicy policy, bool (*validate)(const char*), std::string (*describe)()) 
             : FieldString(name, FieldType::StringConstraint, policy, nullptr, 0), validate(validate), describe(describe) {}
+
+            constexpr FieldStringConstraint(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, bool (*validate)(const char*), std::string (*describe)()) 
+            : FieldString(name, FieldType::StringConstraint, policy, guiFlags, nullptr, 0), validate(validate), describe(describe) {}
         };
 
         /**
@@ -171,11 +193,17 @@ namespace DALHAL {
         struct FieldArray : FieldBase {
             const JsonSchema::JsonObjectSchema* subtype;
             EmptyPolicy emptyPolicy;
+            const char* renderAllAllowedValuesFromStringConstraint;
 
             constexpr FieldArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
-                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(EmptyPolicy::Warn) {}
+                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(nullptr) {}
             constexpr FieldArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
-                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(emptyPolicy) {}
+                : FieldBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+
+            constexpr FieldArray(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype)
+                : FieldBase(name, FieldType::Array, policy, guiFlags), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
+            constexpr FieldArray(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+                : FieldBase(name, FieldType::Array, policy, guiFlags), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
         };
         
         /** 
@@ -223,6 +251,8 @@ namespace DALHAL {
             const FieldBase* const* fields;
             constexpr OneOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
                 : FieldBase(outputName, FieldType::OneOfGroup, policy), fields(fields) {}
+            constexpr OneOfGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::OneOfGroup, policy, guiFlags), fields(fields) {}
         };
 
         /**
@@ -234,6 +264,8 @@ namespace DALHAL {
             const FieldBase* const* fields;
             constexpr AllOfGroup(const char* outputName, FieldPolicy policy, const FieldBase* const* fields)
                 : FieldBase(outputName, FieldType::AllOfGroup, policy), fields(fields) {}
+            constexpr AllOfGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const FieldBase* const* fields)
+                : FieldBase(outputName, FieldType::AllOfGroup, policy, guiFlags), fields(fields) {}
         };
         /**
          * Group is a logical unit of fields where the policy is handled individually
@@ -244,6 +276,9 @@ namespace DALHAL {
             /*size_t fieldsCount;*/
             constexpr FieldsGroup(const FieldBase* const* fields/*, size_t fieldsCount*/)
                 : FieldBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
+
+            constexpr FieldsGroup(const FieldBase* const* fields, FieldGuiFlags guiFlags/*, size_t fieldsCount*/)
+                : FieldBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup, guiFlags), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
         };
 
         /**
@@ -264,12 +299,11 @@ namespace DALHAL {
         struct FieldHexBytes : FieldString {
             uint8_t byteCount;
 
-            constexpr FieldHexBytes(const char* name,
-                                FieldPolicy policy,
-                                const char* defaultValue,
-                                uint8_t byteCount)
-                : FieldString(name, FieldType::HexBytes, policy, defaultValue, byteCount*2, 0),
-                byteCount(byteCount) {}
+            constexpr FieldHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)
+                : FieldString(name, FieldType::HexBytes, policy, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
+
+            constexpr FieldHexBytes(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defaultValue, uint8_t byteCount)
+                : FieldString(name, FieldType::HexBytes, policy, guiFlags, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
         };
 
     } // namespace JsonSchema

@@ -34,8 +34,8 @@ namespace DALHAL {
         constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
         constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
 
-        constexpr OneOfGroup   refreshTimeGroupFields = {"refreshtimems", FieldPolicy::Optional, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        constexpr OneOfGroup   refreshTimeGroupFieldsRequired = {"refreshtimems", FieldPolicy::Required, refreshGroupItems};
+        constexpr OneOfGroup   refreshTimeGroupFields = {"refreshtime", FieldPolicy::Optional, Gui::UseInline, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
+        constexpr OneOfGroup   refreshTimeGroupFieldsRequired = {"refreshtime", FieldPolicy::Required, Gui::UseInline, refreshGroupItems};
     }
 
 }

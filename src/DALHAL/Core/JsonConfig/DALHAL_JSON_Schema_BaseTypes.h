@@ -73,14 +73,32 @@ namespace DALHAL {
             Error
         };
         const char* EmptyPolicyToString(EmptyPolicy policy);
+        using FieldGuiFlags = uint8_t;
+
+        namespace Gui {
+            constexpr FieldGuiFlags None                   = 0;
+            constexpr FieldGuiFlags UseInline              = 1 << 0;
+            constexpr FieldGuiFlags RenderAllAllowedValues = 1 << 1;
+            constexpr FieldGuiFlags DisableByDefault       = 1 << 2;
+            constexpr FieldGuiFlags ReadOnly               = 1 << 3;
+            constexpr FieldGuiFlags HideLabel              = 1 << 4;
+
+            constexpr bool hasFlag(FieldGuiFlags flags, FieldGuiFlags f) {
+                return (flags & f) != 0;
+            }
+        }
 
         struct FieldBase {
             const char* name;    // flash string
             FieldType type;
             FieldPolicy policy;
+            FieldGuiFlags guiFlags;
 
             constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy)
-                : name(n), type(t), policy(policy) {}
+                : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
+
+            constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags)
+                : name(n), type(t), policy(policy), guiFlags(guiFlags) {}
         };
 
         struct ModeConjunctionDefine {
