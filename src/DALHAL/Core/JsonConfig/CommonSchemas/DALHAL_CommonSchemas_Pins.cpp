@@ -29,15 +29,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
         
-        constexpr FieldHardwarePin InputOutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) | static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
+        constexpr FieldHardwarePin InputOutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN | GPIO_manager::PinFunc::OUT) };
 
 
-        constexpr FieldHardwarePin InputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
+        constexpr FieldHardwarePin InputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
         constexpr FieldBool InputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, FieldPolicy::Optional, false };
         constexpr const FieldBase* InputFields[] = { &InputPinField, &InputActiveHighField, nullptr };
         constexpr JsonObjectSchema InputPinScheme = { "InputPinScheme", InputFields, nullptr, nullptr };
 
-        constexpr FieldHardwarePin OutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) };
+        constexpr FieldHardwarePin OutputPinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT) };
         constexpr FieldBool OutputActiveHighField = { DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH, FieldPolicy::Optional, false };
         constexpr const FieldBase* OutputFields[] = { &OutputPinField, &OutputActiveHighField, nullptr };
         constexpr JsonObjectSchema OutputPinScheme = { "OutputPinScheme", OutputFields, nullptr, nullptr };

@@ -105,5 +105,7 @@ namespace DALHAL {
         static bool writeCmd(ZeroCopyString& zcStr, std::string& message);
         static bool readCmd(ZeroCopyString& zcStr, std::string& message);
         static bool execCmd(ZeroCopyString& zcStr, std::string& message);
+
+        static void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
     };
 }

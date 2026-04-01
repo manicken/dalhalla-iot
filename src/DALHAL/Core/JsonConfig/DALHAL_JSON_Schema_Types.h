@@ -29,6 +29,8 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include "DALHAL_JSON_Schema_BaseTypes.h"
 
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -201,14 +203,14 @@ namespace DALHAL {
         };
         
         struct FieldHardwarePin : FieldBase {
-            uint16_t mode;
-            constexpr FieldHardwarePin(const char* name, FieldPolicy policy, uint16_t mode)
+            DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
+            constexpr FieldHardwarePin(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)
                 : FieldBase(name, FieldType::HardwarePin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 
         struct FieldHardwarePinOrVirtualPIN : FieldBase {
-            uint16_t mode;
-            constexpr FieldHardwarePinOrVirtualPIN(const char* name, FieldPolicy policy, uint16_t mode)
+            DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
+            constexpr FieldHardwarePinOrVirtualPIN(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)
                 : FieldBase(name, FieldType::HardwarePinOrVirtualPin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };
 

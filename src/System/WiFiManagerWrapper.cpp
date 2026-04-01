@@ -32,6 +32,10 @@
 #include <Adafruit_SSD1306.h>
 #endif
 
+const char* FALLBACK_SSID = "Wokwi-GUEST";
+const char* FALLBACK_PASS = "";
+#define WOKWI_SIMULATION
+
 #if defined(ESP32)
 #include <WiFi.h>
 wifi_err_reason_t lastReason = WIFI_REASON_UNSPECIFIED;
@@ -110,7 +114,6 @@ namespace WiFiManagerWrapper {
         WiFi.persistent(true);
         WiFi.begin(); // Use saved credentials
 
-        bool wifiConnected = false;
         unsigned long start = millis();
         const unsigned long connectTimeout = 5000; // ms
 
@@ -119,12 +122,29 @@ namespace WiFiManagerWrapper {
             yield();
         }
 
-        wifiConnected = (WiFi.status() == WL_CONNECTED);
+        bool wifiConnected = (WiFi.status() == WL_CONNECTED);
 
-        // If not connected, start non-blocking portal immediately
         if (!wifiConnected) {
-            Serial.println(F("wifi/status/error/connect")); // send structured error for easy parse
-            startPortalNonBlocking();
+            Serial.println(F("wifi/status/error/connect"));
+
+        #if defined(WOKWI_SIMULATION)
+            // In Wokwi, try fallback credentials automatically
+            WiFi.begin(FALLBACK_SSID, FALLBACK_PASS);
+            unsigned long startFallback = millis();
+            while (WiFi.status() != WL_CONNECTED && millis() - startFallback < 3000) {
+                delay(50);
+                yield();
+            }
+            wifiConnected = (WiFi.status() == WL_CONNECTED);
+            if (wifiConnected) {
+                Serial.println(F("wifi/status/fallback/ok"));
+            }
+        #endif
+
+            // Start non-blocking portal if still not connected
+            if (!wifiConnected) {
+                startPortalNonBlocking();
+            }
         } else {
             Serial.println(F("wifi/status/ok")); // send structured error for easy parse
         }

@@ -36,8 +36,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN)};
-        constexpr FieldHardwarePin txpinField = {"txpin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
+        constexpr FieldHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
         constexpr FieldUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
 

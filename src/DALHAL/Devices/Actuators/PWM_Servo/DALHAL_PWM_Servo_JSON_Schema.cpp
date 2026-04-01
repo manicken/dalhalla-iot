@@ -34,7 +34,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
         constexpr FieldUInt chField = {DALHAL_DEVICE_PWM_SERVO_CFG_NAME_CH, FieldPolicy::Required, 0, 7, 0};
 

@@ -202,29 +202,68 @@ namespace DALHAL {
                 if (cb != nullptr){
                     cb("wifi/scanend\r\n");
                 }
-            } else if (zcCommand.EqualsIC("set")) {
+            } else if (zcCommand.EqualsIC("set_b64")) {
                 if (zcStr.CountChar(':') >= 1) {
                     DALHAL::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
                     char ssid[33] = {0};
                     char pass[65] = {0};
-                    int ssidLen = b64urlDecode((uint8_t*)ssid, zcSSID.ToString().c_str());
-                    int passLen = b64urlDecode((uint8_t*)pass, zcStr.ToString().c_str());
-                    WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
-                    WiFi.begin(ssid, pass);     // Connects to the AP.
-                    WiFi.setAutoConnect(true);  // ESP32: ensures reconnect on boot. ESP8266: also works.
-                    WiFi.setAutoReconnect(true);// ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
-                    // Optionally wait a few milliseconds to ensure settings are written
-                    delay(1000); 
-                    if (cb != nullptr) {
-                        cb("wifi/set/OK\r\n");
+
+                    int ssidLen = b64urlDecode((uint8_t*)ssid, sizeof(ssid) - 1, zcSSID);
+                    int passLen = b64urlDecode((uint8_t*)pass, sizeof(pass) - 1, zcStr);
+                    if (ssidLen <= 0 || passLen < 0) {
+                        if (cb != nullptr) {
+
+                            if (ssidLen == 0) {
+                                cb("wifi/set_b64/error/ssid/empty\r\n");
+                            } else if (ssidLen == -1) {
+                                cb("wifi/set_b64/error/ssid/invalidchar\r\n");
+                            } else if (ssidLen == -2) {
+                                cb("wifi/set_b64/error/ssid/long\r\n");
+                            }
+
+                            if (passLen == -1) {
+                                cb("wifi/set_b64/error/pass/invalidchar\r\n");
+                            } else if (passLen == -2) {
+                                cb("wifi/set_b64/error/pass/long\r\n");
+                            }
+                        }
+                        return false;
                     }
-                    // Restart the device so it boots with the saved credentials
-                    ESP.restart();
+
+                    if (cb != nullptr) {
+                        cb("wifi/set_b64/OK\r\n");
+                        delay(50);
+                    }
+                    
+                    SetWifiCredentialsAndRestart(ssid, pass);
+
                 } else {
                     if (cb != nullptr) {
-                        cb("wifi/set/error/missingparams\r\n");
+                        cb("wifi/set_b64/error/missingparams\r\n");
                     }
                 }
+            } else if (zcCommand.EqualsIC("set_json")) {
+                
+                DynamicJsonDocument doc(256);
+                DeserializationError err = deserializeJson(doc, zcStr.start); // safe to use start here as that string is null terminated
+                if(err) {
+                    if(cb) cb("wifi/set_json/error/invalidjson\r\n");
+                    return false;
+                }
+
+                const char* ssid = doc["ssid"];
+                const char* pass = doc["pass"];
+
+                if(ssid == nullptr || ssid[0] == '\0') {
+                    if(cb) { cb("wifi/set_json/error/ssid/empty\r\n"); }
+                    return false;
+                }
+
+                if(pass == nullptr) pass = ""; // allow empty password if desired
+
+                if(cb) { cb("wifi/set_json/OK\r\n"); }
+
+                SetWifiCredentialsAndRestart(ssid, pass);
             }
         } else if (zcCommand.EqualsIC("system")) {
             zcCommand = zcStr.SplitOffHead('/');
@@ -627,4 +666,16 @@ namespace DALHAL {
         return true;
     }
 
+    void CommandExecutor::SetWifiCredentialsAndRestart(const char* ssid, const char* pass) {
+        WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
+        WiFi.begin(ssid, pass);     // Connects to the AP.
+        WiFi.setAutoConnect(true);  // ESP32: ensures reconnect on boot. ESP8266: also works.
+        WiFi.setAutoReconnect(true);// ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
+        
+        WiFi.disconnect(false, true); // ensures save on ESP32
+        delay(200); 
+        
+        // Restart the device so it boots with the saved credentials
+        ESP.restart();
+    }
 }

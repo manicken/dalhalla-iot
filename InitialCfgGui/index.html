@@ -153,7 +153,7 @@ async function sendWifi() {
     const pass = document.getElementById("password").value;
     const passB64 = b64urlEncode(pass);
 
-    const cmd = `wifi/set/${ssidB64}:${passB64}\n`;
+    const cmd = `wifi/set_b64/${ssidB64}:${passB64}\n`;
     await writer.write(cmd);
     log(">> " + cmd.trim());
 }

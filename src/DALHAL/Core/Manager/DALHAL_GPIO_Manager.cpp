@@ -26,205 +26,200 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <System/Info.h>
-
+/*
 #define ENUM_TO_MASK(a) static_cast<DALHAL_GPIO_MGR_PINFUNC_TYPE>(a)
 #define MAKE_PIN_MASK_8(a, b, c, d, e, f, g, h) (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f) | ENUM_TO_MASK(g) | ENUM_TO_MASK(h))
 #define MAKE_PIN_MASK_7(a, b, c, d, e, f, g)    (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f) | ENUM_TO_MASK(g))
 #define MAKE_PIN_MASK_6(a, b, c, d, e, f)       (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f))
 #define MAKE_PIN_MASK_5(a, b, c, d, e)          (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e))
 #define MAKE_PIN_MASK_4(a, b, c, d)             (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d))
-#define MAKE_PIN_MASK_3(a, b, c)                (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c))
-#define MAKE_PIN_MASK_2(a, b)                   (ENUM_TO_MASK(a) | ENUM_TO_MASK(b))
+#define (a, b, c)                (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c))
+#define (a, b)                   (ENUM_TO_MASK(a) | ENUM_TO_MASK(b))
 #define MAKE_PIN_MASK_1(a)                      (ENUM_TO_MASK(a))
-
+*/
 namespace DALHAL {
 
     namespace GPIO_manager
     {
-        const gpio_pin available_gpio_list[] {
+        constexpr gpio_pin available_gpio_list[] {
     #if defined(ESP8266)
         
-            {0, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)},  // (reserved for programming) only safe to use as a output
-            {1, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::SpecialAtBoot)},  // TXD0 (reserved for programming/UART) only safe to use as a output
-            {2, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::SpecialAtBoot)},  // TXD1 (reserved for debug) only safe to use as a output
-            //{3, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // RXD0 (reserved for programming/UART)
-            {4, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},    // I2C SDA
-            {5, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},    // I2C SCL
-            //{6, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // SDCLK (reserved for spi flash)
-            //{7, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // SDD0 (reserved for spi flash)
-            //{8, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // SDD1 (reserved for spi flash)
-            //{9, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // SDD2 (reserved for spi flash)
-            //{10, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // SDD3 (reserved for spi flash)
-            //{11, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // SDCMD (reserved for spi flash)
-            {12, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // SPI MISO
-            {13, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // SPI MOSI
-            {14, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // SPI SCLK
-            {15, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // SPI CS/TXD2
+            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // (reserved for programming) only safe to use as a output
+            {1, (PinFunc::OUT | PinFunc::SpecialAtBoot)},  // TXD0 (reserved for programming/UART) only safe to use as a output
+            {2, (PinFunc::OUT | PinFunc::SpecialAtBoot)},  // TXD1 (reserved for debug) only safe to use as a output
+            //{3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // RXD0 (reserved for programming/UART)
+            {4, (PinFunc::OUT | PinFunc::IN)},    // I2C SDA
+            {5, (PinFunc::OUT | PinFunc::IN)},    // I2C SCL
+            //{6, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // SDCLK (reserved for spi flash)
+            //{7, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // SDD0 (reserved for spi flash)
+            //{8, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // SDD1 (reserved for spi flash)
+            //{9, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // SDD2 (reserved for spi flash)
+            //{10, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // SDD3 (reserved for spi flash)
+            //{11, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // SDCMD (reserved for spi flash)
+            {12, (PinFunc::OUT | PinFunc::IN)}, // SPI MISO
+            {13, (PinFunc::OUT | PinFunc::IN)}, // SPI MOSI
+            {14, (PinFunc::OUT | PinFunc::IN)}, // SPI SCLK
+            {15, (PinFunc::OUT | PinFunc::IN)}, // SPI CS/TXD2
     
     #elif defined(ESP32DEV) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
-            {0, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
-            {1, MAKE_PIN_MASK_3(PinFunc::Reserved, PinFunc::OUT, PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
-            {2, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
-            {3, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
-            {4, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
-            {5, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
+            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
+            {1, (PinFunc::Reserved | PinFunc::OUT | PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
+            {2, (PinFunc::OUT | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
+            {3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
+            {4, (PinFunc::OUT | PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
+            {5, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
       
-            {6, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
-            {7, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
-            {8, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
-            {9, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
-            {10, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
-            {11, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
+            {6, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
+            {7, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
+            {8, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
+            {9, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
+            {10, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
+            {11, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
 
-            {12, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::LOW2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
-            {13, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
-            {14, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
-            {15, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
-            {16, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // U2_RXD
-            {17, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // U2_TXD     
-            {18, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_CLK
-            {19, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_MISO
-            {21, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // I2C_SDA
-            {22, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // I2C_SCL
-            {23, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_MOSI
-            {25, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AOUT)}, // ADC2_8/DAC1 (ADC2 cannot be used together with WiFi)
-            {26, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AOUT)}, // ADC2_9/DAC2 (ADC2 cannot be used together with WiFi)
-            {27, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_7/TOUCH7 (ADC2 cannot be used together with WiFi)
-            {32, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)}, // ADC1_4/TOUCH9/XTAL32
-            {33, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)}, // ADC1_5/TOUCH8/XTAL32
-            {34, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_6 (input only)
-            {35, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_7 (input only)
-            {36, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_0/SensVP (input only)
-            {39, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)},  // ADC1_3/SensVN (input only)
-            {255, 0x00} // terminator item
+            {12, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
+            {13, (PinFunc::OUT | PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
+            {14, (PinFunc::OUT | PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
+            {15, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
+            {16, (PinFunc::OUT | PinFunc::IN)}, // U2_RXD
+            {17, (PinFunc::OUT | PinFunc::IN)}, // U2_TXD     
+            {18, (PinFunc::OUT | PinFunc::IN)}, // VSPI_CLK
+            {19, (PinFunc::OUT | PinFunc::IN)}, // VSPI_MISO
+            {21, (PinFunc::OUT | PinFunc::IN)}, // I2C_SDA
+            {22, (PinFunc::OUT | PinFunc::IN)}, // I2C_SCL
+            {23, (PinFunc::OUT | PinFunc::IN)}, // VSPI_MOSI
+            {25, (PinFunc::OUT | PinFunc::IN | PinFunc::AOUT)}, // ADC2_8/DAC1 (ADC2 cannot be used together with WiFi)
+            {26, (PinFunc::OUT | PinFunc::IN | PinFunc::AOUT)}, // ADC2_9/DAC2 (ADC2 cannot be used together with WiFi)
+            {27, (PinFunc::OUT | PinFunc::IN)}, // ADC2_7/TOUCH7 (ADC2 cannot be used together with WiFi)
+            {32, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)}, // ADC1_4/TOUCH9/XTAL32
+            {33, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)}, // ADC1_5/TOUCH8/XTAL32
+            {34, (PinFunc::IN | PinFunc::AIN)}, // ADC1_6 (input only)
+            {35, (PinFunc::IN | PinFunc::AIN)}, // ADC1_7 (input only)
+            {36, (PinFunc::IN | PinFunc::AIN)}, // ADC1_0/SensVP (input only)
+            {39, (PinFunc::IN | PinFunc::AIN)},  // ADC1_3/SensVN (input only)
             
     #elif defined(ESP32WROVER_E_IE)
-            {0, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
-            {1, MAKE_PIN_MASK_3(PinFunc::Reserved, PinFunc::OUT, PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
-            {2, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
-            {3, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
-            {4, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
-            {5, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
+            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
+            {1, (PinFunc::Reserved | PinFunc::OUT | PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
+            {2, (PinFunc::OUT | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
+            {3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
+            {4, (PinFunc::OUT | PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
+            {5, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
             // GPIO 6-11 are not available on the module they are internally connected to the flash
-            {6, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
-            {7, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
-            {8, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
-            {9, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
-            {10, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
-            {11, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
+            {6, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
+            {7, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
+            {8, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_CTS/SPI_MOSI (reserved for flash)
+            {9, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_RXD/SPI_HD (reserved for flash)
+            {10, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
+            {11, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
  
-            {12, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::LOW2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
-            {13, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
-            {14, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
-            {15, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
+            {12, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
+            {13, (PinFunc::OUT | PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
+            {14, (PinFunc::OUT | PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
+            {15, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
      
-            {18, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_CLK
-            {19, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_MISO
-            {21, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // I2C_SDA
-            {22, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // I2C_SCL
-            {23, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // VSPI_MOSI
-            {25, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AOUT)}, // ADC2_8/DAC1 (ADC2 cannot be used together with WiFi)
-            {26, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AOUT)}, // ADC2_9/DAC2 (ADC2 cannot be used together with WiFi)
-            {27, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // ADC2_7/TOUCH7 (ADC2 cannot be used together with WiFi)
-            {32, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)}, // ADC1_4/TOUCH9/XTAL32
-            {33, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)}, // ADC1_5/TOUCH8/XTAL32
-            {34, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_6 (input only)
-            {35, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_7 (input only)
-            {36, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)}, // ADC1_0/SensVP (input only)
-            {39, MAKE_PIN_MASK_2(PinFunc::IN, PinFunc::AIN)},  // ADC1_3/SensVN (input only)
-            {255, 0x00} // terminator item
+            {18, (PinFunc::OUT | PinFunc::IN)}, // VSPI_CLK
+            {19, (PinFunc::OUT | PinFunc::IN)}, // VSPI_MISO
+            {21, (PinFunc::OUT | PinFunc::IN)}, // I2C_SDA
+            {22, (PinFunc::OUT | PinFunc::IN)}, // I2C_SCL
+            {23, (PinFunc::OUT | PinFunc::IN)}, // VSPI_MOSI
+            {25, (PinFunc::OUT | PinFunc::IN | PinFunc::AOUT)}, // ADC2_8/DAC1 (ADC2 cannot be used together with WiFi)
+            {26, (PinFunc::OUT | PinFunc::IN | PinFunc::AOUT)}, // ADC2_9/DAC2 (ADC2 cannot be used together with WiFi)
+            {27, (PinFunc::OUT | PinFunc::IN)}, // ADC2_7/TOUCH7 (ADC2 cannot be used together with WiFi)
+            {32, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)}, // ADC1_4/TOUCH9/XTAL32
+            {33, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)}, // ADC1_5/TOUCH8/XTAL32
+            {34, (PinFunc::IN | PinFunc::AIN)}, // ADC1_6 (input only)
+            {35, (PinFunc::IN | PinFunc::AIN)}, // ADC1_7 (input only)
+            {36, (PinFunc::IN | PinFunc::AIN)}, // ADC1_0/SensVP (input only)
+            {39, (PinFunc::IN | PinFunc::AIN)},  // ADC1_3/SensVN (input only)
+            
     #elif defined(waveshare_esp32c3_zero)
-            {0, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {1, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::LOW2BOOT, PinFunc::SpecialAtBoot, PinFunc::AIN)}, // strapping pin
-            {3, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {4, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {5, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {6, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {7, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {8, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {9, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // strapping pin
-            {10, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // onboard ws2812 LED
+            {0, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {1, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {6, (PinFunc::OUT | PinFunc::IN)},
+            {7, (PinFunc::OUT | PinFunc::IN)},
+            {8, (PinFunc::OUT | PinFunc::IN)},
+            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
+            {10, (PinFunc::OUT | PinFunc::IN)}, // onboard ws2812 LED
         //#if ARDUINO_USB_CDC_ON_BOOT || ARDUINO_USB_MODE
-            {18, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // USB_DP
-            {19, MAKE_PIN_MASK_2(PinFunc::Reserved, PinFunc::SpecialAtBoot)}, // USP_DM
+            {18, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // USB_DP
+            {19, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // USP_DM
         //#else
-        //    {18, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // USB_DP
-        //    {19, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)}, // USP_DM
+        //    {18, (PinFunc::OUT | PinFunc::IN)}, // USB_DP
+        //    {19, (PinFunc::OUT | PinFunc::IN)}, // USP_DM
         //#endif
-            {20, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART RxD
-            {21, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {20, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {21, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(seeed_xiao_esp32c3)
 
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::LOW2BOOT, PinFunc::SpecialAtBoot, PinFunc::AIN)}, // strapping pin
-            {3, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {4, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::AIN, PinFunc::JTAG)},
-            {5, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::AIN, PinFunc::JTAG)},
-            {6, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::JTAG)},
-            {7, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::JTAG)},
-            {8, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {9, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot)}, // strapping pin
-            {10, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {20, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART RxD
-            {21, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {4, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
+            {5, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
+            {6, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
+            {7, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
+            {8, (PinFunc::OUT | PinFunc::IN)},
+            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
+            {10, (PinFunc::OUT | PinFunc::IN)},
+            {20, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {21, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(waveshare_esp32c6_zero)
-            {0, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {1, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::LOW2BOOT, PinFunc::SpecialAtBoot, PinFunc::AIN)}, // strapping pin
-            {3, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {4, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
-            {5, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::AIN)},
+            {0, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {1, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
+            {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             // underside pins 6-9, 12, 13
-            {6, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::UNDERSIDE)},
-            {7, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::UNDERSIDE)},
-            {8, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::UNDERSIDE)}, // onboard ws2812 LED
-            {9, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::HIGH2BOOT, PinFunc::SpecialAtBoot, PinFunc::UNDERSIDE)}, // strapping pin
-            {12, MAKE_PIN_MASK_3(PinFunc::Reserved, PinFunc::SpecialAtBoot, PinFunc::UNDERSIDE)}, // USB_DM
-            {13, MAKE_PIN_MASK_3(PinFunc::Reserved, PinFunc::SpecialAtBoot, PinFunc::UNDERSIDE)}, // USP_DP
+            {6, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
+            {7, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
+            {8, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)}, // onboard ws2812 LED
+            {9, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // strapping pin
+            {12, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USB_DM
+            {13, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USP_DP
             
-            {14, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {15, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {16, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART TxD
-            {17, MAKE_PIN_MASK_4(PinFunc::OUT, PinFunc::IN, PinFunc::SpecialAtBoot, PinFunc::UARTFLASH)}, // flash standard UART RxD
-            {18, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {19, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {20, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {21, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
-            {22, MAKE_PIN_MASK_2(PinFunc::OUT, PinFunc::IN)},
+            {14, (PinFunc::OUT | PinFunc::IN)},
+            {15, (PinFunc::OUT | PinFunc::IN)},
+            {16, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {17, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {18, (PinFunc::OUT | PinFunc::IN)},
+            {19, (PinFunc::OUT | PinFunc::IN)},
+            {20, (PinFunc::OUT | PinFunc::IN)},
+            {21, (PinFunc::OUT | PinFunc::IN)},
+            {22, (PinFunc::OUT | PinFunc::IN)},
             // underside pin
-            {23, MAKE_PIN_MASK_3(PinFunc::OUT, PinFunc::IN, PinFunc::UNDERSIDE)}, 
+            {23, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)}, 
 
     #endif
+            //{255, 0x00} // terminator item
         }; // const gpio_pin available_gpio_list[] {
+        constexpr size_t available_gpio_list_size = sizeof(available_gpio_list) / sizeof(available_gpio_list[0]);
 
-        int available_gpio_list_lenght = -1; // not set yet
+        /*int available_gpio_list_lenght = -1; // not set yet
         void set_available_gpio_list_length() {
             int len = 0;
             while (available_gpio_list[len].pin != 0xFF) ++len;
             available_gpio_list_lenght = len;
-        }
+        }*/
 
-        const PinFuncDef PinModeStrings[] = {
-            {"Reserved", ENUM_TO_MASK(PinFunc::Reserved)},
-            {"SpecialAtBoot", ENUM_TO_MASK(PinFunc::SpecialAtBoot)},
-            {"LOW2BOOT", ENUM_TO_MASK(PinFunc::LOW2BOOT)},
-            {"HIGH2BOOT", ENUM_TO_MASK(PinFunc::HIGH2BOOT)},
-            {"OUT", ENUM_TO_MASK(PinFunc::OUT)},
-            {"IN", ENUM_TO_MASK(PinFunc::IN)},
-            {"AIN", ENUM_TO_MASK(PinFunc::AIN)},
-            {"AOUT", ENUM_TO_MASK(PinFunc::AOUT)},
-            {"UNDERSIDE", ENUM_TO_MASK(PinFunc::UNDERSIDE)},
-            {"UARTFLASH", ENUM_TO_MASK(PinFunc::UARTFLASH)},
-            {"JTAG", ENUM_TO_MASK(PinFunc::JTAG)},
-            {nullptr, 0} // terminator item
+        constexpr PinFuncDef PinModeStrings[] = {
+            {"Reserved", (PinFunc::Reserved)},
+            {"SpecialAtBoot", (PinFunc::SpecialAtBoot)},
+            {"LOW2BOOT", (PinFunc::LOW2BOOT)},
+            {"HIGH2BOOT", (PinFunc::HIGH2BOOT)},
+            {"OUT", (PinFunc::OUT)},
+            {"IN", (PinFunc::IN)},
+            {"AIN", (PinFunc::AIN)},
+            {"AOUT", (PinFunc::AOUT)},
+            {"UNDERSIDE", (PinFunc::UNDERSIDE)},
+            {"UARTFLASH", (PinFunc::UARTFLASH)},
+            {"JTAG", (PinFunc::JTAG)},
+            //{nullptr, 0} // terminator item
         };
-
-        int PinModeStrings_length = -1;
-        void set_PinModeStrings_length() {
-            int len = 0;
-            while (PinModeStrings[len].Name != nullptr) ++len;
-            PinModeStrings_length = len;
-        }
+        constexpr size_t PinModeStrings_size = sizeof(PinModeStrings) / sizeof(PinModeStrings[0]);
         
         uint8_t* reservedPins = nullptr;
 
@@ -244,7 +239,7 @@ namespace DALHAL {
         }
 
         bool CheckIfPinAvailable(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            for (int i = 0; available_gpio_list[i].pin != 255; i++) {
+            for (int i = 0; i < available_gpio_list_size; i++) {
                 const gpio_pin& pinDef = available_gpio_list[i];
                 if (pinDef.pin != pin) continue;
                 
@@ -287,17 +282,17 @@ namespace DALHAL {
         }
 
         void ClearAllReservations() {
-            if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
+            //if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
             if (reservedPins == nullptr)
-                reservedPins = new uint8_t[available_gpio_list_lenght];
-            for (int i=0;i<available_gpio_list_lenght;i++)
+                reservedPins = new uint8_t[available_gpio_list_size];
+            for (int i=0;i<available_gpio_list_size;i++)
                 reservedPins[i] = 0;
         }
         /** it's recommended to call CheckIfPinAvailable prior to using this function,
          * this function is very basic and do only set the actual pin to reserved state, 
          * so calling it many times on the same pin have no effect */
         void ReservePin(uint8_t pin) {
-            for (int i=0;i<available_gpio_list_lenght;i++) {
+            for (int i=0;i<available_gpio_list_size;i++) {
                 if (available_gpio_list[i].pin == pin) {
                     reservedPins[i] = 1;
                     return;
@@ -314,15 +309,15 @@ namespace DALHAL {
 
             uint64_t mask = 0;
 
-            for (size_t i = 0; i < sizeof(available_gpio_list)/sizeof(available_gpio_list[0]); ++i) {
+            for (size_t i = 0; i < available_gpio_list_size; ++i) {
                 const auto& g = available_gpio_list[i];
 
                 // Skip pins reserved for boot, flash, JTAG, etc.
-                if (g.mode & MAKE_PIN_MASK_3(
-                                PinFunc::Reserved, 
-                                PinFunc::SpecialAtBoot, 
-                                PinFunc::UARTFLASH/*, 
-                                PinFunc::JTAG*/)) {
+                if (g.mode & (
+                                PinFunc::Reserved |
+                                PinFunc::SpecialAtBoot | 
+                                PinFunc::UARTFLASH 
+                            )) {
                     continue;
                 }
 
@@ -364,10 +359,11 @@ namespace DALHAL {
             strList.append("\"variant\":\""); strList.append(Info::getESPVariant()); strList.append("\",");
             if (listMode != PrintListMode::String) {
                 strList.append("\"PinModes\":{");
-                if (PinModeStrings_length == -1) set_PinModeStrings_length();
-                for (int i=0;i<PinModeStrings_length;i++)
+                
+                for (int i=0;PinModeStrings_size;++i)
                 {
-                    strList.append("\"");
+                    if (i>0) { strList += ',';}
+                    strList += '"';
                     uint8_t modeMask = PinModeStrings[i].func;
                     if (listMode == PrintListMode::Binary) {
                         strList.append(Convert::toBin(modeMask));
@@ -377,16 +373,14 @@ namespace DALHAL {
                     }
                     strList.append("\":\"");
                     strList.append(PinModeStrings[i].Name);
-                    strList.append("\"");
-                    if (i<(PinModeStrings_length-1))
-                        strList.append(",");
+                    strList += '"';
                 }
                 strList.append("},");
             }
             strList.append("\"list\":{");
             bool first = true;
-            if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
-            for (int i=0;i<available_gpio_list_lenght;i++)
+           // if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
+            for (int i=0;i<available_gpio_list_size;i++)
             {
                 if (first == false)
                     strList.append(",");

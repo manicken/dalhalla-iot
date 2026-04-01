@@ -1,0 +1,1201 @@
+
+<style>
+:root {
+      --color-background-primary: rgba(255,255,255,1);
+  --color-background-secondary: rgba(245,244,237,1);
+  --color-background-tertiary: rgba(250,249,245,1);
+
+  --color-text-primary: rgba(20,20,19,1);
+  --color-text-secondary: rgba(61,61,58,1);
+  --color-text-tertiary: rgba(115,114,108,1);
+
+  --color-border-secondary: rgba(31,30,29,0.3);
+  --color-border-tertiary: rgba(31,30,29,0.15);
+
+  --color-background-info: rgba(214,228,246,1);
+  --color-background-danger: rgba(247,236,236,1);
+  --color-background-success: rgba(233,241,220,1);
+  --color-background-warning: rgba(246,238,223,1);
+
+  --color-text-info: rgba(50,102,173,1);
+  --color-text-danger: rgba(127,44,40,1);
+  --color-text-success: rgba(38,91,25,1);
+  --color-text-warning: rgba(90,72,21,1);
+
+  --font-sans: Arial, sans-serif;
+  --font-mono: monospace;
+
+  --border-radius-md: 8px;
+  --border-radius-lg: 10px;
+}
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0
+}
+
+body {
+	font-family: var(--font-sans);
+	font-size: 14px;
+	color: var(--color-text-primary)
+}
+
+.ew {
+	display: flex;
+	height: 680px;
+	border: 0.5px solid var(--color-border-tertiary);
+	border-radius: var(--border-radius-lg);
+	overflow: hidden;
+	background: var(--color-background-primary)
+}
+
+.sb {
+	width: 230px;
+	min-width: 230px;
+	background: var(--color-background-secondary);
+	border-right: 0.5px solid var(--color-border-tertiary);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden
+}
+
+.sb-hdr {
+	padding: 8px 12px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+	border-bottom: 0.5px solid var(--color-border-tertiary);
+	display: flex;
+	align-items: center;
+	gap: 6px
+}
+
+.cnt-badge {
+	font-size: 11px;
+	background: var(--color-background-primary);
+	padding: 1px 6px;
+	border-radius: 10px;
+	border: 0.5px solid var(--color-border-tertiary)
+}
+
+.dl {
+	flex: 1;
+	overflow-y: auto;
+	padding: 4px
+}
+
+.di {
+	padding: 5px 8px;
+	border-radius: var(--border-radius-md);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 1px 0;
+	user-select: none
+}
+
+.di:hover {
+	background: var(--color-background-primary)
+}
+
+.di.active {
+	background: var(--color-background-info);
+	color: var(--color-text-info)
+}
+
+.di.dis {
+	opacity: 0.4
+}
+
+.di .tb {
+	font-size: 10px;
+	padding: 1px 5px;
+	border-radius: 4px;
+	background: var(--color-background-secondary);
+	color: var(--color-text-secondary);
+	border: 0.5px solid var(--color-border-tertiary);
+	flex-shrink: 0;
+	font-family: var(--font-mono)
+}
+
+.di.active .tb {
+	background: rgba(255, 255, 255, 0.2);
+	color: inherit;
+	border-color: transparent
+}
+
+.di .du {
+	font-size: 12px;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap
+}
+
+.di .arr {
+	font-size: 9px;
+	color: var(--color-text-tertiary);
+	flex-shrink: 0
+}
+
+.di.active .arr {
+	color: inherit;
+	opacity: 0.7
+}
+
+.indent {
+	padding-left: 16px;
+	border-left: 1px solid var(--color-border-tertiary);
+	margin-left: 8px
+}
+
+.mp {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden
+}
+
+.tb-bar {
+	padding: 6px 10px;
+	border-bottom: 0.5px solid var(--color-border-tertiary);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap
+}
+
+.btn {
+	padding: 4px 10px;
+	border-radius: var(--border-radius-md);
+	border: 0.5px solid var(--color-border-secondary);
+	background: var(--color-background-primary);
+	color: var(--color-text-primary);
+	cursor: pointer;
+	font-size: 12px;
+	height: 28px;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap
+}
+
+.btn:hover {
+	background: var(--color-background-secondary)
+}
+
+.btn.bp {
+	background: var(--color-background-info);
+	color: var(--color-text-info);
+	border-color: transparent
+}
+
+.btn.bd {
+	background: var(--color-background-danger);
+	color: var(--color-text-danger);
+	border-color: transparent
+}
+
+.btn.bs {
+	background: var(--color-background-success);
+	color: var(--color-text-success);
+	border-color: transparent
+}
+
+.btn.bw {
+	background: var(--color-background-warning);
+	color: var(--color-text-warning);
+	border-color: transparent
+}
+
+.sep {
+	flex: 1
+}
+
+.fp {
+	flex: 1;
+	overflow-y: auto;
+	padding: 14px
+}
+
+.fr {
+	margin-bottom: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 3px
+}
+
+.fr label {
+	font-size: 11px;
+	color: var(--color-text-secondary);
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	gap: 4px
+}
+
+.fr input,
+.fr select,
+.fr textarea {
+	font-size: 13px;
+	width: 100%;
+	padding: 4px 8px
+}
+
+.fr textarea {
+	min-height: 52px;
+	resize: vertical;
+	font-family: var(--font-mono);
+	font-size: 11px
+}
+
+.fr .fn {
+	font-size: 10px;
+	color: var(--color-text-tertiary)
+}
+
+.rs {
+	color: var(--color-text-danger)
+}
+
+.st {
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--color-text-secondary);
+	padding: 8px 0 4px;
+	border-bottom: 0.5px solid var(--color-border-tertiary);
+	margin: 10px 0 8px;
+	display: flex;
+	align-items: center;
+	gap: 6px
+}
+
+.dt {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 12px;
+	padding: 7px 10px;
+	border-radius: var(--border-radius-md);
+	background: var(--color-background-secondary);
+	border: 0.5px solid var(--color-border-tertiary)
+}
+
+.dt label {
+	font-size: 12px;
+	color: var(--color-text-secondary);
+	margin-left: 6px
+}
+
+.dt .tname {
+	margin-left: auto;
+	font-size: 11px;
+	color: var(--color-text-tertiary);
+	font-family: var(--font-mono)
+}
+
+.jp {
+	background: var(--color-background-secondary);
+	border-top: 0.5px solid var(--color-border-tertiary);
+	height: 0;
+	overflow: hidden;
+	transition: height 0.15s
+}
+
+.jp.open {
+	height: 160px
+}
+
+.jp textarea {
+	width: 100%;
+	height: 100%;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	border: none;
+	background: transparent;
+	color: var(--color-text-primary);
+	padding: 8px;
+	resize: none;
+	outline: none
+}
+
+.sbar {
+	padding: 3px 12px;
+	font-size: 11px;
+	color: var(--color-text-secondary);
+	border-top: 0.5px solid var(--color-border-tertiary);
+	display: flex;
+	align-items: center;
+	gap: 6px
+}
+
+.sdot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--color-background-success);
+	flex-shrink: 0
+}
+
+.add-bar {
+	padding: 6px 8px;
+	border-top: 0.5px solid var(--color-border-tertiary);
+	display: flex;
+	gap: 4px
+}
+
+.add-bar select {
+	flex: 1;
+	font-size: 11px;
+	padding: 3px 5px
+}
+
+.add-bar .btn {
+	height: 24px;
+	font-size: 11px;
+	padding: 2px 8px
+}
+
+.no-sel {
+	color: var(--color-text-tertiary);
+	font-size: 13px;
+	padding: 40px;
+	text-align: center
+}
+
+.bc {
+	font-size: 11px;
+	color: var(--color-text-secondary);
+	padding: 0 0 8px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-wrap: wrap
+}
+
+.bc span {
+	cursor: pointer;
+	color: var(--color-text-info)
+}
+
+.bc span:hover {
+	text-decoration: underline
+}
+
+.bc .sep2 {
+	color: var(--color-text-tertiary)
+}
+
+.nested-box {
+	border: 0.5px solid var(--color-border-tertiary);
+	border-radius: var(--border-radius-md);
+	background: var(--color-background-secondary);
+	padding: 8px;
+	margin-top: 4px
+}
+
+.nested-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 8px;
+	border-radius: var(--border-radius-md);
+	background: var(--color-background-primary);
+	border: 0.5px solid var(--color-border-tertiary);
+	margin-bottom: 4px;
+	cursor: pointer
+}
+
+.nested-item:hover {
+	border-color: var(--color-border-secondary)
+}
+
+.nested-item.dis {
+	opacity: 0.4
+}
+
+.ni-uid {
+	font-size: 12px;
+	font-weight: 500;
+	font-family: var(--font-mono);
+	flex: 1
+}
+
+.ni-type {
+	font-size: 10px;
+	padding: 1px 5px;
+	border-radius: 4px;
+	background: var(--color-background-secondary);
+	color: var(--color-text-secondary);
+	border: 0.5px solid var(--color-border-tertiary);
+	font-family: var(--font-mono)
+}
+
+.ni-open {
+	font-size: 11px;
+	color: var(--color-text-info);
+	padding: 2px 6px;
+	border: 0.5px solid var(--color-border-secondary);
+	border-radius: 4px;
+	margin-left: auto;
+	background: var(--color-background-primary)
+}
+
+.ni-open:hover {
+	background: var(--color-background-secondary)
+}
+
+.ni-del {
+	font-size: 11px;
+	color: var(--color-text-danger);
+	padding: 2px 6px;
+	border: 0.5px solid var(--color-border-secondary);
+	border-radius: 4px;
+	background: var(--color-background-primary);
+	cursor: pointer
+}
+
+.ni-del:hover {
+	background: var(--color-background-danger);
+	color: var(--color-text-danger)
+}
+
+.add-nested {
+	padding: 4px 8px;
+	font-size: 11px;
+	border-radius: var(--border-radius-md);
+	border: 0.5px dashed var(--color-border-secondary);
+	background: transparent;
+	color: var(--color-text-secondary);
+	cursor: pointer;
+	width: 100%;
+	margin-top: 2px
+}
+
+.add-nested:hover {
+	background: var(--color-background-primary)
+}
+
+.rfg {
+	display: flex;
+	gap: 6px;
+	align-items: center
+}
+
+.rfg select {
+	width: 110px;
+	font-size: 12px;
+	padding: 3px 5px
+}
+
+.rfg input {
+	flex: 1;
+	font-size: 13px;
+	padding: 4px 8px
+}
+
+input[type=file] {
+	display: none
+}
+</style>
+
+<div style="padding:0 0 1rem">
+<input type="file" id="import-input" accept=".json,.js">
+<div class="ew" id="editor">
+  <div class="sb">
+    <div class="sb-hdr">
+      <span>Devices</span>
+      <span id="device-count" class="cnt-badge">0</span>
+      <span style="margin-left:auto;display:flex;gap:4px">
+        <button class="btn" id="import-btn" title="Import JSON/JS">↑ Import</button>
+        <button class="btn" id="export-btn" title="Export JSON">↓ Export</button>
+      </span>
+    </div>
+    <div class="dl" id="device-list"></div>
+    <div class="add-bar">
+      <select id="add-type-select"></select>
+      <button class="btn bp" id="add-btn">+ Add</button>
+    </div>
+  </div>
+
+  <div class="mp">
+    <div class="tb-bar" id="tb-bar">
+      <button class="btn" id="json-toggle-btn">{ } JSON</button>
+      <button class="btn bs" id="save-btn">✓ Apply</button>
+      <span class="sep"></span>
+      <button class="btn bd" id="delete-btn">✕ Delete</button>
+    </div>
+    <div class="fp" id="form-panel">
+      <div class="no-sel">Select a device or add one</div>
+    </div>
+    <div class="jp" id="json-panel">
+      <textarea id="json-ta" spellcheck="false"></textarea>
+    </div>
+    <div class="sbar">
+      <span class="sdot" id="sdot"></span>
+      <span id="smsg">Ready</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var SCHEMA = {
+  ROOT:{
+    VAR:{name:"ScriptVariable",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"value",t:"Number"}]},
+    CONSTVAR:{name:"ScriptVariableReadOnly",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"value",t:"Number"}]},
+    WRITEVAR:{name:"ScriptVariableWriteOnly",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true}]},
+    DIN:{name:"DigitalInput",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true}]},
+    DOUT:{name:"DigitalOutput",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true}]},
+    DPOUT:{name:"SinglePulseOutput",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true},{n:"plength",t:"UInt",min:1,def:500},{n:"activeLevel",t:"Enum",vals:["low","high"],def:"high"}]},
+    ADC:{name:"AnalogInput",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true}]},
+    DHT:{name:"DHT Sensor",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"model",t:"Enum",req:true,vals:["DHT11","DHT22","AM2302","RTH03"],def:"DHT11"},{n:"refreshtime",t:"Refresh",req:true},{n:"pin",t:"Pin",req:true}]},
+    "1WTG":{name:"1-Wire Temp Group",items:{schema:"1WTB_inline"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"refreshtime",t:"Refresh",req:true}]},
+    "1WTB":{name:"1-Wire Temp Bus",items:{schema:"1WTD_inline"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"refreshtime",t:"Refresh",req:true},{n:"pin",t:"Pin",req:true}]},
+    "1WTD":{name:"1-Wire Temp Device",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"refreshtime",t:"Refresh",req:true},{n:"pin",t:"Pin",req:true},{n:"romid",t:"Hex",req:true}]},
+    WS2812:{name:"WS2812 LED Strip",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true},{n:"ledcount",t:"UInt",req:true,min:1,def:1},{n:"format",t:"Enum",req:true,vals:["RGB","RBG","GRB","GBR","BRG","BGR","RGBW","GRBW","BGRW","WRGB"],def:"RGB"},{n:"ifspeed",t:"Enum",vals:["KHZ800","KHZ400"],def:"KHZ800"},{n:"brightness",t:"UInt",min:1,max:127,def:127},{n:"mode",t:"UInt",min:0,max:80,def:0},{n:"fxspeed",t:"UInt",min:0,max:65535,def:3000}]},
+    BUTTON:{name:"Button Input",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true},{n:"debounceMs",t:"UInt",min:1,def:30},{n:"activeLevel",t:"Enum",vals:["low","high"],def:"high"},{n:"on_press",t:"Str"}]},
+    PWM_SERVO:{name:"PWM Servo",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true},{n:"ch",t:"UInt",req:true,min:0,max:7,def:0},{n:"minPulseLength",t:"UInt",min:100,max:20000,def:1000},{n:"maxPulseLength",t:"UInt",min:100,max:20000,def:2000},{n:"startPulseLength",t:"UInt",min:100,max:20000,def:1500},{n:"autoOffAfterMs",t:"UInt",min:0,def:0},{n:"minVal",t:"Float",def:0},{n:"maxVal",t:"Float",def:100}]},
+    ACTUATOR:{name:"Actuator / H-Bridge",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pinA",t:"Pin"},{n:"pinB",t:"Pin"},{n:"pinOpen",t:"Pin"},{n:"pinClose",t:"Pin"},{n:"pinDir",t:"Pin"},{n:"pinEnable",t:"Pin"},{n:"pinBreak",t:"Pin"},{n:"timeoutMs",t:"UInt",min:1,def:10000}]},
+    RELAY_LATCHING:{name:"Latching Relay",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pinA",t:"Pin"},{n:"pinB",t:"Pin"},{n:"pinSet",t:"Pin"},{n:"pinRst",t:"Pin"},{n:"pinDir",t:"Pin"},{n:"pinEnable",t:"Pin"},{n:"timeoutMs",t:"UInt",min:1,def:500}]},
+    I2C:{name:"I2C Master",items:{schema:"I2C_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"sckpin",t:"Pin",req:true},{n:"sdapin",t:"Pin",req:true}]},
+    TX433:{name:"433MHz Transmitter",items:{schema:"TX433_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"pin",t:"Pin",req:true}]},
+    REGO600:{name:"REGO600 Heat Pump",items:{schema:"REGO600_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"rxpin",t:"Pin",req:true},{n:"txpin",t:"Pin",req:true},{n:"requestDelayMs",t:"UInt",min:0,def:10},{n:"refreshtime",t:"Refresh",req:true}]},
+    HOMEASSISTANT:{name:"Home Assistant MQTT",items:{schema:"HA_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"deviceId",t:"Str",req:true},{n:"host",t:"Str",req:true},{n:"port",t:"UInt",req:true,min:1,max:65535,def:1883},{n:"user",t:"Str"},{n:"pass",t:"Str"}]},
+    THINGSPEAK:{name:"ThingSpeak IoT",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"key",t:"Str"},{n:"refreshtime",t:"Refresh"}]},
+    ARRAY:{name:"Script Array",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"readonly",t:"Bool"}]},
+    CONTAINER:{name:"Device Container",items:{schema:"ROOT"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true}]}
+  },
+  I2C_items:{
+    SSD1306:{name:"SSD1306 Display",items:{schema:"SSD1306_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"width",t:"UInt",req:true,min:8,max:128,def:128},{n:"height",t:"UInt",req:true,min:8,max:64,def:64},{n:"addr",t:"Hex",req:true}]},
+    PCF8574x:{name:"PCF8574x I/O Expander",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"addr",t:"Hex",req:true}]}
+  },
+  SSD1306_items:{
+    element:{name:"Display Element",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"x",t:"UInt",req:true,min:0,max:128,def:0},{n:"y",t:"UInt",req:true,min:0,max:64,def:0},{n:"label",t:"Str"},{n:"source",t:"Str"}]}
+  },
+  TX433_items:{
+    lc:{name:"TX433 Type LC",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"anid",t:"Str"},{n:"hexid",t:"Str"},{n:"grp_btn",t:"UInt",min:0,max:3,def:0},{n:"btn",t:"UInt",min:0,max:3,def:0},{n:"state",t:"UInt",min:0,max:1,def:0}]},
+    sfc:{name:"TX433 Type SFC",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"ch",t:"UInt",min:1,max:4,def:1},{n:"btn",t:"UInt",min:1,max:4,def:1},{n:"state",t:"UInt",min:0,max:1,def:0}]},
+    afc:{name:"TX433 Type AFC",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"ch",t:"Str"},{n:"btn",t:"Str"},{n:"state",t:"UInt",min:0,max:1,def:0}]}
+  },
+  REGO600_items:{
+    register:{name:"REGO600 Register",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"regname",t:"Enum",req:true,vals:["GT1","GT2","GT3","GT4","GT5","GT6","GT8","GT9","GT10","GT11","GT3x","P3","COMP","EL3","EL6","P1","P2","VXV","ALARM"],def:"GT1"}]}
+  },
+  "1WTB_inline":{
+    bus:{name:"1-Wire Bus",items:{schema:"1WTD_inline"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"pin",t:"Pin",req:true}]}
+  },
+  "1WTD_inline":{
+    device:{name:"1-Wire Device",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"romid",t:"Hex",req:true}]}
+  },
+  HA_items:{
+    sensor:{name:"HA Sensor",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"name",t:"Str",req:true},{n:"source",t:"Str"},{n:"refreshtime",t:"Refresh"}]},
+    binary_sensor:{name:"HA Binary Sensor",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"name",t:"Str",req:true},{n:"source",t:"Str"},{n:"refreshtime",t:"Refresh"}]},
+    switch:{name:"HA Switch",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"name",t:"Str",req:true},{n:"target",t:"Str",req:true}]},
+    button:{name:"HA Button",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"name",t:"Str",req:true},{n:"target",t:"Str",req:true}]},
+    number:{name:"HA Number",fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true},{n:"name",t:"Str",req:true},{n:"target",t:"Str",req:true}]},
+    CONTAINER:{name:"HA Container",items:{schema:"HA_items"},fields:[{n:"disabled",t:"Bool"},{n:"uid",t:"UID",req:true,max:8},{n:"note",t:"Str"},{n:"type",t:"Str",req:true}]}
+  }
+};
+
+var examplecfg=[
+  {"uid":"true","value":1,"type":"CONSTVAR"},
+  {"uid":"false","value":0,"type":"CONSTVAR"},
+  {"uid":"var1","type":"VAR"},{"uid":"var2","type":"VAR"},
+  {"uid":"birel","type":"ACTUATOR","pinA":18,"pinB":19},
+  {"disabled":true,"uid":"BIRELSET","type":"DPOUT","pin":18,"plength":5000},
+  {"uid":"hum","type":"DHT","model":"DHT11","refreshtimesec":2,"pin":23},
+  {"uid":"servo","type":"PWM_SERVO","pin":32,"ch":0,"autoOffAfterMs":3000,"minPulseLength":1000,"maxPulseLength":2000,"startPulseLength":1450,"minVal":-45,"maxVal":45},
+  {"uid":"i2c","type":"I2C","sckpin":22,"sdapin":21,"items":[
+    {"uid":"disp","type":"SSD1306","width":128,"height":64,"addr":"3C","items":[
+      {"uid":"tmpa","x":0,"y":0,"label":"Temp A=","source":"temps:a:a"},
+      {"uid":"tmpb","x":0,"y":8,"label":"Temp B=","source":"temps:a:b"},
+      {"uid":"hum","x":0,"y":16,"label":"Hum=","source":"hum"}
+    ]},
+    {"uid":"pcf1","type":"PCF8574x","addr":"38"}
+  ]},
+  {"uid":"led","type":"DOUT","pin":25},
+  {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
+  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":33,"refreshtimesec":5,"items":[
+    {"uid":"gt1","regname":"GT1"},{"uid":"gt2","regname":"GT2"},{"uid":"comp","regname":"COMP"}
+  ]},
+  {"uid":"tx433","type":"TX433","pin":15,"units":[
+    {"uid":"D0","type":"lc","anid":"DEV1","grp_btn":0,"btn":0,"state":0},
+    {"uid":"D1","type":"lc","anid":"DEV2"}
+  ]},
+  {"uid":"btn1","type":"BUTTON","pin":4,"debounceMs":30,"activeLevel":"low"},
+  {"disabled":true,"uid":"ha","type":"HOMEASSISTANT","deviceId":"dev_board","host":"192.168.1.100","port":1883,"user":"mqtt","pass":"secret","items":[
+    {"uid":"temp1","type":"sensor","name":"Temperature","source":"hum","refreshtimesec":5},
+    {"uid":"sw1","type":"switch","name":"LED","target":"led"}
+  ]}
+];
+
+var cfg=JSON.parse(JSON.stringify(examplecfg));
+
+var selection={path:[],itemsKey:null};
+var jsonOpen=false;
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function setStatus(msg,ok){
+  document.getElementById('sdot').style.background=ok===false?'var(--color-background-danger)':'var(--color-background-success)';
+  document.getElementById('smsg').textContent=msg;
+}
+
+function getItemsKeyForType(typeKey,schemaKey){
+  var sDef=getSchemaForType(typeKey,schemaKey);
+  if(!sDef||!sDef.items)return null;
+  return sDef.items;
+}
+
+function getSchemaForType(typeKey,schemaKey){
+  schemaKey=schemaKey||'ROOT';
+  var group=SCHEMA[schemaKey];
+  if(!group)return null;
+  var tk=(typeKey||'').toUpperCase();
+  if(group[tk])return group[tk];
+  var lk=(typeKey||'').toLowerCase();
+  for(var k in group){if(k.toLowerCase()===lk)return group[k];}
+  return null;
+}
+
+function getSchemaGroupForParent(parentType,parentSchemaKey){
+  var sDef=getSchemaForType(parentType,parentSchemaKey);
+  if(!sDef||!sDef.items)return'ROOT';
+  return sDef.items.schema||'ROOT';
+}
+
+function resolveSelection(){
+  var item=null,arr=cfg,parent=null,parentSchemaKey='ROOT',itemsKey='items';
+  for(var i=0;i<selection.path.length;i++){
+    var seg=selection.path[i];
+    var obj=arr[seg.idx];
+    parent=obj;
+    var ik=seg.itemsKey||'items';
+    if(!obj[ik])obj[ik]=[];
+    arr=obj[ik];
+    parentSchemaKey=seg.schemaKey||'ROOT';
+    itemsKey=ik;
+  }
+  if(selection.leaf!==undefined&&selection.leaf!==null){
+    item=arr[selection.leaf];
+  }
+  return{item,arr,parent,parentSchemaKey,itemsKey};
+}
+
+function renderSidebar(){
+  var list=document.getElementById('device-list');
+  list.innerHTML='';
+  renderSidebarLevel(list,cfg,'ROOT',[],'items',0);
+  document.getElementById('device-count').textContent=cfg.length;
+  updateAddTypeSelect();
+}
+
+function renderSidebarLevel(container,arr,schemaKey,pathSoFar,ik,depth){
+  if(!arr)return;
+  arr.forEach(function(item,i){
+    if(typeof item!=='object'||item===null)return;
+    var typeKey=(item.type||'').toUpperCase();
+    var sDef=getSchemaForType(item.type,schemaKey)||getSchemaForType(typeKey,schemaKey);
+    var hasItems=sDef&&sDef.items;
+    var childIk=hasItems?(sDef.items.itemsKey||'items'):null;
+    var childArr=childIk&&item[childIk]?item[childIk]:(item.items||null);
+    var childSchemaKey=hasItems?(sDef.items.schema||'ROOT'):'ROOT';
+
+    var isSelected=isNodeSelected(pathSoFar,i,ik);
+    var div=document.createElement('div');
+    div.className='di'+(isSelected?' active':'')+(item.disabled?' dis':'');
+    if(depth>0)div.style.paddingLeft=(8+depth*14)+'px';
+
+    var du=document.createElement('span');
+    du.className='du';
+    du.textContent=item.uid||'(no uid)';
+    var tb=document.createElement('span');
+    tb.className='tb';
+    tb.textContent=item.type||'?';
+    div.appendChild(du);
+    div.appendChild(tb);
+    if(hasItems&&childArr&&childArr.length>0){
+      var arr2=document.createElement('span');
+      arr2.className='arr';
+      arr2.textContent='▶ '+childArr.length;
+      div.appendChild(arr2);
+    }
+
+    (function(pi,ppath,pik,psk){
+      div.onclick=function(e){
+        e.stopPropagation();
+        selection={path:ppath.map(function(x){return Object.assign({},x);}),leaf:pi,leafSchemaKey:psk,leafIk:pik};
+        renderSidebar();
+        renderForm();
+        syncJson();
+      };
+    })(i,pathSoFar,ik,schemaKey);
+
+    container.appendChild(div);
+
+    if(hasItems&&childArr&&childArr.length>0){
+      renderSidebarLevel(container,childArr,childSchemaKey,
+        pathSoFar.concat([{idx:i,itemsKey:childIk||'items',schemaKey:schemaKey}]),
+        childIk||'items',depth+1);
+    }
+  });
+}
+
+function isNodeSelected(path,idx,ik){
+  if(!selection||selection.leaf===undefined)return false;
+  if(selection.leaf!==idx)return false;
+  if(selection.path.length!==path.length)return false;
+  for(var i=0;i<path.length;i++){
+    if(path[i].idx!==selection.path[i].idx)return false;
+  }
+  return true;
+}
+
+function updateAddTypeSelect(){
+  var sel=document.getElementById('add-type-select');
+  var schemaKey='ROOT';
+  if(selection&&selection.path&&selection.path.length>0){
+    var last=selection.path[selection.path.length-1];
+    var parentArr=cfg;
+    var psk='ROOT';
+    for(var i=0;i<selection.path.length;i++){
+      var seg=selection.path[i];
+      var obj=parentArr[seg.idx];
+      var ik2=seg.itemsKey||'items';
+      var pType=(obj.type||'').toUpperCase();
+      schemaKey=getSchemaGroupForParent(pType,psk)||schemaKey;
+      if(obj[ik2])parentArr=obj[ik2];
+      psk=schemaKey;
+    }
+  }
+  var group=SCHEMA[schemaKey]||SCHEMA.ROOT;
+  var prev=sel.value;
+  sel.innerHTML='';
+  Object.keys(group).forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;
+    o.textContent=k+(group[k].name?' – '+group[k].name:'');
+    sel.appendChild(o);
+  });
+  if(prev&&sel.querySelector('[value="'+prev+'"]'))sel.value=prev;
+}
+
+function renderForm(){
+  var fp=document.getElementById('form-panel');
+  fp.innerHTML='';
+  if(selection.leaf===undefined||selection.leaf===null){
+    fp.innerHTML='<div class="no-sel">Select a device or add one</div>';
+    return;
+  }
+  var res=resolveSelection();
+  var item=res.item;
+  if(!item){fp.innerHTML='<div class="no-sel">Item not found</div>';return;}
+  var schemaKey=selection.leafSchemaKey||'ROOT';
+  var typeKey=(item.type||'').toUpperCase();
+  var sDef=getSchemaForType(item.type,schemaKey)||getSchemaForType(typeKey,schemaKey);
+
+  renderBreadcrumb(fp);
+
+  var dt=document.createElement('div');
+  dt.className='dt';
+  var chk=document.createElement('input');
+  chk.type='checkbox';chk.id='f-disabled';chk.checked=!!item.disabled;
+  chk.onchange=function(){item.disabled=this.checked;renderSidebar();syncJson();setStatus('Modified',true);};
+  var lbl=document.createElement('label');lbl.htmlFor='f-disabled';lbl.className='dt label';lbl.textContent='Disabled';
+  var tsp=document.createElement('span');tsp.className='tname';
+  tsp.textContent=(item.type||typeKey)+(sDef?' — '+sDef.name:'');
+  dt.appendChild(chk);dt.appendChild(lbl);dt.appendChild(tsp);
+  fp.appendChild(dt);
+
+  addFieldRow(fp,item,{n:'uid',t:'UID',req:true,max:8});
+  addFieldRow(fp,item,{n:'note',t:'Str'});
+
+  if(!sDef){
+    var w=document.createElement('div');
+    w.style.cssText='color:var(--color-text-warning);font-size:12px;padding:8px;background:var(--color-background-warning);border-radius:var(--border-radius-md);margin-bottom:8px';
+    w.textContent='Unknown type: '+typeKey+'. Edit via JSON panel.';
+    fp.appendChild(w);
+    renderUnknownFields(fp,item);
+    renderItemsSection(fp,item,sDef,schemaKey);
+    return;
+  }
+
+  var skip=['disabled','uid','note','type'];
+  (sDef.fields||[]).filter(function(f){return skip.indexOf(f.n)<0;}).forEach(function(f){
+    addFieldRow(fp,item,f);
+  });
+
+  var extraKeys=Object.keys(item).filter(function(k){
+    if(skip.indexOf(k)>=0)return false;
+    if(['refreshtimesec','refreshtimemin','refreshtimems'].indexOf(k)>=0)return false;
+    if(sDef.fields&&sDef.fields.some(function(f){return f.n===k;}))return false;
+    if(k==='items'||k==='units'||k==='groups')return false;
+    return true;
+  });
+  if(extraKeys.length){
+    var sec=makeSectionTitle('Extra fields');
+    fp.appendChild(sec);
+    extraKeys.forEach(function(k){addUnknownField(fp,item,k);});
+  }
+
+  renderItemsSection(fp,item,sDef,schemaKey);
+}
+
+function renderBreadcrumb(fp){
+  if(!selection.path||selection.path.length===0)return;
+  var bc=document.createElement('div');bc.className='bc';
+  var rootSpan=document.createElement('span');rootSpan.textContent='Root';
+  rootSpan.onclick=function(){selection={path:[],leaf:undefined};renderSidebar();renderForm();};
+  bc.appendChild(rootSpan);
+  var arr=cfg,psk='ROOT';
+  selection.path.forEach(function(seg,i){
+    var sep=document.createElement('span');sep.className='sep2';sep.textContent=' › ';bc.appendChild(sep);
+    var obj=arr[seg.idx];
+    var s=document.createElement('span');
+    s.textContent=(obj?obj.uid:'?');
+    (function(pathUpTo){
+      s.onclick=function(){
+        selection={path:pathUpTo,leaf:undefined};renderSidebar();renderForm();
+      };
+    })(selection.path.slice(0,i+1));
+    bc.appendChild(s);
+    if(obj){var ik=seg.itemsKey||'items';if(obj[ik])arr=obj[ik];}
+    psk=seg.schemaKey||psk;
+  });
+  fp.appendChild(bc);
+}
+
+function renderItemsSection(fp,item,sDef,schemaKey){
+  if(!sDef||!sDef.items)return;
+  var childSchemaKey=sDef.items.schema||'ROOT';
+  var childGroup=SCHEMA[childSchemaKey];
+  if(!childGroup)return;
+
+  var ik=sDef.items.itemsKey||'items';
+  if(!item[ik])item[ik]=[];
+  var children=item[ik];
+
+  var sec=makeSectionTitle('Items ('+children.length+')');
+  fp.appendChild(sec);
+
+  var box=document.createElement('div');box.className='nested-box';
+  
+  children.forEach(function(child,ci){
+    if(typeof child!=='object'||child===null)return;
+    var row=document.createElement('div');
+    row.className='nested-item'+(child.disabled?' dis':'');
+    var uid=document.createElement('span');uid.className='ni-uid';uid.textContent=child.uid||'(no uid)';
+    var tp=document.createElement('span');tp.className='ni-type';tp.textContent=child.type||'?';
+    var openBtn=document.createElement('button');openBtn.className='ni-open';openBtn.textContent='Edit ›';
+    var delBtn=document.createElement('button');delBtn.className='ni-del';delBtn.textContent='✕';
+    delBtn.title='Delete';
+
+    (function(childIdx){
+      openBtn.onclick=function(e){
+        e.stopPropagation();
+        var newPath=buildCurrentPath();
+        newPath.push({idx:childIdx,itemsKey:ik,schemaKey:schemaKey});
+        selection={path:newPath,leaf:childIdx,leafSchemaKey:childSchemaKey,leafIk:ik};
+        renderSidebar();renderForm();syncJson();
+      };
+      delBtn.onclick=function(e){
+        e.stopPropagation();
+        if(!confirm('Delete "'+children[childIdx].uid+'"?'))return;
+        children.splice(childIdx,1);
+        renderSidebar();renderForm();syncJson();setStatus('Deleted item',true);
+      };
+      row.onclick=function(){openBtn.click();};
+    })(ci);
+
+    row.appendChild(uid);row.appendChild(tp);row.appendChild(openBtn);row.appendChild(delBtn);
+    box.appendChild(row);
+  });
+
+  var addRow=document.createElement('div');
+  addRow.style.cssText='display:flex;gap:4px;margin-top:4px';
+  var typeSelect=document.createElement('select');
+  typeSelect.style.cssText='flex:1;font-size:11px;padding:3px 5px';
+  Object.keys(childGroup).forEach(function(k){
+    var o=document.createElement('option');o.value=k;o.textContent=k+(childGroup[k].name?' – '+childGroup[k].name:'');
+    typeSelect.appendChild(o);
+  });
+  var addItemBtn=document.createElement('button');
+  addItemBtn.className='btn bp';addItemBtn.style.cssText='height:24px;font-size:11px;padding:2px 8px;flex-shrink:0';
+  addItemBtn.textContent='+ Add item';
+  addItemBtn.onclick=function(){
+    var tk=typeSelect.value;
+    var csDef=childGroup[tk];
+    var newItem={uid:tk.toLowerCase()+'_'+(children.length+1),type:tk};
+    if(csDef){
+      (csDef.fields||[]).forEach(function(f){
+        if(['disabled','uid','note','type'].indexOf(f.n)>=0)return;
+        if(f.t==='Refresh'){newItem['refreshtimesec']=1;}
+        else if(f.req&&f.def!==undefined)newItem[f.n]=f.def;
+      });
+    }
+    children.push(newItem);
+    renderSidebar();renderForm();syncJson();setStatus('Added item',true);
+  };
+  addRow.appendChild(typeSelect);addRow.appendChild(addItemBtn);
+  box.appendChild(addRow);
+  fp.appendChild(box);
+}
+
+function buildCurrentPath(){
+  if(!selection.path)return[];
+  var base=selection.path.map(function(s){return Object.assign({},s);});
+  if(selection.leaf!==undefined&&selection.leaf!==null&&selection.leafIk){
+    base.push({idx:selection.leaf,itemsKey:selection.leafIk,schemaKey:selection.leafSchemaKey||'ROOT'});
+  }
+  return base;
+}
+
+function makeSectionTitle(txt){
+  var d=document.createElement('div');d.className='st';
+  d.textContent=txt;return d;
+}
+
+function addFieldRow(fp,item,f){
+  if(f.n==='refreshtime'){addRefreshRow(fp,item);return;}
+  var row=document.createElement('div');row.className='fr';
+  var lbl=document.createElement('label');
+  lbl.innerHTML=esc(f.n)+(f.req?'<span class="rs"> *</span>':'');
+  row.appendChild(lbl);
+  var val=item[f.n];
+  var inp;
+  if(f.t==='Bool'){
+    inp=document.createElement('input');inp.type='checkbox';inp.checked=!!val;
+    inp.onchange=function(){item[f.n]=this.checked;syncJson();setStatus('Modified',true);};
+  }else if(f.t==='Enum'&&f.vals){
+    inp=document.createElement('select');
+    if(!f.req){var eo=document.createElement('option');eo.value='';eo.textContent='— select —';inp.appendChild(eo);}
+    f.vals.forEach(function(v){var o=document.createElement('option');o.value=v;o.textContent=v;inp.appendChild(o);});
+    inp.value=val!==undefined?val:(f.def||'');
+    inp.onchange=function(){item[f.n]=this.value;syncJson();setStatus('Modified',true);};
+  }else if(f.t==='UInt'||f.t==='Float'||f.t==='Number'){
+    inp=document.createElement('input');inp.type='number';
+    if(f.min!==undefined)inp.min=f.min;
+    if(f.max!==undefined&&f.max>0)inp.max=f.max;
+    if(f.t==='Float'||f.t==='Number')inp.step='any';
+    inp.value=val!==undefined?val:(f.def!==undefined?f.def:'');
+    inp.oninput=function(){
+      var v=f.t==='UInt'?parseInt(this.value):parseFloat(this.value);
+      if(!isNaN(v))item[f.n]=v;
+      syncJson();setStatus('Modified',true);
+    };
+  }else if(f.t==='Pin'){
+    inp=document.createElement('input');inp.type='number';
+    inp.placeholder='GPIO pin (neg=inverted)';
+    inp.value=val!==undefined?val:'';
+    inp.oninput=function(){var v=parseInt(this.value);if(!isNaN(v))item[f.n]=v;syncJson();setStatus('Modified',true);};
+    var note=document.createElement('div');note.className='fn';note.textContent='GPIO number, negative = active-low';
+    row.appendChild(inp);row.appendChild(note);fp.appendChild(row);return;
+  }else if(f.t==='Hex'){
+    inp=document.createElement('input');inp.type='text';
+    inp.style.fontFamily='var(--font-mono)';
+    inp.placeholder='e.g. 3C or 28:61:64:35:1B:71';
+    inp.value=val!==undefined?val:'';
+    inp.oninput=function(){item[f.n]=this.value;syncJson();setStatus('Modified',true);};
+  }else if(f.t==='UID'){
+    inp=document.createElement('input');inp.type='text';
+    inp.style.fontFamily='var(--font-mono)';
+    inp.maxLength=f.max||8;inp.placeholder='uid (max '+(f.max||8)+' chars)';
+    inp.value=val!==undefined?val:'';
+    inp.oninput=function(){item[f.n]=this.value;renderSidebar();syncJson();setStatus('Modified',true);};
+  }else{
+    inp=document.createElement('input');inp.type='text';
+    inp.value=val!==undefined?String(val):'';
+    inp.placeholder=f.def!==undefined?String(f.def):'';
+    inp.oninput=function(){item[f.n]=this.value;syncJson();setStatus('Modified',true);};
+  }
+  row.appendChild(inp);fp.appendChild(row);
+}
+
+function addRefreshRow(fp,item){
+  var RFG=[{k:'refreshtimesec',l:'seconds'},{k:'refreshtimemin',l:'minutes'},{k:'refreshtimems',l:'milliseconds'}];
+  var row=document.createElement('div');row.className='fr';
+  var lbl=document.createElement('label');lbl.textContent='Refresh time';row.appendChild(lbl);
+  var wrap=document.createElement('div');wrap.className='rfg';
+  var sel=document.createElement('select');
+  RFG.forEach(function(r){var o=document.createElement('option');o.value=r.k;o.textContent=r.l;sel.appendChild(o);});
+  var curKey=RFG[0].k;
+  RFG.forEach(function(r){if(item[r.k]!==undefined)curKey=r.k;});
+  sel.value=curKey;
+  var inp=document.createElement('input');inp.type='number';inp.min=0;inp.step=0.1;
+  inp.value=item[curKey]!==undefined?item[curKey]:1;
+  sel.onchange=function(){
+    RFG.forEach(function(r){delete item[r.k];});
+    item[sel.value]=parseFloat(inp.value)||1;
+    syncJson();setStatus('Modified',true);
+  };
+  inp.oninput=function(){
+    RFG.forEach(function(r){delete item[r.k];});
+    item[sel.value]=parseFloat(this.value)||0;
+    syncJson();setStatus('Modified',true);
+  };
+  wrap.appendChild(sel);wrap.appendChild(inp);row.appendChild(wrap);fp.appendChild(row);
+}
+
+function renderUnknownFields(fp,item){
+  Object.keys(item).filter(function(k){return['disabled','uid','note','type','items','units'].indexOf(k)<0;}).forEach(function(k){addUnknownField(fp,item,k);});
+}
+
+function addUnknownField(fp,item,k){
+  var row=document.createElement('div');row.className='fr';
+  var lbl=document.createElement('label');lbl.textContent=k;lbl.style.color='var(--color-text-warning)';row.appendChild(lbl);
+  var val=item[k];var inp;
+  if(typeof val==='boolean'){
+    inp=document.createElement('input');inp.type='checkbox';inp.checked=val;
+    inp.onchange=function(){item[k]=this.checked;syncJson();};
+  }else if(typeof val==='number'){
+    inp=document.createElement('input');inp.type='number';inp.value=val;
+    inp.oninput=function(){var v=parseFloat(this.value);if(!isNaN(v))item[k]=v;syncJson();};
+  }else if(typeof val==='object'){
+    inp=document.createElement('textarea');
+    inp.value=JSON.stringify(val,null,2);
+    inp.oninput=function(){try{item[k]=JSON.parse(this.value);this.style.color='';syncJson();}catch(e){this.style.color='var(--color-text-danger)';}};
+  }else{
+    inp=document.createElement('input');inp.type='text';inp.value=val!==undefined?String(val):'';
+    inp.oninput=function(){item[k]=this.value;syncJson();};
+  }
+  row.appendChild(inp);fp.appendChild(row);
+}
+
+function syncJson(){
+  if(!jsonOpen)return;
+  var ta=document.getElementById('json-ta');
+  if(selection.leaf!==undefined&&selection.leaf!==null){
+    var res=resolveSelection();
+    if(res.item)ta.value=JSON.stringify(res.item,null,2);
+  }else{
+    ta.value=JSON.stringify(cfg,null,2);
+  }
+}
+
+document.getElementById('json-toggle-btn').onclick=function(){
+  jsonOpen=!jsonOpen;
+  document.getElementById('json-panel').classList.toggle('open',jsonOpen);
+  this.textContent=jsonOpen?'{ } Hide':'{ } JSON';
+  if(jsonOpen)syncJson();
+};
+
+document.getElementById('json-ta').oninput=function(){
+  try{
+    var parsed=JSON.parse(this.value);
+    if(selection.leaf!==undefined&&selection.leaf!==null){
+      var res=resolveSelection();
+      if(res.arr)res.arr[selection.leaf]=parsed;
+      renderSidebar();renderForm();
+    }
+    this.style.color='';
+    setStatus('JSON applied',true);
+  }catch(e){this.style.color='var(--color-text-danger)';}
+};
+
+document.getElementById('save-btn').onclick=function(){
+  setStatus('Saved — '+cfg.length+' root devices',true);
+  console.log('Config:',JSON.stringify(cfg,null,2));
+};
+
+document.getElementById('delete-btn').onclick=function(){
+  if(selection.leaf===undefined||selection.leaf===null){setStatus('Nothing selected',false);return;}
+  var res=resolveSelection();
+  if(!res.arr){return;}
+  var uid=res.item?res.item.uid:selection.leaf;
+  if(!confirm('Delete "'+uid+'"?'))return;
+  res.arr.splice(selection.leaf,1);
+  selection={path:selection.path.slice(0,-0),leaf:undefined};
+  if(selection.path.length>0)selection.path.pop();
+  renderSidebar();renderForm();syncJson();setStatus('Deleted',true);
+};
+
+document.getElementById('add-btn').onclick=function(){
+  var typeKey=document.getElementById('add-type-select').value;
+  var schemaKey='ROOT';
+  var targetArr=cfg;
+  var targetIk='items';
+
+  if(selection.path&&selection.path.length>0){
+    var arr2=cfg,psk2='ROOT';
+    for(var i=0;i<selection.path.length;i++){
+      var seg=selection.path[i];
+      var obj2=arr2[seg.idx];
+      var tk2=(obj2.type||'').toUpperCase();
+      var sDef2=getSchemaForType(obj2.type,psk2)||getSchemaForType(tk2,psk2);
+      if(sDef2&&sDef2.items){
+        schemaKey=sDef2.items.schema||'ROOT';
+        targetIk=sDef2.items.itemsKey||'items';
+        if(!obj2[targetIk])obj2[targetIk]=[];
+        targetArr=obj2[targetIk];
+      }
+      psk2=schemaKey;
+      if(obj2[seg.itemsKey||'items'])arr2=obj2[seg.itemsKey||'items'];
+    }
+    if(selection.leaf!==undefined&&selection.leaf!==null){
+      var leafObj=arr2[selection.leaf];
+      if(leafObj){
+        var leafType=(leafObj.type||'').toUpperCase();
+        var leafSDef=getSchemaForType(leafObj.type,schemaKey)||getSchemaForType(leafType,schemaKey);
+        if(leafSDef&&leafSDef.items){
+          schemaKey=leafSDef.items.schema||'ROOT';
+          targetIk=leafSDef.items.itemsKey||'items';
+          if(!leafObj[targetIk])leafObj[targetIk]=[];
+          targetArr=leafObj[targetIk];
+        }
+      }
+    }
+  }
+
+  var group=SCHEMA[schemaKey]||SCHEMA.ROOT;
+  var sDef3=group[typeKey];
+  var newItem={uid:typeKey.toLowerCase()+'_'+(targetArr.length+1),type:typeKey};
+  if(sDef3){
+    (sDef3.fields||[]).forEach(function(f){
+      if(['disabled','uid','note','type'].indexOf(f.n)>=0)return;
+      if(f.t==='Refresh'){newItem['refreshtimesec']=1;}
+      else if(f.req&&f.def!==undefined)newItem[f.n]=f.def;
+    });
+  }
+  targetArr.push(newItem);
+  renderSidebar();renderForm();syncJson();
+  setStatus('Added '+typeKey,true);
+};
+
+document.getElementById('export-btn').onclick=function(){
+  var blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='config.json';a.click();
+  URL.revokeObjectURL(url);
+  setStatus('Exported config.json',true);
+};
+
+document.getElementById('import-btn').onclick=function(){
+  document.getElementById('import-input').click();
+};
+
+document.getElementById('import-input').onchange=function(){
+  var file=this.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var text=e.target.result;
+    var parsed=null;
+    try{parsed=JSON.parse(text);}catch(err){
+      var m=text.match(/(?:var\s+\w+\s*=\s*)(\[[\s\S]*?\])\s*;?/);
+      if(m){try{parsed=JSON.parse(m[1]);}catch(e2){}}
+      if(!parsed){try{var fn=new Function(text+'\nreturn examplecfg||cfg||null;');parsed=fn();}catch(e3){}}
+    }
+    if(!Array.isArray(parsed)){setStatus('Import failed: could not parse file',false);return;}
+    cfg=parsed;
+    selection={path:[],leaf:undefined};
+    renderSidebar();renderForm();syncJson();
+    setStatus('Imported '+cfg.length+' devices from '+file.name,true);
+  };
+  reader.readAsText(file);
+  this.value='';
+};
+
+renderSidebar();
+renderForm();
+setStatus('Loaded '+cfg.length+' root devices',true);
+</script>

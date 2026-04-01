@@ -36,14 +36,14 @@ namespace DALHAL {
     namespace JsonSchema {
 
         // output pins
-        constexpr FieldHardwarePin pin_hbridge_a_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_hbridge_b_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_hbridge_open_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_hbridge_close_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_hbridge_a_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_hbridge_b_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_hbridge_open_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_hbridge_close_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
         // this is a optional field in direnable mode
-        constexpr FieldHardwarePin pin_direnable_break_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK, FieldPolicy::ModeDefine, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direnable_break_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK, FieldPolicy::ModeDefine, (GPIO_manager::PinFunc::OUT)};
 
         // input pins
         constexpr FieldObject minEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP, FieldPolicy::Optional, &InputPinScheme };

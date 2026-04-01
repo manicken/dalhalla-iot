@@ -36,12 +36,12 @@ namespace DALHAL {
     namespace JsonSchema {
 
         // output pins
-        constexpr FieldHardwarePin pin_direct_a_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_b_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_set_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_reset_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfGroup, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direct_a_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direct_b_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direct_set_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direct_reset_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
         
         // input pins
         constexpr FieldObject resetStateField = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE, FieldPolicy::Optional, &InputPinScheme };

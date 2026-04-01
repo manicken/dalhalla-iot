@@ -50,26 +50,28 @@
 #define DALHAL_CMD_EXEC_GPIO_LIST_MODE_STRING   "string"
 #define DALHAL_CMD_EXEC_GPIO_LIST_MODE_HEX      "hex"
 #define DALHAL_CMD_EXEC_GPIO_LIST_MODE_BINARY   "binary"
-#define DALHAL_GPIO_MGR_PINFUNC_TYPE            uint16_t
+#define DALHAL_GPIO_MGR_PINFUNC_TYPE             uint16_t
 
 namespace DALHAL {
     namespace GPIO_manager
     {
-        
+        namespace PinFunc {
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE Reserved = 0x01;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE SpecialAtBoot = 0x02;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE LOW2BOOT = 0x04;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE HIGH2BOOT = 0x08;        
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE OUT = 0x10;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE IN = 0x20;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE AIN = 0x40;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE AOUT = 0x80;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE UNDERSIDE = 0x100;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE UARTFLASH = 0x200;
+           constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE JTAG = 0x400;
+        }
 
-        enum class PinFunc : DALHAL_GPIO_MGR_PINFUNC_TYPE {
-            Reserved = 0x01,
-            SpecialAtBoot = 0x02,
-            LOW2BOOT = 0x04,
-            HIGH2BOOT = 0x08,        
-            OUT = 0x10,
-            IN = 0x20,
-            AIN = 0x40,
-            AOUT = 0x80,
-            UNDERSIDE = 0x100,
-            UARTFLASH = 0x200,
-            JTAG = 0x400,
-        };
+        /*enum class PinFunc : DALHAL_GPIO_MGR_PINFUNC_TYPE {
+            
+        };*/
 
         typedef struct {
             const char* Name;
@@ -86,14 +88,6 @@ namespace DALHAL {
             uint8_t pin;
             DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
         } gpio_pin;
-
-        extern const gpio_pin available_gpio_list[];
-        extern int available_gpio_list_lenght;
-        void set_available_gpio_list_length();
-
-        extern const PinFuncDef PinModeStrings[];
-        extern int PinModeStrings_length;
-        void set_PinModeStrings_length();
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         

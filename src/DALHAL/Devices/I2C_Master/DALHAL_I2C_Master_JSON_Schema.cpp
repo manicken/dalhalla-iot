@@ -35,8 +35,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::OUT) | static_cast<uint8_t>(GPIO_manager::PinFunc::IN)};
+        constexpr FieldHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
+        constexpr FieldHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT | GPIO_manager::PinFunc::IN)};
 
         constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 

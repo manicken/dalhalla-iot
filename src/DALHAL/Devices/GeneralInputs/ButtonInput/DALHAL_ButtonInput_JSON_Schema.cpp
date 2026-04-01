@@ -34,7 +34,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, static_cast<uint8_t>(GPIO_manager::PinFunc::IN) };
+        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
         constexpr FieldUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, 1, 0, 30};
         
         constexpr FieldString activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, activeLevelStrings, FieldString::AllowedValuesPolicy::IgnoreCase};
