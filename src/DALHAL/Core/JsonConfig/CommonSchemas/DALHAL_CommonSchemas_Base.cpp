@@ -23,7 +23,7 @@
 
 #include "DALHAL_CommonSchemas_Base.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 
 namespace DALHAL {
 
@@ -32,9 +32,9 @@ namespace DALHAL {
         constexpr FieldUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
         constexpr FieldUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
 
-        constexpr FieldString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldType::String, FieldPolicy::Required, nullptr, 0};
+        constexpr FieldStringBase typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
 
-        constexpr FieldString noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldType::String, FieldPolicy::Optional, nullptr, 0};
+        constexpr FieldStringBase noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
 
         constexpr FieldBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
 

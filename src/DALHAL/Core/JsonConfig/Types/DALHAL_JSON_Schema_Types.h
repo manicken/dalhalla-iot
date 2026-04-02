@@ -27,9 +27,16 @@
 #include <stdlib.h>
 #include <DALHAL/Core/Types/DALHAL_UID.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
-#include "DALHAL_JSON_Schema_BaseTypes.h"
 
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_BaseTypes.h"
+#include "DALHAL_JSON_Schema_FieldStringBase.h"
+#include "DALHAL_JSON_Schema_FieldStringSizeConstrained.h"
+#include "DALHAL_JSON_Schema_FieldStringAnyOfByFuncConstrained.h"
+#include "DALHAL_JSON_Schema_FieldStringAnyOfArrayConstrained.h"
+
 
 namespace DALHAL {
 
@@ -111,69 +118,6 @@ namespace DALHAL {
                 : FieldBase(name, FieldType::Bool, policy), defaultValue(defaultValue) {}
         };
 
-        struct FieldString : FieldBase {
-            enum class AllowedValuesPolicy {
-                Strict,
-                IgnoreCase,
-                Void
-            };
-
-            const char* defaultValue;  // flash string default, or more like what to present at GUI
-            uint16_t minLength;
-            uint16_t maxLength;
-
-            const char* const* allowedValues; // nullptr = no restriction
-            AllowedValuesPolicy allowedValuesPolicy;
-
-            // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, const char* defVal, uint16_t maxLen)
-                : FieldBase(name, type, policy), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-            // explicit select type to string
-            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, uint16_t maxLen)
-                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-
-            // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(name, type, policy), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-            // explicit select type to string
-            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-
-            constexpr FieldString(const char* name, FieldPolicy policy, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
-                : FieldBase(name, FieldType::String, policy), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
-            
-            // using GUI flags
-
-            // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLen)
-                : FieldBase(name, type, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-            // explicit select type to string
-            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLen)
-                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-
-            // can be used when inherited and used as a subtupe
-            constexpr FieldString(const char* name, FieldType type, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(name, type, policy, guiFlags), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-            // explicit select type to string
-            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLen, uint16_t maxLen)
-                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(minLen), maxLength(maxLen), allowedValues(nullptr), allowedValuesPolicy(AllowedValuesPolicy::Void) {}
-
-            constexpr FieldString(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defVal, const char* const* allowedValues, AllowedValuesPolicy allowedValuesPolicy)
-                : FieldBase(name, FieldType::String, policy, guiFlags), defaultValue(defVal), minLength(1), maxLength(0), allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
-            
-        };
-
-        struct FieldStringConstraint : FieldString {
-            bool (*validate)(const char*);
-            std::string (*describe)();
-
-            constexpr FieldStringConstraint(const char* name, FieldPolicy policy, bool (*validate)(const char*), std::string (*describe)()) 
-            : FieldString(name, FieldType::StringConstraint, policy, nullptr, 0), validate(validate), describe(describe) {}
-
-            constexpr FieldStringConstraint(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, bool (*validate)(const char*), std::string (*describe)()) 
-            : FieldString(name, FieldType::StringConstraint, policy, guiFlags, nullptr, 0), validate(validate), describe(describe) {}
-        };
-
         /**
          * used for ordinary JSON objects, i.e. enclosed by {}
          */
@@ -225,9 +169,9 @@ namespace DALHAL {
         //*********  Logical Types ************ */
         //************************************* */
 
-        struct FieldUID : FieldString {
+        struct FieldUID : FieldStringSizeConstrained {
             constexpr FieldUID(const char* name, FieldPolicy policy)
-                : FieldString(name, FieldType::UID, policy, nullptr, HAL_UID::Size) {}
+                : FieldStringSizeConstrained(name, FieldType::UID, policy, nullptr, HAL_UID::Size) {}
         };
         
         struct FieldHardwarePin : FieldBase {
@@ -296,14 +240,14 @@ namespace DALHAL {
 
         };
         
-        struct FieldHexBytes : FieldString {
+        struct FieldHexBytes : FieldStringSizeConstrained {
             uint8_t byteCount;
 
             constexpr FieldHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)
-                : FieldString(name, FieldType::HexBytes, policy, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
+                : FieldStringSizeConstrained(name, FieldType::HexBytes, policy, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
 
             constexpr FieldHexBytes(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defaultValue, uint8_t byteCount)
-                : FieldString(name, FieldType::HexBytes, policy, guiFlags, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
+                : FieldStringSizeConstrained(name, FieldType::HexBytes, policy, guiFlags, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
         };
 
     } // namespace JsonSchema

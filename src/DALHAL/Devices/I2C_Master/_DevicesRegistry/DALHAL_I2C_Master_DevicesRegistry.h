@@ -29,7 +29,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 namespace DALHAL {
 

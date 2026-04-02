@@ -28,22 +28,24 @@
 #include <Support/LittleFS_ext.h>
 
 #include <Support/Time_ext.h>
-#include <ESPAsyncWebServer.h>
+
+//#include <ESPAsyncWebServer.h>
 
 #if defined(ESP8266)
 //#include <ESP8266WebServer.h>
-#define WEBSERVER_TYPE AsyncWebServer
+//#define WEBSERVER_TYPE AsyncWebServer
 
 #define WIFI_getChipId() ESP.getChipId()
 #define WIFI_CHIPID_PREFIX "ESP_"
 #elif defined(ESP32)
 //#include "Support/fs_WebServer.h"
-#define WEBSERVER_TYPE AsyncWebServer
+//#define WEBSERVER_TYPE AsyncWebServer
 
 
 #define WIFI_getChipId() ESP.getEfuseMac()
 #define WIFI_CHIPID_PREFIX "ESP32_"
 #endif
+
 
 #define INFO_URL                       "/info"
 #define INFO_URL_ESP_FREE_HEAP         "/esp/free_heap"
@@ -62,18 +64,18 @@ namespace Info
 
     extern time_t startTime;
 
-    void printESP_info(void);
+    //void printESP_info(void);
     String getESP_info();
-    void srv_handle_info(AsyncWebServerRequest *req);
+    //void srv_handle_info(AsyncWebServerRequest *req);
     
-    bool resetReason_is_crash();
+    //bool resetReason_is_crash();
     const char* getResetReasonStr();
 
     std::string GetHeapInfo();
 
     void PrintHeapInfo();
 
-    void setup(WEBSERVER_TYPE &srv);
+    //void setup(WEBSERVER_TYPE &srv);
 
     /*
 // called from setup() function
@@ -87,7 +89,7 @@ void printESP_info(void);
 
     uint64_t reverseBytes(uint64_t value);
 
-    void srv_handle_info(AsyncWebServerRequest* req);
+    //void srv_handle_info(AsyncWebServerRequest* req);
 
     const char* getESPVariant();
 }

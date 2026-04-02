@@ -35,7 +35,9 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
+#if defined(ESP8266) || defined(ESP32)
 #include <System/Info.h>
+#endif
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
@@ -166,7 +168,9 @@ namespace DALHAL {
                 anyErrors = true;
                 GlobalLogger.Error(F("Unknown HAL command: "), zcCommand);
             }
-        } else if (zcCommand.EqualsIC("wifi")) {
+        } 
+#if defined(ESP8266) || defined(ESP32)
+        else if (zcCommand.EqualsIC("wifi")) {
             zcCommand = zcStr.SplitOffHead('/');
 
             if (zcCommand.EqualsIC("scan")) {
@@ -265,19 +269,29 @@ namespace DALHAL {
 
                 SetWifiCredentialsAndRestart(ssid, pass);
             }
-        } else if (zcCommand.EqualsIC("system")) {
+        } 
+#endif
+        else if (zcCommand.EqualsIC("system")) {
             zcCommand = zcStr.SplitOffHead('/');
             if (zcCommand.EqualsIC("info")) {
                 if (cb != nullptr) {
+#if defined(ESP8266) || defined(ESP32)
                     String infoMsg = Info::getESP_info();
+#else
+                    String infoMsg = "{\"mcu\":\"windows\"}";
+#endif
                     cb(infoMsg.c_str());
                 }
-            } else if (zcCommand.EqualsIC("reset") || zcCommand.EqualsIC("restart")) {
+            } 
+#if defined(ESP8266) || defined(ESP32)
+            else if (zcCommand.EqualsIC("reset") || zcCommand.EqualsIC("restart")) {
                 if (cb != nullptr) {
                     cb("the system will now restart");
                 }
                 ESP.restart();
-            } else {
+            }
+#endif
+            else {
                 if (cb != nullptr) {
                     cb("error system sub command not found");
                 }
@@ -665,7 +679,7 @@ namespace DALHAL {
         }
         return true;
     }
-
+#if defined(ESP8266) || defined(ESP32)
     void CommandExecutor::SetWifiCredentialsAndRestart(const char* ssid, const char* pass) {
         WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
         WiFi.begin(ssid, pass);     // Connects to the AP.
@@ -678,4 +692,5 @@ namespace DALHAL {
         // Restart the device so it boots with the saved credentials
         ESP.restart();
     }
+#endif
 }

@@ -23,8 +23,8 @@
 
 #include "DALHAL_ThingSpeak_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -35,16 +35,16 @@ namespace DALHAL {
 
         constexpr FieldUInt firstUpdateAfterSecondsField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS, FieldPolicy::Optional, 0, 0, 0};
         constexpr FieldBool testserverField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER, FieldPolicy::Optional, false};
-        constexpr FieldString keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
+        constexpr FieldStringSizeConstrained keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
 
-        constexpr FieldString itemsF1 = {"1", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF2 = {"2", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF3 = {"3", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF4 = {"4", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF5 = {"5", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF6 = {"6", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF7 = {"7", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString itemsF8 = {"8", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
+        constexpr FieldStringBase itemsF1 = {"1", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF2 = {"2", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF3 = {"3", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF4 = {"4", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF5 = {"5", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF6 = {"6", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF7 = {"7", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringBase itemsF8 = {"8", FieldType::UID_Path, FieldPolicy::Optional};
 
         constexpr const FieldBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
 

@@ -23,15 +23,15 @@
 
 #include "DALHAL_CommonSchemas_Consumer.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 #include "DALHAL_CommonSchemas_Time.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldString sourceField = { "source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
-        constexpr FieldString eventSourceField = { "event_source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0 }; // zero lenght mean as long as one wants
+        constexpr FieldStringBase sourceField = { "source", FieldType::UID_Path, FieldPolicy::Optional, nullptr}; 
+        constexpr FieldStringBase eventSourceField = { "event_source", FieldType::UID_Path, FieldPolicy::Optional, nullptr};
         
         constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
             { &refreshTimeGroupFields, true },  // group must exist for this mode

@@ -23,8 +23,8 @@
 
 #include "DALHAL_Display_SSD1306_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
@@ -36,8 +36,8 @@ namespace DALHAL {
         // SSD1306_Element "device"
         constexpr FieldUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
         constexpr FieldUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
-        constexpr FieldString labelField = {"label", FieldPolicy::Optional, nullptr, 0};
-        constexpr FieldString sourceField = {"source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
+        constexpr FieldStringBase labelField = {"label", FieldPolicy::Optional};
+        constexpr FieldStringBase sourceField = {"source", FieldType::UID_Path, FieldPolicy::Optional};
 
         constexpr const FieldBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
 

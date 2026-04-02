@@ -39,6 +39,9 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+
+        
+
         const char* ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER = "JSON_Schema_Validator - validateFromRegister";
         const char* ERROR_SOURCE_STR_VALIDATE_FIELD = "JSON_Schema_Validator - validateField";
 
@@ -122,7 +125,7 @@ namespace DALHAL {
         }
 
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const FieldString* f, bool& anyError)
+        void validateStringField(const JsonVariant& value, const FieldStringBase* f, bool& anyError)
         {
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), f->name);
@@ -130,59 +133,43 @@ namespace DALHAL {
                 anyError = true;
                 return;
             }
-            ZeroCopyString zcStr = value.as<const char*>(); // wrap in ZeroCopyString for neat functions
+            const char* value_cStr = value.as<const char*>();
+            ZeroCopyString zcStr = value_cStr; // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
             size_t strLen = zcStr.Length(); // use of lenght here is fast
-
-            if (f->allowedValues != nullptr) {
+            if (f->type == FieldType::StringBase) {
+                if (strLen == 0) anyError = true;
+                GlobalLogger.Error(F("Basic String is empty"));
+                return;
+            }
+            if (f->type == FieldType::StringSizeConstrained) {
+                const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
+                if (strLen < fssc->minLength) {
+                    GlobalLogger.Error(F("String shorter than minLength:"), f->name);
+                    anyError = true;
+                    return;
+                }
+                if (fssc->maxLength > 0 && strLen > fssc->maxLength) {
+                    GlobalLogger.Error(F("String exceeds maxLength:"), f->name);
+                    anyError = true;
+                    return;
+                }
+            } else if (f->type == FieldType::StringAnyOfByFuncConstrained) {
                 if (strLen == 0) { // fast fail
                     anyError = true;
-                    GlobalLogger.Error(F("String is empty @ allowedValues mode: "), f->name);
-                    //GlobalLogger.setLastEntrySource("validateStringField");
+                    GlobalLogger.Error(F("String is empty @ StringAnyOfByFuncConstrained mode: "), f->name);
                     return;
                 }
-                if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::Void) {
+                const FieldStringAnyOfByFuncConstrained* fsaobfc = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
+                if (fsaobfc->validate(fsaobfc->ctx, value_cStr) == false) {
                     anyError = true;
-                    GlobalLogger.Error(F("SchemaError f->allowedValuesPolicy == Void"),f->name);
-                    //GlobalLogger.setLastEntrySource("validateStringField");
-                    return;
-                }
-                bool match = false;
-                for (int i = 0; f->allowedValues[i] != nullptr; ++i) {
-                    const char* allowed = f->allowedValues[i];
-
-                    if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::Strict) {
-                        if (zcStr.Equals(allowed)) {
-                            match = true;
-                            break;
-                        }
-                    } else if (f->allowedValuesPolicy == FieldString::AllowedValuesPolicy::IgnoreCase) {
-                        if (zcStr.EqualsIC(allowed)) {
-                            match = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!match) {
                     GlobalLogger.Error(F("Invalid value for field:"), f->name);
-                    anyError = true;
                 }
-                return;
-            }
-
-            if (strLen < f->minLength) {
-                GlobalLogger.Error(F("String shorter than minLength:"), f->name);
-                GlobalLogger.setLastEntrySource("validateStringField");
+            } else {
                 anyError = true;
-                return;
+                GlobalLogger.Error(F("Schema error - Invalid string type @ "), f->name);
             }
-            if (f->maxLength > 0 && strLen > f->maxLength) {
-                GlobalLogger.Error(F("String exceeds maxLength:"), f->name);
-                GlobalLogger.setLastEntrySource("validateStringField");
-                anyError = true;
-                return;
-            }
+            
         }
 
         // Validate a single field
@@ -291,7 +278,8 @@ namespace DALHAL {
                     auto f = static_cast<const FieldHardwarePinOrVirtualPIN*>(field);
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
-                        validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
+
+                        validateStringField(value, static_cast<const FieldStringBase*>(field), anyErrorTemp);
                         if (anyErrorTemp == true) {
                             anyError = true;
                             return;
@@ -302,28 +290,15 @@ namespace DALHAL {
                     }
                     return;
                 }
-                case FieldType::String:
+                case FieldType::StringBase:
+                case FieldType::StringAnyOfArrayConstrained:
+                case FieldType::StringAnyOfByFuncConstrained:
+                case FieldType::StringSizeConstrained:
                 case FieldType::UID:
                 case FieldType::UID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
-                    validateStringField(value, static_cast<const FieldString*>(field), anyError);
+                    validateStringField(value, static_cast<const FieldStringBase*>(field), anyError);
                     return;
-                }
-                case FieldType::StringConstraint: {
-                    
-                    bool anyErrorTemp = false;
-                    validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
-                    if (anyErrorTemp) {
-                        anyError = true;
-                        return;
-                    }
-                    const char* cStr = value.as<const char*>();
-
-                    auto f = static_cast<const FieldStringConstraint*>(field);
-                    bool valid = f->validate(cStr);
-                    if (valid) return;
-                    anyError = true;
-                    break;
                 }
                 case FieldType::Object: {
                     validateJsonObject(value, field->name, static_cast<const FieldObject*>(field)->subtype, anyError);
@@ -345,7 +320,7 @@ namespace DALHAL {
                 case FieldType::HexBytes: {
                     
                     bool anyErrorTemp = false;
-                    validateStringField(value, static_cast<const FieldString*>(field), anyErrorTemp);
+                    validateStringField(value, static_cast<const FieldStringBase*>(field), anyErrorTemp);
                     if (anyErrorTemp == true) {
                         anyError = true;
                         break; // no point of continue

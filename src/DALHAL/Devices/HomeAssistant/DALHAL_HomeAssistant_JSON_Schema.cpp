@@ -23,8 +23,8 @@
 
 #include "DALHAL_HomeAssistant_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include "DALHAL_HA_DeviceTypeReg.h"
@@ -33,16 +33,16 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldString deviceIdField = {"deviceId", FieldPolicy::Required, nullptr, 0};
-        constexpr FieldString hostField = {"host", FieldPolicy::Required, nullptr, 0};
+        constexpr FieldStringBase deviceIdField = {"deviceId", FieldPolicy::Required};
+        constexpr FieldStringBase hostField = {"host", FieldPolicy::Required};
         constexpr FieldUInt   portField = {"port", FieldPolicy::Required, 1, 65535, 1883};
-        constexpr FieldString userField = {"user", FieldPolicy::AllOfGroup, nullptr, 0};
-        constexpr FieldString passField = {"pass", FieldPolicy::AllOfGroup, nullptr, 0};
+        constexpr FieldStringBase userField = {"user", FieldPolicy::AllOfGroup};
+        constexpr FieldStringBase passField = {"pass", FieldPolicy::AllOfGroup};
 
         constexpr const FieldBase* credentialsFields[] = {&userField, &passField, nullptr};
         constexpr AllOfGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};
 
-        constexpr FieldString groupNameField = {"name", FieldPolicy::Required, nullptr, 0};
+        constexpr FieldStringBase groupNameField = {"name", FieldPolicy::Required};
 
         constexpr const FieldBase* globalGroupFields[] = {&uidFieldRequired, &groupNameField, nullptr};
         constexpr JsonObjectSchema globalGroupSchema = {

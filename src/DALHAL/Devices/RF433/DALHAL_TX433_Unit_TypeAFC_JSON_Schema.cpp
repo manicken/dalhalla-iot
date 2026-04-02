@@ -23,18 +23,30 @@
 
 #include "DALHAL_TX433_Unit_TypeAFC_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
-        constexpr const char* ids[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", nullptr};
+    /* could also use the following functions instead of specifying each possible value
+        surely faster but will see if it also take less space
+        static bool ValidateHex(void* ctx, const char* value) {
+            if (!value || !value[0] || value[1] != '\0') return false; // single char only
+            char c = value[0];
+            return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+        }
 
-        constexpr FieldString chField = {"ch", FieldPolicy::Optional, "0", ids, FieldString::AllowedValuesPolicy::IgnoreCase};
-        constexpr FieldString btnField = {"btn", FieldPolicy::Optional, "0", ids, FieldString::AllowedValuesPolicy::IgnoreCase};
+        static std::string DescribeHex(void* ctx) {
+            return R"(["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"])";
+        }
+    */
+        constexpr const char* ids[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", nullptr};
+        constexpr ByArrayConstraints hexNumbersConstraint = {ids, ByArrayConstraints::Policy::IgnoreCase};
+        constexpr FieldStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
+        constexpr FieldStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
         constexpr FieldUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
 
         constexpr const FieldBase* fields[] = {

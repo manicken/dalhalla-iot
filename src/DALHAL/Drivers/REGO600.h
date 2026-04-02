@@ -121,8 +121,8 @@ namespace Drivers {
         // Declaration of the fallback entry
         static const RegoLookupEntry ManualRawEntry;
 
-        static bool SystemRegisterTable_ItemExists(const char* name);
-        static std::string SystemRegisterTable_GetAllNamesAsJsonStringArray();
+        static bool SystemRegisterTable_ItemExists(void* ctx, const char* name); // ctx not used here as this is a static table
+        static std::string SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx); // ctx not used here as this is a static table
         
         struct Request {
             

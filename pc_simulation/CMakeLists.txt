@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(DalhalPC LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---------------------------------------
@@ -23,11 +23,14 @@ endif()
 # ---------------------------------------
 
 set(INCLUDE_DIRS
+	${CMAKE_CURRENT_SOURCE_DIR}/../src   # <-- THIS IS THE IMPORTANT ONE
+	
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Arduino
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/IPAddress
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/PrintStream
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
     ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/ArduinoJson/src
+	${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/Time
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib/PubSubClient/src
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/Ticker
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/LittleFS

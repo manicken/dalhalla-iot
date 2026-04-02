@@ -23,8 +23,8 @@
 
 #include "DALHAL_ButtonInput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
@@ -36,9 +36,11 @@ namespace DALHAL {
 
         constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
         constexpr FieldUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, 1, 0, 30};
+
+        constexpr ByArrayConstraints activeLevelConstraints = {activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
+        constexpr FieldStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
         
-        constexpr FieldString activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, activeLevelStrings, FieldString::AllowedValuesPolicy::IgnoreCase};
-        constexpr FieldString on_pressField = { "on_press", FieldPolicy::Optional, nullptr, 0};
+        constexpr FieldStringBase on_pressField = { "on_press", FieldPolicy::Optional};
 
         constexpr const FieldBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

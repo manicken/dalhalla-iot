@@ -76,7 +76,7 @@ namespace Info
         printf("\n%s\n", ret.c_str());
         //heap_caps_print_heap_info(MALLOC_CAP_INTERNAL);
     }
-
+/*
     void setup(WEBSERVER_TYPE &srv) {
         //webserver = &srv;
 
@@ -92,7 +92,7 @@ namespace Info
             req->send(200,F("text/plain"), ret.c_str());
         });
     }
-
+*/
     /*
 // called from setup() function
 void printESP_info(void) { 
@@ -199,7 +199,7 @@ void printESP_info(void) {
             ((value & 0x00FF000000000000) >> 40) |
             ((value & 0xFF00000000000000) >> 56);
     }
-
+/*
     void srv_handle_info(AsyncWebServerRequest* req)
     {
         String srv_return_msg = getESP_info();
@@ -208,6 +208,7 @@ void printESP_info(void) {
 
         //server.sendContent("");
     }
+*/
     String getESP_info() {
         uint32_t ideSize = ESP.getFlashChipSize();
 
@@ -361,4 +362,5 @@ void printESP_info(void) {
         return "UNKNOWN";
 #endif
     }
+
 }

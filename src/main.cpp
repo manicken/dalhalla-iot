@@ -109,7 +109,7 @@ void setup() {
 
     System::initWebServerHandlers(webserver);
 
-    Info::setup(webserver);
+    //Info::setup(webserver); // now mainly handled by CommandExecutor
     HeartbeatLed::setup(webserver);
 #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     System::Start_MDNS();

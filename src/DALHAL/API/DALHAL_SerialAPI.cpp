@@ -31,6 +31,7 @@
 namespace DALHAL {
 
     /*static*/ void SerialAPI::loop() {
+#if defined(ESP8266) || defined(ESP32)
         if (Serial.available()) {
             String cmd = Serial.readStringUntil('\n');
             cmd.trim();
@@ -40,6 +41,7 @@ namespace DALHAL {
                 printf("%s\r\n", msg.c_str());
             });
         }
+#endif
     }
     
 }

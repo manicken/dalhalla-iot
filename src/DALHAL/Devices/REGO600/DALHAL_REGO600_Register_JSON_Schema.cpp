@@ -23,8 +23,8 @@
 
 #include "DALHAL_REGO600_Register_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -34,7 +34,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringConstraint regnameField = {"regname", FieldPolicy::Required, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray};
+        
+        constexpr FieldStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
 
         constexpr const FieldBase* fields[] = {
             &disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base

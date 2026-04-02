@@ -23,14 +23,14 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldString sourceField;
-        extern const FieldString eventSourceField;
+        extern const FieldStringBase sourceField;
+        extern const FieldStringBase eventSourceField;
         extern const ModeSelector consumerDeviceModes[];
     }
     

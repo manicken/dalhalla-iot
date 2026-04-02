@@ -23,8 +23,8 @@
 
 #include "DALHAL_WS2812_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -45,8 +45,13 @@ namespace DALHAL {
         constexpr const char* ifspeeds[] = {"KHZ800", "KHZ400", nullptr};
 
         constexpr FieldUInt ledcountField = {"ledcount", FieldPolicy::Required, 1, 0, 1};
-        constexpr FieldString formatField = {"format", FieldPolicy::Required, "RGB", formats, FieldString::AllowedValuesPolicy::IgnoreCase};
-        constexpr FieldString ifspeedField = {"ifspeed", FieldPolicy::Optional, "KHZ800", ifspeeds, FieldString::AllowedValuesPolicy::IgnoreCase};
+
+        constexpr ByArrayConstraints formatFieldConstraints = {formats, ByArrayConstraints::Policy::IgnoreCase};
+        constexpr FieldStringAnyOfArrayConstrained formatField = {"format", FieldPolicy::Required, "RGB", &formatFieldConstraints};
+
+        constexpr ByArrayConstraints ifspeedFieldConstraints = {ifspeeds, ByArrayConstraints::Policy::IgnoreCase};
+        constexpr FieldStringAnyOfArrayConstrained ifspeedField = {"ifspeed", FieldPolicy::Optional, "KHZ800", &ifspeedFieldConstraints};
+
         constexpr FieldUInt brightnessField = {"brightness", FieldPolicy::Optional, 1, 127, 127};
         constexpr FieldUInt modeField = {"mode", FieldPolicy::Optional, 0, MODE_COUNT, 0};
         constexpr FieldUInt fxspeedField = {"fxspeed", FieldPolicy::Optional, 0, 65535, 3000};

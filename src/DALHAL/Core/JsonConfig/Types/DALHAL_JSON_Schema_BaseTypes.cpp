@@ -43,8 +43,10 @@ namespace DALHAL {
                 case FieldType::Number: return "Number";
                 case FieldType::Object: return "Object";
                 case FieldType::RegistryArray: return "RegistryArray";
-                case FieldType::String: return "String";
-                case FieldType::StringConstraint: return "StringConstraint";
+                case FieldType::StringBase: return "StringBase";
+                case FieldType::StringAnyOfByFuncConstrained: return "StringAnyOfByFuncConstrained";
+                case FieldType::StringAnyOfArrayConstrained: return "StringAnyOfArrayConstrained";
+                case FieldType::StringSizeConstrained: return "StringSizeConstrained";
                 case FieldType::UID: return "UID";
                 case FieldType::UID_Path: return "UID_Path";
                 case FieldType::UInt: return "UInt";

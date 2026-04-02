@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <stdlib.h>
 
 namespace DALHAL {
 
@@ -42,8 +43,10 @@ namespace DALHAL {
             Number, /** json number */
             Object,        // ordinary JSON object i.e. enclosed by {}
             RegistryArray, // polymorphic (registry-based)
-            String,
-            StringConstraint,
+            StringBase,
+            StringSizeConstrained,
+            StringAnyOfArrayConstrained,
+            StringAnyOfByFuncConstrained,
             UID,
             UID_Path,
             UInt,

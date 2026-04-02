@@ -22,8 +22,8 @@
 */
 
 #include "DALHAL_JSON_Schema_ToJsonString.h"
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include "DALHAL_JSON_Schema_Types.h"
+#include "Types/DALHAL_JSON_Schema_BaseTypes.h"
+#include "Types/DALHAL_JSON_Schema_Types.h"
 
 #include <string>
 #include <vector>
@@ -306,45 +306,45 @@ namespace DALHAL {
                     out += std::to_string(ff->defaultValue);
                     break;
                 }
-
-                case FieldType::String:
                 case FieldType::UID:
                 case FieldType::UID_Path:
-                {
-                    auto fs = static_cast<const FieldString*>(f);
-
-                    if (fs->allowedValues) {
-                        out += ",\"allowedValues\":[";
-                        for (int i = 0; fs->allowedValues[i] != nullptr; ++i) {
-                            if (i > 0) out += ",";
-                            out += "\"";
-                            out += fs->allowedValues[i];
-                            out += "\"";
-                        }
-                        out += "]";
-                    } else {
-                        out += ",\"minLength\":";
-                        out += std::to_string(fs->minLength);
-
-                        out += ",\"maxLength\":";
-                        out += std::to_string(fs->maxLength);
-                    }
+                case FieldType::StringBase: {
+                    auto fs = static_cast<const FieldStringBase*>(f);
                     out += ",\"default\":\"";
                     if (fs->defaultValue) out += fs->defaultValue;
                     out += '"';
                     break;
                 }
-                case FieldType::StringConstraint: {
-                    auto fsc = static_cast<const FieldStringConstraint*>(f);
+                case FieldType::StringAnyOfByFuncConstrained:
+                case FieldType::StringAnyOfArrayConstrained: {
+                    auto fs = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
+
                     out += ",\"allowedValues\":";
-                    if (fsc->describe) {
-                        out += fsc->describe(); // this should return a json string array encloused by []
+                    if (fs->describe) {
+                        out += fs->describe(fs->ctx); // this should return a json string array encloused by []
                     } else {
                         out += "null";
                     }
+
                     out += ",\"default\":\"";
-                    if (fsc->defaultValue) out += fsc->defaultValue;
+                    if (fs->defaultValue) out += fs->defaultValue;
                     out += '"';
+                    break;
+                }
+                
+                case FieldType::StringSizeConstrained:
+                {
+                    auto fs = static_cast<const FieldStringSizeConstrained*>(f);
+
+                    out += ",\"minLength\":";
+                    out += std::to_string(fs->minLength);
+
+                    out += ",\"maxLength\":";
+                    out += std::to_string(fs->maxLength);
+                    out += ",\"default\":\"";
+                    if (fs->defaultValue) out += fs->defaultValue;
+                    out += '"';
+                    
                     break;
                 }
 

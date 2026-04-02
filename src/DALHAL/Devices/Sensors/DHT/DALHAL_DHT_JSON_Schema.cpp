@@ -23,8 +23,8 @@
 
 #include "DALHAL_DHT_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -41,8 +41,8 @@ namespace DALHAL {
             DALHAL_TYPE_DHT_MODEL_RHT03,
             nullptr
         };
-
-        constexpr const FieldString modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, models, FieldString::AllowedValuesPolicy::IgnoreCase};
+        constexpr ByArrayConstraints modelFieldConstraints = {models, ByArrayConstraints::Policy::IgnoreCase};
+        constexpr const FieldStringAnyOfArrayConstrained modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, &modelFieldConstraints};
 
         constexpr const FieldBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include "DALHAL_JSON_Schema_Types.h"
+#include "Types/DALHAL_JSON_Schema_BaseTypes.h"
+#include "Types/DALHAL_JSON_Schema_Types.h"
 #include <string>
 
 namespace DALHAL {

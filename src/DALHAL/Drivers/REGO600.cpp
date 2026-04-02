@@ -23,7 +23,12 @@
 
 #include "REGO600.h"
 
-#include <DALHAL/API/DALHAL_WebSocketAPI.h>
+#if defined(ESP8266) || defined(ESP32)
+#include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
+#else
+#include <DALHAL/API/DALHAL_WebSocketAPI_win.h> // for SendMessage
+#endif
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
@@ -144,7 +149,7 @@ namespace Drivers {
         return nullptr;
     }
 
-    bool REGO600::SystemRegisterTable_ItemExists(const char* name) {
+    bool REGO600::SystemRegisterTable_ItemExists(void* ctx, const char* name) { // ctx not used here as this is a static table
         for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
             if (strcasecmp(SystemRegisterTable[i].name, name) == 0) {
                 return true;
@@ -152,7 +157,7 @@ namespace Drivers {
         }
         return false;
     }
-    std::string REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray() {
+    std::string REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx) { // ctx not used here as this is a static table
         std::string ret = "[";
         bool first = true;
         for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {

@@ -23,8 +23,8 @@
 
 #include "DALHAL_TX433_Unit_TypeLC_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -32,8 +32,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldString anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
-        constexpr FieldString hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
+        constexpr FieldStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
+        constexpr FieldStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
         constexpr FieldUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, 0, 3, 0};
         constexpr FieldUInt btnField = {"btn", FieldPolicy::Optional, 0, 3, 0};
