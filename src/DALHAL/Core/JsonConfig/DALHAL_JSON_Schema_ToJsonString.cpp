@@ -388,6 +388,17 @@ namespace DALHAL {
                     
                     break;
                 }
+                
+                case FieldType::HexBytes: {
+                    auto fhb = static_cast<const FieldHexBytes*>(f);
+                    out += ',';
+                    appendKey(out, "byteCount");
+                    out += std::to_string(fhb->byteCount);
+                    out += ",\"default\":\"";
+                    if (fhb->defaultValue) out += fhb->defaultValue;
+                    out += '"';
+                    
+                }
 
                 default:
                     break;
