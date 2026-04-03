@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include <DALHAL/Config/DALHAL_BuildFlags.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace  DALHAL
 {
@@ -46,6 +47,8 @@ namespace  DALHAL
     public:
         ReactiveEvent() = delete;
         ReactiveEvent(ReactiveEvent&) = delete;
+        /** used in special cases where the reactive event either allways trigger and in situations when it never trigger */
+        ReactiveEvent(CheckFn _checkFn);
         ReactiveEvent(CheckFn checkFn, Deleter deleteFn, void* context);
         ReactiveEvent(uint32_t* current);
 
@@ -54,6 +57,10 @@ namespace  DALHAL
         ~ReactiveEvent();
 
         inline bool CheckForEvent() {
+            if (checkFn == nullptr) {
+                GlobalLogger.Error(F("checkFn == nullptr"));
+                return false;
+            }
             return checkFn(context);
         }
     };

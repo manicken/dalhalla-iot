@@ -40,13 +40,12 @@ namespace DALHAL {
             DALHAL_NOCOPY_NOMOVE(TriggerBlock);
 
             /** the function set to this pointer should return true if the StatementBlock(s) should execute */
-            //bool (*triggerSource)();
-            bool (*triggerSource)(void* context);
-            void* context;  // optional — lets the triggerSource read its own state
+            ReactiveEvent* event;
             StatementBlock* items;
             int itemsCount;
 
             static bool AllwaysRun(void* context);
+            static bool NeverRun(void* context);
 
             TriggerBlock();
             ~TriggerBlock();

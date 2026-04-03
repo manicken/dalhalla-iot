@@ -119,7 +119,10 @@ namespace DALHAL {
     Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
     Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
 
-    HALOperationResult Device::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** ReactiveEvent) { 
+    HALOperationResult Device::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** ReactiveEvent) {
+        if (ReactiveEvent != nullptr) {
+            *ReactiveEvent = nullptr;
+        }
         return HALOperationResult::ReactiveEventsNotSupported;
     }
 

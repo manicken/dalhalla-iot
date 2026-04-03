@@ -23,6 +23,7 @@
 
 #include "DALHAL_SCRIPT_ENGINE_Script.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
 #define DALHAL_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 
@@ -30,15 +31,19 @@ namespace DALHAL {
     namespace ScriptEngine {
        
         TriggerBlock::TriggerBlock() {
-
+            event = nullptr;
         }
         TriggerBlock::~TriggerBlock() {
+            delete event;
             delete[] items;
             items = nullptr;
             itemsCount = 0;
         }
         bool TriggerBlock::AllwaysRun(void* context) {
             return true;
+        }
+        bool TriggerBlock::NeverRun(void* context) {
+            return false;
         }
 
         void TriggerBlock::Set(int _itemsCount, ScriptTokens& tokens) {
@@ -47,7 +52,7 @@ namespace DALHAL {
             itemsCount = _itemsCount;
             items = new StatementBlock[_itemsCount];
             
-           // printf("see if whe come her\n");
+           // printf("see if we come here\n");
             for (int i=0;i<_itemsCount;i++) {
                 if (tokens.SkipIgnoresAndEndIf() == false) {
                     printf("SERIOUS ERROR - reached end\n");
@@ -87,16 +92,15 @@ namespace DALHAL {
                     tokens.currIndex++; // consume the On token as it dont have any important data
                     
                     ScriptToken& triggerSourceToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
-                    if (triggerSourceToken.EqualsIC("eachloop"))
-                        triggerBlock.triggerSource = TriggerBlock::AllwaysRun;
+                    if (triggerSourceToken.EqualsIC("eachloop")) {
+                        triggerBlock.event = new ReactiveEvent(TriggerBlock::AllwaysRun); // using special case of ReactiveEvent
+                    }
                     else
                     {
-                        // set allways run for now
-                        // TODO implement other sources
-                        // if not reserved trigger sources then try to get it as a device based trigger
-                        // this should allready be checked in the validate script part
-                        // so accessing it here should allways pass
-                        triggerBlock.triggerSource = TriggerBlock::AllwaysRun;
+                        //HALOperationResult res = DeviceManager::GetDeviceEvent(triggerSourceToken, &triggerBlock.event);
+                        //if (res != HALOperationResult::Success) {
+                            triggerBlock.event = new ReactiveEvent(TriggerBlock::NeverRun); // using special case of ReactiveEvent
+                        //}
                     }
                     //ReportTokenInfo(tokens.Current(), "this should be a then token: ", tokens.Current().ToString().c_str());
                     int itemCount = tokens.Current().itemsInBlock;
@@ -109,8 +113,8 @@ namespace DALHAL {
                     //printf("\n(%d) FOUND IF TOKEN\n", tokens.currIndex);
                     // here we dont consume anything just pass 
                     // wrap root-level if into a trigger block that always runs
-                    triggerBlock.triggerSource = TriggerBlock::AllwaysRun; // line 83
-                    triggerBlock.Set(1, tokens); // line 84
+                    triggerBlock.event = new ReactiveEvent(TriggerBlock::AllwaysRun); // using special case of ReactiveEvent
+                    triggerBlock.Set(1, tokens);
                 }
                 else {
                     //printf("\n(%d) SKIPPING TOKEN: %s\n", tokens.currIndex, token.ToString().c_str());
@@ -137,8 +141,13 @@ namespace DALHAL {
 
         void ScriptBlock::Exec() {
             for (int i=0;i<triggerBlockCount;i++) {
-                //if (triggerBlocks[i].triggerSource(triggerBlocks[i].context) == false)
-                //    continue;
+                if (triggerBlocks[i].event == nullptr) {
+                    GlobalLogger.Error(F("triggerBlocks[i].event == nullptr"));
+                } else {
+                    //if (triggerBlocks[i].event->CheckForEvent() == false) {
+                    //    continue;
+                    //}
+                }
                 HALOperationResult res = triggerBlocks[i].Exec();
                 if (res != HALOperationResult::Success) {
                     GlobalLogger.Error(F("trigger: "), HALOperationResultToString(res));

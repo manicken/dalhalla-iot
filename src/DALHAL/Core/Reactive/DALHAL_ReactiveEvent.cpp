@@ -32,6 +32,13 @@ namespace DALHAL {
         GlobalLogger.Error(F("ReactiveEventDefault triggered"));
         return false;
     }
+    ReactiveEvent::ReactiveEvent(CheckFn _checkFn) : checkFn(checkFn), deleteFn(nullptr), context(nullptr) {
+        if (_checkFn == nullptr) {
+            this->checkFn = ReactiveEventDefault;
+            GlobalLogger.Error(F("ReactiveEvent using ReactiveEventDefault"));
+        }
+        GlobalLogger.Info(F("ReactiveEvent(CheckFn _checkFn) was instanced"));
+    }
     ReactiveEvent::ReactiveEvent(CheckFn _checkFn, Deleter _deleteFn, void* context) : checkFn(checkFn), deleteFn(_deleteFn), context(context) {
         if (_checkFn == nullptr || _deleteFn == nullptr || context == nullptr ) {
             this->checkFn = ReactiveEventDefault;

@@ -138,19 +138,21 @@ namespace DALHAL {
             zcStr.Trim();
             size_t strLen = zcStr.Length(); // use of lenght here is fast
             if (f->type == FieldType::StringBase) {
-                if (strLen == 0) anyError = true;
-                GlobalLogger.Error(F("Basic String is empty"));
+                if (strLen == 0) {
+                    anyError = true;
+                    GlobalLogger.Error(F("Basic String is empty: "), f->name);
+                }
                 return;
             }
             if (f->type == FieldType::StringSizeConstrained) {
                 const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
-                    GlobalLogger.Error(F("String shorter than minLength:"), f->name);
+                    GlobalLogger.Error(F("String shorter than minLength: "), f->name);
                     anyError = true;
                     return;
                 }
                 if (fssc->maxLength > 0 && strLen > fssc->maxLength) {
-                    GlobalLogger.Error(F("String exceeds maxLength:"), f->name);
+                    GlobalLogger.Error(F("String exceeds maxLength: "), f->name);
                     anyError = true;
                     return;
                 }
@@ -163,12 +165,9 @@ namespace DALHAL {
                 const FieldStringAnyOfByFuncConstrained* fsaobfc = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
                 if (fsaobfc->validate(fsaobfc->ctx, value_cStr) == false) {
                     anyError = true;
-                    GlobalLogger.Error(F("Invalid value for field:"), f->name);
+                    GlobalLogger.Error(F("Invalid value for field: "), f->name);
                 }
-            } else {
-                anyError = true;
-                GlobalLogger.Error(F("Schema error - Invalid string type @ "), f->name);
-            }
+            } // else other string based types that do inherit from stringbase but take care of their own validation
             
         }
 
@@ -182,7 +181,7 @@ namespace DALHAL {
                 if (field->policy == FieldPolicy::Required) {
                     std::string errMsg;
                     serializeJson(j, errMsg);
-                    GlobalLogger.Error(F("Required field missing"), errMsg.c_str());
+                    GlobalLogger.Error(F("Required field missing: "), errMsg.c_str());
                     GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                     anyError = true;
                     return;
@@ -198,7 +197,7 @@ namespace DALHAL {
                     if (!value.is<int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
-                        GlobalLogger.Error(F(" must be a integer"), errStr.c_str());
+                        GlobalLogger.Error(F(" must be a integer: "), errStr.c_str());
                         //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
@@ -219,7 +218,7 @@ namespace DALHAL {
                     if (!value.is<unsigned int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
-                        GlobalLogger.Error(F(" must be unsigned int"), errStr.c_str());
+                        GlobalLogger.Error(F(" must be unsigned int: "), errStr.c_str());
                         //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
@@ -228,7 +227,7 @@ namespace DALHAL {
                     if (((f->minValue != 0) && (v < f->minValue)) || ((f->maxValue != 0) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
-                        GlobalLogger.Error(F(" uint out of range"), errStr.c_str());
+                        GlobalLogger.Error(F(" uint out of range: "), errStr.c_str());
                         //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
@@ -240,7 +239,7 @@ namespace DALHAL {
                     if (!value.is<float>() && !value.is<double>() && !value.is<int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
-                        GlobalLogger.Error(F(" must be a number"), errStr.c_str());
+                        GlobalLogger.Error(F(" must be a number: "), errStr.c_str());
                         //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
                         anyError = true;
                         return;
@@ -261,7 +260,7 @@ namespace DALHAL {
                     if (value.is<int8_t>() == false) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
-                        GlobalLogger.Error(F("Harware Pin is not a valid value"), errStr.c_str());
+                        GlobalLogger.Error(F("Harware Pin is not a valid value: "), errStr.c_str());
                         //GlobalLogger.setLastEntrySource(f->name); //  safe as field name is a flash const and setLastEntrySource require "static" strings as it just store the ptr to the string
                     }
                     
@@ -351,7 +350,7 @@ namespace DALHAL {
                         return;
                     } else {
                         // reject
-                        GlobalLogger.Error(F("validateField Number parse error"));
+                        GlobalLogger.Error(F("validateField Number parse error: "), f->name);
                         //GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
                         anyError = true;
                         return;
@@ -432,7 +431,7 @@ namespace DALHAL {
             if (foundCount != 0 && foundCount != totalCount) {
                 std::string errMsg = group->name;
                 errMsg += " @ "; errMsg += fieldName;
-                GlobalLogger.Error(F("AllOfGroup partially defined"), errMsg.c_str());
+                GlobalLogger.Error(F("AllOfGroup partially defined: "), errMsg.c_str());
                 anyError = true;
                 return;
             }
@@ -440,7 +439,7 @@ namespace DALHAL {
             if (foundCount == 0 && group->policy == FieldPolicy::Required) {
                 std::string errMsg = group->name;
                 errMsg += " @ "; errMsg += fieldName;
-                GlobalLogger.Error(F("Required AllOfGroup missing"), errMsg.c_str());
+                GlobalLogger.Error(F("Required AllOfGroup missing: "), errMsg.c_str());
                 anyError = true;
             }
         }
