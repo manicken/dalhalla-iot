@@ -26,29 +26,28 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
-    ReactiveEvent::SimpleContext::SimpleContext(uint32_t& _current) : current(_current) { }
+    ReactiveEvent::SimpleContext::SimpleContext(uint32_t& current) : current(current) { }
 
     bool ReactiveEventDefault(void* context) {
         GlobalLogger.Error(F("ReactiveEventDefault triggered"));
         return false;
     }
-    ReactiveEvent::ReactiveEvent(CheckFn _checkFn) : checkFn(_checkFn), deleteFn(nullptr), context(nullptr) {
-        if ( this->checkFn == nullptr) {
+    ReactiveEvent::ReactiveEvent(CheckFn checkFn) : checkFn(checkFn), deleteFn(nullptr), context(nullptr) {
+        if ( this->checkFn == nullptr ) {
             this->checkFn = ReactiveEventDefault;
             GlobalLogger.Error(F("ReactiveEvent using ReactiveEventDefault"));
         }
-        GlobalLogger.Info(F("ReactiveEvent(CheckFn _checkFn) was instanced"));
     }
-    ReactiveEvent::ReactiveEvent(CheckFn _checkFn, Deleter _deleteFn, void* _context) : checkFn(_checkFn), deleteFn(_deleteFn), context(_context) {
+    ReactiveEvent::ReactiveEvent(CheckFn checkFn, Deleter deleteFn, void* context) : checkFn(checkFn), deleteFn(deleteFn), context(context) {
         if ( this->checkFn == nullptr || this->deleteFn == nullptr || this->context == nullptr ) {
             this->checkFn = ReactiveEventDefault;
             GlobalLogger.Error(F("ReactiveEvent using ReactiveEventDefault"));
         }
     }
-    ReactiveEvent::ReactiveEvent(uint32_t* _current) {
+    ReactiveEvent::ReactiveEvent(uint32_t* current) {
         this->checkFn = ReactiveEvent::SimpleReactiveEventCheck;
         this->deleteFn = DeleteAs<ReactiveEvent::SimpleContext>;
-        context = new ReactiveEvent::SimpleContext(*_current);
+        context = new ReactiveEvent::SimpleContext(*current);
     }
     ReactiveEvent::~ReactiveEvent() {
         if (deleteFn && context) {
