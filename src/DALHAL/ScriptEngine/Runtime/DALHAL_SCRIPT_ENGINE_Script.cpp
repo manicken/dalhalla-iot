@@ -30,19 +30,20 @@
 namespace DALHAL {
     namespace ScriptEngine {
        
-        TriggerBlock::TriggerBlock() {
-            event = nullptr;
-        }
+        TriggerBlock::TriggerBlock() : event(nullptr), items(nullptr), itemsCount(0) { }
         TriggerBlock::~TriggerBlock() {
             delete event;
             delete[] items;
             items = nullptr;
+            event = nullptr;
             itemsCount = 0;
         }
         bool TriggerBlock::AllwaysRun(void* context) {
+            //GlobalLogger.Info(F("AllwaysRun"));
             return true;
         }
         bool TriggerBlock::NeverRun(void* context) {
+            //GlobalLogger.Info(F("NeverRun"));
             return false;
         }
 
@@ -63,13 +64,11 @@ namespace DALHAL {
             }
         }
 
-        ScriptBlock::ScriptBlock()
-        {
-
-        }
+        ScriptBlock::ScriptBlock() : triggerBlocks(nullptr), triggerBlockCount(0) { }
         ScriptBlock::~ScriptBlock()
         {
             delete[] triggerBlocks;
+            triggerBlocks = nullptr;
         }
 
         void ScriptBlock::Set(ScriptTokens& tokens) {
@@ -97,10 +96,10 @@ namespace DALHAL {
                     }
                     else
                     {
-                        //HALOperationResult res = DeviceManager::GetDeviceEvent(triggerSourceToken, &triggerBlock.event);
-                        //if (res != HALOperationResult::Success) {
-                            triggerBlock.event = new ReactiveEvent(TriggerBlock::NeverRun); // using special case of ReactiveEvent
-                        //}
+                        HALOperationResult res = DeviceManager::GetDeviceEvent(triggerSourceToken, &triggerBlock.event);
+                        if (res != HALOperationResult::Success) {
+                           triggerBlock.event = new ReactiveEvent(TriggerBlock::NeverRun); // using special case of ReactiveEvent
+                        }
                     }
                     //ReportTokenInfo(tokens.Current(), "this should be a then token: ", tokens.Current().ToString().c_str());
                     int itemCount = tokens.Current().itemsInBlock;
@@ -121,6 +120,9 @@ namespace DALHAL {
                     tokens.currIndex++;
                     
                 }
+            }
+            if (i != tokens.rootBlockCount) {
+                GlobalLogger.Error(F("i != tokens.rootBlockCount"));
             }
         }
 
@@ -144,9 +146,9 @@ namespace DALHAL {
                 if (triggerBlocks[i].event == nullptr) {
                     GlobalLogger.Error(F("triggerBlocks[i].event == nullptr"));
                 } else {
-                    //if (triggerBlocks[i].event->CheckForEvent() == false) {
-                    //    continue;
-                    //}
+                    if (triggerBlocks[i].event->CheckForEvent() == false) {
+                        continue;
+                    }
                 }
                 HALOperationResult res = triggerBlocks[i].Exec();
                 if (res != HALOperationResult::Success) {
