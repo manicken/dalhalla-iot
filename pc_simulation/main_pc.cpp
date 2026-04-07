@@ -36,6 +36,7 @@
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
    // #include "ports/DALHAL_REST/DALHAL_REST.h"
 #endif
+    #include "ports/DALHAL_WebSocketAPI/DALHAL_WebSocketAPI_Windows.h"
     #include <DALHAL/Support/ConvertHelper.h>
     #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
     #include <ArduinoJson.h>
@@ -66,8 +67,9 @@
         
         std::cout << "\n****** Starting REST api server:\n";
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-        //DALHAL::REST::setup(halJsonRestCallback); // this will start the server
+        DALHAL::WebSocketAPI::setup();
 #endif
+        
         std::cout << "\n****** Init DALHAL Manager\n";
         DALHAL::DeviceManager::setupMgr();
         DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();

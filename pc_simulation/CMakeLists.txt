@@ -56,6 +56,9 @@ set(INCLUDE_DIRS
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     *.cpp
     ../src/*.cpp
+    ../lib/PubSubClient/src/PubSubClient.cpp
+	../.pio/libdeps/esp32dev/Time/Time.cpp
+    ../.pio/libdeps/esp32dev/TimeAlarms/TimeAlarms.cpp
 )
 
 # Remove CMake-generated files
@@ -80,6 +83,10 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 # Windows specific libs
 # ---------------------------------------
 
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/.."
+)
+
 if (WIN32)
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE winhttp ws2_32)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE winhttp iphlpapi ws2_32)
 endif()

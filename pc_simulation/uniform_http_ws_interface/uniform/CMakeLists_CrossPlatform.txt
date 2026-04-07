@@ -1,0 +1,166 @@
+cmake_minimum_required(VERSION 3.10)
+project(DALHAL_CrossPlatform)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ============================================================================
+# Platform Detection
+# ============================================================================
+
+if(WIN32)
+    set(DALHAL_PLATFORM "Windows")
+    message(STATUS "Building for Windows")
+elseif(APPLE)
+    set(DALHAL_PLATFORM "macOS")
+    message(STATUS "Building for macOS")
+elseif(UNIX AND NOT APPLE)
+    set(DALHAL_PLATFORM "Linux")
+    message(STATUS "Building for Linux")
+endif()
+
+# ============================================================================
+# Core Files (Platform Independent)
+# ============================================================================
+
+set(DALHAL_CORE_HEADERS
+    IWebServer.h
+)
+
+# ============================================================================
+# Platform-Specific Implementation Files
+# ============================================================================
+
+if(DALHAL_PLATFORM STREQUAL "Windows")
+    set(DALHAL_IMPL_HEADERS
+        WebServerImpl_Windows.h
+    )
+    set(DALHAL_IMPL_SOURCES
+        WebServerImpl_Windows.cpp
+    )
+    set(DALHAL_PLATFORM_LIBS ws2_32 mswsock advapi32)
+    
+elseif(DALHAL_PLATFORM STREQUAL "Linux")
+    set(DALHAL_IMPL_HEADERS
+        WebServerImpl_Linux.h
+    )
+    set(DALHAL_IMPL_SOURCES
+        WebServerImpl_Linux.cpp
+    )
+    # TODO: Link appropriate libraries (ASIO, libevent, etc.)
+    set(DALHAL_PLATFORM_LIBS pthread)
+    
+elseif(DALHAL_PLATFORM STREQUAL "macOS")
+    set(DALHAL_IMPL_HEADERS
+        WebServerImpl_Linux.h  # Can reuse Linux implementation
+    )
+    set(DALHAL_IMPL_SOURCES
+        WebServerImpl_Linux.cpp
+    )
+    set(DALHAL_PLATFORM_LIBS pthread)
+endif()
+
+# ============================================================================
+# Build Options
+# ============================================================================
+
+option(BUILD_EXAMPLES "Build example applications" ON)
+option(BUILD_WITH_JSON "Build with JSON support (nlohmann/json)" OFF)
+
+# ============================================================================
+# Example Application Targets
+# ============================================================================
+
+if(BUILD_EXAMPLES)
+    # Cross-platform example
+    add_executable(CrossPlatform_Example
+        CrossPlatform_Example.cpp
+        ${DALHAL_IMPL_SOURCES}
+    )
+
+    target_include_directories(CrossPlatform_Example PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    target_link_libraries(CrossPlatform_Example PRIVATE
+        ${DALHAL_PLATFORM_LIBS}
+    )
+
+    if(BUILD_WITH_JSON)
+        target_compile_definitions(CrossPlatform_Example PRIVATE USE_JSON)
+        # Requires: conan install . or manual nlohmann/json setup
+    endif()
+
+    # Windows-specific example (if on Windows)
+    if(DALHAL_PLATFORM STREQUAL "Windows")
+        add_executable(WebSocket_Server_Windows
+            WebSocket_Example_Windows.cpp
+            WebServerImpl_Windows.cpp
+        )
+
+        target_include_directories(WebSocket_Server_Windows PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+        target_link_libraries(WebSocket_Server_Windows PRIVATE
+            ws2_32 mswsock advapi32
+        )
+    endif()
+endif()
+
+# ============================================================================
+# Compiler Settings
+# ============================================================================
+
+if(MSVC)
+    # Visual Studio specific
+    add_compile_options(/W4 /WX)
+    
+    # Enable multiprocessor builds
+    add_compile_options(/MP)
+    
+    # Optimize for speed in Release
+    string(APPEND CMAKE_CXX_FLAGS_RELEASE " /O2")
+else()
+    # GCC/Clang
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    
+    # Release optimization
+    string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3")
+endif()
+
+# ============================================================================
+# Installation
+# ============================================================================
+
+# Install headers
+install(FILES ${DALHAL_CORE_HEADERS} ${DALHAL_IMPL_HEADERS}
+        DESTINATION include/DALHAL)
+
+# Install library (if building as library)
+# install(TARGETS DALHAL_lib DESTINATION lib)
+
+# ============================================================================
+# Summary
+# ============================================================================
+
+message(STATUS "")
+message(STATUS "========== DALHAL Cross-Platform Build ==========")
+message(STATUS "Platform:        ${DALHAL_PLATFORM}")
+message(STATUS "C++ Standard:    ${CMAKE_CXX_STANDARD}")
+message(STATUS "Build Examples:  ${BUILD_EXAMPLES}")
+message(STATUS "JSON Support:    ${BUILD_WITH_JSON}")
+message(STATUS "")
+
+if(BUILD_EXAMPLES)
+    message(STATUS "Targets:")
+    message(STATUS "  - CrossPlatform_Example")
+    if(DALHAL_PLATFORM STREQUAL "Windows")
+        message(STATUS "  - WebSocket_Server_Windows")
+    endif()
+    message(STATUS "")
+endif()
+
+message(STATUS "Use 'cmake --build . --config Release' to build")
+message(STATUS "==================================================")
+message(STATUS "")
