@@ -25,18 +25,9 @@
 #include <DALHAL/Support/ConvertHelper.h> // for Convert::toBin & Convert::toHex
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <System/Info.h>
-/*
-#define ENUM_TO_MASK(a) static_cast<DALHAL_GPIO_MGR_PINFUNC_TYPE>(a)
-#define MAKE_PIN_MASK_8(a, b, c, d, e, f, g, h) (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f) | ENUM_TO_MASK(g) | ENUM_TO_MASK(h))
-#define MAKE_PIN_MASK_7(a, b, c, d, e, f, g)    (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f) | ENUM_TO_MASK(g))
-#define MAKE_PIN_MASK_6(a, b, c, d, e, f)       (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e) | ENUM_TO_MASK(f))
-#define MAKE_PIN_MASK_5(a, b, c, d, e)          (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d) | ENUM_TO_MASK(e))
-#define MAKE_PIN_MASK_4(a, b, c, d)             (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c) | ENUM_TO_MASK(d))
-#define (a, b, c)                (ENUM_TO_MASK(a) | ENUM_TO_MASK(b) | ENUM_TO_MASK(c))
-#define (a, b)                   (ENUM_TO_MASK(a) | ENUM_TO_MASK(b))
-#define MAKE_PIN_MASK_1(a)                      (ENUM_TO_MASK(a))
-*/
+
+#include <System/Info.h> // Info::getESPVariant()
+
 namespace DALHAL {
 
     namespace GPIO_manager
@@ -239,7 +230,7 @@ namespace DALHAL {
         }
 
         bool CheckIfPinAvailable(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            for (int i = 0; i < available_gpio_list_size; i++) {
+            for (int i = 0; i < (int)available_gpio_list_size; i++) {
                 const gpio_pin& pinDef = available_gpio_list[i];
                 if (pinDef.pin != pin) continue;
                 
@@ -285,14 +276,14 @@ namespace DALHAL {
             //if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
             if (reservedPins == nullptr)
                 reservedPins = new uint8_t[available_gpio_list_size];
-            for (int i=0;i<available_gpio_list_size;i++)
+            for (int i=0;i<(int)available_gpio_list_size;i++)
                 reservedPins[i] = 0;
         }
         /** it's recommended to call CheckIfPinAvailable prior to using this function,
          * this function is very basic and do only set the actual pin to reserved state, 
          * so calling it many times on the same pin have no effect */
         void ReservePin(uint8_t pin) {
-            for (int i=0;i<available_gpio_list_size;i++) {
+            for (int i=0;i<(int)available_gpio_list_size;i++) {
                 if (available_gpio_list[i].pin == pin) {
                     reservedPins[i] = 1;
                     return;
@@ -301,6 +292,7 @@ namespace DALHAL {
         }
 
         void triStateAvailablePins() {
+#if defined(ESP8266) || defined(ESP32)
             gpio_config_t io_conf{};
             io_conf.mode = GPIO_MODE_INPUT;
             io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
@@ -329,6 +321,7 @@ namespace DALHAL {
             if (res != ESP_OK) {
                 printf("Failed to tri-state GPIO manager pins: %d\n", res);
             }
+#endif
         }
 
 
@@ -380,7 +373,7 @@ namespace DALHAL {
             strList.append("\"list\":{");
             bool first = true;
            // if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
-            for (int i=0;i<available_gpio_list_size;i++)
+            for (int i=0;i<(int)available_gpio_list_size;i++)
             {
                 if (first == false)
                     strList.append(",");

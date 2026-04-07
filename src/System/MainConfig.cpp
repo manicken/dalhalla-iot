@@ -82,10 +82,12 @@ namespace MainConfig {
 
     void SetDefault_mDNS_name()
     {
+#if defined(ESP8266) || defined(ESP32)
         mDNS_name = WIFI_CHIPID_PREFIX;
         uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
         mDNS_name.concat(String(macAddrBigEndian & 0xFFFFFF,HEX));
         mDNS_name.toUpperCase();
+#endif
     }
 
     void OnReadJsonFail()
@@ -93,20 +95,21 @@ namespace MainConfig {
         SetDefault_mDNS_name();
     }
 
+    /* now exists as a endpoint in the new API
     void Restart(AsyncWebServerRequest *req)
     {
         req->send(200, "text/html", "The device will now restart!");
         delay(500);
         ESP.restart(); // the only way to do a proper reload of main settings
-    }
+    }*/
 
-    void begin(WEBSERVER_TYPE &srv) {
+    void begin(/*WEBSERVER_TYPE &srv*/) {
 
         //webserver = &srv;
-        srv.on(MAIN_CONFIG_URL_RELOAD_JSON, HTTP_GET, Restart);
+        //srv.on(MAIN_CONFIG_URL_RELOAD_JSON, HTTP_GET, Restart);
         if (ReadJson() == false) {
             OnReadJsonFail();
-            DEBUG_UART.println(lastJSONread_Error.c_str());
+            printf(lastJSONread_Error.c_str());
         }
     }
 }

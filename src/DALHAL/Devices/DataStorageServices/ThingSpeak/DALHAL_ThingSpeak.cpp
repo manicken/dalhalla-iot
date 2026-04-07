@@ -103,9 +103,9 @@ namespace DALHAL {
 
     void ThingSpeak::loop() {
         if (useOwnTaskLoop == false) return;
-        
+#if defined(ESP8266) || defined(ESP32)
         if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping ThingSpeak task"); }
-
+#endif
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;

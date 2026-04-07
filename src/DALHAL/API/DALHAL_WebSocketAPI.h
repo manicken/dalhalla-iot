@@ -52,10 +52,10 @@ namespace DALHAL {
     public:
         static void setup();
         inline static void loop() { asyncWebSocket->cleanupClients(); }
-        static void SendMessage(std::string &msg);
-        static void SendMessage(const char* msg);
+        static void Broadcast(std::string &msg);
+        static void Broadcast(const char* msg);
         /** can be used to combine two messages */ 
-        static void SendMessage(const char* source, const char* msg);
-        //static void SendMessage(const char* fmt, ...);
+        static void Broadcast(const char* source, const char* msg);
+        //static void Broadcast(const char* fmt, ...);
     };
 }

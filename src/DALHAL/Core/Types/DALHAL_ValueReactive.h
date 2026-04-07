@@ -38,7 +38,7 @@ namespace DALHAL {
     private:
         void* context = nullptr; // usually a Device*, can be anything
         OnSetCallback setCallback = nullptr;
-        OnGetCallback getCallback = nullptr;
+        //OnGetCallback getCallback = nullptr;
         
     public:
         ReactiveHALValue();
@@ -57,18 +57,18 @@ namespace DALHAL {
             if (setCallback)
                 setCallback(context);
         }
-        inline void triggerGetCallback() const {
+        /*inline void triggerGetCallback() const {
             if (getCallback)
                 getCallback(context);
-        }
+        }*/
 
         void set(int32_t v);
         void set(uint32_t v);
         void set(float v);
 
-        int32_t asInt() const;
-        uint32_t asUInt() const;
-        float asFloat() const;
+//        int32_t asInt() const;
+//        uint32_t asUInt() const;
+//        float asFloat() const;
 
         operator uint8_t() const;
         operator uint16_t() const;

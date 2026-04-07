@@ -23,6 +23,7 @@
 
 #include "HearbeatLed.h"
 #include <DALHAL/Support/ConvertHelper.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace HeartbeatLed
 {
@@ -33,9 +34,36 @@ namespace HeartbeatLed
     unsigned long currentMillis = 0;
     unsigned long currentInterval = 0;
     
-    void setup(WEBSERVER_TYPE &srv)
+    bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res)
     {
-        //webserver = &srv;
+        DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+        if (zcCmd.EqualsIC("set")) {
+            zcCmd = zcStr.SplitOffHead('/');
+            DALHAL::ZeroCopyString zcValue = zcStr.SplitOffHead('/');
+            if (zcValue.Length() == 0) {
+                res = "Error - 'set' cmd value missing: >>>" + zcCmd.ToString() + "<<<";
+                return false;
+            }
+            DALHAL::NumberResult numRes = zcValue.ConvertStringToNumber();
+            if (numRes.type != DALHAL::NumberType::UINT32) {
+                res = "Error - 'set' cmd value is not a unsigned integer: >>>" + zcValue.ToString() + "<<<";
+                return false;
+            }
+            if (zcCmd.EqualsIC("on")) {
+                HeartbeatLed::HEARTBEATLED_ON_INTERVAL = numRes.u32;
+            } else if (zcCmd.EqualsIC("off")) {
+                HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = numRes.u32;
+            } else {
+                res = "Error - 'set' cmd not found: >>>" + zcCmd.ToString() + "<<< (possible cmds: on, off)";
+                return false;
+            }
+            res = "{\"OK\":\"value set\"}";
+            return true;
+        } else {
+            res = "Error - cmd not found: >>>" + zcCmd.ToString() + "<<< (possible cmds: set)";
+            return false;
+        }
+        /* old code 
         srv.on("/HeartbeatLed/set", [](AsyncWebServerRequest *request) {
             bool hadAnyArg = false;
             String ret = "";
@@ -68,7 +96,7 @@ namespace HeartbeatLed
             }
             request->send(200, "text/html", ret);
         });
-        setup();
+        */
     }
     void setup(unsigned long onInterval, unsigned long offInterval)
     {

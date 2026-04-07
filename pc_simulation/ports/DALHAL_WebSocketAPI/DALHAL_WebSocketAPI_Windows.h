@@ -51,9 +51,9 @@ namespace DALHAL {
         static void shutdown();
 
         // Send message to all connected clients
-        static void SendMessage(const std::string& msg);
-        static void SendMessage(const char* msg);
-        static void SendMessage(const char* source, const char* msg);
+        static void Broadcast(const std::string& msg);
+        static void Broadcast(const char* msg);
+        static void Broadcast(const char* source, const char* msg);
 
         // Check if server is running
         static bool isRunning();

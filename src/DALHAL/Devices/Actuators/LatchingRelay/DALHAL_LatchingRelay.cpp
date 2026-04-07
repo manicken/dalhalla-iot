@@ -45,7 +45,7 @@ namespace DALHAL {
         return new LatchingRelay(context);
     }
 
-#if !defined(esp32c3) && !defined(esp32c6)
+#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
         GPIO.out_w1ts = mask;
     }
@@ -78,7 +78,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data.driveOn = true;
         isr_data.gpio_currentPin = somePin;
         
-#if !defined(esp32c3) && !defined(esp32c6)
+#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
         if (somePin < 32) {
             isr_data.gpio_currentActivePinMask = (1UL << somePin);
             if (regType == GpioRegType::Set) {
@@ -114,10 +114,10 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             isr_data->gpio_reg_func(isr_data->gpio_currentActivePinMask);
             isr_data->driveOn = false;
         }
-
+#if defined(ESP8266) || defined(ESP32)
         // Disable only the triggering interrupt
         gpio_intr_disable(isr_data->gpio_currentPin);
-
+#endif
         // signal to "main loop"
         isr_data->handled = true;
     }
@@ -183,6 +183,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     LatchingRelay::~LatchingRelay() {
+#if defined(ESP8266) || defined(ESP32)
         // FREE all used pins by setting them to INPUTS
         uint64_t mask = 0;
 
@@ -210,10 +211,11 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         if (res != ESP_OK) {
             printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
         }
+#endif
     }
 
     void LatchingRelay::setup() {
-
+#if defined(ESP8266) || defined(ESP32)
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
 
@@ -268,6 +270,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
             gpio_isr_handler_add(pinFeedbackSet, &endstop_isr, (void*)&this->isr_data);
         }
+#endif
         driveToReset();
         stopDrive();
     }
@@ -458,12 +461,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     void LatchingRelay::disableFeedbackSignalInterrupts() {
+#if defined(ESP8266) || defined(ESP32)
         if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_disable(pinFeedbackReset);
         }
         if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_disable(pinFeedbackSet);
         }
+#endif
     }
 
     void LatchingRelay::stopDrive() {
@@ -471,13 +476,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             state = State::Idle;
         motionStartMs = 0;
         disableFeedbackSignalInterrupts();
-
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::Direct) {
             gpio_set_level(pins.direct.a, 0);
             gpio_set_level(pins.direct.b, 0);
         } else if (mode == DriveMode::DataEnable) {
             gpio_set_level(pins.data_enable.enable, 0);
         }
+#endif
     }
 
     void LatchingRelay::driveToReset() {
@@ -485,6 +491,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableFeedbackSignalInterrupts();
         state = State::DrivingReset;
         isr_data.location = Location::Unknown;
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::Direct) {
             gpio_set_level(pins.direct.b, 0);
             gpio_set_level(pins.direct.a, 1);            
@@ -494,11 +501,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_set_level(pins.data_enable.enable, 1);
             configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
+#endif
         motionStartMs = millis();
+#if defined(ESP8266) || defined(ESP32)
         //gpio_intr_disable(pinMaxEndStop); allready disabled in disableEndstopInterrupts
         if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_enable(pinFeedbackReset);
         }
+#endif
     }
 
     void LatchingRelay::driveToSet() {
@@ -506,6 +516,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableFeedbackSignalInterrupts();
         state = State::DrivingSet;
         isr_data.location = Location::Unknown;
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::Direct) {
             gpio_set_level(pins.direct.a, 0);
             gpio_set_level(pins.direct.b, 1);
@@ -515,14 +526,18 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_set_level(pins.data_enable.enable, 1);
             configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
+#endif
         motionStartMs = millis();
+#if defined(ESP8266) || defined(ESP32)
         // gpio_intr_disable(pinMinEndStop); allready disabled in disableEndstopInterrupts
         if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_enable(pinFeedbackSet);
         }
+#endif
     }
 
     bool LatchingRelay::resetActive() const {
+#if defined(ESP8266) || defined(ESP32)
         // 1) Physical pin says active
         int level = (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackReset):0;
         bool pinActive = pinFeedbackResetActiveHigh ? (level == 1) : (level == 0);
@@ -537,9 +552,13 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
+#else
+        return true;
+#endif
     }
 
     bool LatchingRelay::setActive() const {
+#if defined(ESP8266) || defined(ESP32)
         // 1) Physical pin says active
         int level = (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackSet):0;
         bool pinActive = pinFeedbackSetActiveHigh ? (level == 1) : (level == 0);
@@ -553,6 +572,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
+#else
+        return true;
+#endif
     }
 
     String LatchingRelay::ToString() {

@@ -1,64 +1,66 @@
 #include "mimetable.h"
-#include "pgmspace.h"
-#include "WString.h"
+//#include "pgmspace.h"
+//#include "WString.h"
+#include <string>
+#include <cstring>  // for strlen, strcmp etc.
 
 namespace mime
 {
 
-static const char kHtmlSuffix[] PROGMEM = ".html";
-static const char kHtmSuffix[] PROGMEM = ".htm";
-static const char kTxtSuffix[] PROGMEM = ".txt";
+static const char kHtmlSuffix[]  = ".html";
+static const char kHtmSuffix[]  = ".htm";
+static const char kTxtSuffix[]  = ".txt";
 #ifndef MIMETYPE_MINIMAL
-static const char kCssSuffix[] PROGMEM = ".css";
-static const char kJsSuffix[] PROGMEM = ".js";
-static const char kJsonSuffix[] PROGMEM = ".json";
-static const char kPngSuffix[] PROGMEM = ".png";
-static const char kGifSuffix[] PROGMEM = ".gif";
-static const char kJpgSuffix[] PROGMEM = ".jpg";
-static const char kJpegSuffix[] PROGMEM = ".jpeg";
-static const char kIcoSuffix[] PROGMEM = ".ico";
-static const char kSvgSuffix[] PROGMEM = ".svg";
-static const char kTtfSuffix[] PROGMEM = ".ttf";
-static const char kOtfSuffix[] PROGMEM = ".otf";
-static const char kWoffSuffix[] PROGMEM = ".woff";
-static const char kWoff2Suffix[] PROGMEM = ".woff2";
-static const char kEotSuffix[] PROGMEM = ".eot";
-static const char kSfntSuffix[] PROGMEM = ".sfnt";
-static const char kXmlSuffix[] PROGMEM = ".xml";
-static const char kPdfSuffix[] PROGMEM = ".pdf";
-static const char kZipSuffix[] PROGMEM = ".zip";
-static const char kAppcacheSuffix[] PROGMEM = ".appcache";
+static const char kCssSuffix[]  = ".css";
+static const char kJsSuffix[]  = ".js";
+static const char kJsonSuffix[]  = ".json";
+static const char kPngSuffix[]  = ".png";
+static const char kGifSuffix[]  = ".gif";
+static const char kJpgSuffix[]  = ".jpg";
+static const char kJpegSuffix[]  = ".jpeg";
+static const char kIcoSuffix[]  = ".ico";
+static const char kSvgSuffix[]  = ".svg";
+static const char kTtfSuffix[]  = ".ttf";
+static const char kOtfSuffix[]  = ".otf";
+static const char kWoffSuffix[]  = ".woff";
+static const char kWoff2Suffix[]  = ".woff2";
+static const char kEotSuffix[]  = ".eot";
+static const char kSfntSuffix[]  = ".sfnt";
+static const char kXmlSuffix[]  = ".xml";
+static const char kPdfSuffix[]  = ".pdf";
+static const char kZipSuffix[]  = ".zip";
+static const char kAppcacheSuffix[]  = ".appcache";
 #endif // MIMETYPE_MINIMAL
-static const char kGzSuffix[] PROGMEM = ".gz";
-static const char kDefaultSuffix[] PROGMEM = "";
+static const char kGzSuffix[]  = ".gz";
+static const char kDefaultSuffix[]  = "";
 
-static const char kHtml[] PROGMEM = "text/html";
-static const char kTxt[] PROGMEM = "text/plain";
+static const char kHtml[]  = "text/html";
+static const char kTxt[]  = "text/plain";
 #ifndef MIMETYPE_MINIMAL
-static const char kCss[] PROGMEM = "text/css";
-static const char kJs[] PROGMEM = "application/javascript";
-static const char kJson[] PROGMEM = "application/json";
-static const char kPng[] PROGMEM = "image/png";
-static const char kGif[] PROGMEM = "image/gif";
-static const char kJpg[] PROGMEM = "image/jpeg";
-static const char kJpeg[] PROGMEM = "image/jpeg";
-static const char kIco[] PROGMEM = "image/x-icon";
-static const char kSvg[] PROGMEM = "image/svg+xml";
-static const char kTtf[] PROGMEM = "application/x-font-ttf";
-static const char kOtf[] PROGMEM = "application/x-font-opentype";
-static const char kWoff[] PROGMEM = "application/font-woff";
-static const char kWoff2[] PROGMEM = "application/font-woff2";
-static const char kEot[] PROGMEM = "application/vnd.ms-fontobject";
-static const char kSfnt[] PROGMEM = "application/font-sfnt";
-static const char kXml[] PROGMEM = "text/xml";
-static const char kPdf[] PROGMEM = "application/pdf";
-static const char kZip[] PROGMEM = "application/zip";
-static const char kAppcache[] PROGMEM = "text/cache-manifest";
+static const char kCss[]  = "text/css";
+static const char kJs[]  = "application/javascript";
+static const char kJson[]  = "application/json";
+static const char kPng[]  = "image/png";
+static const char kGif[]  = "image/gif";
+static const char kJpg[]  = "image/jpeg";
+static const char kJpeg[]  = "image/jpeg";
+static const char kIco[]  = "image/x-icon";
+static const char kSvg[]  = "image/svg+xml";
+static const char kTtf[]  = "application/x-font-ttf";
+static const char kOtf[]  = "application/x-font-opentype";
+static const char kWoff[]  = "application/font-woff";
+static const char kWoff2[]  = "application/font-woff2";
+static const char kEot[]  = "application/vnd.ms-fontobject";
+static const char kSfnt[]  = "application/font-sfnt";
+static const char kXml[]  = "text/xml";
+static const char kPdf[]  = "application/pdf";
+static const char kZip[]  = "application/zip";
+static const char kAppcache[]  = "text/cache-manifest";
 #endif // MIMETYPE_MINIMAL
-static const char kGz[] PROGMEM = "application/x-gzip";
-static const char kDefault[] PROGMEM = "application/octet-stream";
+static const char kGz[]  = "application/x-gzip";
+static const char kDefault[]  = "application/octet-stream";
 
-const Entry mimeTable[maxType] PROGMEM =
+const Entry mimeTable[maxType]  =
 {
     { kHtmlSuffix, kHtml },
     { kHtmSuffix, kHtml },
@@ -88,14 +90,21 @@ const Entry mimeTable[maxType] PROGMEM =
     { kDefaultSuffix, kDefault }
 };
 
-    String getContentType(const String& path) {
+    bool endsWith(const std::string& str, const char* suffix) {
+        size_t suffixSize = strlen(suffix);
+        return str.size() >= suffixSize &&
+            str.compare(str.size() - suffixSize, suffixSize, suffix) == 0;
+    }
+
+    const char* getContentType(const std::string& path) {
+        
         for (size_t i = 0; i < maxType; i++) {
-            if (path.endsWith(FPSTR(mimeTable[i].endsWith))) {
-                return String(FPSTR(mimeTable[i].mimeType));
+            if (endsWith(path, mimeTable[i].endsWith)) {
+                return mimeTable[i].mimeType;
             }
         }
         // Fall-through and just return default type
-        return String(FPSTR(kDefault));
+        return "kDefault";
     }
 
 }

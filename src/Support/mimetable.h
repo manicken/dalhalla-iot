@@ -1,7 +1,8 @@
 #ifndef __MIMETABLE_H__
 #define __MIMETABLE_H__
 
-#include "WString.h"
+//#include "WString.h"
+#include <string>
 
 namespace mime
 {
@@ -46,7 +47,7 @@ struct Entry
 
 extern const Entry mimeTable[maxType];
 
-String getContentType(const String& path);
+const char* getContentType(const std::string& path);
 }
 
 #endif

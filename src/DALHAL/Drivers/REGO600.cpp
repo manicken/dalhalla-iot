@@ -26,7 +26,7 @@
 #if defined(ESP8266) || defined(ESP32)
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
-#include <DALHAL/API/DALHAL_WebSocketAPI_win.h> // for SendMessage
+#include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
 #endif
 
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -74,7 +74,7 @@ namespace Drivers {
 
     void REGO600::DebugErrorMessage(const char* msg) {
         printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
-        DALHAL::WebSocketAPI::SendMessage(DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg);
         GlobalLogger.Error(F(DRIVERS_REGO600_ERROR_BASE_STR), msg);
     }
 
@@ -415,7 +415,7 @@ namespace Drivers {
     void REGO600::RefreshLoop_SendCurrent() {
         Request* req = refreshLoopList[refreshLoopIndex];
         //std::string reqDebugStr = req->ToString();
-        //DALHAL::WebSocketAPI::SendMessage(reqDebugStr);
+        //DALHAL::WebSocketAPI::Broadcast(reqDebugStr);
 
         uartTxBuffer[1] = (uint8_t)req->info.opcode;
         SetRequestAddr(req->def.address);
@@ -624,7 +624,7 @@ namespace Drivers {
             if (refreshLoopList == nullptr) { return; }
             unsigned long now = millis();
             if (now - lastUpdateMs >= refreshTimeMs) {
-                //DALHAL::WebSocketAPI::SendMessage("RefreshLoop_Restart"); // just to see that this worked
+                //DALHAL::WebSocketAPI::Broadcast("RefreshLoop_Restart"); // just to see that this worked
                 RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
             }
             return; // usually dont expect a response directly
@@ -679,7 +679,7 @@ namespace Drivers {
             if ((now - lastRequestMs) >= requestTimeoutMs) {
                 //DebugErrorMessage("REGO600-req-TiOu");
                 GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
-                DALHAL::WebSocketAPI::SendMessage("REGO600-request-timeout");
+                DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout");
                 
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
                 SendRequestFrameAndResetRx(); // retry @ timeout

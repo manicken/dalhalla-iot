@@ -20,10 +20,11 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
+#if defined(ESP32) || defined(ESP8266)
 #pragma once
 
 #include <Arduino.h>
+#include <string>
 
 namespace LittleFS_ext
 {
@@ -46,5 +47,6 @@ namespace LittleFS_ext
 
     int getFileSize(const char* file_name);
     void listDir(Stream &printStream, const char *dirname, uint8_t level);
-    void listDir(String &str, ListMode mode, const char *dirname, uint8_t level = 0);
+    void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level = 0);
 }
+#endif

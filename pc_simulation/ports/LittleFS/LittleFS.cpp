@@ -23,11 +23,28 @@
 
 #include "LittleFS.h"
 
+
+#ifdef _WIN32
+    #include <windows.h>
+    
+#else
+    #include <sys/stat.h>
+    
+#endif
+
 LittleFS_class::LittleFS_class() {}
 
 bool LittleFS_class::exists(const char* path) {
     std::ifstream file(path);
     return file.good();    
+}
+
+bool LittleFS_class::mkdir(const char *path) {
+#ifdef _WIN32
+    CreateDirectoryA(path, NULL);
+#else // linux
+    mkdir(path, 0755);
+#endif
 }
 
 LittleFS_class LittleFS;

@@ -47,7 +47,7 @@ namespace DALHAL {
     }
 
 
-#if !defined(esp32c3) && !defined(esp32c6)
+#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
         GPIO.out_w1ts = mask;
     }
@@ -80,7 +80,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data.driveOn = true;
         isr_data.gpio_currentPin = somePin;
         
-#if !defined(esp32c3) && !defined(esp32c6)
+#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
         if (somePin < 32) {
             isr_data.gpio_currentActivePinMask = (1UL << somePin);
             if (regType == GpioRegType::Set) {
@@ -116,10 +116,10 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             isr_data->gpio_reg_func(isr_data->gpio_currentActivePinMask);
             isr_data->driveOn = false;
         }
-
+#if defined(ESP8266) || defined(ESP32)
         // Disable only the triggering interrupt
         gpio_intr_disable(isr_data->gpio_currentPin);
-
+#endif
         // signal to "main loop"
         isr_data->handled = true;
     }
@@ -188,6 +188,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     Actuator::~Actuator() {
         // FREE all used pins by setting them to INPUTS
+#if defined(ESP8266) || defined(ESP32)
         uint64_t mask = 0;
 
         if (mode == DriveMode::HBridge) {
@@ -214,12 +215,13 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         if (res != ESP_OK) {
             printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
         }
+#endif
     }
 
     
 
     void Actuator::setup() {
-
+#if defined(ESP8266) || defined(ESP32)
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
         if (mode == DriveMode::DirEnable) {
@@ -272,6 +274,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
             gpio_isr_handler_add(pinMaxEndStop, &endstop_isr, (void*)&this->isr_data);
         }
+#endif
         reset();
         stopDrive();
     }
@@ -451,12 +454,14 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     void Actuator::disableEndstopInterrupts() {
+#if defined(ESP8266) || defined(ESP32)
         if (pinMinEndStop != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_disable(pinMinEndStop);
         }
         if (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_disable(pinMaxEndStop);
         }
+#endif
     }
 
     void Actuator::stopDrive() {
@@ -464,13 +469,14 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             state = State::Idle;
         motionStartMs = 0;
         disableEndstopInterrupts();
-
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.a, 0);
             gpio_set_level(pins.hbridge.b, 0);
         } else if (mode == DriveMode::DirEnable) {
             gpio_set_level(pins.diren.enable, 0);
         }
+#endif
     }
 
     void Actuator::driveToMin() {
@@ -478,6 +484,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableEndstopInterrupts();
         state = State::MovingToMin;
         isr_data.location = Location::Unknown;
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.b, 0);
             gpio_set_level(pins.hbridge.a, 1);            
@@ -487,11 +494,14 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_set_level(pins.diren.enable, 1);
             configureISRData(pins.diren.enable, GpioRegType::Clear);
         }
+#endif
         motionStartMs = millis();
+#if defined(ESP8266) || defined(ESP32)
         //gpio_intr_disable(pinMaxEndStop); allready disabled in disableEndstopInterrupts
         if (pinMinEndStop != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_enable(pinMinEndStop);
         }
+#endif
     }
 
     void Actuator::driveToMax() {
@@ -499,6 +509,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         disableEndstopInterrupts();
         state = State::MovingToMax;
         isr_data.location = Location::Unknown;
+#if defined(ESP8266) || defined(ESP32)
         if (mode == DriveMode::HBridge) {
             gpio_set_level(pins.hbridge.a, 0);
             gpio_set_level(pins.hbridge.b, 1);
@@ -508,14 +519,18 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             gpio_set_level(pins.diren.enable, 1);
             configureISRData(pins.diren.enable, GpioRegType::Clear);
         }
+#endif
         motionStartMs = millis();
+#if defined(ESP8266) || defined(ESP32)
         // gpio_intr_disable(pinMinEndStop); allready disabled in disableEndstopInterrupts
         if (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC) {
             gpio_intr_enable(pinMaxEndStop);
         }
+#endif
     }
 
     bool Actuator::endMinActive() const {
+#if defined(ESP8266) || defined(ESP32)
         // 1) Physical pin says active
         int level = (pinMinEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMinEndStop):0;
         bool pinActive = pinMinEndStopActiveHigh ? (level == 1) : (level == 0);
@@ -530,9 +545,13 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
+#else
+        return true;
+#endif
     }
 
     bool Actuator::endMaxActive() const {
+#if defined(ESP8266) || defined(ESP32)
         // 1) Physical pin says active
         int level = (pinMaxEndStop != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinMaxEndStop):0;
         bool pinActive = pinMaxEndStopActiveHigh ? (level == 1) : (level == 0);
@@ -546,6 +565,9 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
+#else
+        return true;
+#endif
     }
 
     String Actuator::ToString() {

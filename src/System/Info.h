@@ -25,7 +25,11 @@
 
 #include <Arduino.h>
 #include <LittleFS.h>
+#if defined(ESP32) || defined(ESP8266)
 #include <Support/LittleFS_ext.h>
+#else
+#include <LittleFS_ext.h>
+#endif
 
 #include <Support/Time_ext.h>
 
@@ -65,7 +69,7 @@ namespace Info
     extern time_t startTime;
 
     //void printESP_info(void);
-    String getESP_info();
+    std::string getESP_info();
     //void srv_handle_info(AsyncWebServerRequest *req);
     
     //bool resetReason_is_crash();

@@ -153,3 +153,7 @@ std::string HTTPClient::getString() {
 void HTTPClient::addHeader(const std::string&, const std::string&) {
     // You can extend this to keep a header list and send it in GET/POST
 }
+
+void HTTPClient::setTimeout(uint16_t timeout) {
+    
+}

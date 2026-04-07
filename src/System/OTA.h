@@ -23,7 +23,7 @@
 
 #ifndef OTA_H
 #define OTA_H
-
+#if defined(ESP32) || defined(ESP8266)
 #include <Arduino.h>
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -49,4 +49,5 @@ namespace OTA{
     
     
 }
+#endif
 #endif

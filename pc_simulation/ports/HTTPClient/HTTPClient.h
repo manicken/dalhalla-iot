@@ -25,6 +25,7 @@ public:
     int POST(const std::string& payload);
     std::string getString();
     void addHeader(const std::string& name, const std::string& value);
+    void setTimeout(uint16_t timeout);
 
 private:
 #ifdef _WIN32

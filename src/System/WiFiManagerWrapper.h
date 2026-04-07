@@ -20,7 +20,7 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
+#if defined(ESP32) || defined(ESP8266)
 #define WIFI_MANAGER_WRAPPER_H_
 
 #define WIFI_MANAGER_AP_PASSWORD "haljson" // to be changed, TODO override this in a secrets.h file that is not included to github
@@ -47,3 +47,5 @@ bool Setup();
 void Task();
 
 }
+
+#endif

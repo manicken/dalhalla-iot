@@ -357,24 +357,24 @@ namespace DALHAL {
         return server ? server->getClientCount() : 0;
     }
 
-    void WebSocketAPI::SendMessage(const std::string& msg) {
+    void WebSocketAPI::Broadcast(const std::string& msg) {
         std::lock_guard<std::mutex> lock(serverMutex);
         if (server) {
             server->broadcastMessage(msg);
         }
     }
 
-    void WebSocketAPI::SendMessage(const char* msg) {
-        SendMessage(std::string(msg));
+    void WebSocketAPI::Broadcast(const char* msg) {
+        Broadcast(std::string(msg));
     }
 
-    void WebSocketAPI::SendMessage(const char* source, const char* msg) {
+    void WebSocketAPI::Broadcast(const char* source, const char* msg) {
         std::string combined = std::string(source) + msg;
-        SendMessage(combined);
+        Broadcast(combined);
     }
 
     void WebSocketAPI::broadcastMessage(const std::string& msg) {
-        SendMessage(msg);
+        Broadcast(msg);
     }
 
 }

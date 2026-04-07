@@ -39,6 +39,9 @@
 #include <System/Info.h>
 #endif
 
+#include <DALHAL/Drivers/HearbeatLed.h>
+#include <Scheduler/Scheduler.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 #if defined(ESP8266)
@@ -105,7 +108,7 @@ namespace DALHAL {
                 anyErrors = execCmd(zcStr, message) == false;
             }
             else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_RELOAD_CFG_JSON)) {
-                long startMillis = millis();
+                //long startMillis = millis();
                 anyErrors = reloadJSON(zcStr, message) == false;
                 
                 //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
@@ -119,7 +122,7 @@ namespace DALHAL {
             else if (zcCommand.EqualsIC("scripts")) {
                 ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
                 if (zcSubCmd.EqualsIC("reload")) {
-                    long startMillis = millis();
+                    //long startMillis = millis();
                     anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
                     //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
                 } else if (zcSubCmd.EqualsIC("stop")) {
@@ -276,9 +279,9 @@ namespace DALHAL {
             if (zcCommand.EqualsIC("info")) {
                 if (cb != nullptr) {
 #if defined(ESP8266) || defined(ESP32)
-                    String infoMsg = Info::getESP_info();
+                    std::string infoMsg = Info::getESP_info();
 #else
-                    String infoMsg = "{\"mcu\":\"windows\"}";
+                    std::string infoMsg = "{\"mcu\":\"windows\"}";
 #endif
                     cb(infoMsg.c_str());
                 }
@@ -291,10 +294,23 @@ namespace DALHAL {
                 ESP.restart();
             }
 #endif
+            else if (zcCommand.EqualsIC("HeartbeatLed")) {
+                std::string resStr;
+                HeartbeatLed::parseCmd(zcStr, resStr);
+                if (cb != nullptr) {
+                    cb(resStr);
+                }
+            }
             else {
                 if (cb != nullptr) {
                     cb("error system sub command not found");
                 }
+            }
+        } else if (zcCommand.EqualsIC("schedule")) {
+            std::string resStr;
+            Scheduler::parseCmd(zcStr, resStr);
+            if (cb != nullptr) {
+                cb(resStr);
             }
         } else if (zcCommand.EqualsIC("ver")) {
             message += "\"build_version\":\"";

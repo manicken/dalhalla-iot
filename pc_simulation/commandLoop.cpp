@@ -22,11 +22,14 @@
 */
 
 #include "commandLoop.h"
+
+#include <LittleFS_ext.h>
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Tests.h>
 
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceDiscovery.h>
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CountingPubSubClient.h>
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_TopicBasePath.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 
 std::atomic<bool> running{true};
 
@@ -220,9 +223,8 @@ void parseCommand(const char* cmd, bool oneShot) {
         const char* uid_cStr =  deviceDoc["uid"];
         const char* deviceID_cStr = "PC_sim";
         const char* cfgTopic_cStr = DALHAL::HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceID_cStr, type_cStr, uid_cStr);
-        DALHAL::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceID_cStr, cfgTopic_cStr, deviceDoc, deviceGroupDoc, topicBasePath);
-    
-        std::cout << std::endl;
+        DALHAL::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceID_cStr, cfgTopic_cStr, uid_cStr, deviceDoc, deviceGroupDoc, topicBasePath);
+         std::cout << std::endl;
 
     } else {
         std::cout << "Unknown command: " << cmd << "\n";

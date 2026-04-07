@@ -31,6 +31,10 @@
 
 #include <WS2812FX.h>
 
+#if !defined(ESP8266) && !defined(ESP32)
+#define MODE_COUNT 80
+#endif
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -53,7 +57,7 @@ namespace DALHAL {
         constexpr FieldStringAnyOfArrayConstrained ifspeedField = {"ifspeed", FieldPolicy::Optional, "KHZ800", &ifspeedFieldConstraints};
 
         constexpr FieldUInt brightnessField = {"brightness", FieldPolicy::Optional, 1, 127, 127};
-        constexpr FieldUInt modeField = {"mode", FieldPolicy::Optional, 0, MODE_COUNT, 0};
+        constexpr FieldUInt modeField = {"mode", FieldPolicy::Optional, 0, MODE_COUNT, 0}; // MODE_COUNT is from WS2812FX.h
         constexpr FieldUInt fxspeedField = {"fxspeed", FieldPolicy::Optional, 0, 65535, 3000};
 
         constexpr const FieldBase* fields[] = {

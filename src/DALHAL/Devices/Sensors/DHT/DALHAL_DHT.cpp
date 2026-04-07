@@ -32,6 +32,8 @@
 
 #include "DALHAL_DHT_JSON_Schema.h"
 
+#include <math.h>
+
 namespace DALHAL {
     
     constexpr Registry::DefineBase DHT::RegistryDefine = {

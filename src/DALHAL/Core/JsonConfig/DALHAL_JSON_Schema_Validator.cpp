@@ -32,6 +32,8 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include <math.h>
+#include <cstdint>
 
 //using json = JsonVariant;
  
@@ -192,22 +194,33 @@ namespace DALHAL {
             JsonVariant value = j[field->name];
 
             switch (field->type) {
+                case FieldType::Bool: {
+                    if (!value.is<bool>()) {
+                        std::string errStr = field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(" must be a boolean (bool): "), errStr.c_str());
+
+                        anyError = true;
+                        return;
+                    }
+                }
                 case FieldType::Int: {
-                    auto f = static_cast<const FieldInt*>(field);
+                    
                     if (!value.is<int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" must be a integer: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
+                    auto f = static_cast<const FieldInt*>(field);
                     int v = value.as<int>();
                     if ((v < f->minValue) || ((f->maxValue != 0) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" int out of range: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
@@ -219,7 +232,7 @@ namespace DALHAL {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" must be unsigned int: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
@@ -228,7 +241,7 @@ namespace DALHAL {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" uint out of range: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
@@ -240,16 +253,16 @@ namespace DALHAL {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" must be a number: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
                     float v = value.as<float>();
-                    if ((isnanf(f->minValue) == false) && (v < f->minValue) || ((isnanf(f->maxValue) == false) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
+                    if (((isnan(f->minValue) == false) && (v < f->minValue)) || (((isnan(f->maxValue) == false) && (v > f->maxValue)))) { // if maxValue == 0 then the value can be anything
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F(" float out of range: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+
                         anyError = true;
                         return;
                     }
@@ -261,7 +274,6 @@ namespace DALHAL {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
                         GlobalLogger.Error(F("Harware Pin is not a valid value: "), errStr.c_str());
-                        //GlobalLogger.setLastEntrySource(f->name); //  safe as field name is a flash const and setLastEntrySource require "static" strings as it just store the ptr to the string
                     }
                     
                     int8_t pin = value.as<int8_t>();
@@ -274,7 +286,7 @@ namespace DALHAL {
                     return;
                 }
                 case FieldType::HardwarePinOrVirtualPin: {
-                    auto f = static_cast<const FieldHardwarePinOrVirtualPIN*>(field);
+                    auto f = static_cast<const FieldHardwarePinOrVirtualPIN*>(field); // TODO implement
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
 
@@ -345,7 +357,7 @@ namespace DALHAL {
                     } else if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowInt) && value.is<int>()) {
                         // accept as signed int
                         return;
-                    } else if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt) && value.is<uint>()) {
+                    } else if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt) && value.is<unsigned int>()) {
                         // accept as unsigned int
                         return;
                     } else {

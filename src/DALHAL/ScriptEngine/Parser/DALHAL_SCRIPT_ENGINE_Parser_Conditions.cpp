@@ -234,13 +234,13 @@ namespace DALHAL {
                             _tokens.currentEndIndex = 1;
                         }
                         
-                        ReportInfo("\n"); // newline
-        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                        ReportInfo(_tokens.SliceToString());
                         
-        #endif
+        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                         ReportInfo("\n"); // newline
-                        //conditions.currentEndIndex = conditions.count;
+                        ReportInfo(_tokens.SliceToString());
+                        ReportInfo("\n"); // newline
+        #endif
+
                         if (false == Expressions::ValidateExpression(_tokens)) anyError = true;
 
                     }
@@ -318,7 +318,7 @@ namespace DALHAL {
                         }
                         // Count actions in Then, ElseIf, Else, or On blocks
                         else if (token.type == ScriptTokenType::Then || token.type == ScriptTokenType::Else || 
-                                token.type == ScriptTokenType::ElseIf || token.type == ScriptTokenType::On) { // just a remainder to myself here we do actually need to reqognize the 'on' type
+                                token.type == ScriptTokenType::ElseIf || token.type == ScriptTokenType::On) { // just a remainder to myself here we do actually need to recognize the 'on' type
 
                             int count = 0;
                             int nestedLevel = 0;

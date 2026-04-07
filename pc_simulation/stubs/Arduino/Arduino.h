@@ -50,6 +50,8 @@ using String = std::string;
 #define LOW  0
 #define INPUT 0
 #define OUTPUT 1
+#define INPUT_PULLDOWN 0x09
+#define INPUT_PULLUP 0x05
 
 inline void yield() {
     std::this_thread::yield();

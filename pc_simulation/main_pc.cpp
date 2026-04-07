@@ -34,7 +34,7 @@
     #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
     #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-    #include "ports/DALHAL_REST/DALHAL_REST.h"
+   // #include "ports/DALHAL_REST/DALHAL_REST.h"
 #endif
     #include <DALHAL/Support/ConvertHelper.h>
     #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
@@ -66,7 +66,7 @@
         
         std::cout << "\n****** Starting REST api server:\n";
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
-        DALHAL::REST::setup(halJsonRestCallback); // this will start the server
+        //DALHAL::REST::setup(halJsonRestCallback); // this will start the server
 #endif
         std::cout << "\n****** Init DALHAL Manager\n";
         DALHAL::DeviceManager::setupMgr();

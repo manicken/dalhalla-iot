@@ -24,28 +24,21 @@
 #pragma once
 
 #include <TimeLib.h>
+
 #include <TimeAlarms.h>
 #include <ArduinoJson.h>
 #include <stdlib.h>
 #include <LittleFS.h>
+#if defined(ESP32) || defined(ESP8266)
 #include <Support/LittleFS_ext.h>
+#else
+#include <LittleFS_ext.h>
+#endif
 #include <Support/Time_ext.h>
 #include <Support/NTP.h>
 
 
-#if defined(ESP8266)
-//#include <ESP8266WebServer.h>
-#include <ESPAsyncWebServer.h>
-#define DEBUG_UART Serial1
-//#define WEBSERVER_TYPE ESP8266WebServer
-#define WEBSERVER_TYPE AsyncWebServer
-#elif defined(ESP32)
-//#include "Support/fs_WebServer.h"
-#include <ESPAsyncWebServer.h>
-#define DEBUG_UART Serial
-//#define WEBSERVER_TYPE fs_WebServer
-#define WEBSERVER_TYPE AsyncWebServer
-#endif
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 class AsStringParameter : public OnTickExtParameters
 {
@@ -59,12 +52,12 @@ public:
 namespace Scheduler
 {
     #define SCHEDULER_DIR_NAME                     F("/schedule")
-    #define SCHEDULER_CFG_FILE_PATH                F("/schedule/list.json")
-    #define SCHEDULER_URL_GET_TIME                 "/schedule/getTime"
-    #define SCHEDULER_URL_GET_SHORT_DOWS           "/schedule/getShortDows"
-    #define SCHEDULER_URL_GET_FUNCTION_NAMES       "/schedule/getFunctionNames"
-    #define SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS "/schedule/getMaxNumberOfAlarms"
-    #define SCHEDULER_URL_REFRESH                  "/schedule/refresh"
+    #define SCHEDULER_CFG_FILE_PATH                "/schedule/list.json"
+    #define SCHEDULER_URL_GET_TIME                 "getTime"
+    #define SCHEDULER_URL_GET_SHORT_DOWS           "getShortDows"
+    #define SCHEDULER_URL_GET_FUNCTION_NAMES       "getFunctionNames"
+    #define SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS "getMaxNumberOfAlarms"
+    #define SCHEDULER_URL_REFRESH                  "refresh"
 
     struct DayLookupTable {
         const char* abbreviation;
@@ -90,7 +83,7 @@ namespace Scheduler
 
     extern const DayLookupTable dayLookupTable[];
 
-    bool LoadJson(String filePath);
+    bool LoadJson(const char* filePath);
     void ParseItem(const JsonVariant& json);
 
     OnTick_t GetFunction(const char* name);
@@ -101,5 +94,6 @@ namespace Scheduler
     void HandleAlarms();
     std::string GetShortFormDowListAsJson();
 
-    void setup(WEBSERVER_TYPE &srv, NameToFunction* funcDefList, int funcDefListCount);
+    bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res);
+    void setup(NameToFunction* funcDefList, int funcDefListCount);
 }

@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <math.h>
 
 namespace DALHAL {
     
@@ -89,7 +90,8 @@ namespace DALHAL {
             generatedRegistries.reserve(32);
             addRegistrySchemaAndBuild(reg, "ROOT");
             out = '{';
-            for (int i=0;i<generatedRegistries.size();++i) {
+            int itemCount = generatedRegistries.size();
+            for (int i=0;i<itemCount;++i) {
                 if (i > 0) { out += ','; }
                 if (generatedRegistries[i].regPath == nullptr) {
                     out += "null" + std::to_string(i) + ":null";
@@ -142,7 +144,7 @@ namespace DALHAL {
                     appendQuoted(out, c.fieldRef->name);
                     out += ',';
                     appendKey(out, "required");
-                    out += c.required ? "true" : "false";
+                    appendBool(out, c.required);
                     out += '}';
                 }
                 out += ']';
@@ -257,7 +259,7 @@ namespace DALHAL {
 
             // required
             out += "\"required\":";
-            out += (f->policy == FieldPolicy::Required) ? "true" : "false";
+            appendBool(out, (f->policy == FieldPolicy::Required));
 
             // ---- type-specific extras ----
 
@@ -291,13 +293,13 @@ namespace DALHAL {
                 {
                     auto ff = static_cast<const FieldFloat*>(f);
                     out += ",\"min\":";
-                    if (isnanf(ff->minValue)) {
+                    if (isnan(ff->minValue)) {
                         out += "null";
                     } else {
                         out += std::to_string(ff->minValue);
                     }
                     out += ",\"max\":";
-                    if (isnanf(ff->maxValue)) {
+                    if (isnan(ff->maxValue)) {
                         out += "null";
                     } else {
                         out += std::to_string(ff->maxValue);
@@ -367,7 +369,7 @@ namespace DALHAL {
                 {
                     auto fo = static_cast<const FieldObject*>(f);
 
-                    out += ",\"object\":true";
+                    out += ",\"object\":true"; // TODO maybe remove this
 
                     if (fo->subtype) {
                         out += ",\"subtype\":";
@@ -418,7 +420,7 @@ namespace DALHAL {
             out += "\"type\":\"OneOfGroup\",";
 
             out += "\"required\":";
-            out += (group->policy == FieldPolicy::Required) ? "true" : "false";
+            appendBool(out, (group->policy == FieldPolicy::Required));
 
             out += ",\"fields\":[";
 
@@ -441,7 +443,7 @@ namespace DALHAL {
             out += "\"type\":\"AllOfGroup\",";
 
             out += "\"required\":";
-            out += (group->policy == FieldPolicy::Required) ? "true" : "false";
+            appendBool(out, (group->policy == FieldPolicy::Required));
 
             out += ",\"fields\":[";
 

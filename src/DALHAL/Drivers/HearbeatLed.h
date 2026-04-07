@@ -25,18 +25,7 @@
 
 #include <Arduino.h>
 
-#if defined(ESP8266)
-//#include <ESP8266WebServer.h>
-#include <ESPAsyncWebServer.h>
-#define DEBUG_UART Serial1
-#define WEBSERVER_TYPE AsyncWebServer
-#elif defined(ESP32)
-//#include "Support/fs_WebServer.h"
-#define DEBUG_UART Serial
-//#define WEBSERVER_TYPE fs_WebServer
-#include <ESPAsyncWebServer.h>
-#define WEBSERVER_TYPE AsyncWebServer
-#endif
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace HeartbeatLed
 {
@@ -77,6 +66,12 @@ namespace HeartbeatLed
     #define HEARTBEATLED_INACTIVESTATE HIGH
     #define HEARTBEATLED_DEFAULT_ON_INTERVAL 100
     #define HEARTBEATLED_DEFAULT_OFF_INTERVAL 4000
+#else
+    #define HEARTBEATLED_PIN 2
+    #define HEARTBEATLED_ACTIVESTATE HIGH
+    #define HEARTBEATLED_INACTIVESTATE LOW
+    #define HEARTBEATLED_DEFAULT_ON_INTERVAL 100
+    #define HEARTBEATLED_DEFAULT_OFF_INTERVAL 4000
 #endif
 
     extern unsigned long HEARTBEATLED_ON_INTERVAL;
@@ -84,7 +79,7 @@ namespace HeartbeatLed
     /** setups a simple HeartbeatLed not using webserver attachments */
     void setup();
     void setup(unsigned long onInterval, unsigned long offInterval);
-    void setup(WEBSERVER_TYPE &srv);
+    bool parseCmd(DALHAL::ZeroCopyString& zcCmd, std::string& res);
     void task(void);
     
 }

@@ -25,27 +25,27 @@
 
 namespace DALHAL {
 
-    ReactiveHALValue::ReactiveHALValue() : HALValue(), setCallback(nullptr), getCallback(nullptr), context(nullptr) {}
-    ReactiveHALValue::ReactiveHALValue(int32_t v) : HALValue(v), setCallback(nullptr), getCallback(nullptr), context(nullptr) {}
-    ReactiveHALValue::ReactiveHALValue(uint32_t v) : HALValue(v), setCallback(nullptr), getCallback(nullptr), context(nullptr) {}
-    ReactiveHALValue::ReactiveHALValue(float v) : HALValue(v), setCallback(nullptr), getCallback(nullptr), context(nullptr) {}
+    ReactiveHALValue::ReactiveHALValue() : HALValue(), context(nullptr), setCallback(nullptr) /*getCallback(nullptr),*/ {}
+    ReactiveHALValue::ReactiveHALValue(int32_t v) : HALValue(v), context(nullptr), setCallback(nullptr) /*getCallback(nullptr),*/ {}
+    ReactiveHALValue::ReactiveHALValue(uint32_t v) : HALValue(v), context(nullptr), setCallback(nullptr) /*getCallback(nullptr),*/ {}
+    ReactiveHALValue::ReactiveHALValue(float v) : HALValue(v), context(nullptr), setCallback(nullptr) /*getCallback(nullptr),*/ {}
 
     void ReactiveHALValue::setCallbacks(void* ctx, OnSetCallback setcb, OnGetCallback getcb) {
         if (ctx == nullptr) {
             // cannot execute without context
             setCallback = nullptr;
-            getCallback = nullptr;
+           // getCallback = nullptr;
             return;
         }
         this->context = ctx;
         this->setCallback = setcb;
-        this->getCallback = getcb;
+        //this->getCallback = getcb;
     }
 
     void ReactiveHALValue::set(int32_t v) { HALValue::set(v); triggerSetCallback(); }
     void ReactiveHALValue::set(uint32_t v) { HALValue::set(v); triggerSetCallback(); }
     void ReactiveHALValue::set(float v) { HALValue::set(v); triggerSetCallback(); }
-
+/*
     int32_t ReactiveHALValue::asInt() const {
         triggerGetCallback();
         return HALValue::asInt();
@@ -58,7 +58,7 @@ namespace DALHAL {
         triggerGetCallback();
         return HALValue::asFloat();
     }
-
+*/
     ReactiveHALValue::operator int32_t() const {
         return asInt();
     }

@@ -27,6 +27,7 @@
 #include "../Core/Types/DALHAL_ZeroCopyString.h"
 
 #include <time.h>
+#include <functional>
 
 enum class Loglevel : uint8_t {
     Info = 0,

@@ -29,7 +29,7 @@
 #if defined(ESP8266) || defined(ESP32)
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
-#include <DALHAL/API/DALHAL_WebSocketAPI_win.h> // for SendMessage
+#include <DALHAL_WebSocketAPI_Windows.h> // PC port - for SendMessage
 #endif
 #include "DALHAL_ButtonInput_JSON_Schema.h"
 
@@ -112,14 +112,14 @@ namespace DALHAL {
                     HALValue currValue;
                     HALOperationResult res = toggleTarget->ReadSimple(currValue);
                     if (res != HALOperationResult::Success) {
-                        WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
+                        WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
                         return;
                     } 
                     HALValue newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
                     toggleTarget->WriteSimple(newVal);
-                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
+                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
                 } else {
-                    WebSocketAPI::SendMessage("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
+                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
                 }
 
             } else {

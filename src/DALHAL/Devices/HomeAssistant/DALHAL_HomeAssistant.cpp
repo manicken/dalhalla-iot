@@ -154,7 +154,7 @@ namespace DALHAL {
         ZeroCopyString zcStart = zcTopic.GetHead(zcStartFirstDelimiter);
         if (zcStart.NotEmpty() && zcStart == DALHAL_HA_DD_CFG_ROOT_TOPIC) {
             // see DALHAL_HA_DD_CFG_TOPIC_FORMAT for the formatstr
-            const char* format = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
+            //const char* format = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
             zcTopic.start = zcStartFirstDelimiter+1;
             if (zcTopic.IsEmpty()) { return; } // error incorrect topic string
             ZeroCopyString zcType = zcTopic.SplitOffHead('/');
@@ -264,7 +264,7 @@ namespace DALHAL {
     }
 
     void HomeAssistant::ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj) {
-        int count = 0;
+        //int count = 0;
         const JsonArray& jsonArrayGroups = jsonObj["groups"];
         int jsonArrayGroupsCount = jsonArrayGroups.size();
         
@@ -338,8 +338,9 @@ namespace DALHAL {
 
     void HomeAssistant::loop() {
         if (!devices) return;
+#if defined(ESP8266) || defined(ESP32)
         if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping HomeAssistant task"); }
-
+#endif
         if (mqttClient.connected() == false) {
             
             unsigned long now = millis();

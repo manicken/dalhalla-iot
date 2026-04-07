@@ -28,7 +28,6 @@
 #include <string>
 #include <ArduinoJson.h>
 
-
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
@@ -49,6 +48,11 @@
 using Actuator_DeviceBase = DALHAL::Actuator_Reactive;
 #else
 using Actuator_DeviceBase = DALHAL::Device;
+#endif
+
+#if !defined(ESP8266) && !defined(ESP32)
+#define IRAM_ATTR
+#include <gpio_types.h>  // PC stub
 #endif
 
 namespace DALHAL {

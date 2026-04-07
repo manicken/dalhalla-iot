@@ -22,11 +22,16 @@
 */
 
 #include <TimeLib.h>
+
 #include <TimeAlarms.h>
 #include <ArduinoJson.h>
 #include <stdlib.h>
 #include <LittleFS.h>
+#if defined(ESP32) || defined(ESP8266)
 #include <Support/LittleFS_ext.h>
+#else
+#include <LittleFS_ext.h>
+#endif
 #include <Support/Time_ext.h>
 #include <Support/NTP.h>
 
@@ -67,30 +72,32 @@ namespace Scheduler
         //    Serial.println("Scheduler is null");
     }
 
-    bool LoadJson(String filePath)
+    bool LoadJson(const char* filePath)
     {
-        DEBUG_UART.println(F("TAFJ LJ start"));
 
-        if (LittleFS.exists(filePath) == false) { DEBUG_UART.print(F("LJ FNF: ")); DEBUG_UART.println(filePath); return false; }
+        printf("TAFJ LJ start");
+
+        if (LittleFS.exists(filePath) == false) { printf("LJ FNF:%s\r\n", filePath); return false; }
         
         size_t fileSize = 0;
         char *buff = nullptr;
 
-        if (LittleFS_ext::load_text_file(filePath.c_str(), &buff, &fileSize) != LittleFS_ext::FileResult::Success) {
-            DEBUG_UART.println(F("LJ LFSe LFFE")); // LoadJson LittleFS_ext::load_from_file error
+        if (LittleFS_ext::load_text_file(filePath, &buff, &fileSize) != LittleFS_ext::FileResult::Success) {
+            printf("LJ LFSe LFFE"); // LoadJson LittleFS_ext::load_from_file error
             return false;
         }
         size_t jsonDocBufferSize = (size_t)((float)fileSize * 1.5f);
         DynamicJsonDocument jsonDoc(jsonDocBufferSize);
         DeserializationError jsonStatus = deserializeJson(jsonDoc, buff);
-        //DEBUG_UART.print(F("deserialized json document size: ")); DEBUG_UART.println(jsonDoc.memoryUsage());
+
         if (jsonStatus != DeserializationError::Ok) {
             delete[] buff;
-            DEBUG_UART.printf("LJ err: "); DEBUG_UART.println((int)jsonStatus.code());
+            std::string strCode = std::to_string((int)jsonStatus.code());
+            printf("LJ err:&s\r\n", strCode.c_str());
             return false;
         }
         size_t itemCount = jsonDoc.size();
-        DEBUG_UART.print(itemCount); DEBUG_UART.println(F(" items"));
+        printf(" items count: %d", itemCount);
         
         // clear both timers and alarms (ALL)
         //for (uint8_t id = 0; id < dtNBR_ALARMS; id++) {
@@ -123,7 +130,7 @@ namespace Scheduler
         for (uint8_t i = 0; i < itemCount; i++) {
             ParseItem(jsonDoc[i]);
         }
-        DEBUG_UART.println(F("TAFJ LJ E")); // TimeAlarmsFromJson LoadJson en
+        printf("TAFJ LJ E"); // TimeAlarmsFromJson LoadJson en
 
         delete[] buff;
         return true;
@@ -271,8 +278,46 @@ namespace Scheduler
         ret += "]";
         return ret;
     }
+    bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res) {
+        DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+        if (zcCmd.EqualsIC(SCHEDULER_URL_REFRESH)) {
+            if (LoadJson(SCHEDULER_CFG_FILE_PATH)) {
+                res = "\"info\":\"schedule ld OK\"";
+                return true;
+            }
+            else {
+                res = "\"error\":\"schedule ld err\"";
+                return false;
+            }
+        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS)) {
+            res = "\"count\":\"" + std::to_string(dtNBR_ALARMS) + "\"";
+            return true;
+        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_FUNCTION_NAMES)) {
+            std::string jsonStr = "{";
 
-    void setup(WEBSERVER_TYPE &srv, NameToFunction* funcDefList, int funcDefListCount) {
+            for (int i=0;i<FuncCount;i++) {
+                jsonStr += "\""; jsonStr += nameToFuncList[i].name; jsonStr += "\":\""; jsonStr += ((nameToFuncList[i].onTickExt!=nullptr)?"p":""); jsonStr += "\"";
+
+                if (i < (FuncCount-1)) jsonStr += ",";
+            }
+            jsonStr += "}";
+            res = jsonStr;
+            return true;
+        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_SHORT_DOWS)) {
+            res = GetShortFormDowListAsJson();
+            return true;
+        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_TIME)) {
+            std::string nowstr = "{\n\"now\":\"" + Time_ext::GetTimeAsString(now()) + "\",\n";
+            nowstr += "\"next trigger\":\"" + Time_ext::GetTimeAsString(Scheduler->getNextTrigger()) + "\"\n}";
+            res = nowstr;
+            return true;
+        } else {
+            res = "\"error\":\"schedule unknown cmd >>>"+zcCmd.ToString()+"<<<\"";
+            return false;
+        }
+    }
+
+    void setup(NameToFunction* funcDefList, int funcDefListCount) {
 
         //webserver = &srv;
         FuncCount = funcDefListCount;
@@ -283,40 +328,7 @@ namespace Scheduler
         int year = (int)now2.Year + 1970;
         setTime(now2.Hour+1, now2.Minute, now2.Second, now2.Day, now2.Month, year);
         
-
-        //DEBUG_UART.printf("nameToFunctionList_Count:%d\r\n", funcDefListCount);
         
-        srv.on(SCHEDULER_URL_REFRESH, [](AsyncWebServerRequest *req) {
-        if (LoadJson(SCHEDULER_CFG_FILE_PATH))
-            req->send(200,"text/plain", F("schedule ld OK"));
-        else
-            req->send(200,"text/plain", F("schedule ld err"));
-        });
-        srv.on(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS, [](AsyncWebServerRequest *req) {
-            std::string ret = std::to_string(dtNBR_ALARMS);
-            req->send(200,"text/plain", ret.c_str());
-        });
-        srv.on(SCHEDULER_URL_GET_FUNCTION_NAMES, [](AsyncWebServerRequest *req) {
-
-            std::string jsonStr = "{";
-
-            for (int i=0;i<FuncCount;i++) {
-                jsonStr += "\""; jsonStr += nameToFuncList[i].name; jsonStr += "\":\""; jsonStr += ((nameToFuncList[i].onTickExt!=nullptr)?"p":""); jsonStr += "\"";
-
-                if (i < (FuncCount-1)) jsonStr += ",";
-            }
-            jsonStr += "}";
-            req->send(200,"text/plain", jsonStr.c_str());
-        });
-        srv.on(SCHEDULER_URL_GET_SHORT_DOWS, [](AsyncWebServerRequest *req) {
-            std::string ret = GetShortFormDowListAsJson();
-            req->send(200,"text/plain", ret.c_str());
-        });
-        srv.on(SCHEDULER_URL_GET_TIME, [](AsyncWebServerRequest *req) {
-            std::string nowstr = "{\n\"now\":\"" + Time_ext::GetTimeAsString(now()) + "\",\n";
-            nowstr += "\"next trigger\":\"" + Time_ext::GetTimeAsString(Scheduler->getNextTrigger()) + "\"\n}";
-            req->send(200,F("text/json"), nowstr.c_str());
-        });
         LoadJson(SCHEDULER_CFG_FILE_PATH);
     }
 }

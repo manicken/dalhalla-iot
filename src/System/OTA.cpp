@@ -22,7 +22,7 @@
 */
 
 #include "OTA.h"
-
+#if defined(ESP32) || defined(ESP8266)
 namespace OTA
 {
     WiFiClient wifiClient;
@@ -129,3 +129,4 @@ namespace OTA
         DEBUG_UART.println(WiFi.localIP());
     }
 }
+#endif

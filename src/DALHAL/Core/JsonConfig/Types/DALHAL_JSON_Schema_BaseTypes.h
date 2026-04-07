@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include <cstdint>
+#include <cstring>
+#include <string>
 
 namespace DALHAL {
 

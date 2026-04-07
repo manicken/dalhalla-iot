@@ -28,8 +28,12 @@ namespace NTP {
     time_t now;
 
     void NTPConnect() {
+#if defined(DEBUG_UART)
         DEBUG_UART.print("Setting time using SNTP  ");
+#endif
+#if defined(ESP32) || defined(ESP8266)
         configTime(NTP_TIME_ZONE * 3600, 0, "pool.ntp.org", "time.nist.gov");
+#endif
 
         const unsigned long ntpTimeout = 30000; // 30 seconds max wait
         unsigned long start = millis();
@@ -38,14 +42,18 @@ namespace NTP {
 
         while (now < nowish) {
             if (millis() - start > ntpTimeout) {
+#if defined(DEBUG_UART)
                 DEBUG_UART.println("\nNTP timeout, continuing without valid time");
+#endif
                 break;
             }
             delay(500);
+#if defined(DEBUG_UART)
             DEBUG_UART.print(".");
+#endif
             now = time(nullptr);
         }
-
+#if defined(DEBUG_UART)
         if (now >= nowish) {
             DEBUG_UART.println("[OK]");
             struct tm* timeinfo = localtime(&now);
@@ -54,6 +62,7 @@ namespace NTP {
         } else {
             DEBUG_UART.println("[NO VALID TIME]");
         }
+#endif
     }
 
 }

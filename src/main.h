@@ -20,13 +20,15 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
+#if defined(ESP32) || defined(ESP8266)
+
 #if !defined(esp32c3)
 #define USE_DISPLAY
 #endif
 
 // basic
-#include <EEPROM.h>
-#include "SPI.h"
+//#include <EEPROM.h>
+//#include "SPI.h"
 
 
 // WiFi
@@ -56,7 +58,9 @@
 #include <LittleFS.h>
 
 //#define ARDUINOJSON_ENABLE_PROGMEM 0
+
 #include <TimeLib.h>
+
 #include <TimeAlarms.h>
 #include <Scheduler/Scheduler.h>
 
@@ -121,4 +125,6 @@ bool portalRequested = false;
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 display(128, 64, &Wire, -1); // -1 = no reset pin
 void init_display(void);
+#endif
+
 #endif

@@ -24,7 +24,11 @@
 #pragma once
 
 #include <Arduino.h> // TODO remove depend
+#if defined(ESP8266) || defined(ESP32)
 #include <driver/ledc.h> // esp-idf
+#else
+#include <ledc_types.h> // PC stub
+#endif
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>

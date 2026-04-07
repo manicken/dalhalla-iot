@@ -234,7 +234,7 @@ namespace FSBrowser {
             //DBG_OUTPUT_PORT.println(String("LittleFS new Path: ") + path);
             return true;
         }
-        DEBUG_UART.println("selectFileSystemAndFixPath error - invalid filesystem" + path);
+        //DEBUG_UART.println("selectFileSystemAndFixPath error - invalid filesystem" + path);
         return false;
     }
 
@@ -326,7 +326,8 @@ namespace FSBrowser {
         if (server->hasArg("download")) {
             contentType = F("application/octet-stream");
         } else {
-            contentType = mime::getContentType(path);
+            std::string stdStr = path.c_str();
+            contentType = mime::getContentType(stdStr);
         }
 
         if (selectFileSystemAndFixPath(path) == false)

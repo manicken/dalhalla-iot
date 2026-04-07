@@ -31,11 +31,13 @@ set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
     ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/ArduinoJson/src
 	${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/Time
+    ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/TimeAlarms
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib/PubSubClient/src
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/Ticker
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/LittleFS
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/WiFiClient
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/HTTPClient
+    ${CMAKE_CURRENT_SOURCE_DIR}/ports/DALHAL_WebSocketAPI
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/WiFi
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/DHTesp
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/OneWire
@@ -44,6 +46,7 @@ set(INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Adafruit_GFX
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Adafruit_SSD1306
     ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Wire
+    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/ESP-IDF
 )
 
 # ---------------------------------------
@@ -54,6 +57,9 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     *.cpp
     ../src/*.cpp
 )
+
+# Remove CMake-generated files
+list(FILTER SOURCES EXCLUDE REGEX "CMakeFiles|cmake_")
 
 # ---------------------------------------
 # Exclude specific files

@@ -47,7 +47,7 @@ namespace Info
     time_t startTime = 0;
 
     void printESP_info(void);
-    void srv_handle_info(AsyncWebServerRequest *req);
+    //void srv_handle_info(AsyncWebServerRequest *req);
     
     bool resetReason_is_crash();
     const char* getResetReasonStr();
@@ -93,32 +93,6 @@ namespace Info
         });
     }
 */
-    /*
-// called from setup() function
-void printESP_info(void) { 
-    uint32_t realSize = ESP.getFlashChipRealSize();
-    uint32_t ideSize = ESP.getFlashChipSize();
-    FlashMode_t ideMode = ESP.getFlashChipMode();
-
-    DEBUG_UART.print(F("Flash real id:   ")); DEBUG_UART.printf("%08X\r\n", ESP.getFlashChipId());
-    DEBUG_UART.print(F("Flash real size: ")); DEBUG_UART.printf("%u 0\r\n\r\n", realSize);
-
-    DEBUG_UART.print(F("Flash ide  size: ")); DEBUG_UART.printf("%u\r\n", ideSize);
-    DEBUG_UART.print(F("Flash ide speed: ")); DEBUG_UART.printf("%u\r\n", ESP.getFlashChipSpeed());
-    DEBUG_UART.print(F("Flash ide mode:  ")); DEBUG_UART.printf("%s\r\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
-
-    if(ideSize != realSize)
-    {
-        DEBUG_UART.println(F("Flash Chip configuration wrong!\r\n"));
-    }
-    else
-    {
-        DEBUG_UART.println(F("Flash Chip configuration ok.\r\n"));
-    }
-    DEBUG_UART.printf(" ESP8266 Chip id = %08X\n", ESP.getChipId());
-    DEBUG_UART.println();
-    DEBUG_UART.println();
-}*/
 
     bool resetReason_is_crash(bool includeWatchdogs)
     {
@@ -209,7 +183,9 @@ void printESP_info(void) {
         //server.sendContent("");
     }
 */
-    String getESP_info() {
+    std::string getESP_info() {
+        std::string infoMsg = "{";  
+#if defined(ESP8266) || defined(ESP32)
         uint32_t ideSize = ESP.getFlashChipSize();
 
 #if defined(ESP8266)
@@ -220,119 +196,122 @@ void printESP_info(void) {
 
         FlashMode_t ideMode = ESP.getFlashChipMode();
 
-        String infoMsg = "{";
+        
 
 #if defined(ESP8266)
-        infoMsg.concat("\"flash_real_id\":");
-        infoMsg.concat(ESP.getFlashChipId());
-        infoMsg.concat(",");
+        infoMsg.append("\"flash_real_id\":");
+        infoMsg.append(ESP.getFlashChipId());
+        infoMsg.append(",");
 #else
-        infoMsg.concat("\"flash_real_id\":\"unsupported\",");
+        infoMsg.append("\"flash_real_id\":\"unsupported\",");
 #endif
 
         uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
-        String hostString = String(macAddrBigEndian & 0xFFFFFF, HEX);
-        hostString.toUpperCase();
+        std::string hostString = std::string(macAddrBigEndian & 0xFFFFFF, HEX);
+        //hostString.toUpperCase();
 
-        infoMsg.concat("\"chip_short_id\":\"");
-        infoMsg.concat(WIFI_CHIPID_PREFIX);
-        infoMsg.concat(hostString);
-        infoMsg.concat("\",");
+        infoMsg.append("\"chip_short_id\":\"");
+        infoMsg.append(WIFI_CHIPID_PREFIX);
+        infoMsg.append(hostString);
+        infoMsg.append("\",");
 
-        infoMsg.concat("\"flash_real_size\":");
-        infoMsg.concat(realSize);
-        infoMsg.concat(",");
+        infoMsg.append("\"flash_real_size\":");
+        infoMsg += std::to_string(realSize);
+        infoMsg.append(",");
 
-        infoMsg.concat("\"flash_ide_size\":");
-        infoMsg.concat(ideSize);
-        infoMsg.concat(",");
+        infoMsg.append("\"flash_ide_size\":");
+        infoMsg += std::to_string(ideSize);
+        infoMsg.append(",");
 
-        infoMsg.concat("\"flash_ide_speed\":");
-        infoMsg.concat(ESP.getFlashChipSpeed());
-        infoMsg.concat(",");
+        infoMsg.append("\"flash_ide_speed\":");
+        infoMsg += std::to_string(ESP.getFlashChipSpeed());
+        infoMsg.append(",");
 
-        infoMsg.concat("\"flash_ide_mode\":\"");
-        infoMsg.concat(
+        infoMsg.append("\"flash_ide_mode\":\"");
+        infoMsg.append(
             ideMode == FM_QIO  ? "QIO"  :
             ideMode == FM_QOUT ? "QOUT" :
             ideMode == FM_DIO  ? "DIO"  :
             ideMode == FM_DOUT ? "DOUT" :
             "UNKNOWN"
         );
-        infoMsg.concat("\",");
+        infoMsg.append("\",");
 
-        infoMsg.concat("\"flash_config_ok\":");
-        infoMsg.concat(ideSize == realSize ? "true" : "false");
-        infoMsg.concat(",");
+        infoMsg.append("\"flash_config_ok\":");
+        infoMsg.append(ideSize == realSize ? "true" : "false");
+        infoMsg.append(",");
 
 #if defined(ESP8266)
-        infoMsg.concat("\"esp_chip_id\":");
-        infoMsg.concat(ESP.getChipId());
-        infoMsg.concat(",");
+        infoMsg.append("\"esp_chip_id\":");
+        infoMsg.append(ESP.getChipId());
+        infoMsg.append(",");
 #endif
 
-        infoMsg.concat("\"littlefs\":{");
+        infoMsg.append("\"littlefs\":{");
 
         if (LITTLEFS_BEGIN_FUNC_CALL) {
 
-            infoMsg.concat("\"mounted\":true,");
+            infoMsg.append("\"mounted\":true,");
 
 #if defined(ESP8266)
 
             FSInfo fsi;
             if (LittleFS.info(fsi)) {
 
-                infoMsg.concat("\"block_size\":");
-                infoMsg.concat(fsi.blockSize);
-                infoMsg.concat(",");
+                infoMsg.append("\"block_size\":");
+                infoMsg.append(fsi.blockSize);
+                infoMsg.append(",");
 
-                infoMsg.concat("\"max_open_files\":");
-                infoMsg.concat(fsi.maxOpenFiles);
-                infoMsg.concat(",");
+                infoMsg.append("\"max_open_files\":");
+                infoMsg.append(fsi.maxOpenFiles);
+                infoMsg.append(",");
 
-                infoMsg.concat("\"max_path_length\":");
-                infoMsg.concat(fsi.maxPathLength);
-                infoMsg.concat(",");
+                infoMsg.append("\"max_path_length\":");
+                infoMsg.append(fsi.maxPathLength);
+                infoMsg.append(",");
 
-                infoMsg.concat("\"page_size\":");
-                infoMsg.concat(fsi.pageSize);
-                infoMsg.concat(",");
+                infoMsg.append("\"page_size\":");
+                infoMsg.append(fsi.pageSize);
+                infoMsg.append(",");
 
-                infoMsg.concat("\"total_bytes\":");
-                infoMsg.concat(fsi.totalBytes);
-                infoMsg.concat(",");
+                infoMsg.append("\"total_bytes\":");
+                infoMsg.append(fsi.totalBytes);
+                infoMsg.append(",");
 
-                infoMsg.concat("\"used_bytes\":");
-                infoMsg.concat(fsi.usedBytes);
-                infoMsg.concat(",");
+                infoMsg.append("\"used_bytes\":");
+                infoMsg.append(fsi.usedBytes);
+                infoMsg.append(",");
             }
 
 #elif defined(ESP32)
 
-            infoMsg.concat("\"total_bytes\":");
-            infoMsg.concat(LittleFS.totalBytes());
-            infoMsg.concat(",");
+            infoMsg.append("\"total_bytes\":");
+            infoMsg += std::to_string(LittleFS.totalBytes());
+            infoMsg.append(",");
 
-            infoMsg.concat("\"used_bytes\":");
-            infoMsg.concat(LittleFS.usedBytes());
-            infoMsg.concat(",");
+            infoMsg.append("\"used_bytes\":");
+            infoMsg += std::to_string(LittleFS.usedBytes());
+            infoMsg.append(",");
 
 #endif
 
-            infoMsg.concat("\"files\":[");
+            infoMsg.append("\"files\":[");
 
             LittleFS_ext::listDir(infoMsg, LittleFS_ext::ListMode::JSON, "/", 0);
 
-            infoMsg.concat("]");
+            infoMsg.append("]");
 
         } else {
-            infoMsg.concat("\"mounted\":false");
+            infoMsg.append("\"mounted\":false");
         }
 
-        infoMsg.concat("}");
+        infoMsg.append("}");
 
-        infoMsg.concat("}");
-
+        
+#else
+        infoMsg.append("\"target\":\"PC\"");
+#endif
+        infoMsg.append("}");
         return infoMsg;
     }
     const char* getESPVariant()

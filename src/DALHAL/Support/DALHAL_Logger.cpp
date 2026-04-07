@@ -30,7 +30,7 @@
 #if defined(ESP8266) || defined(ESP32)
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
-#include <DALHAL/API/DALHAL_WebSocketAPI_win.h> // for SendMessage
+#include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
 #endif
 
 Logger GlobalLogger;
@@ -236,7 +236,7 @@ void Logger::Error(uint32_t code) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg) {
@@ -245,7 +245,7 @@ void Logger::Error(const __FlashStringHelper* msg) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Error(uint32_t code, const char* text) {
@@ -254,7 +254,7 @@ void Logger::Error(uint32_t code, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {
@@ -263,7 +263,7 @@ void Logger::Error(const __FlashStringHelper* msg, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
@@ -272,7 +272,7 @@ void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString&
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 
@@ -282,7 +282,7 @@ void Logger::Info(uint32_t code) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg) {
@@ -291,7 +291,7 @@ void Logger::Info(const __FlashStringHelper* msg) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Info(uint32_t code, const char* text) {
@@ -300,7 +300,7 @@ void Logger::Info(uint32_t code, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg, const char* text) {
@@ -309,7 +309,7 @@ void Logger::Info(const __FlashStringHelper* msg, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
@@ -318,7 +318,7 @@ void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& 
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 
@@ -328,7 +328,7 @@ void Logger::Warn(uint32_t code) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg) {
@@ -337,7 +337,7 @@ void Logger::Warn(const __FlashStringHelper* msg) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Warn(uint32_t code, const char* text) {
@@ -346,7 +346,7 @@ void Logger::Warn(uint32_t code, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
@@ -355,7 +355,7 @@ void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
@@ -364,7 +364,7 @@ void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& 
         advance();
     }
     std::string entryStr = getLastEntry().ToString();
-    DALHAL::WebSocketAPI::SendMessage(entryStr);
+    DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
 }
 
@@ -411,7 +411,7 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
         }
         if (entry.repeatCount > 0) {
             out.print('(');
-            out.print(entry.repeatCount);
+            out.print((int)entry.repeatCount);
             out.print(')');
         }
 

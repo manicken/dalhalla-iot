@@ -21,9 +21,12 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if defined(ESP32) || defined(ESP8266)
+
 #include "LittleFS_ext.h"
 #include <LittleFS.h>
 #include <Arduino.h>
+#include <string>
 
 namespace LittleFS_ext
 {
@@ -127,11 +130,11 @@ namespace LittleFS_ext
         return size;
     }
 
-    String GetNrSpaces(int count, bool isHtml) {
-        String str;
+    std::string GetNrSpaces(int count, bool isHtml) {
+        std::string str;
         while (count-- > 0) {
-            if (isHtml) str.concat("&nbsp;");
-            else str.concat(" ");
+            if (isHtml) str.append("&nbsp;");
+            else str.append(" ");
         }
         return str;
     }
@@ -177,46 +180,46 @@ namespace LittleFS_ext
     
     
 
-    void listDir(String &str, ListMode mode, const char *dirname, uint8_t level/* = 0*/) {
+    void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level/* = 0*/) {
         // Indentation helper
-        auto indent = [&](uint8_t l) -> String {
-            String s;
+        auto indent = [&](uint8_t l) -> std::string {
+            std::string s;
             for (uint8_t i = 0; i < l; i++) s += (mode == ListMode::HTML ? "&nbsp;" : " ");
             return s;
         };
 
         if (mode == ListMode::JSON) {
-            str.concat("{");
-            str.concat("\"dir\":\"");
-            str.concat(dirname);
-            str.concat("\",\"entries\":[");
+            str.append("{");
+            str.append("\"dir\":\"");
+            str.append(dirname);
+            str.append("\",\"entries\":[");
         } else {
-            str.concat(indent(level));
-            str.concat("Listing directory: ");
-            str.concat(dirname);
-            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+            str.append(indent(level));
+            str.append("Listing directory: ");
+            str.append(dirname);
+            str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
         }
 
         File root = LittleFS.open(dirname, "r");
         if (!root) {
-            str.concat(indent(level + 2));
-            str.concat(" - failed to open directory");
-            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
-            if (mode == ListMode::JSON) str.concat("]");
+            str.append(indent(level + 2));
+            str.append(" - failed to open directory");
+            str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
+            if (mode == ListMode::JSON) str.append("]");
             return;
         }
         if (!root.isDirectory()) {
-            str.concat(indent(level + 2));
-            str.concat(" - not a directory");
-            str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
-            if (mode == ListMode::JSON) str.concat("]");
+            str.append(indent(level + 2));
+            str.append(" - not a directory");
+            str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
+            if (mode == ListMode::JSON) str.append("]");
             return;
         }
 
         File file = root.openNextFile();
         bool firstEntry = true;
         while (file) {
-            if (mode == ListMode::JSON && !firstEntry) str.concat(",");
+            if (mode == ListMode::JSON && !firstEntry) str.append(",");
             firstEntry = false;
 
             if (file.isDirectory()) {
@@ -227,10 +230,10 @@ namespace LittleFS_ext
                     listDir(str, mode, file.fullName(), level + 2);
 #endif
                 } else {
-                    str.concat(indent(level + 2));
-                    str.concat("DIR : ");
-                    str.concat(file.name());
-                    str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+                    str.append(indent(level + 2));
+                    str.append("DIR : ");
+                    str.append(file.name());
+                    str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
 #if defined(ESP32)
                     listDir(str, mode, file.path(), level + 2);
 #elif defined(ESP8266)
@@ -239,24 +242,26 @@ namespace LittleFS_ext
                 }
             } else {
                 if (mode == ListMode::JSON) {
-                    str.concat("{\"file\":\"");
-                    str.concat(file.name());
-                    str.concat("\",\"size\":");
-                    str.concat(file.size());
-                    str.concat("}");
+                    str.append("{\"file\":\"");
+                    str.append(file.name());
+                    str.append("\",\"size\":");
+                    str.append(std::to_string(file.size()));
+                    str.append("}");
                 } else {
-                    str.concat(indent(level + 2));
-                    str.concat("FILE: ");
-                    str.concat(file.name());
-                    str.concat("\tSIZE: ");
-                    str.concat(file.size());
-                    str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+                    str.append(indent(level + 2));
+                    str.append("FILE: ");
+                    str.append(file.name());
+                    str.append("\tSIZE: ");
+                    str.append(std::to_string(file.size()));
+                    str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
                 }
             }
             file = root.openNextFile();
         }
 
-        if (mode == ListMode::JSON) str.concat("]}");
-        else str.concat(mode == ListMode::HTML ? "<br>" : "\r\n");
+        if (mode == ListMode::JSON) str.append("]}");
+        else str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
     }
 }
+
+#endif

@@ -118,17 +118,17 @@ namespace DALHAL {
         asyncWebSocket->enable(true);
     }
 
-    void WebSocketAPI::SendMessage(std::string &msg) {
+    void WebSocketAPI::Broadcast(std::string &msg) {
         if (asyncWebSocket->availableForWriteAll()) {
             asyncWebSocket->textAll(msg.c_str());
         }
     }
-    void WebSocketAPI::SendMessage(const char* msg) {
+    void WebSocketAPI::Broadcast(const char* msg) {
         if (asyncWebSocket->availableForWriteAll()) {
             asyncWebSocket->textAll(msg);
         }
     }
-    void WebSocketAPI::SendMessage(const char* source, const char* msg) {
+    void WebSocketAPI::Broadcast(const char* source, const char* msg) {
         if (asyncWebSocket->availableForWriteAll()) {
             std::string msgStr;
             msgStr.reserve(strlen(source) + strlen(msg) + 2);

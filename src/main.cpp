@@ -20,6 +20,7 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
+#if defined(ESP32) || defined(ESP8266)
 
 #include "main.h"
 
@@ -84,7 +85,7 @@ void setup() {
 
     System::Setup();
 
-    MainConfig::begin(webserver);
+    MainConfig::begin();
 
 #if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
     if (InitSD_MMC()) FSBrowser::fsOK = true;
@@ -103,14 +104,10 @@ void setup() {
 #endif
     OTA::setup();
 
-    Scheduler::setup(webserver, nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
+    Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
 
     Info::startTime = now();
-
-    System::initWebServerHandlers(webserver);
-
-    //Info::setup(webserver); // now mainly handled by CommandExecutor
-    HeartbeatLed::setup(webserver);
+    HeartbeatLed::setup();
 #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     System::Start_MDNS();
 #endif
@@ -167,4 +164,7 @@ void init_display(void)
     //display.println(F("Hello ESP32!"));
     display.display(); // <--- push buffer to screen
 }
+#endif
+
+
 #endif

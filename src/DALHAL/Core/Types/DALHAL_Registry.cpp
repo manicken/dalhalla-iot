@@ -39,7 +39,7 @@ namespace DALHAL {
 
         std::string ToString(const Registry::Item* reg) {
             std::string ret = "{\"regitems\":[";
-            int i=0;
+
             bool first = true;
             for (const Registry::Item* regItem = reg; regItem->typeName != nullptr; ++regItem)
             {

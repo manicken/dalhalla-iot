@@ -27,7 +27,7 @@
 
 namespace DALHAL {
     
-    ThingSpeakField::ThingSpeakField() : index(0), cdr(nullptr), reactiveEvent(nullptr) {}
+    ThingSpeakField::ThingSpeakField() : index(0), reactiveEvent(nullptr), cdr(nullptr) {}
 
     ThingSpeakField::~ThingSpeakField() {
         if (reactiveEvent != nullptr) {

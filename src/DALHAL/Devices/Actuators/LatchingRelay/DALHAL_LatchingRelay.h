@@ -30,7 +30,10 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-
+#if !defined(ESP8266) && !defined(ESP32)
+#define IRAM_ATTR
+#include <gpio_types.h> // PC stub
+#endif
 
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_OPEN   "open"
 #define DALHAL_DEVICE_LATCHING_RELAY_CMD_CLOSE  "close"
