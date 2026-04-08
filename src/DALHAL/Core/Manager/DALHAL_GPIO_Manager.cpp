@@ -32,6 +32,8 @@ namespace DALHAL {
 
     namespace GPIO_manager
     {
+        static const gpio_pin NA_PIN = {-1, 0};
+
         constexpr gpio_pin available_gpio_list[] {
     #if defined(ESP8266)
         
@@ -212,15 +214,15 @@ namespace DALHAL {
         };
         constexpr size_t PinModeStrings_size = sizeof(PinModeStrings) / sizeof(PinModeStrings[0]);
         
-        uint8_t* reservedPins = nullptr;
+        uint8_t reservedPins[available_gpio_list_size];
 
-        std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE mask) {
+        std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             std::string result;
             int i = 0;
             while (true) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
                 if (pinModeDef.Name == nullptr) break;
-                if (mask & pinModeDef.func) {
+                if (pinFuncMask & pinModeDef.func) {
                     if (!result.empty()) result += "|";
                     result += pinModeDef.Name;
                 }
@@ -229,65 +231,70 @@ namespace DALHAL {
             return result.empty() ? "None" : result;
         }
 
-        bool CheckIfPinAvailable(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            for (int i = 0; i < (int)available_gpio_list_size; i++) {
+        const gpio_pin& GetPinInfo(uint8_t pin, int& index) {
+           for (int i = 0; i < (int)available_gpio_list_size; i++) {
                 const gpio_pin& pinDef = available_gpio_list[i];
-                if (pinDef.pin != pin) continue;
-                
-                if (reservedPins[i] == 1) {
-                    std::string msg = std::to_string(pin);
-                    GlobalLogger.Error(F("CheckIfPinAvailable error - pin allready reserved: "),msg.c_str());
-                    return false;
+                if (pinDef.pin == pin) {
+                    index = i;
+                    return pinDef;
                 }
-                if ((pinMode & pinDef.mode) == pinMode)
-                    return true;
-                std::string errStr = Convert::toBin(pinMode) + " & " + Convert::toBin(pinDef.mode);
-                GlobalLogger.Error(F("CheckIfPinAvailable error - pinmode mismatch: "),errStr.c_str());
-                return false;
-            }
-            std::string msg = std::to_string(pin);
-            GlobalLogger.Error(F("Pin to reserve - not found: "),msg.c_str());
-            return false;
+           }
+           index = -1;
+           return NA_PIN;
         }
 
-        bool CheckIfPinAvailableAndReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            if (CheckIfPinAvailable(pin, pinMode)) {
+        CheckPinResult CheckIfPinAvailableAndIsFree(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
+            int index = 0;
+            const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
+            if (pinInfo.pin == -1) {
+                return CheckPinResult::NotFound;
+            }
+            if (reservedPins[index] == 1) {
+                return CheckPinResult::InUse;
+            }
+            if ((pinFuncMask & pinInfo.func) != pinFuncMask) {
+                return CheckPinResult::ModeMismatch;
+            }
+            return CheckPinResult::Success;
+        }
+
+        CheckPinResult CheckIfPinAvailableAndIsFree_ThenReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
+            CheckPinResult res = CheckIfPinAvailableAndIsFree(pin, pinFuncMask);
+            if (res == CheckPinResult::Success) {
                 ReservePin(pin);
-                return true;
             }
-            return false;
+            return res;
         }
 
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            if (jsonObj.containsKey(DALHAL_KEYNAME_PIN) == false) { GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(DALHAL_KEYNAME_PIN)); return false; }
-            if (jsonObj[DALHAL_KEYNAME_PIN].is<uint8_t>() == false)  { GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(DALHAL_KEYNAME_PIN)); return false; }
-            uint8_t pin = jsonObj[DALHAL_KEYNAME_PIN].as<uint8_t>(); 
-            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, pinMode);
+        CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
+            if (res == CheckPinResult::InUse) {
+                return {"CheckIfPinAvailable error - pin allready reserved: ", std::to_string(pin)};
+            } else if (res == CheckPinResult::ModeMismatch) {
+                int index = 0;
+                const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
+                std::string errStr = Convert::toBin(pinFuncMask) + " & " + Convert::toBin(pinInfo.func);
+                return {"CheckIfPinAvailable error - pinmode mismatch: ", errStr};
+            } else if (res == CheckPinResult::NotFound) {
+                return {"Pin to reserve - not found: ", std::to_string(pin)};
+            }
+            return {"unknown",nullptr};
         }
 
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, DALHAL_GPIO_MGR_PINFUNC_TYPE pinMode) {
-            if (jsonObj.containsKey(NAME) == false) { GlobalLogger.Error(DALHAL_ERR_MISSING_KEY(), NAME); return false; }
-            if (jsonObj[NAME].is<uint8_t>() == false)  { GlobalLogger.Error(DALHAL_ERR_VALUE_TYPE(), NAME); return false; }
-            uint8_t pin = jsonObj[NAME].as<uint8_t>(); 
-            return GPIO_manager::CheckIfPinAvailableAndReserve(pin, pinMode);
-        }
+       // void InitReservedPins
 
         void ClearAllReservations() {
-            //if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
-            if (reservedPins == nullptr)
-                reservedPins = new uint8_t[available_gpio_list_size];
-            for (int i=0;i<(int)available_gpio_list_size;i++)
+            for (int i=0;i<(int)available_gpio_list_size;i++) {
                 reservedPins[i] = 0;
+            }
         }
         /** it's recommended to call CheckIfPinAvailable prior to using this function,
          * this function is very basic and do only set the actual pin to reserved state, 
          * so calling it many times on the same pin have no effect */
         void ReservePin(uint8_t pin) {
-            for (int i=0;i<(int)available_gpio_list_size;i++) {
-                if (available_gpio_list[i].pin == pin) {
-                    reservedPins[i] = 1;
-                    return;
-                }
+            int index = 0;
+            const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
+            if (pinInfo.pin != -1) {
+                reservedPins[index] = 1;
             }
         }
 
@@ -305,7 +312,7 @@ namespace DALHAL {
                 const auto& g = available_gpio_list[i];
 
                 // Skip pins reserved for boot, flash, JTAG, etc.
-                if (g.mode & (
+                if (g.func & (
                                 PinFunc::Reserved |
                                 PinFunc::SpecialAtBoot | 
                                 PinFunc::UARTFLASH 
@@ -383,7 +390,7 @@ namespace DALHAL {
                 strList.append("\"");
                 strList.append(std::to_string(available_gpio_list[i].pin));
                 strList.append("\":\"");
-                uint8_t modeMask = available_gpio_list[i].mode;
+                uint8_t modeMask = available_gpio_list[i].func;
                 if (listMode == PrintListMode::String)
                     strList.append(describePinFunctions(modeMask).c_str());
                 else if (listMode == PrintListMode::Binary) {

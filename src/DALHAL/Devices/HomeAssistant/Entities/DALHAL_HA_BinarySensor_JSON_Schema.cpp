@@ -41,6 +41,8 @@ namespace DALHAL {
             //&disabled_type_uidreq_note_group,
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+            &sourceField,
+            &eventSourceField,
             &nameField, 
             &discoveryField,
             nullptr,

@@ -29,8 +29,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldStringBase sourceField;
-        extern const FieldStringBase eventSourceField;
+        extern const FieldStringSizeConstrained sourceField;
+        extern const FieldStringSizeConstrained eventSourceField;
         extern const ModeSelector consumerDeviceModes[];
     }
     

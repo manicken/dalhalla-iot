@@ -30,8 +30,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringBase sourceField = { "source", FieldType::UID_Path, FieldPolicy::Optional, nullptr}; 
-        constexpr FieldStringBase eventSourceField = { "event_source", FieldType::UID_Path, FieldPolicy::Optional, nullptr};
+        constexpr FieldStringSizeConstrained sourceField = { "source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0}; 
+        constexpr FieldStringSizeConstrained eventSourceField = { "event_source", FieldType::UID_Path, FieldPolicy::Optional, nullptr, 0};
         
         constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
             { &refreshTimeGroupFields, true },  // group must exist for this mode

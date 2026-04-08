@@ -5,7 +5,7 @@
   GNU General Public License v3.0 or later
 */
 
-#ifdef _WIN32
+#ifndef _WIN32
 
 #include "WebServerImpl_Windows.h"
 #include <iostream>
@@ -200,7 +200,7 @@ namespace DALHAL {
             frame[frameLen++] = static_cast<unsigned char>(msgLen & 0xff);
         }
 
-        std::memcpy(&frame[frameLen], message.c_str(), msgLen);
+        memcpy(&frame[frameLen], message.c_str(), msgLen);
         frameLen += static_cast<int>(msgLen);
 
         ::send(socket_, (char*)frame, frameLen, 0);
@@ -324,7 +324,7 @@ namespace DALHAL {
         if (maskStart + 4 + payloadLen > len) return "";
 
         unsigned char mask[4];
-        std::memcpy(mask, &data[maskStart], 4);
+        memcpy(mask, &data[maskStart], 4);
 
         int payloadStart = maskStart + 4;
         std::string result;
@@ -514,6 +514,10 @@ namespace DALHAL {
         return false;
     }
 
+    uint32_t WindowsWebSocket::getNextClientId() {
+        return nextClientId_;
+    }
+
     bool WindowsWebServer::handleWebSocketUpgrade(const std::string& rawRequest, SOCKET socket, const std::string& clientIP) {
         // Extract Sec-WebSocket-Key
         size_t keyPos = rawRequest.find("Sec-WebSocket-Key: ");
@@ -535,7 +539,7 @@ namespace DALHAL {
 
         // Message loop for this WebSocket client
         char buffer[4096];
-        uint32_t clientId = webSocket_->nextClientId_ - 1;
+        uint32_t clientId = webSocket_->getNextClientId() - 1;
 
         while (running_) {
             int recvLen = recv(socket, buffer, sizeof(buffer), 0);

@@ -149,12 +149,16 @@ namespace DALHAL {
             if (f->type == FieldType::StringSizeConstrained) {
                 const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
-                    GlobalLogger.Error(F("String shorter than minLength: "), f->name);
+                    std::string errMsg = std::to_string(fssc->minLength) + "): ";
+                    errMsg += f->name;
+                    GlobalLogger.Error(F("String shorter than minLength("), errMsg.c_str());
                     anyError = true;
                     return;
                 }
                 if (fssc->maxLength > 0 && strLen > fssc->maxLength) {
-                    GlobalLogger.Error(F("String exceeds maxLength: "), f->name);
+                    std::string errMsg = std::to_string(fssc->maxLength) + "): ";
+                    errMsg += f->name;
+                    GlobalLogger.Error(F("String exceeds maxLength("), errMsg.c_str());
                     anyError = true;
                     return;
                 }
@@ -174,17 +178,19 @@ namespace DALHAL {
         }
 
         // Validate a single field
-        void validateField(const JsonVariant& j, const FieldBase* field, bool& anyError)
+        void validateField(const JsonVariant& j, const char* sourceObjTypeName, const FieldBase* field, bool& anyError)
         {
             if (!field) { return; } // failsafe just return
 
             // Handle required/optional
             if (!j.containsKey(field->name)) {
                 if (field->policy == FieldPolicy::Required) {
-                    std::string errMsg;
-                    serializeJson(j, errMsg);
+                    std::string errMsg = field->name; 
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                    errMsg += ' ';
+                    serializeCollapsed(j, errMsg);
                     GlobalLogger.Error(F("Required field missing: "), errMsg.c_str());
-                    GlobalLogger.setLastEntrySource(field->name); // use this to avoid copy of flash string
+                    
                     anyError = true;
                     return;
                 }
@@ -203,6 +209,7 @@ namespace DALHAL {
                         anyError = true;
                         return;
                     }
+                    break;
                 }
                 case FieldType::Int: {
                     
@@ -277,10 +284,25 @@ namespace DALHAL {
                     }
                     
                     int8_t pin = value.as<int8_t>();
-                    if (pin < 0) { 
-                        return; // just ignore
+                    if (pin < 0) {
+                        // disabled pin use, just ignore for now,
+                        // but should be required when this field is required
+                        // otherwise it would lead to invalid config
+                        // but the disabled field must also be taken into consideration
+                        // as when disabled == true that is the only time this field do not need full valiation
+                        // think this could be solved by a special flag
+                        // or as a schema validator requirement that the disabled status is allways present on all field checks
+                        // that way each validation can take that into consideration
+                        // so in this case we could just do abs on the pin and validate the func/mode but not the collision
+                        return; 
                     }
-                    if (GPIO_manager::CheckIfPinAvailableAndReserve(pin, f->mode) == false) {
+                    DALHAL_GPIO_MGR_PINFUNC_TYPE fMode = f->mode;
+                    GPIO_manager::CheckPinResult res = GPIO_manager::CheckIfPinAvailableAndIsFree_ThenReserve(pin, fMode);
+                    if (res != GPIO_manager::CheckPinResult::Success) {
+                        GPIO_manager::CheckPinResultError errMsg = GPIO_manager::GetCheckPinResultError(res, pin, fMode);
+                        std::string errStr = errMsg.msg + ", fName=" + field->name; errStr += " @ ";
+                        serializeCollapsed(j, errStr);
+                        GlobalLogger.Error(F(errMsg.baseMsg), errStr.c_str());
                         anyError = true;
                     }
                     return;
@@ -390,7 +412,7 @@ namespace DALHAL {
                 } else if (f->type == FieldType::FieldsGroup) {
                     validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
                 } else {
-                    validateField(j, f, anyError);
+                    validateField(j, group->name, f, anyError);
                 }
             }
 
@@ -407,16 +429,16 @@ namespace DALHAL {
                 const FieldBase* f = group->fields[i];
                 if (j.containsKey(f->name)) {
                     found = true;
-                    validateField(j, f, anyError);
+                    validateField(j, group->name, f, anyError);
                 }
             }
 
             if (!found && group->policy == FieldPolicy::Required) {
                 std::string errMsg = group->name;
                 errMsg += " @ "; errMsg += fieldName;
-                //std::string jsonStr;
-                //serializeJson(j, jsonStr);
-                //errMsg += jsonStr;
+                std::string jsonStr;
+                serializeCollapsed(j, jsonStr);
+                errMsg += jsonStr;
                 GlobalLogger.Error(F("None of the OneOfGroup fields present: "), errMsg.c_str());
                 anyError = true;
             }
@@ -435,7 +457,7 @@ namespace DALHAL {
 
                 if (j.containsKey(f->name)) {
                     foundCount++;
-                    validateField(j, f, anyError);
+                    validateField(j, group->name, f, anyError);
                 }
             }
 
@@ -507,10 +529,10 @@ namespace DALHAL {
             return matchedMode;
         }
 
-        bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const FieldConstraint& fcItem) {
+        bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {
             bool tempAnyError = false;
-            validateField(j, fcItem.fieldA, tempAnyError);
-            validateField(j, fcItem.fieldB, tempAnyError);
+            validateField(j, sourceObjectTypeName, fcItem.fieldA, tempAnyError);
+            validateField(j, sourceObjectTypeName, fcItem.fieldB, tempAnyError);
             if (tempAnyError) {
                 GlobalLogger.Warn(F("both FieldConstraint fields must be valid"));
                 //GlobalLogger.setLastEntrySource("evaluateConstraints_PrevalidateFields");
@@ -519,13 +541,13 @@ namespace DALHAL {
             return true;
         }
 
-        void evaluateConstraints(const JsonVariant& j, const FieldConstraint* constraints, bool& anyError) {
+        void evaluateConstraints(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError) {
             if (constraints == nullptr) return;
 
             for (int i=0; constraints[i].type != FieldConstraint::Type::Void; ++i) {
                 const FieldConstraint& fcItem = constraints[i];
                 if (fcItem.fieldA->type != fcItem.fieldB->type) {
-                    GlobalLogger.Warn(F("SchemaError - both FieldConstraint fields must be of the same type"));
+                    GlobalLogger.Warn(F("SchemaError - both FieldConstraint fields must be of the same type"), sourceObjectTypeName);
                     //GlobalLogger.setLastEntrySource("evaluateConstraints");
                     continue;
                 }
@@ -534,7 +556,7 @@ namespace DALHAL {
                 // now both are the same type so it wont matter which one we check the type against
                 if (fcItem.fieldA->type == FieldType::UInt) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const FieldUInt*>(fcItem.fieldA);
@@ -543,7 +565,7 @@ namespace DALHAL {
                     valB = j.containsKey(fB->name)?j[fB->name].as<uint32_t>():fB->defaultValue;
                 } else if (fcItem.fieldA->type == FieldType::Int) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const FieldInt*>(fcItem.fieldA);
@@ -553,7 +575,7 @@ namespace DALHAL {
 
                 } else if (fcItem.fieldA->type == FieldType::Float) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const FieldFloat*>(fcItem.fieldA);
@@ -665,7 +687,7 @@ namespace DALHAL {
                 } else if (f->type == FieldType::FieldsGroup) {
                     validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
                 } else {
-                    validateField(j, f, anyError);
+                    validateField(j, jsonObjectSchema->typeName, f, anyError);
                 }
             }
 
@@ -673,17 +695,22 @@ namespace DALHAL {
             if (jsonObjectSchema->modes) {
                 int mode = evaluateModes(j, jsonObjectSchema->modes);
                 if (mode == -1) {
-                    GlobalLogger.Error(F("No valid configuration mode found"));
+                    std::string errInfoMsg = "["; errInfoMsg += jsonObjectSchema->typeName; errInfoMsg += "] ";
+                    serializeCollapsed(j, errInfoMsg);
+                    GlobalLogger.Error(F("No valid configuration mode found @ "), errInfoMsg.c_str());
+
                     anyError = true;
                 } else if (mode == -2) {
-                    GlobalLogger.Error(F("Configuration matches multiple modes"));
+                    std::string errInfoMsg = "["; errInfoMsg += jsonObjectSchema->typeName; errInfoMsg += "] ";
+                    serializeCollapsed(j, errInfoMsg);
+                    GlobalLogger.Error(F("Configuration matches multiple modes @ "), errInfoMsg.c_str());
                     anyError = true;
                 }
             }
 
             // 4. Evaluate constraints if available
             if (jsonObjectSchema->constraints) {
-                evaluateConstraints(j, jsonObjectSchema->constraints, anyError);
+                evaluateConstraints(j, jsonObjectSchema->typeName, jsonObjectSchema->constraints, anyError);
             }
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
@@ -785,7 +812,7 @@ namespace DALHAL {
                 if (DALHAL::Device::DisabledInJson(jsonItem)) { continue; } // disabled
 
                 bool anyErrorTemp = false;
-                validateField(jsonItem, &JsonSchema::typeField, anyErrorTemp); // this will internally emit errors to log
+                validateField(jsonItem, reg->typeName, &JsonSchema::typeField, anyErrorTemp); // this will internally emit errors to log
                 if (anyErrorTemp == true) {
                     anyError = true;
                     continue; // skip the current json device

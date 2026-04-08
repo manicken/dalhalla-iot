@@ -34,7 +34,7 @@ namespace DALHAL {
 
         constexpr FieldStringBase nameField = {"name", FieldPolicy::Required};
         constexpr FieldObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
-        constexpr FieldStringBase targetField = {"target", FieldType::UID_Path, FieldPolicy::Required};
+        constexpr FieldStringSizeConstrained targetField = {"target", FieldType::UID_Path, FieldPolicy::Required, nullptr, 0};
 
         constexpr const FieldBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

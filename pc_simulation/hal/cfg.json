@@ -1,9 +1,9 @@
 [
-  {"uid":"true","val":1,"type":"CONSTVAR"},
-  {"uid":"false","val":0,"type":"CONSTVAR"},
+  {"uid":"true","value":1,"type":"CONSTVAR"},
+  {"uid":"false","value":0,"type":"CONSTVAR"},
   {"uid":"var1","type":"VAR"},
   {"uid":"var2","type":"VAR"},
-  {"uid":"var3","val":0,"type":"VAR"},
+  {"uid":"var3","value":0,"type":"VAR"},
   {"uid":"var4","type":"VAR"},
   {"uid":"var5","type":"VAR"},
   {"uid":"var6","type":"VAR"},
@@ -25,13 +25,13 @@
 	      "the following is just here to test new devices command, currently disabled to make it work",
 	      {"disabled":true,"uid":"D3","romid":"28:61:64:34:83:74:BE:84","note":"nere"}
 	    ]},
-	    {"disabled":true,"uid":"b","pin":26,"note":"mitten","items":[
+	    {"disabled":true,"uid":"b","pin":-26,"note":"mitten","items":[
 	      {"uid":"a","romid":"28:61:64:35:18:18:C3:F0","note":"ute fram"},
 	      {"uid":"b","romid":"28:61:64:35:18:1F:79:D2","note":"ute bak"},
 	      {"uid":"c","romid":"28:61:64:35:18:21:D5:2F","note":"inne"}
 	    ]},
 	    "the following will cause a pin conflict",
-	    {"disabled":true,"uid":"c","pin":25,"note":"duplicate pin use test","items":[
+	    {"disabled":true,"uid":"c","pin":-25,"note":"duplicate pin use test","items":[
 	      "comment here should be fine",
 	      {"uid":"a","romid":"28:87:17:43:d4:bd:0a:46","note":"ute"},
 	      {"uid":"b","romid":"28:F0:5F:43:D4:CD:3C:59","note":"inne"}
@@ -43,28 +43,32 @@
     {"uid":"b","romid":"28:61:64:35:18:27:D4:DB","note":"nere"}
   ]},
   {"uid":"temp","type":"1WTD","pin":33,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
-  {"disabled":true,"uid":"1WTD0","type":"1WTD","pin":34,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
+  {"disabled":true,"uid":"1WTD0","type":"1WTD","pin":-34,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
   {"uid":"BIRELSET", "type":"DPOUT", "pin":18,"plength":5000},
   {"uid":"BIRELRST", "type":"DPOUT", "pin":19,"plength":5000},
-  {"uid":"hum", "type":"DHT","model":"dht11", "pin":23},
+  {"uid":"hum", "type":"DHT","model":"dht11", "pin":23, "refreshtimesec":2},
   {"uid":"tx433", "type":"TX433", "pin":15,
     "units": [
-      {"uid":"D0","model":"lc","anid":"hello","grp_btn":0,"btn":0,"state":0},
-      {"uid":"D1","model":"lc","anid":"hello"}
+      {"uid":"D1","type":"lc","anid":"D001","grp_btn":0,"btn":0,"state":0},
+      {"uid":"D2","type":"lc","anid":"D002"}
     ]
   },
-  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":23,"refreshtimesec":5,"items": [
-	  {"uid":"GT1","opcode":"02","addr":"0209","valuetype":"float"},
-	  {"uid":"GT2","opcode":"02","addr":"020A","valuetype":"float"},
-	  {"uid":"GT3","opcode":"02","addr":"020B","valuetype":"float"},
-	  {"uid":"GT5","opcode":"02","addr":"020D","valuetype":"float"},
-	  {"uid":"GT6","opcode":"02","addr":"020E","valuetype":"float"},
-	  {"uid":"GT8","opcode":"02","addr":"020F","valuetype":"float"},
-	  {"uid":"GT9","opcode":"02","addr":"0210","valuetype":"float"},
-	  {"uid":"GT10","opcode":"02","addr":"0211","valuetype":"float"},
-	  {"uid":"GT11","opcode":"02","addr":"0212","valuetype":"float"}
+  {"uid":"hp","type":"REGO600","rxpin":34,"txpin":-23,"refreshtimesec":5,"items": [
+	  {"uid":"gt1","regname":"gt1"},
+	  {"uid":"gt2","regname":"gt2"},
+	  {"uid":"gt3","regname":"gt3"},
+	  {"uid":"gt5","regname":"gt5"},
+	  {"uid":"gt6","regname":"gt6"},
+	  {"uid":"gt8","regname":"gt8"},
+	  {"uid":"gt9","regname":"gt9"},
+	  {"uid":"gt10","regname":"gt10"},
+	  {"uid":"gt11","regname":"gt11"},
+	  {"uid":"comp","regname":"comp"},
+	  {"uid":"el3","regname":"el3"},
+	  {"uid":"el6","regname":"el6"},
+	  {"uid":"vxv","regname":"vxv"},
+	  {"uid":"alarm","regname":"alarm"}
   ]},
-  {"uid":"pawcfg","type":"PWM_AW_CFG","freq":5000,"res":8,"note":"only to test write only device"},
   {"uid":"i2c","type":"I2C","sckpin":22,"sdapin":21,"items": [
     {"uid":"disp","type":"SSD1306","width":128,"height":64,"addr":"3C","items": [
       {"uid":"tmpa","x":0,"y":0,"label":"temps:a:a=","source":"temps:a:a"},
@@ -93,36 +97,29 @@
     }
   },
   {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
-  {"uid":"rest","type":"CONTAINER","items":[
-    {"disabled":true, "uid":"val","type":"REST_VAR","refreshtimesec":2,"url":"http://192.168.50.29:82/read/float/temps:a:a"},
-	{"uid":"birel","type":"CONTAINER","items":[
-      {"uid":"set","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELSET"},
-	  {"uid":"rst","type":"REST_CMD","url":"http://192.168.50.29:82/exec/BIRELRST"}
-	]}
-  ]},
   {"uid":"arr1","type":"ARRAY","readonly":true,"items":[2,3.14,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67]},
   {"uid":"arr2","type":"ARRAY","readonly":true,"items":[3.1415,1.4142,1.732,2.236]},
   {"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp1", "name":"Development Test"}, 
     "items": [
-	  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a"},
-	  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b"},
-	  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum"}
+	  {"uid":"temp_room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
+	  {"uid":"temp_room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"},
+	  {"uid":"hum_room1", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
     ]
   },
   {"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp2", "name":"Development Test2"}, 
     "items": [
-	  {"uid":"switch_room1", "type":"switch"}
+	  {"uid":"switch_room1", "type":"switch", "target":""}
     ]
   },
   {"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
 	  {"uid":"ha_grp1", "name":"Development Test",
 	    "items": [
-		  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a"},
-		  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b"},
-		  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum"}
+		  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
+		  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"},
+		  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
 	    ]
 	  },
 	  {"uid":"ha_grp2", "name":"Development Test2",

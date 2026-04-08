@@ -40,7 +40,9 @@ namespace DALHAL {
         constexpr const FieldBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
-            &nameField, 
+            &nameField,
+            &sourceField,
+            &eventSourceField,
             &discoveryField,
             nullptr,
         };

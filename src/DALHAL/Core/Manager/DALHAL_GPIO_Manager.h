@@ -42,7 +42,7 @@
     do not collide 
 */
 
-#include <Arduino.h> // Needed for String class
+#include <cstdint>
 
 #undef OUT
 #undef IN
@@ -84,18 +84,30 @@ namespace DALHAL {
             Binary
         };
 
+        enum class CheckPinResult {
+            Success,
+            NotFound,
+            InUse,
+            ModeMismatch
+        };
+
+        struct CheckPinResultError {
+            const char* baseMsg;
+            std::string msg;
+            CheckPinResultError(const char* baseMsg, std::string msg) : baseMsg(baseMsg), msg(msg) {}
+        };
+
         typedef struct {
-            uint8_t pin;
-            DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
+            int8_t pin; // int8 should be enought for most targets as that mean 127 pins
+            DALHAL_GPIO_MGR_PINFUNC_TYPE func;
         } gpio_pin;
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         
-        bool CheckIfPinAvailableAndReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFunc);
+        CheckPinResult CheckIfPinAvailableAndIsFree_ThenReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         /** this is a nice function that can be used */
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
-        bool ValidateJsonAndCheckIfPinAvailableAndReserve(const JsonVariant& jsonObj, const char* NAME, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
-        bool CheckIfPinAvailable(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
+        CheckPinResult CheckIfPinAvailableAndIsFree(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
+        CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         void ClearAllReservations();
         /** it's recommended to call CheckIfPinAvailable prior to using this function,
          * this function is very basic and do only set the actual pin to reserved state, 

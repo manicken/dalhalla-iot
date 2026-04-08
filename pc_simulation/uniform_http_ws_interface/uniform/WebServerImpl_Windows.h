@@ -121,6 +121,7 @@ namespace DALHAL {
         void handleNewConnection(SOCKET socket, const std::string& remoteIP);
         void handleMessage(uint32_t clientId, const std::string& message);
         void handleDisconnection(uint32_t clientId);
+        uint32_t getNextClientId();
 
     private:
         bool enabled_;
