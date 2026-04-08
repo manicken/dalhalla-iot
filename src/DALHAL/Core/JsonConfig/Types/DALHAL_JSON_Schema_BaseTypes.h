@@ -98,7 +98,7 @@ namespace DALHAL {
             FieldType type;
             FieldPolicy policy;
             FieldGuiFlags guiFlags;
-
+        protected:
             constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy)
                 : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
 

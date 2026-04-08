@@ -23,26 +23,30 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 
-#define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
-#define DALHAL_COMMON_CFG_NAME_TYPE "type"
-#define DALHAL_COMMON_CFG_NAME_UID "uid"
-#define DALHAL_COMMON_CFG_NAME_NOTE "note"
+#include <stdlib.h>
+#include <DALHAL/Core/Types/DALHAL_UID.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_BaseTypes.h"
+#include "DALHAL_JSON_Schema_FieldStringBase.h"
+#include "DALHAL_JSON_Schema_FieldStringSizeConstrained.h"
+#include "DALHAL_JSON_Schema_FieldStringAnyOfByFuncConstrained.h"
+#include "DALHAL_JSON_Schema_FieldStringAnyOfArrayConstrained.h"
+
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldBool disabledField;
-        extern const FieldStringBase typeField;
-        extern const FieldStringUID uidFieldRequired;
-        extern const FieldStringUID uidFieldOptional;
-        /** note this field is only for the GUI to optionally describe this device */
-        extern const FieldStringBase noteField;
-        
-        extern const FieldsGroup disabled_uidreq_note_group;
-        extern const FieldsGroup disabled_type_uidreq_note_group;
+        struct FieldStringUID_Path : FieldStringBase {
+            constexpr FieldStringUID_Path(const char* name, FieldPolicy policy)
+                : FieldStringBase(name, FieldType::UID_Path, policy, nullptr) {}
+        };
+
     }
-    
+
 }

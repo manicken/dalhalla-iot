@@ -48,7 +48,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static HALOperationResult exec(Device* dev);
+        static HALOperationResult static_exec(Device* dev);
         
     public:
         ScriptEventDispatcher(DeviceCreateContext& context);

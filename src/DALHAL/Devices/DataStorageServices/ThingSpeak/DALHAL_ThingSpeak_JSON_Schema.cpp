@@ -25,6 +25,7 @@
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -37,14 +38,14 @@ namespace DALHAL {
         constexpr FieldBool testserverField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER, FieldPolicy::Optional, false};
         constexpr FieldStringSizeConstrained keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
 
-        constexpr FieldStringBase itemsF1 = {"1", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF2 = {"2", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF3 = {"3", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF4 = {"4", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF5 = {"5", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF6 = {"6", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF7 = {"7", FieldType::UID_Path, FieldPolicy::Optional};
-        constexpr FieldStringBase itemsF8 = {"8", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF3 = {"3", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF4 = {"4", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF5 = {"5", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF6 = {"6", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF7 = {"7", FieldPolicy::Optional};
+        constexpr FieldStringUID_Path itemsF8 = {"8", FieldPolicy::Optional};
 
         constexpr const FieldBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
 

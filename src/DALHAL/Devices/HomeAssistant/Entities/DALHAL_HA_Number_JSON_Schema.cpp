@@ -25,6 +25,7 @@
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -34,7 +35,7 @@ namespace DALHAL {
 
         constexpr FieldStringBase nameField = {"name", FieldPolicy::Required};
         constexpr FieldObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
-        constexpr FieldStringSizeConstrained targetField = {"target", FieldType::UID_Path, FieldPolicy::Required, nullptr, 0};
+        constexpr FieldStringUID_Path targetField = {"target", FieldPolicy::Required};
 
         constexpr const FieldBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

@@ -29,8 +29,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
-        constexpr FieldUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
+        constexpr FieldStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
+        constexpr FieldStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
 
         constexpr FieldStringBase typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
 

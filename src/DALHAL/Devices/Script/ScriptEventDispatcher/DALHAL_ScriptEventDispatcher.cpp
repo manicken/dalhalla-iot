@@ -52,7 +52,7 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
     
-    /*static*/HALOperationResult ScriptEventDispatcher::exec(Device* device) {
+    /*static*/HALOperationResult ScriptEventDispatcher::static_exec(Device* device) {
 #if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
         static_cast<ScriptEventDispatcher*>(device)->triggerExec();
 #endif
@@ -60,7 +60,7 @@ namespace DALHAL {
     }
 
     Device::Exec_FuncType ScriptEventDispatcher::GetExec_Function(ZeroCopyString& zcFuncName) {
-        return ScriptEventDispatcher::exec;
+        return ScriptEventDispatcher::static_exec;
     }
 
 

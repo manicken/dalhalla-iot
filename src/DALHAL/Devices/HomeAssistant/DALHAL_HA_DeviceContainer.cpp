@@ -62,7 +62,7 @@ namespace DALHAL {
             if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
             if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
             const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+            /*const Registry::Item& regItem = */Registry::GetItem(HA_DeviceRegistry, type_cStr);
             
             validDevices[i] = true; // allways valid in strict mode
             deviceCountTmp++;

@@ -77,6 +77,7 @@ namespace DALHAL {
         OneWireTempDevice_ValueBase value = 0.0f;
     
     public:
+        using Device::read; // make compiler warnings go away
         OneWireTempDevice(DeviceCreateContext& context);
         ~OneWireTempDevice() override;
         

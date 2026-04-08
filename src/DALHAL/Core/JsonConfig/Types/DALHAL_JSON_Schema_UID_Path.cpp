@@ -21,28 +21,12 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-
-#define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
-#define DALHAL_COMMON_CFG_NAME_TYPE "type"
-#define DALHAL_COMMON_CFG_NAME_UID "uid"
-#define DALHAL_COMMON_CFG_NAME_NOTE "note"
+#include "DALHAL_JSON_Schema_UID_Path.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        extern const FieldBool disabledField;
-        extern const FieldStringBase typeField;
-        extern const FieldStringUID uidFieldRequired;
-        extern const FieldStringUID uidFieldOptional;
-        /** note this field is only for the GUI to optionally describe this device */
-        extern const FieldStringBase noteField;
         
-        extern const FieldsGroup disabled_uidreq_note_group;
-        extern const FieldsGroup disabled_type_uidreq_note_group;
     }
-    
+
 }

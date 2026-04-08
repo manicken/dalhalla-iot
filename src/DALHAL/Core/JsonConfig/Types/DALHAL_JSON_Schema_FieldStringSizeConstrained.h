@@ -37,7 +37,7 @@ namespace DALHAL {
 
             uint16_t minLength;
             uint16_t maxLength;
-            
+        protected:
             // defining type, maxLength
             constexpr FieldStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, const char* defVal, uint16_t maxLength) 
                 : FieldStringBase(n, t, pol, defVal), minLength(1), maxLength(maxLength) {}
@@ -54,7 +54,7 @@ namespace DALHAL {
             constexpr FieldStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
                 : FieldStringBase(n, t, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
-
+        public:
             // defining maxLength
             constexpr FieldStringSizeConstrained(const char* n, FieldPolicy pol, const char* defVal, uint16_t maxLength) 
                 : FieldStringBase(n, FieldType::StringSizeConstrained, pol, defVal), minLength(1), maxLength(maxLength) {}

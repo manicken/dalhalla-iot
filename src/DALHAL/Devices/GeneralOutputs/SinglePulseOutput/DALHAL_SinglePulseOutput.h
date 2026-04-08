@@ -49,7 +49,7 @@ namespace DALHAL {
 
     private:
         static void pulseTicker_Callback(SinglePulseOutput* context);
-        static HALOperationResult exec(Device* device);
+        static HALOperationResult static_exec(Device* device);
 
         uint8_t pin = 0;
         uint32_t pulseLength = 0;

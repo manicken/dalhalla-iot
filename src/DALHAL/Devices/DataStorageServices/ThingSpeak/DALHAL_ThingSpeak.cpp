@@ -109,7 +109,7 @@ namespace DALHAL {
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;
-            HALOperationResult res = this->exec();
+            /*HALOperationResult res = */this->exec();
         }
     }
 

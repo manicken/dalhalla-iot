@@ -101,10 +101,10 @@ namespace DALHAL {
 #endif
     }
     Device::Exec_FuncType SinglePulseOutput::GetExec_Function(ZeroCopyString& zcFuncName) {
-        return SinglePulseOutput::exec;
+        return SinglePulseOutput::static_exec;
     } 
 
-    HALOperationResult SinglePulseOutput::exec(Device* device) {
+    HALOperationResult SinglePulseOutput::static_exec(Device* device) {
         return static_cast<SinglePulseOutput*>(device)->exec(); // direct call no vtable
     }
 

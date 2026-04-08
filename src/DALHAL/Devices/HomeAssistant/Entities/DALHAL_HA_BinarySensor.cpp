@@ -52,7 +52,7 @@ namespace DALHAL {
         PSC_JsonWriter::kv(mqtt, "platform", "binary_sensor");
     }
     
-    BinarySensor::BinarySensor(HA_CreateFunctionContext& context) : mqttClient(context.mqttClient), Device(context.deviceType) {
+    BinarySensor::BinarySensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);

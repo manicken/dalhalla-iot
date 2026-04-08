@@ -169,8 +169,8 @@ namespace DALHAL {
         //*********  Logical Types ************ */
         //************************************* */
 
-        struct FieldUID : FieldStringSizeConstrained {
-            constexpr FieldUID(const char* name, FieldPolicy policy)
+        struct FieldStringUID : FieldStringSizeConstrained {
+            constexpr FieldStringUID(const char* name, FieldPolicy policy)
                 : FieldStringSizeConstrained(name, FieldType::UID, policy, nullptr, HAL_UID::Size) {}
         };
         

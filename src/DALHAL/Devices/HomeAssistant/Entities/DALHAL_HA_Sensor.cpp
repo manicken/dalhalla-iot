@@ -51,7 +51,7 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":"%s"), stateTopicStr);
     }
     
-    Sensor::Sensor(HA_CreateFunctionContext& context) : mqttClient(context.mqttClient), Device(context.deviceType) {
+    Sensor::Sensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);

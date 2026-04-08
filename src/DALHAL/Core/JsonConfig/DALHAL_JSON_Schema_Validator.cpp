@@ -41,12 +41,6 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-
-        
-
-        const char* ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER = "JSON_Schema_Validator - validateFromRegister";
-        const char* ERROR_SOURCE_STR_VALIDATE_FIELD = "JSON_Schema_Validator - validateField";
-
         void serializeCollapsed(const JsonVariant& var, std::string& output) {
             if (var.is<JsonObject>()) {
                 output += '{';
@@ -131,7 +125,7 @@ namespace DALHAL {
         {
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), f->name);
-                //GlobalLogger.setLastEntrySource("validateStringField");
+
                 anyError = true;
                 return;
             }
@@ -146,7 +140,7 @@ namespace DALHAL {
                 }
                 return;
             }
-            if (f->type == FieldType::StringSizeConstrained) {
+            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::UID || f->type == FieldType::HexBytes || f->type == FieldType::UID_Path) {
                 const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
                     std::string errMsg = std::to_string(fssc->minLength) + "): ";
@@ -366,7 +360,7 @@ namespace DALHAL {
                         std::string errMsg = "f->byteCount:" + std::to_string(f->byteCount);
                         errMsg += " @ "; errMsg += cStr;
                         GlobalLogger.Error(F("validateField HexBytes parse error: "), errMsg.c_str());
-                        //GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+
                         anyError = true;
                     }
                     break;
@@ -385,7 +379,7 @@ namespace DALHAL {
                     } else {
                         // reject
                         GlobalLogger.Error(F("validateField Number parse error: "), f->name);
-                        //GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FIELD);
+
                         anyError = true;
                         return;
                     }
@@ -535,7 +529,7 @@ namespace DALHAL {
             validateField(j, sourceObjectTypeName, fcItem.fieldB, tempAnyError);
             if (tempAnyError) {
                 GlobalLogger.Warn(F("both FieldConstraint fields must be valid"));
-                //GlobalLogger.setLastEntrySource("evaluateConstraints_PrevalidateFields");
+
                 return false;
             }
             return true;
@@ -548,7 +542,7 @@ namespace DALHAL {
                 const FieldConstraint& fcItem = constraints[i];
                 if (fcItem.fieldA->type != fcItem.fieldB->type) {
                     GlobalLogger.Warn(F("SchemaError - both FieldConstraint fields must be of the same type"), sourceObjectTypeName);
-                    //GlobalLogger.setLastEntrySource("evaluateConstraints");
+
                     continue;
                 }
                 HALValue valA;
@@ -587,7 +581,7 @@ namespace DALHAL {
                     // keep it unimplemented for now
                 } */else {
                     GlobalLogger.Warn(F("SchemaError - FieldConstraint fieldtype unsupported: "), FieldTypeToString(fcItem.fieldA->type));
-                    //GlobalLogger.setLastEntrySource("evaluateConstraints");
+
                     continue;
                 }
 
@@ -792,14 +786,12 @@ namespace DALHAL {
 
             if (jsonArray.is<JsonArray>() == false) {
                 GlobalLogger.Error(F("Json register field is not a array"));
-                GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                 anyError = true;
                 return; // can't continue here
             }
             const JsonArray& items = jsonArray.as<JsonArray>();
             if (items.size() == 0) {
                 GlobalLogger.Error(F("Json register array is empty"));
-                GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                 anyError = true;
                 return; // can't continue here
             }
@@ -821,21 +813,19 @@ namespace DALHAL {
                 const Registry::Item& regItem = Registry::GetItem(reg, type_cStr);
                 if (regItem.typeName == nullptr) {
                     GlobalLogger.Error(F("could not find type:"),type_cStr);
-                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                     anyError = true;
                     continue; // skip the current json device
                 }
 
                 if (regItem.def == nullptr) {
                     GlobalLogger.Error(F("FATAL regitem.def == nullptr"));
-                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
                     anyError = true;
                     continue; // skip the current json device
                 }
                 
                 if (regItem.def->jsonSchema == nullptr) {
                     GlobalLogger.Error(F("FATAL regItem.def->jsonSchema == nullptr"));
-                    GlobalLogger.setLastEntrySource(ERROR_SOURCE_STR_VALIDATE_FROM_REGISTER);
+
                     anyError = true;
                     continue; // skip the current json device
                 }

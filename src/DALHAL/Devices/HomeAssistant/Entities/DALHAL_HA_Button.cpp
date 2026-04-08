@@ -43,7 +43,7 @@ namespace DALHAL {
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }
     
-    Button::Button(HA_CreateFunctionContext& context) : mqttClient(context.mqttClient), Device(context.deviceType) {
+    Button::Button(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
         uid = encodeUID(uidStr);

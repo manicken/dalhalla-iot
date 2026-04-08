@@ -25,6 +25,7 @@
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
@@ -37,7 +38,7 @@ namespace DALHAL {
         constexpr FieldUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
         constexpr FieldUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
         constexpr FieldStringBase labelField = {"label", FieldPolicy::Optional};
-        constexpr FieldStringBase sourceField = {"source", FieldType::UID_Path, FieldPolicy::Optional};
+        constexpr FieldStringUID_Path sourceField = {"source", FieldPolicy::Optional};
 
         constexpr const FieldBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
 

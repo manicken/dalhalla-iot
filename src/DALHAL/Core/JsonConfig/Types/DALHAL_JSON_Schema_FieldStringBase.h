@@ -32,35 +32,32 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-      struct FieldStringBase : FieldBase {
+        struct FieldStringBase : FieldBase {
 
             const char* defaultValue;  // flash string default, or more like what to present at GUI
 
-            // used when inherited
+        protected:
             constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
                 : FieldBase(n, t, pol), defaultValue(defVal) {}
 
-            constexpr FieldStringBase(const char* n, FieldPolicy pol, const char* defVal) 
-                : FieldBase(n, FieldType::StringBase, pol), defaultValue(defVal) {}
-
-            // used when inherited
             constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
                 : FieldBase(n, t, pol, guiFlags), defaultValue(defVal) {}
+            
+            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol) 
+                : FieldBase(n, t, pol), defaultValue(nullptr) {}
+
+            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
+                : FieldBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
+            
+        public:
+            constexpr FieldStringBase(const char* n, FieldPolicy pol, const char* defVal) 
+                : FieldBase(n, FieldType::StringBase, pol), defaultValue(defVal) {}
 
             constexpr FieldStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
                 : FieldBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(defVal) {}
 
-
-            // used when inherited
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol) 
-                : FieldBase(n, t, pol), defaultValue(nullptr) {}
-
             constexpr FieldStringBase(const char* n, FieldPolicy pol) 
                 : FieldBase(n, FieldType::StringBase, pol), defaultValue(nullptr) {}
-
-            // used when inherited
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
-                : FieldBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
 
             constexpr FieldStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
                 : FieldBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(nullptr) {}
