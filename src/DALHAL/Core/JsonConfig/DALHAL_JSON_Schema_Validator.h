@@ -34,7 +34,7 @@ namespace DALHAL {
 
         bool isUnknownField(const char* key, const FieldBase* const* fields);
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const FieldStringBase* f, bool& anyError);
+        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const FieldStringBase* f, bool& anyError);
         // Validate a single field
         void validateField(const JsonVariant& j, const char* sourceObjTypeName, const FieldBase* field, bool& anyError);
         // Validate OneOfGroup

@@ -102,29 +102,34 @@
   {"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp1", "name":"Development Test"}, 
     "items": [
-	  {"uid":"temp_room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
-	  {"uid":"temp_room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"},
-	  {"uid":"hum_room1", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
+	{"uid":"temp", "type":"CONTAINER", "items":[
+	    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
+	    {"uid":"room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"}
+	    
+	]},
+	{"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
     ]
   },
   {"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp2", "name":"Development Test2"}, 
     "items": [
-	  {"uid":"switch_room1", "type":"switch", "target":""}
+	  {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
     ]
   },
   {"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
 	  {"uid":"ha_grp1", "name":"Development Test",
 	    "items": [
-		  {"uid":"temp_room1", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
-		  {"uid":"temp_room2", "type":"sensor", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"},
-		  {"uid":"hum_room1", "type":"sensor", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
-	    ]
+		  {"uid":"temp", "type":"CONTAINER", "items":[
+		    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
+		    {"uid":"room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"}
+		  ]},
+		  {"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
+		  ]
 	  },
 	  {"uid":"ha_grp2", "name":"Development Test2",
         "items": [
-	      {"uid":"switch_room1", "type":"switch"}
+	      {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
         ]
 	  }
     ]

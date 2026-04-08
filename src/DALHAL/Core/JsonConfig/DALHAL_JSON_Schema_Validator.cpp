@@ -121,10 +121,12 @@ namespace DALHAL {
         }
 
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const FieldStringBase* f, bool& anyError)
+        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const FieldStringBase* f, bool& anyError)
         {
             if (!value.is<const char*>()) {
-                GlobalLogger.Error(F("Field must be a string:"), f->name);
+                std::string errMsg = f->name;
+                errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                GlobalLogger.Error(F("Field must be a string:"), errMsg.c_str());
 
                 anyError = true;
                 return;
@@ -132,26 +134,30 @@ namespace DALHAL {
             const char* value_cStr = value.as<const char*>();
             ZeroCopyString zcStr = value_cStr; // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
-            size_t strLen = zcStr.Length(); // use of lenght here is fast
-            if (f->type == FieldType::StringBase) {
+            unsigned int strLen = zcStr.Length(); // use of lenght here is fast
+            if (f->type == FieldType::StringBase || f->type == FieldType::UID_Path) {
                 if (strLen == 0) {
                     anyError = true;
-                    GlobalLogger.Error(F("Basic String is empty: "), f->name);
+                    std::string errMsg = f->name;
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                    GlobalLogger.Error(F("Basic String is empty: "), errMsg.c_str());
                 }
                 return;
             }
-            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::UID || f->type == FieldType::HexBytes || f->type == FieldType::UID_Path) {
+            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::UID || f->type == FieldType::HexBytes ) {
                 const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
-                    std::string errMsg = std::to_string(fssc->minLength) + "): ";
+                    std::string errMsg = std::to_string((unsigned int)fssc->minLength) + "): ";
                     errMsg += f->name;
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
                     GlobalLogger.Error(F("String shorter than minLength("), errMsg.c_str());
                     anyError = true;
                     return;
                 }
                 if (fssc->maxLength > 0 && strLen > fssc->maxLength) {
-                    std::string errMsg = std::to_string(fssc->maxLength) + "): ";
+                    std::string errMsg = std::to_string((unsigned int)fssc->maxLength) + "): ";
                     errMsg += f->name;
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
                     GlobalLogger.Error(F("String exceeds maxLength("), errMsg.c_str());
                     anyError = true;
                     return;
@@ -159,13 +165,19 @@ namespace DALHAL {
             } else if (f->type == FieldType::StringAnyOfByFuncConstrained) {
                 if (strLen == 0) { // fast fail
                     anyError = true;
-                    GlobalLogger.Error(F("String is empty @ StringAnyOfByFuncConstrained mode: "), f->name);
+                    std::string errMsg;
+                    errMsg += f->name;
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                    GlobalLogger.Error(F("String is empty @ StringAnyOfByFuncConstrained mode: "), errMsg.c_str());
                     return;
                 }
                 const FieldStringAnyOfByFuncConstrained* fsaobfc = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
                 if (fsaobfc->validate(fsaobfc->ctx, value_cStr) == false) {
                     anyError = true;
-                    GlobalLogger.Error(F("Invalid value for field: "), f->name);
+                    std::string errMsg;
+                    errMsg += f->name;
+                    errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                    GlobalLogger.Error(F("Invalid value for field: "), errMsg.c_str());
                 }
             } // else other string based types that do inherit from stringbase but take care of their own validation
             
@@ -174,6 +186,12 @@ namespace DALHAL {
         // Validate a single field
         void validateField(const JsonVariant& j, const char* sourceObjTypeName, const FieldBase* field, bool& anyError)
         {
+            if (sourceObjTypeName == nullptr) {
+                 std::string errMsg;
+                serializeCollapsed(j, errMsg);
+                GlobalLogger.Error(F(" SCHEMA ERROR - nullptr error"), errMsg.c_str());
+                sourceObjTypeName = "nullptr error";
+            }
             if (!field) { return; } // failsafe just return
 
             // Handle required/optional
@@ -306,7 +324,7 @@ namespace DALHAL {
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
 
-                        validateStringField(value, static_cast<const FieldStringBase*>(field), anyErrorTemp);
+                        validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyErrorTemp);
                         if (anyErrorTemp == true) {
                             anyError = true;
                             return;
@@ -324,7 +342,7 @@ namespace DALHAL {
                 case FieldType::UID:
                 case FieldType::UID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
-                    validateStringField(value, static_cast<const FieldStringBase*>(field), anyError);
+                    validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyError);
                     return;
                 }
                 case FieldType::Object: {
@@ -347,7 +365,7 @@ namespace DALHAL {
                 case FieldType::HexBytes: {
                     
                     bool anyErrorTemp = false;
-                    validateStringField(value, static_cast<const FieldStringBase*>(field), anyErrorTemp);
+                    validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyErrorTemp);
                     if (anyErrorTemp == true) {
                         anyError = true;
                         break; // no point of continue
@@ -393,20 +411,20 @@ namespace DALHAL {
             }
         }
 
-        void validateGroup(const JsonVariant& j, const FieldsGroup* group, bool& anyError) {
+        void validateGroup(const JsonVariant& j, const char* sourceObjTypeName, const FieldsGroup* group, bool& anyError) {
             if (!group) { return; } // failsafe just return
 
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
                 const FieldBase* f = group->fields[i];
 
                 if (f->type == FieldType::OneOfGroup) { // must validate this separate as it's a virtual group
-                    validateOneOfGroup(j, group->name, static_cast<const OneOfGroup*>(f), anyError);
+                    validateOneOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const OneOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
-                    validateAllOfGroup(j, group->name, static_cast<const AllOfGroup*>(f), anyError);
+                    validateAllOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const AllOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {
-                    validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
+                    validateGroup(j, sourceObjTypeName, static_cast<const FieldsGroup*>(f), anyError);
                 } else {
-                    validateField(j, group->name, f, anyError);
+                    validateField(j, group->name?group->name:sourceObjTypeName, f, anyError);
                 }
             }
 
@@ -679,7 +697,7 @@ namespace DALHAL {
                 } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
                     validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const AllOfGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {
-                    validateGroup(j, static_cast<const FieldsGroup*>(f), anyError);
+                    validateGroup(j, jsonObjectSchema->typeName, static_cast<const FieldsGroup*>(f), anyError);
                 } else {
                     validateField(j, jsonObjectSchema->typeName, f, anyError);
                 }
