@@ -30,6 +30,8 @@
 #include "DALHAL_JSON_Schema_StringBase.h"
 #include "DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -47,6 +49,9 @@ namespace DALHAL {
         };
       
         struct SchemaStringAnyOfArrayConstrained final : SchemaStringAnyOfByFuncConstrained {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
 
             constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 

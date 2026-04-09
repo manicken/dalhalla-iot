@@ -30,6 +30,8 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -41,6 +43,10 @@ namespace DALHAL {
          * registry definition.
          */
         struct SchemaRegistryArray : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             const Registry::Item* subtypes;
             const char* regPath;
 

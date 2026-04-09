@@ -32,7 +32,7 @@
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
@@ -50,26 +50,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        /*const FieldTypeDescriptor g_fieldTypeTable[] = {
-        #define X(name) { #name, Schema##name::Validate, Schema##name::SchemaToJson },
+        const FieldTypeRegistryItem g_fieldTypeTable[] = {
+        #define X(name) { #name, Schema##name::RegistryDefine },
             DALHAL_JsonSchema_FIELD_TYPE_LIST
         #undef X
-        };*/
+        };
 
-        const FieldTypeDescriptor& GetFieldTypeDescriptor(FieldType type) {
+        const FieldTypeRegistryItem& GetFieldTypeRegistryItem(FieldType type) {
             size_t idx = static_cast<size_t>(type);
             if (idx >= static_cast<size_t>(FieldType::_Count_)) {
-                static const FieldTypeDescriptor unknown = {
-                    "Unknown", nullptr, nullptr
+                static const FieldTypeRegistryItem unknown = {
+                    "Unknown", { }
                 };
                 return unknown;
             }
             return g_fieldTypeTable[idx];
         }
 
-        /*const char* FieldTypeToString(FieldType type) {
-            return GetFieldTypeDescriptor(type).name;
-        }*/
+        const char* FieldTypeToString(FieldType type) {
+            return GetFieldTypeRegistryItem(type).name;
+        }
 
     }
 

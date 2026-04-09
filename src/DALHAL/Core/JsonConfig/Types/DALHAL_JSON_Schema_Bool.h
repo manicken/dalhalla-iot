@@ -29,12 +29,18 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         struct SchemaBool : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
             bool defaultValue;
+
             // can be used when inherited and used as a subtupe
             constexpr SchemaBool(const char* name, FieldType type, FieldPolicy policy, bool defaultValue)
                 : SchemaTypeBase(name, type, policy), defaultValue(defaultValue) {}

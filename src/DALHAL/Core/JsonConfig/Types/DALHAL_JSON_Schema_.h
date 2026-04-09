@@ -33,6 +33,9 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+          static void SchemaToJson(const SchemaTypeBase& schema, std::string& jsonStr);
+          static void Validate(const SchemaTypeBase& schema, bool& anyError);
+          extern const char* ValidateJavaScript;
 
 
     }

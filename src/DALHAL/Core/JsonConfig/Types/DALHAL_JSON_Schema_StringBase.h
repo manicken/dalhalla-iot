@@ -30,11 +30,16 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         struct SchemaStringBase : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
 
             const char* defaultValue;  // flash string default, or more like what to present at GUI
 

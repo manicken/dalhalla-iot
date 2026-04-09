@@ -31,11 +31,16 @@
 #include "DALHAL_JSON_Schema_TypeBase.h"
 #include "DALHAL_JSON_Schema_StringBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         struct SchemaStringSizeConstrained : SchemaStringBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
 
             uint16_t minLength;
             uint16_t maxLength;

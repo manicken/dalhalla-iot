@@ -35,20 +35,32 @@ namespace DALHAL {
     namespace JsonSchema {
 
         using ValidatorFn = void (*)(const SchemaTypeBase&, const JsonVariant&, bool& anyError);
-        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, JsonVariant& json);
+        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, std::string& jsonStr);
 
-        struct FieldTypeDescriptor {
+        struct FieldTypeRegistryDefine {
+            ValidatorFn validator = nullptr;
+            SchemaToJsonFn toJson = nullptr;
+            const char* validateJavascript = nullptr;
+        };
+
+        struct FieldTypeRegistryItem {
+            const char* name;
+            FieldTypeRegistryDefine define;
+        };
+
+        /*struct FieldTypeDescriptor {
             const char* name;
             ValidatorFn validator;
             SchemaToJsonFn toJson;
-        };
+            const char* validateJavascript;
+        };*/
 
-        extern const FieldTypeDescriptor g_fieldTypeTable[
+        extern const FieldTypeRegistryItem g_fieldTypeTable[
             static_cast<size_t>(FieldType::_Count_)
         ];
 
-        const FieldTypeDescriptor& GetFieldTypeDescriptor(FieldType type);
-        //const char* FieldTypeToString(FieldType type);
+        const FieldTypeRegistryItem& GetFieldTypeRegistryItem(FieldType type);
+        const char* FieldTypeToString(FieldType type);
 
     }
 

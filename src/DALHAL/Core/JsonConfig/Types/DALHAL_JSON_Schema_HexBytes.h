@@ -29,11 +29,17 @@
 #include "DALHAL_JSON_Schema_TypeBase.h"
 #include "DALHAL_JSON_Schema_StringSizeConstrained.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         struct SchemaHexBytes : SchemaStringSizeConstrained {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             uint8_t byteCount;
 
             constexpr SchemaHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)

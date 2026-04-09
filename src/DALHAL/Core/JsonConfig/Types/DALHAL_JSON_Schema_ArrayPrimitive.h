@@ -28,6 +28,8 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -38,6 +40,9 @@ namespace DALHAL {
          * Used for unstructured arrays
          */
         struct SchemaArrayPrimitive : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
             uint8_t primitiveTypeFlags;
             EmptyPolicy emptyPolicy;
 

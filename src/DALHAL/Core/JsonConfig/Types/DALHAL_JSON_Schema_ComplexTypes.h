@@ -29,6 +29,8 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -39,6 +41,10 @@ namespace DALHAL {
          * The group's presence can be overridden by ModeSelector rules.
          */
         struct SchemaOneOfFieldsGroup : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+
             const SchemaTypeBase* const* fields;
             constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
                 : SchemaTypeBase(outputName, FieldType::OneOfFieldsGroup, policy), fields(fields) {}
@@ -52,6 +58,10 @@ namespace DALHAL {
          * The group's presence can be overridden by ModeSelector rules.
          */
         struct SchemaAllOfFieldsGroup : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+
             const SchemaTypeBase* const* fields;
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
                 : SchemaTypeBase(outputName, FieldType::AllOfFieldsGroup, policy), fields(fields) {}
@@ -63,6 +73,10 @@ namespace DALHAL {
          * , just as if the fields where defined standalone flat
          */
         struct SchemaFieldsGroup : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             const SchemaTypeBase* const* fields;
             /*size_t fieldsCount;*/
             constexpr SchemaFieldsGroup(const SchemaTypeBase* const* fields/*, size_t fieldsCount*/)

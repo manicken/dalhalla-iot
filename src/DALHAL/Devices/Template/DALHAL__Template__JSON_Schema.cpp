@@ -34,7 +34,7 @@
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>

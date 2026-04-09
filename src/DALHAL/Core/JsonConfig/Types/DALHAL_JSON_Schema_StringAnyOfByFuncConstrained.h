@@ -29,11 +29,17 @@
 #include "DALHAL_JSON_Schema_TypeBase.h"
 #include "DALHAL_JSON_Schema_StringBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
         
         struct SchemaStringAnyOfByFuncConstrained : SchemaStringBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             using ValidateFunc  = bool(*)(void* ctx, const char* value);
             using DescribeFunc  = std::string(*)(void* ctx);
 

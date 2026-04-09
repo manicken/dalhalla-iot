@@ -45,7 +45,7 @@
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
@@ -157,7 +157,7 @@ namespace DALHAL {
             ZeroCopyString zcStr = value_cStr; // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
             unsigned int strLen = zcStr.Length(); // use of lenght here is fast
-            if (f->type == FieldType::StringBase || f->type == FieldType::UID_Path) {
+            if (f->type == FieldType::StringBase || f->type == FieldType::StringUID_Path) {
                 if (strLen == 0) {
                     anyError = true;
                     std::string errMsg = f->name;
@@ -166,7 +166,7 @@ namespace DALHAL {
                 }
                 return;
             }
-            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::UID || f->type == FieldType::HexBytes ) {
+            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::StringUID || f->type == FieldType::HexBytes ) {
                 const SchemaStringSizeConstrained* fssc = static_cast<const SchemaStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
                     std::string errMsg = std::to_string((unsigned int)fssc->minLength) + "): ";
@@ -342,7 +342,7 @@ namespace DALHAL {
                     return;
                 }
                 case FieldType::HardwarePinOrVirtualPin: {
-                    auto f = static_cast<const SchemaHardwarePinOrVirtualPIN*>(field); // TODO implement
+                    auto f = static_cast<const SchemaHardwarePinOrVirtualPin*>(field); // TODO implement
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
 
@@ -361,8 +361,8 @@ namespace DALHAL {
                 case FieldType::StringAnyOfArrayConstrained:
                 case FieldType::StringAnyOfByFuncConstrained:
                 case FieldType::StringSizeConstrained:
-                case FieldType::UID:
-                case FieldType::UID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
+                case FieldType::StringUID:
+                case FieldType::StringUID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
                     validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyError);
                     return;

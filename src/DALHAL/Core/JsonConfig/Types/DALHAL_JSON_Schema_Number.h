@@ -29,11 +29,17 @@
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         struct SchemaNumber : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             uint8_t primitiveTypeFlags;
 
             constexpr SchemaNumber(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowNumbers) 

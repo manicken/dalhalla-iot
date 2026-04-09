@@ -32,7 +32,7 @@
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
@@ -46,7 +46,7 @@
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
 
-
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 #include <string>
 #include <vector>
@@ -331,8 +331,8 @@ namespace DALHAL {
                     out += std::to_string(ff->defaultValue);
                     break;
                 }
-                case FieldType::UID:
-                case FieldType::UID_Path:
+                case FieldType::StringUID:
+                case FieldType::StringUID_Path:
                 case FieldType::StringBase: {
                     auto fs = static_cast<const SchemaStringBase*>(f);
                     out += ",\"default\":\"";

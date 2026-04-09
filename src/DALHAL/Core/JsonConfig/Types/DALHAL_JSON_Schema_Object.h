@@ -30,6 +30,8 @@
 #include "DALHAL_JSON_Schema_TypeBase.h"
 #include "DALHAL_JSON_Schema_JsonObjectSchema.h"
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -38,6 +40,10 @@ namespace DALHAL {
          * used for ordinary JSON objects, i.e. enclosed by {}
          */
         struct SchemaObject : SchemaTypeBase {
+            static constexpr FieldTypeRegistryDefine RegistryDefine {
+
+            };
+            
             const JsonSchema::JsonObjectSchema* subtype;
             
             constexpr SchemaObject(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)

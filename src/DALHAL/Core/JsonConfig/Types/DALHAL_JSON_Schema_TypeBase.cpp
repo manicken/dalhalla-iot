@@ -27,7 +27,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* FieldTypeToString(FieldType type) {
+        /*const char* FieldTypeToString(FieldType type) {
             switch (type)
             {
                 case FieldType::FieldsGroup: return  "FieldsGroup";
@@ -48,14 +48,14 @@ namespace DALHAL {
                 case FieldType::StringAnyOfByFuncConstrained: return "StringAnyOfByFuncConstrained";
                 case FieldType::StringAnyOfArrayConstrained: return "StringAnyOfArrayConstrained";
                 case FieldType::StringSizeConstrained: return "StringSizeConstrained";
-                case FieldType::UID: return "UID";
-                case FieldType::UID_Path: return "UID_Path";
+                case FieldType::StringUID: return "UID";
+                case FieldType::StringUID_Path: return "UID_Path";
                 case FieldType::UInt: return "UInt";
                 
                 //case FieldType: return "";
                 default: return "Unknown";
             }
-        }
+        }*/
         const char* FieldPolicyToString(FieldPolicy policy) {
             switch (policy)
             {

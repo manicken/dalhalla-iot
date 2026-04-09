@@ -46,8 +46,8 @@
     X(StringSizeConstrained) \
     X(StringAnyOfByFuncConstrained) \
     X(StringAnyOfArrayConstrained) \
-    X(UID) \
-    X(UID_Path) \
+    X(StringUID) \
+    X(StringUID_Path) \
     X(UInt)
 
 namespace DALHAL {
@@ -83,7 +83,7 @@ namespace DALHAL {
         #undef X
             _Count_
         };
-        const char* FieldTypeToString(FieldType type);
+        //const char* FieldTypeToString(FieldType type);
 
         enum class FieldPolicy {
             Required,
