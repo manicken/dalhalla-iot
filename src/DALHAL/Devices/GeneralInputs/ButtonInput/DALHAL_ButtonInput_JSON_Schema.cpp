@@ -23,9 +23,13 @@
 
 #include "DALHAL_ButtonInput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h> // also ByArrayConstraints
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -34,15 +38,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
-        constexpr FieldUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, 1, 0, 30};
+        constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
+        constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, 1, 0, 30};
 
         constexpr ByArrayConstraints activeLevelConstraints = {activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
-        constexpr FieldStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
+        constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
         
-        constexpr FieldStringBase on_pressField = { "on_press", FieldPolicy::Optional};
+        constexpr SchemaStringBase on_pressField = { "on_press", FieldPolicy::Optional};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &pinField,
             &debounceMsField,

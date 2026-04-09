@@ -23,9 +23,13 @@
 
 #include "DALHAL_REGO600_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -36,14 +40,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
-        constexpr FieldHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
+        constexpr SchemaHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-        constexpr FieldUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
+        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
 
-        constexpr FieldArray itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, "", &REGO600_Register, EmptyPolicy::Error};
+        constexpr SchemaArray itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, "", &REGO600_Register, EmptyPolicy::Error};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &rxpinField,
             &txpinField,

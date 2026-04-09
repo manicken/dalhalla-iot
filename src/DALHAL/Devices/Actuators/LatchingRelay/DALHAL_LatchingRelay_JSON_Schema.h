@@ -40,7 +40,8 @@
 #define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS "timeoutMs"
 #define DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS 500
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {

@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h> // JsonObjectSchema
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #define DALHAL_COMMON_CFG_NAME_PIN "pin"
 #define DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH "ActiveHigh"
@@ -34,11 +36,11 @@ namespace DALHAL {
 
     namespace JsonSchema {
         /** defines a input pin field named 'pin' */
-        extern const FieldHardwarePin InputPinField;
+        extern const SchemaHardwarePin InputPinField;
         /** defines a output pin field named 'pin' */
-        extern const FieldHardwarePin OutputPinField;
+        extern const SchemaHardwarePin OutputPinField;
         /** defines a input/output pin field named 'pin' */
-        extern const FieldHardwarePin InputOutputPinField;
+        extern const SchemaHardwarePin InputOutputPinField;
 
         extern const JsonObjectSchema InputPinScheme;
         extern const JsonObjectSchema OutputPinScheme;

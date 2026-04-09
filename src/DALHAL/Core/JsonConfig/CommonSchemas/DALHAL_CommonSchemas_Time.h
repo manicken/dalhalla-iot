@@ -23,14 +23,14 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const OneOfGroup refreshTimeGroupFields;
-        extern const OneOfGroup refreshTimeGroupFieldsRequired;
+        extern const SchemaOneOfFieldsGroup refreshTimeGroupFields;
+        extern const SchemaOneOfFieldsGroup refreshTimeGroupFieldsRequired;
         
     }
     

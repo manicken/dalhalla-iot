@@ -35,7 +35,29 @@
 #include <math.h>
 #include <cstdint>
 
-//using json = JsonVariant;
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
  
 namespace DALHAL {
 
@@ -71,13 +93,13 @@ namespace DALHAL {
 
         // this is only a helper/support function and do not use anyError
         // as this could be just defined as a warning, depending on strict level requirements
-        bool isUnknownField(const char* key, const FieldBase* const* fields)
+        bool isUnknownField(const char* key, const SchemaTypeBase* const* fields)
         {
             for (int i = 0; fields[i] != nullptr; i++) {
-                const FieldBase* f = fields[i];
+                const SchemaTypeBase* f = fields[i];
 
-                if (f->type == FieldType::OneOfGroup) {
-                    const OneOfGroup* group = static_cast<const OneOfGroup*>(f);
+                if (f->type == FieldType::OneOfFieldsGroup) {
+                    const SchemaOneOfFieldsGroup* group = static_cast<const SchemaOneOfFieldsGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
                         if (group->fields[g]->name == nullptr) {
@@ -87,8 +109,8 @@ namespace DALHAL {
                         if (strcmp(key, group->fields[g]->name) == 0)
                             return false; // isUnknownField
                     }
-                } else if (f->type == FieldType::AllOfGroup) {
-                    const AllOfGroup* group = static_cast<const AllOfGroup*>(f);
+                } else if (f->type == FieldType::AllOfFieldsGroup) {
+                    const SchemaAllOfFieldsGroup* group = static_cast<const SchemaAllOfFieldsGroup*>(f);
 
                     for (int g = 0; group->fields[g] != nullptr; g++) {
                         if (group->fields[g]->name == nullptr) {
@@ -99,7 +121,7 @@ namespace DALHAL {
                             return false; // isUnknownField
                     }
                 } else if (f->type == FieldType::FieldsGroup) {
-                    const FieldsGroup* group = static_cast<const FieldsGroup*>(f);
+                    const SchemaFieldsGroup* group = static_cast<const SchemaFieldsGroup*>(f);
                     if (!isUnknownField(key, group->fields)) { // recurse into the subgroup
                         return false;
                     }
@@ -121,7 +143,7 @@ namespace DALHAL {
         }
 
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const FieldStringBase* f, bool& anyError)
+        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const SchemaStringBase* f, bool& anyError)
         {
             if (!value.is<const char*>()) {
                 std::string errMsg = f->name;
@@ -145,7 +167,7 @@ namespace DALHAL {
                 return;
             }
             if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::UID || f->type == FieldType::HexBytes ) {
-                const FieldStringSizeConstrained* fssc = static_cast<const FieldStringSizeConstrained*>(f);
+                const SchemaStringSizeConstrained* fssc = static_cast<const SchemaStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
                     std::string errMsg = std::to_string((unsigned int)fssc->minLength) + "): ";
                     errMsg += f->name;
@@ -171,7 +193,7 @@ namespace DALHAL {
                     GlobalLogger.Error(F("String is empty @ StringAnyOfByFuncConstrained mode: "), errMsg.c_str());
                     return;
                 }
-                const FieldStringAnyOfByFuncConstrained* fsaobfc = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
+                const SchemaStringAnyOfByFuncConstrained* fsaobfc = static_cast<const SchemaStringAnyOfByFuncConstrained*>(f);
                 if (fsaobfc->validate(fsaobfc->ctx, value_cStr) == false) {
                     anyError = true;
                     std::string errMsg;
@@ -184,7 +206,7 @@ namespace DALHAL {
         }
 
         // Validate a single field
-        void validateField(const JsonVariant& j, const char* sourceObjTypeName, const FieldBase* field, bool& anyError)
+        void validateField(const JsonVariant& j, const char* sourceObjTypeName, const SchemaTypeBase* field, bool& anyError)
         {
             if (sourceObjTypeName == nullptr) {
                  std::string errMsg;
@@ -233,7 +255,7 @@ namespace DALHAL {
                         anyError = true;
                         return;
                     }
-                    auto f = static_cast<const FieldInt*>(field);
+                    auto f = static_cast<const SchemaInt*>(field);
                     int v = value.as<int>();
                     if ((v < f->minValue) || ((f->maxValue != 0) && (v > f->maxValue))) { // if maxValue == 0 then the value can be anything
                         std::string errStr = field->name; errStr += " @ ";
@@ -246,7 +268,7 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::UInt: {
-                    auto f = static_cast<const FieldUInt*>(field);
+                    auto f = static_cast<const SchemaUInt*>(field);
                     if (!value.is<unsigned int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
@@ -267,7 +289,7 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::Float: {
-                    auto f = static_cast<const FieldFloat*>(field);
+                    auto f = static_cast<const SchemaFloat*>(field);
                     if (!value.is<float>() && !value.is<double>() && !value.is<int>()) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
@@ -288,7 +310,7 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::HardwarePin: {
-                    auto f = static_cast<const FieldHardwarePin*>(field);
+                    auto f = static_cast<const SchemaHardwarePin*>(field);
                     if (value.is<int8_t>() == false) {
                         std::string errStr = field->name; errStr += " @ ";
                         serializeCollapsed(j, errStr);
@@ -320,11 +342,11 @@ namespace DALHAL {
                     return;
                 }
                 case FieldType::HardwarePinOrVirtualPin: {
-                    auto f = static_cast<const FieldHardwarePinOrVirtualPIN*>(field); // TODO implement
+                    auto f = static_cast<const SchemaHardwarePinOrVirtualPIN*>(field); // TODO implement
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
 
-                        validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyErrorTemp);
+                        validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyErrorTemp);
                         if (anyErrorTemp == true) {
                             anyError = true;
                             return;
@@ -342,35 +364,35 @@ namespace DALHAL {
                 case FieldType::UID:
                 case FieldType::UID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
-                    validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyError);
+                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyError);
                     return;
                 }
                 case FieldType::Object: {
-                    validateJsonObject(value, field->name, static_cast<const FieldObject*>(field)->subtype, anyError);
+                    validateJsonObject(value, field->name, static_cast<const SchemaObject*>(field)->subtype, anyError);
                     break;
                 }
                 case FieldType::Array: {
-                    validateJsonArray(value, static_cast<const FieldArray*>(field), anyError);
+                    validateJsonArray(value, static_cast<const SchemaArray*>(field), anyError);
                     return;
                 }
                 case FieldType::ArrayPrimitive: {
-                    validateJsonArrayPrimitive(value, static_cast<const FieldArrayPrimitive*>(field), anyError);
+                    validateJsonArrayPrimitive(value, static_cast<const SchemaArrayPrimitive*>(field), anyError);
                     return;
                 }
                 case FieldType::RegistryArray: {
-                    validateFromRegister(value, static_cast<const FieldRegistryArray*>(field)->subtypes, anyError);
+                    validateFromRegister(value, static_cast<const SchemaRegistryArray*>(field)->subtypes, anyError);
                     break;
                 }
                 
                 case FieldType::HexBytes: {
                     
                     bool anyErrorTemp = false;
-                    validateStringField(value, sourceObjTypeName, static_cast<const FieldStringBase*>(field), anyErrorTemp);
+                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyErrorTemp);
                     if (anyErrorTemp == true) {
                         anyError = true;
                         break; // no point of continue
                     }
-                    auto f = static_cast<const FieldHexBytes*>(field);
+                    auto f = static_cast<const SchemaHexBytes*>(field);
                     const char* cStr = value.as<const char*>();
                     // TODO implement settings for delimiter enforcement
                     bool parseOk = Convert::HexToBytes(cStr, nullptr, f->byteCount);
@@ -384,7 +406,7 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::Number: {
-                    auto f = static_cast<const FieldNumber*>(field);
+                    auto f = static_cast<const SchemaNumber*>(field);
                     if ((f->primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat) && value.is<float>()) {
                         // accept as float
                         return;
@@ -404,25 +426,25 @@ namespace DALHAL {
                         
                 }
                 // virtual fields not handled here
-                case FieldType::OneOfGroup:
-                case FieldType::AllOfGroup:
+                case FieldType::OneOfFieldsGroup:
+                case FieldType::AllOfFieldsGroup:
                 case FieldType::FieldsGroup:
                     break;
             }
         }
 
-        void validateGroup(const JsonVariant& j, const char* sourceObjTypeName, const FieldsGroup* group, bool& anyError) {
+        void validateGroup(const JsonVariant& j, const char* sourceObjTypeName, const SchemaFieldsGroup* group, bool& anyError) {
             if (!group) { return; } // failsafe just return
 
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
-                const FieldBase* f = group->fields[i];
+                const SchemaTypeBase* f = group->fields[i];
 
-                if (f->type == FieldType::OneOfGroup) { // must validate this separate as it's a virtual group
-                    validateOneOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const OneOfGroup*>(f), anyError);
-                } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
-                    validateAllOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const AllOfGroup*>(f), anyError);
+                if (f->type == FieldType::OneOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateOneOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const SchemaOneOfFieldsGroup*>(f), anyError);
+                } else if (f->type == FieldType::AllOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateAllOfGroup(j, group->name?group->name:sourceObjTypeName, static_cast<const SchemaAllOfFieldsGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {
-                    validateGroup(j, sourceObjTypeName, static_cast<const FieldsGroup*>(f), anyError);
+                    validateGroup(j, sourceObjTypeName, static_cast<const SchemaFieldsGroup*>(f), anyError);
                 } else {
                     validateField(j, group->name?group->name:sourceObjTypeName, f, anyError);
                 }
@@ -431,14 +453,14 @@ namespace DALHAL {
         }
 
         // Validate OneOfGroup
-        void validateOneOfGroup(const JsonVariant& j, const char* fieldName, const OneOfGroup* group, bool& anyError)
+        void validateOneOfGroup(const JsonVariant& j, const char* fieldName, const SchemaOneOfFieldsGroup* group, bool& anyError)
         {
             if (!group) { return; } // failsafe just return
 
             bool found = false;
             
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
-                const FieldBase* f = group->fields[i];
+                const SchemaTypeBase* f = group->fields[i];
                 if (j.containsKey(f->name)) {
                     found = true;
                     validateField(j, group->name, f, anyError);
@@ -456,7 +478,7 @@ namespace DALHAL {
             }
         }
 
-        void validateAllOfGroup(const JsonVariant& j, const char* fieldName, const AllOfGroup* group, bool& anyError)
+        void validateAllOfGroup(const JsonVariant& j, const char* fieldName, const SchemaAllOfFieldsGroup* group, bool& anyError)
         {
             if (!group) { return; }
 
@@ -464,7 +486,7 @@ namespace DALHAL {
             int totalCount = 0;
 
             for (size_t i = 0; group->fields[i] != nullptr; ++i) {
-                const FieldBase* f = group->fields[i];
+                const SchemaTypeBase* f = group->fields[i];
                 totalCount++;
 
                 if (j.containsKey(f->name)) {
@@ -499,8 +521,8 @@ namespace DALHAL {
                 for (int c = 0; mode.conjunctions[c].fieldRef != nullptr; ++c) {
                     const ModeConjunctionDefine& conj = mode.conjunctions[c];
                     bool exists = false;
-                    if (conj.fieldRef->type == FieldType::OneOfGroup) {
-                        const OneOfGroup* group = static_cast<const OneOfGroup*>(conj.fieldRef);
+                    if (conj.fieldRef->type == FieldType::OneOfFieldsGroup) {
+                        const SchemaOneOfFieldsGroup* group = static_cast<const SchemaOneOfFieldsGroup*>(conj.fieldRef);
 
                         for (int g = 0; group->fields[g] != nullptr; ++g) {
                             if (j.containsKey(group->fields[g]->name)) {
@@ -509,8 +531,8 @@ namespace DALHAL {
                             }
                         }
                     }
-                    else if (conj.fieldRef->type == FieldType::AllOfGroup) {
-                        const AllOfGroup* group = static_cast<const AllOfGroup*>(conj.fieldRef);
+                    else if (conj.fieldRef->type == FieldType::AllOfFieldsGroup) {
+                        const SchemaAllOfFieldsGroup* group = static_cast<const SchemaAllOfFieldsGroup*>(conj.fieldRef);
                         int found = 0;
                         int total = 0;
 
@@ -538,6 +560,7 @@ namespace DALHAL {
                     matchedMode = i;
                 }
             }
+
             return matchedMode;
         }
 
@@ -571,8 +594,8 @@ namespace DALHAL {
                     if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
-                    auto fA = static_cast<const FieldUInt*>(fcItem.fieldA);
-                    auto fB = static_cast<const FieldUInt*>(fcItem.fieldB);
+                    auto fA = static_cast<const SchemaUInt*>(fcItem.fieldA);
+                    auto fB = static_cast<const SchemaUInt*>(fcItem.fieldB);
                     valA = j.containsKey(fA->name)?j[fA->name].as<uint32_t>():fA->defaultValue;
                     valB = j.containsKey(fB->name)?j[fB->name].as<uint32_t>():fB->defaultValue;
                 } else if (fcItem.fieldA->type == FieldType::Int) {
@@ -580,8 +603,8 @@ namespace DALHAL {
                     if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
-                    auto fA = static_cast<const FieldInt*>(fcItem.fieldA);
-                    auto fB = static_cast<const FieldInt*>(fcItem.fieldB);
+                    auto fA = static_cast<const SchemaInt*>(fcItem.fieldA);
+                    auto fB = static_cast<const SchemaInt*>(fcItem.fieldB);
                     valA = j.containsKey(fA->name)?j[fA->name].as<int32_t>():fA->defaultValue;
                     valB = j.containsKey(fB->name)?j[fB->name].as<int32_t>():fB->defaultValue;
 
@@ -590,8 +613,8 @@ namespace DALHAL {
                     if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
-                    auto fA = static_cast<const FieldFloat*>(fcItem.fieldA);
-                    auto fB = static_cast<const FieldFloat*>(fcItem.fieldB);
+                    auto fA = static_cast<const SchemaFloat*>(fcItem.fieldA);
+                    auto fB = static_cast<const SchemaFloat*>(fcItem.fieldB);
                     valA = j.containsKey(fA->name)?j[fA->name].as<float>():fA->defaultValue;
                     valB = j.containsKey(fB->name)?j[fB->name].as<float>():fB->defaultValue;
 
@@ -690,14 +713,14 @@ namespace DALHAL {
 
             // 2. Validate each field
             for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
-                const FieldBase* f = jsonObjectSchema->fields[i];
+                const SchemaTypeBase* f = jsonObjectSchema->fields[i];
 
-                if (f->type == FieldType::OneOfGroup) { // must validate this separate as it's a virtual group
-                    validateOneOfGroup(j, jsonObjectSchema->typeName, static_cast<const OneOfGroup*>(f), anyError);
-                } else if (f->type == FieldType::AllOfGroup) { // must validate this separate as it's a virtual group
-                    validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const AllOfGroup*>(f), anyError);
+                if (f->type == FieldType::OneOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateOneOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaOneOfFieldsGroup*>(f), anyError);
+                } else if (f->type == FieldType::AllOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaAllOfFieldsGroup*>(f), anyError);
                 } else if (f->type == FieldType::FieldsGroup) {
-                    validateGroup(j, jsonObjectSchema->typeName, static_cast<const FieldsGroup*>(f), anyError);
+                    validateGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaFieldsGroup*>(f), anyError);
                 } else {
                     validateField(j, jsonObjectSchema->typeName, f, anyError);
                 }
@@ -727,7 +750,7 @@ namespace DALHAL {
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
 
-        void validateJsonArray(const JsonVariant& j, const FieldArray* field, bool& anyError)
+        void validateJsonArray(const JsonVariant& j, const SchemaArray* field, bool& anyError)
         {
             if (!j.is<JsonArray>()) {
                 GlobalLogger.Error(F("Field is not an array"), field->name);
@@ -755,7 +778,7 @@ namespace DALHAL {
             }
         }
 
-        void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::FieldArrayPrimitive* field, bool& anyError)
+        void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::SchemaArrayPrimitive* field, bool& anyError)
         {
             using namespace JsonSchema;
 

@@ -23,9 +23,14 @@
 
 #include "DALHAL_PWM_Servo_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
+
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -34,19 +39,19 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-        constexpr FieldUInt chField = {DALHAL_DEVICE_PWM_SERVO_CFG_NAME_CH, FieldPolicy::Required, 0, 7, 0};
+        constexpr SchemaUInt chField = {DALHAL_DEVICE_PWM_SERVO_CFG_NAME_CH, FieldPolicy::Required, 0, 7, 0};
 
-        constexpr FieldUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, 100, 20000, 1000};
-        constexpr FieldUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, 100, 20000, 2000};
-        constexpr FieldUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, 100, 20000, 1500};
+        constexpr SchemaUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, 100, 20000, 1000};
+        constexpr SchemaUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, 100, 20000, 2000};
+        constexpr SchemaUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, 100, 20000, 1500};
 
-        constexpr FieldUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, 0, 0, 0};
-        constexpr FieldUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, 0, 0, 0};
+        constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, 0, 0, 0};
+        constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, 0, 0, 0};
 
-        constexpr FieldFloat minValField = {"minVal", FieldPolicy::Optional, 0};
-        constexpr FieldFloat maxValField = {"maxVal", FieldPolicy::Optional, 100};
+        constexpr SchemaFloat minValField = {"minVal", FieldPolicy::Optional, 0};
+        constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::Optional, 100};
 
         constexpr FieldConstraint constraints[] = {
             {&minValField, FieldConstraint::Type::LessThan, &maxValField},
@@ -56,7 +61,7 @@ namespace DALHAL {
             {nullptr, FieldConstraint::Type::Void, nullptr}
         };
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &pinField,
             &chField,

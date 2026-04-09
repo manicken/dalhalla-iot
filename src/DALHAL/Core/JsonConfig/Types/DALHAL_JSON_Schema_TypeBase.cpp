@@ -21,21 +21,22 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_BaseTypes.h"
+#include "DALHAL_JSON_Schema_TypeBase.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
+
         const char* FieldTypeToString(FieldType type) {
             switch (type)
             {
-                case FieldType::AllOfGroup: return "AllOfGroup";
-                case FieldType::OneOfGroup: return "OneOfGroup";
+                case FieldType::FieldsGroup: return  "FieldsGroup";
+                case FieldType::AllOfFieldsGroup: return "AllOfFieldsGroup";
+                case FieldType::OneOfFieldsGroup: return "OneOfFieldsGroup";
                 case FieldType::Array: return "Array";
                 case FieldType::ArrayPrimitive: return "ArrayPrimitive";
                 case FieldType::Bool: return "Bool";
                 case FieldType::Float: return "Float";
-                case FieldType::FieldsGroup: return  "FieldsGroup";
                 case FieldType::HardwarePin: return "HardwarePin";
                 case FieldType::HardwarePinOrVirtualPin: return "HardwarePinOrVirtualPin";
                 case FieldType::HexBytes: return "HexBytes";
@@ -59,7 +60,7 @@ namespace DALHAL {
             switch (policy)
             {
                 case FieldPolicy::FieldsGroup: return "FieldsGroup";
-                case FieldPolicy::AllOfGroup: return "AllOfGroup";
+                case FieldPolicy::AllOfFieldsGroup: return "AllOfGroup";
                 case FieldPolicy::OneOfGroup: return "OneOfGroup";
                 case FieldPolicy::ModeDefine: return "ModeDefine";
                 case FieldPolicy::Optional: return "Optional";
@@ -68,29 +69,8 @@ namespace DALHAL {
                 default: return "Unknown";
             }
         }
-        const char* FieldConstraintTypeToString(FieldConstraint::Type type) {
-            switch (type)
-            {
-                case FieldConstraint::Type::GreaterThan: return ">";
-                case FieldConstraint::Type::GreaterThanOrEqual: return ">=";
-                case FieldConstraint::Type::LessThan: return "<";
-                case FieldConstraint::Type::LessThanOrEqual: return "<=";
-                case FieldConstraint::Type::Void: return "Void";
-                //case FieldConstraint::Type: return "";
-                default: return "Unknown";
-            }
-        }
-
-        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy) {
-            switch (policy)
-            {
-                case UnknownFieldPolicy::Error: return "Error";
-                case UnknownFieldPolicy::Ignore: return "Ignore";
-                case UnknownFieldPolicy::Warn: return "Warn";
-                //case UnknownFieldPolicy: return "";
-                default: return "Unknown";
-            }
-        }
+        
+        
         const char* EmptyPolicyToString(EmptyPolicy policy) {
             switch (policy)
             {

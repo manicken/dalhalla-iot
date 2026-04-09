@@ -23,16 +23,18 @@
 
 #include "DALHAL_CommonSchemas_Consumer.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h> // ModeConjunctionDefine, ModeSelector
+
 #include "DALHAL_CommonSchemas_Time.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringUID_Path sourceField = { "source", FieldPolicy::Optional}; 
-        constexpr FieldStringUID_Path eventSourceField = { "event_source", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path sourceField = { "source", FieldPolicy::Optional}; 
+        constexpr SchemaStringUID_Path eventSourceField = { "event_source", FieldPolicy::Optional};
         
         constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
             { &refreshTimeGroupFields, true },  // group must exist for this mode

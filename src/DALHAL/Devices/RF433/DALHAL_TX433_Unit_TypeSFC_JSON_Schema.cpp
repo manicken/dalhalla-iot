@@ -23,8 +23,9 @@
 
 #include "DALHAL_TX433_Unit_TypeSFC_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -32,11 +33,11 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUInt chField = {"ch", FieldPolicy::Optional, 1, 4, 0};
-        constexpr FieldUInt btnField = {"btn", FieldPolicy::Optional, 1, 4, 0};
-        constexpr FieldUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
+        constexpr SchemaUInt chField = {"ch", FieldPolicy::Optional, 1, 4, 0};
+        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, 1, 4, 0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &chField,
             &btnField,

@@ -23,9 +23,11 @@
 
 #include "DALHAL_HA_Button_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -33,11 +35,11 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringBase nameField = {"name", FieldPolicy::Required};
-        constexpr FieldObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
-        constexpr FieldStringUID_Path targetField = {"target", FieldPolicy::Required};
+        constexpr SchemaStringBase nameField = {"name", FieldPolicy::Required};
+        constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
+        constexpr SchemaStringUID_Path targetField = {"target", FieldPolicy::Required};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &targetField,
             &nameField, 

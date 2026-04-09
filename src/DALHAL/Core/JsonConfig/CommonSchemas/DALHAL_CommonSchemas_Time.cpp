@@ -23,19 +23,21 @@
 
 #include "DALHAL_CommonSchemas_Time.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUInt    refreshTimeMsField  = { "refreshtimems", FieldPolicy::OneOfGroup, 1}; // here we dont define min/max 
-        constexpr FieldFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
-        constexpr FieldFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
-        constexpr const FieldBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
+        constexpr SchemaUInt    refreshTimeMsField  = { "refreshtimems", FieldPolicy::OneOfGroup, 1}; // here we dont define min/max 
+        constexpr SchemaFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
+        constexpr SchemaFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max 
+        constexpr const SchemaTypeBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
 
-        constexpr OneOfGroup   refreshTimeGroupFields = {"refreshtime", FieldPolicy::Optional, Gui::UseInline, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        constexpr OneOfGroup   refreshTimeGroupFieldsRequired = {"refreshtime", FieldPolicy::Required, Gui::UseInline, refreshGroupItems};
+        constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFields = {"refreshtime", FieldPolicy::Optional, Gui::UseInline, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
+        constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFieldsRequired = {"refreshtime", FieldPolicy::Required, Gui::UseInline, refreshGroupItems};
     }
 
 }

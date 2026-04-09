@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_UID_Path.h"
+#include "DALHAL_JSON_Schema_StringUID_Path.h"
 
 namespace DALHAL {
 

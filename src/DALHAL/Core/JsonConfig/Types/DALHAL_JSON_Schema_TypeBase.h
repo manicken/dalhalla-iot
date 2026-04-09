@@ -27,22 +27,46 @@
 #include <cstring>
 #include <string>
 
+#define DALHAL_JsonSchema_FIELD_TYPE_LIST \
+    X(FieldsGroup) \
+    X(AllOfFieldsGroup) \
+    X(OneOfFieldsGroup) \
+    X(Array) \
+    X(ArrayPrimitive) \
+    X(Bool) \
+    X(Float) \
+    X(HardwarePin) \
+    X(HardwarePinOrVirtualPin) \
+    X(HexBytes) \
+    X(Int) \
+    X(Number) \
+    X(Object) \
+    X(RegistryArray) \
+    X(StringBase) \
+    X(StringSizeConstrained) \
+    X(StringAnyOfByFuncConstrained) \
+    X(StringAnyOfArrayConstrained) \
+    X(UID) \
+    X(UID_Path) \
+    X(UInt)
+
 namespace DALHAL {
 
     namespace JsonSchema {
-        enum class FieldType {
-            AllOfGroup,
-            OneOfGroup,
+
+        /*enum class FieldType {
+            FieldsGroup,
+            AllOfFieldsGroup,
+            OneOfFieldsGroup,
             Array,         // homogeneous type
             ArrayPrimitive, // homogeneous type of primitives defined by allowence flags (and can mix different primitive types such as bool, uint, int and float)
             Bool,
             Float,
-            FieldsGroup,
             HardwarePin,
             HardwarePinOrVirtualPin,
             HexBytes,      // note can be use with or without delimiters but only consistent usage is allowed so for example 2845:56:67 is not allowed, however currently the delimiter type is not fixed so it can be 28:45.56-67
             Int,
-            Number, /** json number */
+            Number, // json number
             Object,        // ordinary JSON object i.e. enclosed by {}
             RegistryArray, // polymorphic (registry-based)
             StringBase,
@@ -52,6 +76,12 @@ namespace DALHAL {
             UID,
             UID_Path,
             UInt,
+        };*/
+        enum class FieldType : uint8_t {
+        #define X(name) name,
+            DALHAL_JsonSchema_FIELD_TYPE_LIST
+        #undef X
+            _Count_
         };
         const char* FieldTypeToString(FieldType type);
 
@@ -59,18 +89,11 @@ namespace DALHAL {
             Required,
             Optional,
             OneOfGroup, // the higher group defines
-            AllOfGroup, // the higher group defines
+            AllOfFieldsGroup, // the higher group defines
             FieldsGroup, // the individual items decides the policy as they where defined flat, group defines no policy
             ModeDefine // Mode defines
         };
         const char* FieldPolicyToString(FieldPolicy flag);
-
-        enum class UnknownFieldPolicy {
-            Ignore,
-            Warn,
-            Error
-        };
-        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy);
 
         enum class EmptyPolicy {
             Ignore,
@@ -78,8 +101,8 @@ namespace DALHAL {
             Error
         };
         const char* EmptyPolicyToString(EmptyPolicy policy);
-        using FieldGuiFlags = uint8_t;
 
+        using FieldGuiFlags = uint8_t;
         namespace Gui {
             constexpr FieldGuiFlags None                   = 0;
             constexpr FieldGuiFlags UseInline              = 1 << 0;
@@ -93,65 +116,28 @@ namespace DALHAL {
             }
         }
 
-        struct FieldBase {
+        enum PrimitiveTypeFlags : uint8_t {
+            AllowAll   = 0xFF,
+            AllowNumbers = (1 << 0) | (1 << 1) | (1 << 2),
+            AllowInt   = 1 << 0,
+            AllowUInt  = 1 << 1,
+            AllowFloat = 1 << 2,
+            AllowBool = 1 << 3,
+        };
+
+        struct SchemaTypeBase {
             const char* name;    // flash string
             FieldType type;
             FieldPolicy policy;
             FieldGuiFlags guiFlags;
         protected:
-            constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy)
+            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy)
                 : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
 
-            constexpr FieldBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags)
+            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags)
                 : name(n), type(t), policy(policy), guiFlags(guiFlags) {}
         };
 
-        struct ModeConjunctionDefine {
-            const FieldBase* fieldRef;
-            bool required; // true = must exist, false = must explicit NOT exist
-        };
-
-        struct ModeSelector {
-            const char* name; // optional
-            const ModeConjunctionDefine* conjunctions; // nullptr terminated
-            constexpr ModeSelector(const char* name, const ModeConjunctionDefine* conjunctions)
-                : name(name), conjunctions(conjunctions) {}
-        };
-
-        struct FieldConstraint {
-            enum class Type {
-                Void,
-                LessThan,
-                GreaterThan,
-                LessThanOrEqual,
-                GreaterThanOrEqual                
-            };
-
-            const FieldBase* fieldA;
-            Type type;
-            const FieldBase* fieldB;
-            constexpr FieldConstraint(const FieldBase* fieldA, Type type, const FieldBase* fieldB):
-                fieldA(fieldA),
-                type(type),
-                fieldB(fieldB)
-                {}
-        };
-        const char* FieldConstraintTypeToString(FieldConstraint::Type type);
-
-        struct JsonObjectSchema {
-            const char* typeName;
-            const FieldBase* const* fields;
-            const ModeSelector* modes;
-            const FieldConstraint* constraints;
-            EmptyPolicy emptyPolicy;
-            UnknownFieldPolicy unknownFieldPolicy;
-
-            constexpr JsonObjectSchema(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints):
-                typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(EmptyPolicy::Warn), unknownFieldPolicy(UnknownFieldPolicy::Warn) {}
-            
-            constexpr JsonObjectSchema(const char* typeName, const FieldBase* const* fields, const ModeSelector* modes, const FieldConstraint* constraints, EmptyPolicy emptyPolicy, UnknownFieldPolicy unknownFieldPolicy):
-                typeName(typeName), fields(fields), modes(modes), constraints(constraints), emptyPolicy(emptyPolicy), unknownFieldPolicy(unknownFieldPolicy) {}
-        };
     }
 
   }

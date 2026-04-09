@@ -23,8 +23,10 @@
 
 #include "DALHAL_TX433_Unit_TypeLC_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -32,12 +34,12 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
-        constexpr FieldStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
+        constexpr SchemaStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
+        constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
-        constexpr FieldUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, 0, 3, 0};
-        constexpr FieldUInt btnField = {"btn", FieldPolicy::Optional, 0, 3, 0};
-        constexpr FieldUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
+        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, 0, 3, 0};
+        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, 0, 3, 0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
 
         constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {
             { &anidField, true },  // group must exist for this mode
@@ -58,7 +60,7 @@ namespace DALHAL {
         };
 
         
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &anidField,
             &hexidField,

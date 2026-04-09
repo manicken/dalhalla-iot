@@ -1,0 +1,60 @@
+/*
+  Dalhalla IoT — JSON-configured HAL/DAL + Script Engine
+  HAL = Hardware Abstraction Layer
+  DAL = Device Abstraction Layer
+
+  Provides IoT firmware building blocks for home automation and smart sensors.
+
+  Copyright (C) 2026 Jannik Svensson
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or 
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License 
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <stdlib.h>
+
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_JsonObjectSchema.h"
+
+namespace DALHAL {
+
+    namespace JsonSchema {
+
+        /** 
+         * FieldArray represents a homogeneous array where every element must conform 
+         * to the same JsonSchema::Device definition. This is used for structured data 
+         * with a fixed schema (no type selection per element).
+         */
+        struct SchemaArray : SchemaTypeBase {
+            const JsonSchema::JsonObjectSchema* subtype;
+            EmptyPolicy emptyPolicy;
+            const char* renderAllAllowedValuesFromStringConstraint;
+
+            constexpr SchemaArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
+                : SchemaTypeBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+            constexpr SchemaArray(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+                : SchemaTypeBase(name, FieldType::Array, policy), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+
+            constexpr SchemaArray(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype)
+                : SchemaTypeBase(name, FieldType::Array, policy, guiFlags), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
+            constexpr SchemaArray(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+                : SchemaTypeBase(name, FieldType::Array, policy, guiFlags), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
+        };
+
+    }
+
+}

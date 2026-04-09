@@ -25,42 +25,44 @@
 
 #include <stdlib.h>
 #include <ArduinoJson.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include "DALHAL_JSON_Schema_BaseTypes.h"
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct FieldStringBase : FieldBase {
+        struct SchemaStringBase : SchemaTypeBase {
 
             const char* defaultValue;  // flash string default, or more like what to present at GUI
 
         protected:
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
-                : FieldBase(n, t, pol), defaultValue(defVal) {}
+            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
+                : SchemaTypeBase(n, t, pol), defaultValue(defVal) {}
 
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
-                : FieldBase(n, t, pol, guiFlags), defaultValue(defVal) {}
+            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+                : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(defVal) {}
             
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol) 
-                : FieldBase(n, t, pol), defaultValue(nullptr) {}
+            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol) 
+                : SchemaTypeBase(n, t, pol), defaultValue(nullptr) {}
 
-            constexpr FieldStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
-                : FieldBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
+            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
+                : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
             
         public:
-            constexpr FieldStringBase(const char* n, FieldPolicy pol, const char* defVal) 
-                : FieldBase(n, FieldType::StringBase, pol), defaultValue(defVal) {}
+            constexpr SchemaStringBase(const char* n, FieldPolicy pol, const char* defVal) 
+                : SchemaTypeBase(n, FieldType::StringBase, pol), defaultValue(defVal) {}
 
-            constexpr FieldStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
-                : FieldBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(defVal) {}
+            constexpr SchemaStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+                : SchemaTypeBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(defVal) {}
 
-            constexpr FieldStringBase(const char* n, FieldPolicy pol) 
-                : FieldBase(n, FieldType::StringBase, pol), defaultValue(nullptr) {}
+            constexpr SchemaStringBase(const char* n, FieldPolicy pol) 
+                : SchemaTypeBase(n, FieldType::StringBase, pol), defaultValue(nullptr) {}
 
-            constexpr FieldStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
-                : FieldBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(nullptr) {}
+            constexpr SchemaStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
+                : SchemaTypeBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(nullptr) {}
 
 	
             inline bool Validate(const JsonVariant& value) {
@@ -97,7 +99,6 @@ namespace DALHAL {
             
             }
 
-            
         
         };
 

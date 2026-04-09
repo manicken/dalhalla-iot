@@ -23,17 +23,17 @@
 
 #pragma once
 
-
 #include <stdlib.h>
 #include <ArduinoJson.h>
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include "DALHAL_JSON_Schema_FieldStringBase.h"
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_StringBase.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
         
-        struct FieldStringAnyOfByFuncConstrained : FieldStringBase {
+        struct SchemaStringAnyOfByFuncConstrained : SchemaStringBase {
             using ValidateFunc  = bool(*)(void* ctx, const char* value);
             using DescribeFunc  = std::string(*)(void* ctx);
 
@@ -41,15 +41,15 @@ namespace DALHAL {
             DescribeFunc describe;
             void* ctx;
 	
-            constexpr FieldStringAnyOfByFuncConstrained(
+            constexpr SchemaStringAnyOfByFuncConstrained(
                 const char* n, FieldPolicy pol, const char* defVal, ValidateFunc vFunc, DescribeFunc dFunc, void* ctx
             )
-                : FieldStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
+                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
 
-            constexpr FieldStringAnyOfByFuncConstrained(
+            constexpr SchemaStringAnyOfByFuncConstrained(
                 const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, ValidateFunc vFunc, DescribeFunc dFunc, void* ctx
             )
-                : FieldStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
+                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
             
         };
 

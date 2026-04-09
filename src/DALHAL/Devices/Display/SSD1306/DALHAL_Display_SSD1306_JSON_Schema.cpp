@@ -23,9 +23,15 @@
 
 #include "DALHAL_Display_SSD1306_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
@@ -35,24 +41,24 @@ namespace DALHAL {
     namespace JsonSchema {
 
         // SSD1306_Element "device"
-        constexpr FieldUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
-        constexpr FieldUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
-        constexpr FieldStringBase labelField = {"label", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path sourceField = {"source", FieldPolicy::Optional};
+        constexpr SchemaUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
+        constexpr SchemaUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
+        constexpr SchemaStringBase labelField = {"label", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path sourceField = {"source", FieldPolicy::Optional};
 
-        constexpr const FieldBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
+        constexpr const SchemaTypeBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
 
         constexpr JsonObjectSchema elementObject = {"SSD1306 element", elementFields, nullptr, nullptr, EmptyPolicy::Warn, UnknownFieldPolicy::Warn};
 
         // SSD1306 display
-        constexpr FieldUInt widthField = {"width", FieldPolicy::Required, 8, 128, 128};
-        constexpr FieldUInt heightField = {"height", FieldPolicy::Required, 8, 64, 64};
-        constexpr FieldHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
+        constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, 8, 128, 128};
+        constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, 8, 64, 64};
+        constexpr SchemaHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
-        constexpr FieldArray itemsField = {"items", FieldPolicy::Required, &elementObject};
+        constexpr SchemaArray itemsField = {"items", FieldPolicy::Required, &elementObject};
         
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &widthField,
             &heightField,

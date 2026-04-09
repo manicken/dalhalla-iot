@@ -21,6 +21,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
@@ -29,7 +31,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr const FieldBase* templateFields[] = {
+        constexpr const SchemaTypeBase* templateFields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
             &sourceField,            // DALHAL_CommonSchemas_Consumer

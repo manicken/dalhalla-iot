@@ -23,9 +23,13 @@
 
 #include "DALHAL_ThingSpeak_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -34,20 +38,20 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldUInt firstUpdateAfterSecondsField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS, FieldPolicy::Optional, 0, 0, 0};
-        constexpr FieldBool testserverField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER, FieldPolicy::Optional, false};
-        constexpr FieldStringSizeConstrained keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
+        constexpr SchemaUInt firstUpdateAfterSecondsField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS, FieldPolicy::Optional, 0, 0, 0};
+        constexpr SchemaBool testserverField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER, FieldPolicy::Optional, false};
+        constexpr SchemaStringSizeConstrained keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
 
-        constexpr FieldStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF3 = {"3", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF4 = {"4", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF5 = {"5", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF6 = {"6", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF7 = {"7", FieldPolicy::Optional};
-        constexpr FieldStringUID_Path itemsF8 = {"8", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF3 = {"3", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF4 = {"4", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF5 = {"5", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF6 = {"6", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF7 = {"7", FieldPolicy::Optional};
+        constexpr SchemaStringUID_Path itemsF8 = {"8", FieldPolicy::Optional};
 
-        constexpr const FieldBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
+        constexpr const SchemaTypeBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
 
         constexpr JsonObjectSchema itemsFieldScheme = {
             "items",
@@ -58,9 +62,9 @@ namespace DALHAL {
             UnknownFieldPolicy::Error,
         };
 
-        constexpr FieldObject itemsField = {"items", FieldPolicy::Required, &itemsFieldScheme};
+        constexpr SchemaObject itemsField = {"items", FieldPolicy::Required, &itemsFieldScheme};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFields,
             &firstUpdateAfterSecondsField,

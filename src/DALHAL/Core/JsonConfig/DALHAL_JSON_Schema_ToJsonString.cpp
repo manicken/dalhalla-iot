@@ -22,8 +22,31 @@
 */
 
 #include "DALHAL_JSON_Schema_ToJsonString.h"
-#include "Types/DALHAL_JSON_Schema_BaseTypes.h"
-#include "Types/DALHAL_JSON_Schema_Types.h"
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPIN.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+
+
 
 #include <string>
 #include <vector>
@@ -207,7 +230,7 @@ namespace DALHAL {
             out += '}';
         }
 
-        void buildField(const FieldBase* f, std::string& out)
+        void buildField(const SchemaTypeBase* f, std::string& out)
         {
             if (!f) return;
 
@@ -216,7 +239,7 @@ namespace DALHAL {
                 case FieldType::FieldsGroup:
                 {
                     // 🔥 flatten
-                    const FieldsGroup* group = static_cast<const FieldsGroup*>(f);
+                    const SchemaFieldsGroup* group = static_cast<const SchemaFieldsGroup*>(f);
                     for (int i = 0; group->fields[i] != nullptr; ++i) {
                         buildField(group->fields[i], out);
                         if (group->fields[i + 1] != nullptr)
@@ -225,15 +248,15 @@ namespace DALHAL {
                     return;
                 }
 
-                case FieldType::OneOfGroup:
+                case FieldType::OneOfFieldsGroup:
                 {
-                    buildOneOfGroup(static_cast<const OneOfGroup*>(f), out);
+                    buildOneOfGroup(static_cast<const SchemaOneOfFieldsGroup*>(f), out);
                     return;
                 }
 
-                case FieldType::AllOfGroup:
+                case FieldType::AllOfFieldsGroup:
                 {
-                    buildAllOfGroup(static_cast<const AllOfGroup*>(f), out);
+                    buildAllOfGroup(static_cast<const SchemaAllOfFieldsGroup*>(f), out);
                     return;
                 }
 
@@ -243,7 +266,7 @@ namespace DALHAL {
             }
         }
 
-        void buildPrimitiveField(const FieldBase* f, std::string& out)
+        void buildPrimitiveField(const SchemaTypeBase* f, std::string& out)
         {
             out += "{";
 
@@ -267,7 +290,7 @@ namespace DALHAL {
             {
                 case FieldType::Int:
                 {
-                    auto fi = static_cast<const FieldInt*>(f);
+                    auto fi = static_cast<const SchemaInt*>(f);
                     out += ",\"min\":";
                     out += std::to_string(fi->minValue);
                     out += ",\"max\":";
@@ -279,7 +302,7 @@ namespace DALHAL {
 
                 case FieldType::UInt:
                 {
-                    auto fu = static_cast<const FieldUInt*>(f);
+                    auto fu = static_cast<const SchemaUInt*>(f);
                     out += ",\"min\":";
                     out += std::to_string(fu->minValue);
                     out += ",\"max\":";
@@ -291,7 +314,7 @@ namespace DALHAL {
 
                 case FieldType::Float:
                 {
-                    auto ff = static_cast<const FieldFloat*>(f);
+                    auto ff = static_cast<const SchemaFloat*>(f);
                     out += ",\"min\":";
                     if (isnan(ff->minValue)) {
                         out += "null";
@@ -311,7 +334,7 @@ namespace DALHAL {
                 case FieldType::UID:
                 case FieldType::UID_Path:
                 case FieldType::StringBase: {
-                    auto fs = static_cast<const FieldStringBase*>(f);
+                    auto fs = static_cast<const SchemaStringBase*>(f);
                     out += ",\"default\":\"";
                     if (fs->defaultValue) out += fs->defaultValue;
                     out += '"';
@@ -319,7 +342,7 @@ namespace DALHAL {
                 }
                 case FieldType::StringAnyOfByFuncConstrained:
                 case FieldType::StringAnyOfArrayConstrained: {
-                    auto fs = static_cast<const FieldStringAnyOfByFuncConstrained*>(f);
+                    auto fs = static_cast<const SchemaStringAnyOfByFuncConstrained*>(f);
 
                     out += ",\"allowedValues\":";
                     if (fs->describe) {
@@ -336,7 +359,7 @@ namespace DALHAL {
                 
                 case FieldType::StringSizeConstrained:
                 {
-                    auto fs = static_cast<const FieldStringSizeConstrained*>(f);
+                    auto fs = static_cast<const SchemaStringSizeConstrained*>(f);
 
                     out += ",\"minLength\":";
                     out += std::to_string(fs->minLength);
@@ -352,7 +375,7 @@ namespace DALHAL {
 
                 case FieldType::Array:
                 {
-                    auto fa = static_cast<const FieldArray*>(f);
+                    auto fa = static_cast<const SchemaArray*>(f);
 
                     out += ",\"emptyPolicy\":\"";
                     out += EmptyPolicyToString(fa->emptyPolicy);
@@ -367,7 +390,7 @@ namespace DALHAL {
 
                 case FieldType::Object:
                 {
-                    auto fo = static_cast<const FieldObject*>(f);
+                    auto fo = static_cast<const SchemaObject*>(f);
 
                     out += ",\"object\":true"; // TODO maybe remove this
 
@@ -379,7 +402,7 @@ namespace DALHAL {
                 }
 
                 case FieldType::RegistryArray: {
-                    auto fo = static_cast<const FieldRegistryArray*>(f);
+                    auto fo = static_cast<const SchemaRegistryArray*>(f);
                     out += ',';
                     appendKey(out, "regPath");
                     appendQuoted(out, fo->regPath);
@@ -392,7 +415,7 @@ namespace DALHAL {
                 }
                 
                 case FieldType::HexBytes: {
-                    auto fhb = static_cast<const FieldHexBytes*>(f);
+                    auto fhb = static_cast<const SchemaHexBytes*>(f);
                     out += ',';
                     appendKey(out, "byteCount");
                     out += std::to_string(fhb->byteCount);
@@ -409,7 +432,7 @@ namespace DALHAL {
             out += "}";
         }
 
-        void buildOneOfGroup(const OneOfGroup* group, std::string& out)
+        void buildOneOfGroup(const SchemaOneOfFieldsGroup* group, std::string& out)
         {
             out += "{";
             
@@ -432,7 +455,7 @@ namespace DALHAL {
             out += "]}";
         }
 
-        void buildAllOfGroup(const AllOfGroup* group, std::string& out)
+        void buildAllOfGroup(const SchemaAllOfFieldsGroup* group, std::string& out)
         {
             out += "{";
             

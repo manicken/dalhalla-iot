@@ -23,28 +23,24 @@
 
 #pragma once
 
-
 #include <stdlib.h>
-#include <DALHAL/Core/Types/DALHAL_UID.h>
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include "DALHAL_JSON_Schema_FieldStringBase.h"
-#include "DALHAL_JSON_Schema_FieldStringSizeConstrained.h"
-#include "DALHAL_JSON_Schema_FieldStringAnyOfByFuncConstrained.h"
-#include "DALHAL_JSON_Schema_FieldStringAnyOfArrayConstrained.h"
-
+#include "DALHAL_JSON_Schema_TypeBase.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct FieldStringUID_Path : FieldStringBase {
-            constexpr FieldStringUID_Path(const char* name, FieldPolicy policy)
-                : FieldStringBase(name, FieldType::UID_Path, policy, nullptr) {}
+        struct SchemaBool : SchemaTypeBase {
+            bool defaultValue;
+            // can be used when inherited and used as a subtupe
+            constexpr SchemaBool(const char* name, FieldType type, FieldPolicy policy, bool defaultValue)
+                : SchemaTypeBase(name, type, policy), defaultValue(defaultValue) {}
+            // explicit select type to bool
+            constexpr SchemaBool(const char* name, FieldPolicy policy, bool defaultValue)
+                : SchemaTypeBase(name, FieldType::Bool, policy), defaultValue(defaultValue) {}
         };
 
     }

@@ -23,9 +23,12 @@
 
 #include "DALHAL_I2C_Master_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -35,12 +38,12 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT | GPIO_manager::PinFunc::IN)};
+        constexpr SchemaHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT | GPIO_manager::PinFunc::IN)};
 
-        constexpr FieldRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
+        constexpr SchemaRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &sckpinField,
             &sdapinField,

@@ -21,11 +21,29 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_Types.h"
+#pragma once
+
+#include <stdlib.h>
+
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_JsonObjectSchema.h"
 
 namespace DALHAL {
-    
+
     namespace JsonSchema {
+
+        /**
+         * used for ordinary JSON objects, i.e. enclosed by {}
+         */
+        struct SchemaObject : SchemaTypeBase {
+            const JsonSchema::JsonObjectSchema* subtype;
+            
+            constexpr SchemaObject(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
+                : SchemaTypeBase(name, FieldType::Object, policy), subtype(subtype) {}
+            
+        };
 
     }
 

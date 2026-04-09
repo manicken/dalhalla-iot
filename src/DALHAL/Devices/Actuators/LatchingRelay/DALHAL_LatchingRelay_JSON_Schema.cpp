@@ -23,10 +23,15 @@
 
 #include "DALHAL_LatchingRelay_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -36,28 +41,28 @@ namespace DALHAL {
     namespace JsonSchema {
 
         // output pins
-        constexpr FieldHardwarePin pin_direct_a_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_b_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_set_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direct_reset_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr FieldHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direct_a_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direct_b_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direct_set_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direct_reset_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
         
         // input pins
-        constexpr FieldObject resetStateField = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE, FieldPolicy::Optional, &InputPinScheme };
-        constexpr FieldObject setStateField = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE, FieldPolicy::Optional, &InputPinScheme };
+        constexpr SchemaObject resetStateField = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE, FieldPolicy::Optional, &InputPinScheme };
+        constexpr SchemaObject setStateField = { DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE, FieldPolicy::Optional, &InputPinScheme };
 
 
-        constexpr FieldUInt timeout_ms_field = {DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS, FieldPolicy::Optional, 1, 0, DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS}; // default 10 seconds
+        constexpr SchemaUInt timeout_ms_field = {DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS, FieldPolicy::Optional, 1, 0, DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS}; // default 10 seconds
 
-        constexpr const FieldBase* directModeAB_GroupItems[] = {&pin_direct_a_field, &pin_direct_b_field, nullptr};
-        constexpr AllOfGroup directModeAB_GroupFields = {"directModeAB", FieldPolicy::ModeDefine, directModeAB_GroupItems }; // here hbridgeModeAB defines what name to use for the BSON output
+        constexpr const SchemaTypeBase* directModeAB_GroupItems[] = {&pin_direct_a_field, &pin_direct_b_field, nullptr};
+        constexpr SchemaAllOfFieldsGroup directModeAB_GroupFields = {"directModeAB", FieldPolicy::ModeDefine, directModeAB_GroupItems }; // here hbridgeModeAB defines what name to use for the BSON output
         
-        constexpr const FieldBase* directModeSR_GroupItems[] = {&pin_direct_set_field, &pin_direct_reset_field, nullptr};
-        constexpr AllOfGroup directModeSR_GroupFields = {"directModeOC", FieldPolicy::ModeDefine, directModeSR_GroupItems }; // here hbridgeModeOC defines what name to use for the BSON output
+        constexpr const SchemaTypeBase* directModeSR_GroupItems[] = {&pin_direct_set_field, &pin_direct_reset_field, nullptr};
+        constexpr SchemaAllOfFieldsGroup directModeSR_GroupFields = {"directModeOC", FieldPolicy::ModeDefine, directModeSR_GroupItems }; // here hbridgeModeOC defines what name to use for the BSON output
         
-        constexpr const FieldBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
-        constexpr AllOfGroup direnableMode_GroupFields = {"dir_enableMode", FieldPolicy::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
+        constexpr const SchemaTypeBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
+        constexpr SchemaAllOfFieldsGroup direnableMode_GroupFields = {"dir_enableMode", FieldPolicy::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
 
         constexpr ModeConjunctionDefine conjunctions_hBridgeAB_Mode[] = {
             { &directModeAB_GroupFields, true },  // group must exist for this mode
@@ -87,7 +92,7 @@ namespace DALHAL {
             {nullptr, nullptr}
         };
         // this list only validates each field so that it match specification
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &directModeAB_GroupFields,
             &directModeSR_GroupFields,

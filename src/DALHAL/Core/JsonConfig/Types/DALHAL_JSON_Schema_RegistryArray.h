@@ -23,14 +23,32 @@
 
 #pragma once
 
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include <string>
+#include <stdlib.h>
+
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
 
 namespace DALHAL {
-    
+
     namespace JsonSchema {
-        void generateField(const FieldBase* field, std::string& out);
-        void generateSchema(const JsonObjectSchema* schema, std::string& out);
+
+        /**
+         * FieldRegistryArray represents a polymorphic array where each element is a device 
+         * selected from a Registry::Item table. Each entry resolves its type at runtime 
+         * (typically via a type field) and is validated/created using the corresponding 
+         * registry definition.
+         */
+        struct SchemaRegistryArray : SchemaTypeBase {
+            const Registry::Item* subtypes;
+            const char* regPath;
+
+            constexpr SchemaRegistryArray(const char* name, FieldPolicy policy, const Registry::Item* subtypes, const char* regPath)
+                : SchemaTypeBase(name, FieldType::RegistryArray, policy), subtypes(subtypes), regPath(regPath) {}
+
+        };
+
     }
 
 }

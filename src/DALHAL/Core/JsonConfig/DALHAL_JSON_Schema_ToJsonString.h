@@ -23,8 +23,12 @@
 
 #pragma once
 
-#include "Types/DALHAL_JSON_Schema_BaseTypes.h"
-#include "Types/DALHAL_JSON_Schema_Types.h"
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+
 #include <string>
 
 namespace DALHAL {
@@ -33,10 +37,10 @@ namespace DALHAL {
         void buildJsonSchemas(const Registry::Item* reg, std::string &out);
         void buildCompleteJsonSchemasStartingFrom(const Registry::Item* reg, std::string &out);
         void buildJsonSchema(const JsonObjectSchema* schema, std::string& out);
-        void buildField(const FieldBase* f, std::string& out);
-        void buildPrimitiveField(const FieldBase* f, std::string& out);
-        void buildOneOfGroup(const OneOfGroup* group, std::string& out);
-        void buildAllOfGroup(const AllOfGroup* group, std::string& out);
+        void buildField(const SchemaTypeBase* f, std::string& out);
+        void buildPrimitiveField(const SchemaTypeBase* f, std::string& out);
+        void buildOneOfGroup(const SchemaOneOfFieldsGroup* group, std::string& out);
+        void buildAllOfGroup(const SchemaAllOfFieldsGroup* group, std::string& out);
     }
 
 }

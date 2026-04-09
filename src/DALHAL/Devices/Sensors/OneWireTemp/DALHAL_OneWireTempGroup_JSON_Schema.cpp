@@ -23,8 +23,9 @@
 
 #include "DALHAL_OneWireTempGroup_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -36,9 +37,9 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldArray itemsField = {"items", FieldPolicy::Required, &OneWireTempBus, EmptyPolicy::Error};
+        constexpr SchemaArray itemsField = {"items", FieldPolicy::Required, &OneWireTempBus, EmptyPolicy::Error};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
                                              // if it should not depend on automatic refresh, it do need a cmd that start a conversion

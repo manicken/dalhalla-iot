@@ -23,39 +23,39 @@
 
 #include "DALHAL_CommonSchemas_Base.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
-        constexpr FieldStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
+        constexpr SchemaStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
+        constexpr SchemaStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
 
-        constexpr FieldStringBase typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
+        constexpr SchemaStringBase typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
 
-        constexpr FieldStringBase noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
+        constexpr SchemaStringBase noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
 
-        constexpr FieldBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
+        constexpr SchemaBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
 
-        constexpr const FieldBase* disabled_uidreq_note_group_items[] = { 
+        constexpr const SchemaTypeBase* disabled_uidreq_note_group_items[] = { 
             &disabledField, 
             &uidFieldRequired, 
             &noteField, 
             nullptr
         };
-        constexpr FieldsGroup disabled_uidreq_note_group = {
+        constexpr SchemaFieldsGroup disabled_uidreq_note_group = {
             disabled_uidreq_note_group_items,
             Gui::UseInline,
             /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation
         };
 
-        constexpr const FieldBase* disabled_type_uidreq_note_group_items[] = {
+        constexpr const SchemaTypeBase* disabled_type_uidreq_note_group_items[] = {
             &disabled_uidreq_note_group,
             &typeField,
             nullptr
         };
-        constexpr FieldsGroup disabled_type_uidreq_note_group = {
+        constexpr SchemaFieldsGroup disabled_type_uidreq_note_group = {
             disabled_type_uidreq_note_group_items,
             Gui::UseInline,
             /*sizeof(disabled_type_uidreq_note_group_items)/sizeof(disabled_type_uidreq_note_group_items[0])*/ // future implementation

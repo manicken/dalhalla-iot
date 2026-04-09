@@ -23,12 +23,12 @@
 
 #pragma once
 
-
 #include <stdlib.h>
 #include <ArduinoJson.h>
-#include "DALHAL_JSON_Schema_BaseTypes.h"
-#include "DALHAL_JSON_Schema_FieldStringBase.h"
-#include "DALHAL_JSON_Schema_FieldStringAnyOfByFuncConstrained.h"
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_StringBase.h"
+#include "DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h"
 
 namespace DALHAL {
 
@@ -46,24 +46,24 @@ namespace DALHAL {
                 : allowedValues(allowedValues), allowedValuesPolicy(allowedValuesPolicy) {}
         };
       
-        struct FieldStringAnyOfArrayConstrained final : FieldStringAnyOfByFuncConstrained {
+        struct SchemaStringAnyOfArrayConstrained final : SchemaStringAnyOfByFuncConstrained {
 
-            constexpr FieldStringAnyOfArrayConstrained(
+            constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 
                 FieldPolicy pol, 
                 const char* defVal,
                 const ByArrayConstraints* byArrayConstraints
             )
-                : FieldStringAnyOfByFuncConstrained(name, pol, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
+                : SchemaStringAnyOfByFuncConstrained(name, pol, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
 
-            constexpr FieldStringAnyOfArrayConstrained(
+            constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 
                 FieldPolicy pol,
                 FieldGuiFlags guiFlags,
                 const char* defVal,
                 const ByArrayConstraints* byArrayConstraints
             )
-                : FieldStringAnyOfByFuncConstrained(name, pol, guiFlags, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
+                : SchemaStringAnyOfByFuncConstrained(name, pol, guiFlags, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
             
             static inline bool Validate(void* _ctx, const char* value) {
                 const ByArrayConstraints* ctx = static_cast<const ByArrayConstraints*>(_ctx);

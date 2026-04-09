@@ -23,7 +23,10 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
 
 #define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
 #define DALHAL_COMMON_CFG_NAME_TYPE "type"
@@ -34,15 +37,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const FieldBool disabledField;
-        extern const FieldStringBase typeField;
-        extern const FieldStringUID uidFieldRequired;
-        extern const FieldStringUID uidFieldOptional;
+        extern const SchemaBool disabledField;
+        extern const SchemaStringBase typeField;
+        extern const SchemaStringUID uidFieldRequired;
+        extern const SchemaStringUID uidFieldOptional;
         /** note this field is only for the GUI to optionally describe this device */
-        extern const FieldStringBase noteField;
+        extern const SchemaStringBase noteField;
         
-        extern const FieldsGroup disabled_uidreq_note_group;
-        extern const FieldsGroup disabled_type_uidreq_note_group;
+        extern const SchemaFieldsGroup disabled_uidreq_note_group;
+        extern const SchemaFieldsGroup disabled_type_uidreq_note_group;
     }
     
 }

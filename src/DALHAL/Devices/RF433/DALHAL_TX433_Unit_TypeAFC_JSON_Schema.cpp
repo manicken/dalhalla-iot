@@ -23,8 +23,10 @@
 
 #include "DALHAL_TX433_Unit_TypeAFC_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -45,11 +47,11 @@ namespace DALHAL {
     */
         constexpr const char* ids[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", nullptr};
         constexpr ByArrayConstraints hexNumbersConstraint = {ids, ByArrayConstraints::Policy::IgnoreCase};
-        constexpr FieldStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
-        constexpr FieldStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
-        constexpr FieldUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
+        constexpr SchemaStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
+        constexpr SchemaStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &chField,
             &btnField,

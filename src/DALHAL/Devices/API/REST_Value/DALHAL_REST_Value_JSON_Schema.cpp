@@ -23,8 +23,9 @@
 
 #include "DALHAL_REST_Value_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Types.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_BaseTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -33,9 +34,9 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldStringBase urlField = { DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL, FieldPolicy::Required};
+        constexpr SchemaStringBase urlField = { DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL, FieldPolicy::Required};
 
-        constexpr const FieldBase* fields[] = {
+        constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &urlField,
             &refreshTimeGroupFields,
