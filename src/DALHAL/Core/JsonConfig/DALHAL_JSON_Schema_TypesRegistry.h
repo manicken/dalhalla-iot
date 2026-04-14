@@ -33,28 +33,32 @@
 namespace DALHAL {
 
     namespace JsonSchema {
-        enum class ValidatorResult {
-            Success,
-            FieldTypeMismatch,
-            FieldEmpty,
-            RequiredFieldMissing,
-            FieldInvalidValue
-        };
-        const char* ValidatorResultToString(ValidatorResult res);
+        
 
         // used to validate the schema itself
         using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);
         using ValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
         using SchemaToJsonFn = void (*)(const SchemaTypeBase&, std::string& jsonStr);
+        using GetJavaScriptValidatorFn = const char* (*)();
 
         struct FieldTypeRegistryDefine {
             SchemaValidatorFn schemaValidator = nullptr;
             ValidatorFn validator = nullptr;
             SchemaToJsonFn toJson = nullptr;
-            const char* validateJavascript = nullptr;
+            GetJavaScriptValidatorFn getJavaScriptValidator = nullptr;
 
-            constexpr FieldTypeRegistryDefine(SchemaValidatorFn schemaValidator, ValidatorFn validator, SchemaToJsonFn toJson, const char* validateJavascript) 
-                : schemaValidator(schemaValidator), validator(validator), toJson(toJson), validateJavascript(validateJavascript) {}
+            constexpr FieldTypeRegistryDefine(
+                SchemaValidatorFn schemaValidator, 
+                ValidatorFn validator, 
+                SchemaToJsonFn toJson, 
+                GetJavaScriptValidatorFn getJavaScriptValidator
+            ) 
+                : 
+                schemaValidator(schemaValidator), 
+                validator(validator), 
+                toJson(toJson), 
+                getJavaScriptValidator(getJavaScriptValidator)
+                {}
         };
 
         struct FieldTypeRegistryItem {

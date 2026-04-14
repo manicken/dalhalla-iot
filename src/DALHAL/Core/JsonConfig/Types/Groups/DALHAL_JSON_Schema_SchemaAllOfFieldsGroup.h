@@ -46,33 +46,13 @@ namespace DALHAL {
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
-            static const char* JavaScriptValidator;
+            static const char* GetJavaScriptValidator();
 
             const SchemaTypeBase* const* fields;
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
                 : SchemaTypeBase(outputName, FieldType::AllOfFieldsGroup, policy), fields(fields) {}
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
                 : SchemaTypeBase(outputName, FieldType::AllOfFieldsGroup, policy, guiFlags), fields(fields) {}
-        };
-        /**
-         * FieldsGroup is a logical unit of fields where the policy is handled individually
-         * , just as if the fields where defined standalone flat
-         */
-        struct SchemaFieldsGroup : SchemaTypeBase {
-            
-            static const FieldTypeRegistryDefine RegistryDefine;
-            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
-            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
-            static const char* JavaScriptValidator;
-            
-            const SchemaTypeBase* const* fields;
-            /*size_t fieldsCount;*/
-            constexpr SchemaFieldsGroup(const SchemaTypeBase* const* fields/*, size_t fieldsCount*/)
-                : SchemaTypeBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
-
-            constexpr SchemaFieldsGroup(const SchemaTypeBase* const* fields, FieldGuiFlags guiFlags/*, size_t fieldsCount*/)
-                : SchemaTypeBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup, guiFlags), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
         };
 
     } // namespace JsonSchema

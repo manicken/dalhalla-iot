@@ -21,7 +21,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_TypeBase.h>
+#include "DALHAL_JSON_Schema_TypeBase.h"
+
 #include <ArduinoJson.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -30,6 +31,18 @@
 namespace DALHAL {
 
     namespace JsonSchema {
+
+        const char* ValidatorResultToString(ValidatorResult res) {
+            switch (res)
+            {
+                case ValidatorResult::FieldEmpty: return "FieldEmpty";
+                case ValidatorResult::FieldInvalidValue: return "FieldInvalidValue";
+                case ValidatorResult::FieldTypeMismatch: return "FieldTypeMismatch";
+                case ValidatorResult::RequiredFieldMissing: return "RequiredFieldMissing";
+                case ValidatorResult::Success: return "Success";
+                default: return "Unknown";
+            }
+        }
 
         void serializeCollapsed(const JsonVariant& var, std::string& output) {
             if (var.is<JsonObject>()) {

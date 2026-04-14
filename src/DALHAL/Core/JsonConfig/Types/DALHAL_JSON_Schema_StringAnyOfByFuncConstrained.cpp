@@ -21,8 +21,6 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h"
 
 #include <stdlib.h>
@@ -43,7 +41,7 @@ namespace DALHAL {
             &SchemaValidate,
             &ValidateJson,
             &SchemaToJson,
-            JavaScriptValidator
+            &GetJavaScriptValidator
         };
 
         void SchemaStringAnyOfByFuncConstrained::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
@@ -93,11 +91,13 @@ namespace DALHAL {
             }
         }
 
-        const char* SchemaStringAnyOfByFuncConstrained::JavaScriptValidator = R"rawliteral(
+        const char* SchemaStringAnyOfByFuncConstrained::GetJavaScriptValidator() {
+            return R"rawliteral(
             function validateString(value) {
 
             }
-        )rawliteral";
+            )rawliteral";
+        }
     }
 
 }

@@ -21,8 +21,6 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "DALHAL_JSON_Schema_StringBase.h"
 
 #include <stdlib.h>
@@ -40,13 +38,11 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        
-
         constexpr FieldTypeRegistryDefine SchemaStringBase::RegistryDefine = {
             &SchemaValidate,
             &ValidateJson,
             &SchemaToJson,
-            JavaScriptValidator
+            &GetJavaScriptValidator
         };
 
         void SchemaStringBase::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
@@ -89,7 +85,7 @@ namespace DALHAL {
             }
         }
 
-        const char* SchemaStringBase::JavaScriptValidator = R"rawliteral(
+        const char* SchemaStringBase::GetJavaScriptValidator() { return R"rawliteral(
             function validateString(value) {
                 if (value == undefined) {
                     // emit not a string error here
@@ -104,6 +100,7 @@ namespace DALHAL {
             }
         )rawliteral";
 
+        }
     }
 
 }

@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <ArduinoJson.h>
 
 #define DALHAL_JsonSchema_FIELD_TYPE_LIST \
     X(FieldsGroup) \
@@ -54,6 +55,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        enum class ValidatorResult {
+            Success,
+            FieldTypeMismatch,
+            FieldEmpty,
+            RequiredFieldMissing,
+            FieldInvalidValue
+        };
+        const char* ValidatorResultToString(ValidatorResult res);
+        
         void serializeCollapsed(const JsonVariant& var, std::string& output);
 
         enum class FieldType : uint8_t {

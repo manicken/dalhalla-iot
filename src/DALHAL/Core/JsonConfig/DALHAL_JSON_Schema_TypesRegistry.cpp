@@ -23,7 +23,7 @@
 
 #include "DALHAL_JSON_Schema_TypesRegistry.h"
 
-#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h">
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
@@ -54,17 +54,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* ValidatorResultToString(ValidatorResult res) {
-            switch (res)
-            {
-                case ValidatorResult::FieldEmpty: return "FieldEmpty";
-                case ValidatorResult::FieldInvalidValue: return "FieldInvalidValue";
-                case ValidatorResult::FieldTypeMismatch: return "FieldTypeMismatch";
-                case ValidatorResult::RequiredFieldMissing: return "RequiredFieldMissing";
-                case ValidatorResult::Success: return "Success";
-                default: return "Unknown";
-            }
-        }
+        
 
         const FieldTypeRegistryItem g_fieldTypeTable[] = {
         #define X(name) { #name, Schema##name::RegistryDefine },

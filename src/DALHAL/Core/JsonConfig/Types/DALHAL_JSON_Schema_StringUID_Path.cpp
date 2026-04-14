@@ -31,7 +31,7 @@ namespace DALHAL {
               &SchemaValidate,
               &ValidateJson,
               &SchemaToJson,
-              JavaScriptValidator
+              &GetJavaScriptValidator
         };
 
         void SchemaStringUID_Path::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
@@ -62,9 +62,11 @@ namespace DALHAL {
             }
         }
 
-        const char* SchemaStringUID_Path::JavaScriptValidator = R"rawliteral(
+        const char* SchemaStringUID_Path::GetJavaScriptValidator() {
+            return R"rawliteral(
 
-        )rawliteral";
+            )rawliteral";
+        }
     }
 
 }

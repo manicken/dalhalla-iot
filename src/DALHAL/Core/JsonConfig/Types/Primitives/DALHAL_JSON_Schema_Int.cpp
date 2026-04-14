@@ -21,8 +21,6 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "DALHAL_JSON_Schema_Int.h"
 
 #include <stdlib.h>
@@ -38,6 +36,13 @@
 namespace DALHAL {
 
     namespace JsonSchema {
+
+        constexpr FieldTypeRegistryDefine SchemaInt::RegistryDefine = {
+            &SchemaValidate,
+            &ValidateJson,
+            &SchemaToJson,
+            &GetJavaScriptValidator
+        };
 
         void SchemaInt::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             if (SchemaTypeBase::SchemaValidateNameNotNull(fieldSchema, sourceObjTypeName) == false) {
@@ -91,5 +96,7 @@ namespace DALHAL {
                 out += '}'; // add the object finalizer if this is the actual object
             }
         }
+
+    }
 
 }

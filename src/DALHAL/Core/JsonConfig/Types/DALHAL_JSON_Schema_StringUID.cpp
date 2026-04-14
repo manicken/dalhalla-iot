@@ -21,8 +21,6 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "DALHAL_JSON_Schema_StringUID.h"
 
 #include <stdlib.h>
@@ -44,7 +42,7 @@ namespace DALHAL {
               &SchemaValidate,
               &ValidateJson,
               &SchemaToJson,
-              JavaScriptValidator
+              &GetJavaScriptValidator
         };
 
         void SchemaStringUID::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
@@ -81,9 +79,11 @@ namespace DALHAL {
             }
         }
 
-        const char* SchemaStringUID::JavaScriptValidator = R"rawliteral(
+        const char* SchemaStringUID::GetJavaScriptValidator() {
+            return R"rawliteral(
 
-        )rawliteral";
+            )rawliteral";
+        }
 
     }
 
