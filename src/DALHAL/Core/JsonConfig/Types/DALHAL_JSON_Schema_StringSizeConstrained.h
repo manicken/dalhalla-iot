@@ -38,9 +38,13 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct SchemaStringSizeConstrained : SchemaStringBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
 
-            };
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
+            
 
             uint16_t minLength;
             uint16_t maxLength;
@@ -78,23 +82,6 @@ namespace DALHAL {
             constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
                 : SchemaStringBase(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
-	
-            inline bool Validate(const JsonVariant& value) {
-                // TODO validate code
-                return true;
-            }
-            
-            inline const char* GetJavaScriptValidator() {
-                return R"rawliteral(
-                    function validateStringSizeConstrained(value) {
-                        // TODO validate code
-                    }
-                )rawliteral";
-            
-            }
-
-            
-        
         };
 
     }

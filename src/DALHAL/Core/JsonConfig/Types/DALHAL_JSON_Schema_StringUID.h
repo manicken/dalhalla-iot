@@ -30,7 +30,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
-#include "DALHAL_JSON_Schema_StringSizeConstrained.h"
+#include "DALHAL_JSON_Schema_StringBase.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -38,13 +38,16 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringUID : SchemaStringSizeConstrained {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
+        struct SchemaStringUID : SchemaStringBase {
 
-            };
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
 
             constexpr SchemaStringUID(const char* name, FieldPolicy policy)
-                : SchemaStringSizeConstrained(name, FieldType::StringUID, policy, nullptr, HAL_UID::Size) {}
+                : SchemaStringBase(name, FieldType::StringUID, policy, nullptr) {}
         };
 
     }

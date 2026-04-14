@@ -33,14 +33,28 @@
 namespace DALHAL {
 
     namespace JsonSchema {
+        enum class ValidatorResult {
+            Success,
+            FieldTypeMismatch,
+            FieldEmpty,
+            RequiredFieldMissing,
+            FieldInvalidValue
+        };
+        const char* ValidatorResultToString(ValidatorResult res);
 
-        using ValidatorFn = void (*)(const SchemaTypeBase&, const JsonVariant&, bool& anyError);
+        // used to validate the schema itself
+        using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);
+        using ValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
         using SchemaToJsonFn = void (*)(const SchemaTypeBase&, std::string& jsonStr);
 
         struct FieldTypeRegistryDefine {
+            SchemaValidatorFn schemaValidator = nullptr;
             ValidatorFn validator = nullptr;
             SchemaToJsonFn toJson = nullptr;
             const char* validateJavascript = nullptr;
+
+            constexpr FieldTypeRegistryDefine(SchemaValidatorFn schemaValidator, ValidatorFn validator, SchemaToJsonFn toJson, const char* validateJavascript) 
+                : schemaValidator(schemaValidator), validator(validator), toJson(toJson), validateJavascript(validateJavascript) {}
         };
 
         struct FieldTypeRegistryItem {

@@ -54,29 +54,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        /*enum class FieldType {
-            FieldsGroup,
-            AllOfFieldsGroup,
-            OneOfFieldsGroup,
-            Array,         // homogeneous type
-            ArrayPrimitive, // homogeneous type of primitives defined by allowence flags (and can mix different primitive types such as bool, uint, int and float)
-            Bool,
-            Float,
-            HardwarePin,
-            HardwarePinOrVirtualPin,
-            HexBytes,      // note can be use with or without delimiters but only consistent usage is allowed so for example 2845:56:67 is not allowed, however currently the delimiter type is not fixed so it can be 28:45.56-67
-            Int,
-            Number, // json number
-            Object,        // ordinary JSON object i.e. enclosed by {}
-            RegistryArray, // polymorphic (registry-based)
-            StringBase,
-            StringSizeConstrained,
-            StringAnyOfArrayConstrained,
-            StringAnyOfByFuncConstrained,
-            UID,
-            UID_Path,
-            UInt,
-        };*/
+        void serializeCollapsed(const JsonVariant& var, std::string& output);
+
         enum class FieldType : uint8_t {
         #define X(name) name,
             DALHAL_JsonSchema_FIELD_TYPE_LIST
@@ -111,8 +90,8 @@ namespace DALHAL {
             constexpr FieldGuiFlags ReadOnly               = 1 << 3;
             constexpr FieldGuiFlags HideLabel              = 1 << 4;
 
-            constexpr bool hasFlag(FieldGuiFlags flags, FieldGuiFlags f) {
-                return (flags & f) != 0;
+            constexpr bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag) {
+                return (flags & flag) != 0;
             }
         }
 
@@ -131,6 +110,10 @@ namespace DALHAL {
             FieldPolicy policy;
             FieldGuiFlags guiFlags;
         protected:
+            static bool SchemaValidateNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& value, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+
             constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy)
                 : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
 

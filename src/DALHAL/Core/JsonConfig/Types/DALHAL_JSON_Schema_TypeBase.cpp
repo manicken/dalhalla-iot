@@ -22,40 +22,43 @@
 */
 
 #include "DALHAL_JSON_Schema_TypeBase.h"
+#include <ArduinoJson.h>
+#include "../DALHAL_JSON_Schema_TypesRegistry.h"
+
+#include "../DALHAL_JSON_Schema_ToJsonStringHelpers.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        /*const char* FieldTypeToString(FieldType type) {
-            switch (type)
-            {
-                case FieldType::FieldsGroup: return  "FieldsGroup";
-                case FieldType::AllOfFieldsGroup: return "AllOfFieldsGroup";
-                case FieldType::OneOfFieldsGroup: return "OneOfFieldsGroup";
-                case FieldType::Array: return "Array";
-                case FieldType::ArrayPrimitive: return "ArrayPrimitive";
-                case FieldType::Bool: return "Bool";
-                case FieldType::Float: return "Float";
-                case FieldType::HardwarePin: return "HardwarePin";
-                case FieldType::HardwarePinOrVirtualPin: return "HardwarePinOrVirtualPin";
-                case FieldType::HexBytes: return "HexBytes";
-                case FieldType::Int: return "Int";
-                case FieldType::Number: return "Number";
-                case FieldType::Object: return "Object";
-                case FieldType::RegistryArray: return "RegistryArray";
-                case FieldType::StringBase: return "StringBase";
-                case FieldType::StringAnyOfByFuncConstrained: return "StringAnyOfByFuncConstrained";
-                case FieldType::StringAnyOfArrayConstrained: return "StringAnyOfArrayConstrained";
-                case FieldType::StringSizeConstrained: return "StringSizeConstrained";
-                case FieldType::StringUID: return "UID";
-                case FieldType::StringUID_Path: return "UID_Path";
-                case FieldType::UInt: return "UInt";
-                
-                //case FieldType: return "";
-                default: return "Unknown";
+        void serializeCollapsed(const JsonVariant& var, std::string& output) {
+            if (var.is<JsonObject>()) {
+                output += '{';
+                bool first = true;
+                for (auto kv : var.as<JsonObject>()) {
+                    if (!first) output += ',';
+                    first = false;
+
+                    output += '"';
+                    output += kv.key().c_str();
+                    output += "\":";
+
+                    if (kv.value().is<JsonObject>()) {
+                        output += "{...}"; // collapsed object
+                    } else if (kv.value().is<JsonArray>()) {
+                        output += "[...]"; // collapsed array
+                    } else {
+                        serializeJson(kv.value(), output); // primitive
+                    }
+                }
+                output += '}';
+            } else if (var.is<JsonArray>()) {
+                output += "[...]"; // array at root level
+            } else {
+                serializeJson(var, output); // primitive at root
             }
-        }*/
+        }
+
         const char* FieldPolicyToString(FieldPolicy policy) {
             switch (policy)
             {
@@ -80,6 +83,53 @@ namespace DALHAL {
                 //case CanBeEmptyPolicy: return "";
                 default: return "Unknown";
             }
+        }
+
+        bool SchemaTypeBase::SchemaValidateNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName) {
+            if (fieldSchema.name == nullptr) {
+                GlobalLogger.Error(F("invalid schema field - name cannot be nullptr @ "), sourceObjTypeName);
+                return false;
+            }
+            return true;
+        }
+
+        ValidatorResult SchemaTypeBase::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            bool exists = jsonObj.containsKey(fieldSchema.name);
+            if ((exists == false) && (fieldSchema.policy == FieldPolicy::Required)) {
+                std::string errMsg = fieldSchema.name; 
+                errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                errMsg += ' ';
+                serializeCollapsed(jsonObj, errMsg);
+                GlobalLogger.Error(F("Required field missing: "), errMsg.c_str());
+                
+                anyError = true;
+                return ValidatorResult::RequiredFieldMissing;
+            }
+            return ValidatorResult::Success;
+        }
+        void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, std::string& out) {
+            out += '{'; // this is allways added
+            ToJsonString::appendString(out, "type", FieldTypeToString(schema.type));
+            out += ','; ToJsonString::appendString(out, "name", schema.name);
+            out += ','; ToJsonString::appendBool(out, "required", (schema.policy == FieldPolicy::Required));
+            out += ','; ToJsonString::appendKey(out, "gui"); out += '{';
+            if (Gui::hasFlag(schema.guiFlags, Gui::DisableByDefault)) {
+                out += ",\"DisableByDefault\":true";
+            }
+            if (Gui::hasFlag(schema.guiFlags, Gui::HideLabel)) {
+                out += ",\"HideLabel\":true";
+            }
+            if (Gui::hasFlag(schema.guiFlags, Gui::ReadOnly)) {
+                out += ",\"ReadOnly\":true";
+            }
+            if (Gui::hasFlag(schema.guiFlags, Gui::RenderAllAllowedValues)) {
+                out += ",\"RenderAllAllowedValues\":true";
+            }
+            // this is actually a SchemaToJson parameter but we can include it here for clarity
+            if (Gui::hasFlag(schema.guiFlags, Gui::UseInline)) {
+                out += ",\"UseInline\":true";
+            }
+            out += '}';
         }
     }
 

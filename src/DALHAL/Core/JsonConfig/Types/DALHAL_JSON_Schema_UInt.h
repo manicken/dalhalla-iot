@@ -36,9 +36,12 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct SchemaUInt : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
             
             uint32_t minValue;
             uint32_t maxValue;

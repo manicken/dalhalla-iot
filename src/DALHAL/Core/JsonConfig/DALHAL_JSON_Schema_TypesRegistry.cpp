@@ -50,6 +50,18 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        const char* ValidatorResultToString(ValidatorResult res) {
+            switch (res)
+            {
+                case ValidatorResult::FieldEmpty: return "FieldEmpty";
+                case ValidatorResult::FieldInvalidValue: return "FieldInvalidValue";
+                case ValidatorResult::FieldTypeMismatch: return "FieldTypeMismatch";
+                case ValidatorResult::RequiredFieldMissing: return "RequiredFieldMissing";
+                case ValidatorResult::Success: return "Success";
+                default: return "Unknown";
+            }
+        }
+
         const FieldTypeRegistryItem g_fieldTypeTable[] = {
         #define X(name) { #name, Schema##name::RegistryDefine },
             DALHAL_JsonSchema_FIELD_TYPE_LIST
@@ -60,7 +72,7 @@ namespace DALHAL {
             size_t idx = static_cast<size_t>(type);
             if (idx >= static_cast<size_t>(FieldType::_Count_)) {
                 static const FieldTypeRegistryItem unknown = {
-                    "Unknown", { }
+                    "Unknown", {nullptr, nullptr, nullptr, nullptr}
                 };
                 return unknown;
             }

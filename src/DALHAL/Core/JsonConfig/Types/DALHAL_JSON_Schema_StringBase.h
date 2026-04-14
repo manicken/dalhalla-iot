@@ -26,8 +26,6 @@
 #include <stdlib.h>
 #include <ArduinoJson.h>
 
-#include <DALHAL/Support/DALHAL_Logger.h>
-
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
@@ -37,9 +35,13 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct SchemaStringBase : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
+            
 
             const char* defaultValue;  // flash string default, or more like what to present at GUI
 
@@ -68,43 +70,6 @@ namespace DALHAL {
 
             constexpr SchemaStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
                 : SchemaTypeBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(nullptr) {}
-
-	
-            inline bool Validate(const JsonVariant& value) {
-                if (!value.is<const char*>()) {
-                    GlobalLogger.Error(F("Field must be a string:"), this->name);
-                    return false;
-                }
-                ZeroCopyString zcStr = value.as<const char*>(); // wrap in ZeroCopyString for neat functions
-                zcStr.Trim();
-                size_t strLen = zcStr.Length(); // use of lenght here is fast
-                
-                if (strLen == 0) {
-                    GlobalLogger.Error(F("String is empty @ allowedValues mode: "), this->name);
-                    return false;
-                }
-                return true;
-            }
-            
-            inline const char* GetJavaScriptValidator() {
-                return R"rawliteral(
-                    function validateString(value) {
-                        if (value == undefined) {
-                            // emit not a string error here
-                            return false;
-                        }
-                        if (value.length == 0) {
-                            // emit string empty error here
-                            return false;
-                        }
-                        // no other validation is needed on basic strings
-                        return true;
-                    }
-                )rawliteral";
-            
-            }
-
-        
         };
 
     }

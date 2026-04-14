@@ -21,24 +21,37 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_StringUID_Path.h"
+#pragma once
+
+#include "DALHAL_JSON_Schema_StringUID.h"
+
+#include <stdlib.h>
+
+#include <DALHAL/Core/Types/DALHAL_UID.h>
+
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_StringBase.h"
+
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
-        
-        constexpr FieldTypeRegistryDefine SchemaStringUID_Path::RegistryDefine = {
+
+        constexpr FieldTypeRegistryDefine SchemaStringUID::RegistryDefine = {
               &SchemaValidate,
               &ValidateJson,
               &SchemaToJson,
               JavaScriptValidator
         };
 
-        void SchemaStringUID_Path::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaStringUID::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             SchemaStringBase::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
         }
 
-        ValidatorResult SchemaStringUID_Path::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+        ValidatorResult SchemaStringUID::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             ValidatorResult res = SchemaStringBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
 
             if (res != ValidatorResult::Success) {
@@ -49,22 +62,29 @@ namespace DALHAL {
             const char* cStr = jsonObj[fieldSchema.name].as<const char*>(); // this is now safe
             ZeroCopyString zcStr = cStr; // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
+            size_t strLen = zcStr.Length(); // use of lenght here is fast
             
-            // TODO do proper check of UID_Path
+            if (strLen > HAL_UID::Size) {
+                GlobalLogger.Error(F("SchemaStringUID - is too long"));
+                anyError = true;
+                return ValidatorResult::FieldInvalidValue;
+            }
+            // TODO do proper check if UID is allready defined
             // but now pass on all paths
             return ValidatorResult::Success;
         }
 
-        void SchemaStringUID_Path::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaStringBase::SchemaToJson(fieldSchema, out);
             if (fieldSchema.type == FieldType::StringUID_Path) {
                 out += '}'; // this is complete object
             }
         }
 
-        const char* SchemaStringUID_Path::JavaScriptValidator = R"rawliteral(
+        const char* SchemaStringUID::JavaScriptValidator = R"rawliteral(
 
         )rawliteral";
+
     }
 
 }

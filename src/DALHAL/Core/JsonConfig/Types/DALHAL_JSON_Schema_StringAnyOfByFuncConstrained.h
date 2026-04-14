@@ -31,14 +31,20 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
+#include <cassert>
+
 namespace DALHAL {
 
     namespace JsonSchema {
         
         struct SchemaStringAnyOfByFuncConstrained : SchemaStringBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
 
-            };
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
+
             
             using ValidateFunc  = bool(*)(void* ctx, const char* value);
             using DescribeFunc  = std::string(*)(void* ctx);
@@ -48,14 +54,14 @@ namespace DALHAL {
             void* ctx;
 	
             constexpr SchemaStringAnyOfByFuncConstrained(
-                const char* n, FieldPolicy pol, const char* defVal, ValidateFunc vFunc, DescribeFunc dFunc, void* ctx
+                const char* n, FieldPolicy pol, const char* defVal, const ValidateFunc validate, const DescribeFunc describe, void* ctx
             )
-                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
+                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(validate), describe(describe), ctx(ctx) { }
 
             constexpr SchemaStringAnyOfByFuncConstrained(
-                const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, ValidateFunc vFunc, DescribeFunc dFunc, void* ctx
+                const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, ValidateFunc validate, DescribeFunc describe, void* ctx
             )
-                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(vFunc), describe(dFunc), ctx(ctx) {}
+                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(validate), describe(describe), ctx(ctx) { }
             
         };
 

@@ -49,9 +49,18 @@ namespace DALHAL {
         };
       
         struct SchemaStringAnyOfArrayConstrained final : SchemaStringAnyOfByFuncConstrained {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
 
-            };
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
+
+        private:
+            static bool ValidateByArray(void* _ctx, const char* value);
+            static std::string DescribeByArray(void* _ctx);
+
+        public:
 
             constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 
@@ -59,7 +68,7 @@ namespace DALHAL {
                 const char* defVal,
                 const ByArrayConstraints* byArrayConstraints
             )
-                : SchemaStringAnyOfByFuncConstrained(name, pol, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
+                : SchemaStringAnyOfByFuncConstrained(name, pol, defVal, &ValidateByArray, &DescribeByArray, (void*)byArrayConstraints) {}
 
             constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 
@@ -68,39 +77,7 @@ namespace DALHAL {
                 const char* defVal,
                 const ByArrayConstraints* byArrayConstraints
             )
-                : SchemaStringAnyOfByFuncConstrained(name, pol, guiFlags, defVal, &Validate, &Describe, (void*)byArrayConstraints) {}
-            
-            static inline bool Validate(void* _ctx, const char* value) {
-                const ByArrayConstraints* ctx = static_cast<const ByArrayConstraints*>(_ctx);
-           
-                for (int i=0;ctx->allowedValues[i] != nullptr;++i) {
-                    
-                    if (ctx->allowedValuesPolicy == ByArrayConstraints::Policy::IgnoreCase) {
-                        if ((strcasecmp(ctx->allowedValues[i], value) == 0)) {
-                            return true;
-                        }
-                    }
-                    else if (strcmp(ctx->allowedValues[i], value) == 0) {
-                        return true;
-                    }
-                }
-                
-                return false;
-            }
-            static inline std::string Describe(void* _ctx) {
-                const ByArrayConstraints* ctx = static_cast<const ByArrayConstraints*>(_ctx);
-                std::string ret;
-                ret += '[';
-                for (int i=0;ctx->allowedValues[i] != nullptr;++i) {
-                    if (i>0) ret += ',';
-                    ret += '"';
-                    ret += ctx->allowedValues[i];
-                    ret += '"';
-                }
-                ret += ']';
-                return ret;
-            }
-            
+                : SchemaStringAnyOfByFuncConstrained(name, pol, guiFlags, defVal, &ValidateByArray, &DescribeByArray, (void*)byArrayConstraints) {}
 
         };
 
