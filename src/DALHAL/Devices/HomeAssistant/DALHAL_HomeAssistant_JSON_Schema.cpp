@@ -23,12 +23,14 @@
 
 #include "DALHAL_HomeAssistant_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 

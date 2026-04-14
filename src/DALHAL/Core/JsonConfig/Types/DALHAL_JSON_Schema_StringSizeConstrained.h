@@ -28,8 +28,8 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
-#include "DALHAL_JSON_Schema_StringBase.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 

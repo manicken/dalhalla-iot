@@ -25,13 +25,9 @@
 
 #include <stdlib.h>
 
-#include <DALHAL/Core/Types/DALHAL_UID.h>
-#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
-
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -39,18 +35,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringUID_Path : SchemaStringBase {
-
+        /**
+         * SchemaOneOfFieldsGroup is a logical unit of fields where the group may be optional, 
+         * and if present, at least one child field must exist. 
+         * The group's presence can be overridden by ModeSelector rules.
+         */
+        struct SchemaOneOfFieldsGroup : SchemaTypeBase {
+            
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* JavaScriptValidator;
 
-            constexpr SchemaStringUID_Path(const char* name, FieldPolicy policy)
-                : SchemaStringBase(name, FieldType::StringUID_Path, policy, nullptr) {}
+            const SchemaTypeBase* const* fields;
+            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
+                : SchemaTypeBase(outputName, FieldType::OneOfFieldsGroup, policy), fields(fields) {}
+            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
+                : SchemaTypeBase(outputName, FieldType::OneOfFieldsGroup, policy, guiFlags), fields(fields) {}
         };
 
-    }
+    } // namespace JsonSchema
 
 }

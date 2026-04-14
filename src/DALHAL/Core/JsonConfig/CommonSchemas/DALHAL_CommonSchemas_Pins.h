@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h> // JsonObjectSchema
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h> // JsonObjectSchema
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 

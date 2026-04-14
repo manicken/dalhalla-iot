@@ -23,10 +23,10 @@
 
 #include "DALHAL_ThingSpeak_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>

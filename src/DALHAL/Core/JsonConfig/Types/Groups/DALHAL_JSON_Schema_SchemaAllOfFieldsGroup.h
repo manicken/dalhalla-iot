@@ -27,7 +27,7 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -36,31 +36,17 @@ namespace DALHAL {
     namespace JsonSchema {
 
         /**
-         * OneOfFieldsGroup is a logical unit of fields where the group may be optional, 
-         * and if present, at least one child field must exist. 
-         * The group's presence can be overridden by ModeSelector rules.
-         */
-        struct SchemaOneOfFieldsGroup : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
-
-            const SchemaTypeBase* const* fields;
-            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
-                : SchemaTypeBase(outputName, FieldType::OneOfFieldsGroup, policy), fields(fields) {}
-            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
-                : SchemaTypeBase(outputName, FieldType::OneOfFieldsGroup, policy, guiFlags), fields(fields) {}
-        };
-
-        /**
-         * AllOfFieldsGroup is a logical unit of fields where the group may be optional, 
+         * SchemaAllOfFieldsGroup is a logical unit of fields where the group may be optional, 
          * and if present, all child field must exist. 
          * The group's presence can be overridden by ModeSelector rules.
          */
         struct SchemaAllOfFieldsGroup : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
 
             const SchemaTypeBase* const* fields;
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
@@ -73,9 +59,12 @@ namespace DALHAL {
          * , just as if the fields where defined standalone flat
          */
         struct SchemaFieldsGroup : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
             
             const SchemaTypeBase* const* fields;
             /*size_t fieldsCount;*/

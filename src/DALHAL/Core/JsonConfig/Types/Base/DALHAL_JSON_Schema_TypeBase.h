@@ -37,7 +37,6 @@
     X(Float) \
     X(HardwarePin) \
     X(HardwarePinOrVirtualPin) \
-    X(HexBytes) \
     X(Int) \
     X(Number) \
     X(Object) \
@@ -48,6 +47,7 @@
     X(StringAnyOfArrayConstrained) \
     X(StringUID) \
     X(StringUID_Path) \
+    X(StringHexBytes) \
     X(UInt)
 
 namespace DALHAL {

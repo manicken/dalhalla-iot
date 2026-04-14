@@ -21,11 +21,11 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
+#include "DALHAL_JSON_Schema_TypeBase.h>
 #include <ArduinoJson.h>
-#include "../DALHAL_JSON_Schema_TypesRegistry.h"
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include "../DALHAL_JSON_Schema_ToJsonStringHelpers.h"
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 namespace DALHAL {
 

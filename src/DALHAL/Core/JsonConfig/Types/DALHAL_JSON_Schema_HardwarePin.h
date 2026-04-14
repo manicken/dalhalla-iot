@@ -29,7 +29,7 @@
 
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -38,9 +38,12 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct SchemaHardwarePin : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
             
             DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
             constexpr SchemaHardwarePin(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)

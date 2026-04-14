@@ -29,9 +29,11 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 namespace DALHAL {
 
@@ -64,10 +66,10 @@ namespace DALHAL {
                 anyError = true;
                 return ValidatorResult::FieldTypeMismatch;
             }
-            
-            auto f = static_cast<const SchemaUInt&>(fieldSchema);
+
+            auto fs = static_cast<const SchemaUInt&>(fieldSchema);
             unsigned int v = value.as<unsigned int>();
-            if (((f.minValue != 0) && (v < f.minValue)) || ((f.maxValue != 0) && (v > f.maxValue))) { // if maxValue == 0 then the value can be anything
+            if (((fs.minValue != 0) && (v < fs.minValue)) || ((fs.maxValue != 0) && (v > fs.maxValue))) { // if maxValue == 0 then the value can be anything
                 std::string errStr = fieldSchema.name; errStr += " @ ";
                 serializeCollapsed(jsonObj, errStr);
                 GlobalLogger.Error(F(" uint out of range: "), errStr.c_str());
@@ -76,6 +78,18 @@ namespace DALHAL {
                 return ValidatorResult::FieldInvalidValue;
             }
             return ValidatorResult::Success;
+        }
+
+        void SchemaUInt::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+            const SchemaUInt& fs = static_cast<const SchemaUInt&>(fieldSchema);
+            ToJsonString::appendNumber(out, "default", fs.defaultValue);
+            ToJsonString::appendNumber(out, "minValue", fs.minValue);
+            ToJsonString::appendNumber(out, "maxValue", fs.maxValue);
+            
+            if (fieldSchema.type == FieldType::UInt) {
+                out += '}'; // add the object finalizer if this is the actual object
+            }
         }
 
 }

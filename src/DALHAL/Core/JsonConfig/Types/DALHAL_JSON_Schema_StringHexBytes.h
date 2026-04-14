@@ -24,14 +24,10 @@
 #pragma once
 
 #include <stdlib.h>
-
-#include <DALHAL/Core/Types/DALHAL_UID.h>
-#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
-
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -39,16 +35,21 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringUID_Path : SchemaStringBase {
+        struct SchemaStringHexBytes : SchemaStringSizeConstrained {
 
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* JavaScriptValidator;
+            
+            uint8_t byteCount;
 
-            constexpr SchemaStringUID_Path(const char* name, FieldPolicy policy)
-                : SchemaStringBase(name, FieldType::StringUID_Path, policy, nullptr) {}
+            constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)
+                : SchemaStringSizeConstrained(name, FieldType::StringHexBytes, policy, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
+
+            constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defaultValue, uint8_t byteCount)
+                : SchemaStringSizeConstrained(name, FieldType::StringHexBytes, policy, guiFlags, defaultValue, byteCount*2, 0), byteCount(byteCount) {}
         };
 
     }

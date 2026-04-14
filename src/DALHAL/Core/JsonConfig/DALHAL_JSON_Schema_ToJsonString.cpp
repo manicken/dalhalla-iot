@@ -23,28 +23,30 @@
 
 #include "DALHAL_JSON_Schema_ToJsonString.h"
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringHexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Int.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Number.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -414,8 +416,8 @@ namespace DALHAL {
                     break;
                 }
                 
-                case FieldType::HexBytes: {
-                    auto fhb = static_cast<const SchemaHexBytes*>(f);
+                case FieldType::StringHexBytes: {
+                    auto fhb = static_cast<const SchemaStringHexBytes*>(f);
                     out += ',';
                     appendKey(out, "byteCount");
                     out += std::to_string(fhb->byteCount);

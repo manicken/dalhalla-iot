@@ -36,28 +36,30 @@
 #include <cstdint>
 
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ComplexTypes.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Bool.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Float.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HexBytes.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Int.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Number.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringHexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Int.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Number.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
 #include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
  
 namespace DALHAL {
 
@@ -166,7 +168,7 @@ namespace DALHAL {
                 }
                 return;
             }
-            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::StringUID || f->type == FieldType::HexBytes ) {
+            if (f->type == FieldType::StringSizeConstrained || f->type == FieldType::StringUID || f->type == FieldType::StringHexBytes ) {
                 const SchemaStringSizeConstrained* fssc = static_cast<const SchemaStringSizeConstrained*>(f);
                 if (strLen < fssc->minLength) {
                     std::string errMsg = std::to_string((unsigned int)fssc->minLength) + "): ";
@@ -384,7 +386,7 @@ namespace DALHAL {
                     break;
                 }
                 
-                case FieldType::HexBytes: {
+                case FieldType::StringHexBytes: {
                     
                     bool anyErrorTemp = false;
                     validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyErrorTemp);
@@ -392,7 +394,7 @@ namespace DALHAL {
                         anyError = true;
                         break; // no point of continue
                     }
-                    auto f = static_cast<const SchemaHexBytes*>(field);
+                    auto f = static_cast<const SchemaStringHexBytes*>(field);
                     const char* cStr = value.as<const char*>();
                     // TODO implement settings for delimiter enforcement
                     bool parseOk = Convert::HexToBytes(cStr, nullptr, f->byteCount);

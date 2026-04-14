@@ -27,8 +27,8 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
-#include "DALHAL_JSON_Schema_JsonObjectSchema.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -42,9 +42,12 @@ namespace DALHAL {
          * with a fixed schema (no type selection per element).
          */
         struct SchemaArray : SchemaTypeBase {
-            static constexpr FieldTypeRegistryDefine RegistryDefine {
-
-            };
+            
+            static const FieldTypeRegistryDefine RegistryDefine;
+            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static const char* JavaScriptValidator;
 
             const JsonSchema::JsonObjectSchema* subtype;
             EmptyPolicy emptyPolicy;

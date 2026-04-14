@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <ArduinoJson.h>
 
-#include "DALHAL_JSON_Schema_TypeBase.h"
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
