@@ -30,6 +30,7 @@
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_PrimitiveTypeFlags.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_EmptyPolicy.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -42,7 +43,7 @@ namespace DALHAL {
          * Number (int, float), Bool, or String.
          * Used for unstructured arrays
          */
-        struct SchemaArrayOfPrimitives : SchemaTypeBase {
+        struct SchemaArrayOfPrimitives : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -51,11 +52,10 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
 
             uint8_t primitiveTypeFlags;
-            EmptyPolicy emptyPolicy;
 
             // Number-only array
             constexpr SchemaArrayOfPrimitives(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowAll, EmptyPolicy emptyPolicy = EmptyPolicy::Warn)
-                : SchemaTypeBase(name, FieldType::ArrayOfPrimitives, policy), primitiveTypeFlags(primitiveTypeFlags), emptyPolicy(emptyPolicy)
+                : SchemaArrayBase(name, FieldType::ArrayOfPrimitives, policy, emptyPolicy), primitiveTypeFlags(primitiveTypeFlags)
             {}
         };
 

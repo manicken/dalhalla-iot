@@ -38,7 +38,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringSizeConstrained : SchemaStringBase {
+        struct SchemaStringSizeConstrained : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -52,36 +52,36 @@ namespace DALHAL {
         protected:
             // defining type, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, const char* defVal, uint16_t maxLength) 
-                : SchemaStringBase(n, t, pol, defVal), minLength(1), maxLength(maxLength) {}
+                : SchemaString(n, t, pol, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining type, guiFlags, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLength) 
-                : SchemaStringBase(n, t, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
+                : SchemaString(n, t, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining type, minLength, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, const char* defVal, uint16_t minLength, uint16_t maxLength) 
-                : SchemaStringBase(n, t, pol, defVal), minLength(minLength), maxLength(maxLength) {}
+                : SchemaString(n, t, pol, defVal), minLength(minLength), maxLength(maxLength) {}
 
             // defining type, guiFlags, minLength, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
-                : SchemaStringBase(n, t, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
+                : SchemaString(n, t, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
         public:
             // defining maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, const char* defVal, uint16_t maxLength) 
-                : SchemaStringBase(n, FieldType::StringSizeConstrained, pol, defVal), minLength(1), maxLength(maxLength) {}
+                : SchemaString(n, FieldType::StringSizeConstrained, pol, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining guiFlags, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLength) 
-                : SchemaStringBase(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
+                : SchemaString(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining minLength, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, const char* defVal, uint16_t minLength, uint16_t maxLength) 
-                : SchemaStringBase(n, FieldType::StringSizeConstrained, pol, defVal), minLength(minLength), maxLength(maxLength) {}
+                : SchemaString(n, FieldType::StringSizeConstrained, pol, defVal), minLength(minLength), maxLength(maxLength) {}
 
             // defining guiFlags, minLength, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
-                : SchemaStringBase(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
+                : SchemaString(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
         };
 

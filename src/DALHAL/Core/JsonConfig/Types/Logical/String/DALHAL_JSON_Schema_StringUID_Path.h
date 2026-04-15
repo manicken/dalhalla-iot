@@ -40,7 +40,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringUID_Path : SchemaStringBase {
+        struct SchemaStringUID_Path : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -49,7 +49,7 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
 
             constexpr SchemaStringUID_Path(const char* name, FieldPolicy policy)
-                : SchemaStringBase(name, FieldType::StringUID_Path, policy, nullptr) {}
+                : SchemaString(name, FieldType::StringUID_Path, policy, nullptr) {}
         };
 
     }

@@ -26,9 +26,9 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
 #define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
 #define DALHAL_COMMON_CFG_NAME_TYPE "type"
@@ -40,11 +40,11 @@ namespace DALHAL {
     namespace JsonSchema {
 
         extern const SchemaBool disabledField;
-        extern const SchemaStringBase typeField;
+        extern const SchemaString typeField;
         extern const SchemaStringUID uidFieldRequired;
         extern const SchemaStringUID uidFieldOptional;
         /** note this field is only for the GUI to optionally describe this device */
-        extern const SchemaStringBase noteField;
+        extern const SchemaString noteField;
         
         extern const SchemaFieldsGroup disabled_uidreq_note_group;
         extern const SchemaFieldsGroup disabled_type_uidreq_note_group;

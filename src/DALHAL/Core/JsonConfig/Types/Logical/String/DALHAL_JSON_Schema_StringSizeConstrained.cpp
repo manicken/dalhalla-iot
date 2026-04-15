@@ -34,7 +34,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include "../DALHAL_JSON_Schema_ToJsonStringHelpers.h"
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 
 namespace DALHAL {
@@ -49,7 +49,7 @@ namespace DALHAL {
         };
 
         void SchemaStringSizeConstrained::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            SchemaStringBase::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
+            SchemaString::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
             const SchemaStringSizeConstrained& strSchema = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
             if (strSchema.maxLength < strSchema.minLength) {
                 GlobalLogger.Error(F("schema error - strSchema.maxLength < strSchema.minLength @ "), sourceObjTypeName);
@@ -58,7 +58,7 @@ namespace DALHAL {
         }
 
         ValidatorResult SchemaStringSizeConstrained::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult res = SchemaStringBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            ValidatorResult res = SchemaString::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
 
             if (res != ValidatorResult::Success && res != ValidatorResult::FieldEmpty) {
                 return res; //  this mean either this field dont exist or that it's not a valid string 
@@ -92,10 +92,11 @@ namespace DALHAL {
         }
 
         void SchemaStringSizeConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaStringBase::SchemaToJson(fieldSchema, out);
+            SchemaString::SchemaToJson(fieldSchema, out);
             const SchemaStringSizeConstrained& strSchema = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
             out += ','; ToJsonString::appendNumber(out, "minLength", strSchema.minLength);
             out += ','; ToJsonString::appendNumber(out, "maxLength", strSchema.maxLength);
+            
             if (fieldSchema.type == FieldType::StringSizeConstrained) {
                 out += '}'; // this is complete object
             }

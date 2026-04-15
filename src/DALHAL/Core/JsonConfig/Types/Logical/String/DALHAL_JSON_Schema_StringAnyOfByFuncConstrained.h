@@ -38,7 +38,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
         
-        struct SchemaStringAnyOfByFuncConstrained : SchemaStringBase {
+        struct SchemaStringAnyOfByFuncConstrained : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -57,12 +57,12 @@ namespace DALHAL {
             constexpr SchemaStringAnyOfByFuncConstrained(
                 const char* n, FieldPolicy pol, const char* defVal, const ValidateFunc validate, const DescribeFunc describe, void* ctx
             )
-                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(validate), describe(describe), ctx(ctx) { }
+                : SchemaString(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(validate), describe(describe), ctx(ctx) { }
 
             constexpr SchemaStringAnyOfByFuncConstrained(
                 const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, ValidateFunc validate, DescribeFunc describe, void* ctx
             )
-                : SchemaStringBase(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(validate), describe(describe), ctx(ctx) { }
+                : SchemaString(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(validate), describe(describe), ctx(ctx) { }
             
         };
 

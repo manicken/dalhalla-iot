@@ -30,6 +30,7 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -43,7 +44,7 @@ namespace DALHAL {
          * (typically via a type field) and is validated/created using the corresponding 
          * registry definition.
          */
-        struct SchemaArrayOfRegistryItems : SchemaTypeBase {
+        struct SchemaArrayOfRegistryItems : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -55,7 +56,10 @@ namespace DALHAL {
             const char* regPath;
 
             constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, const Registry::Item* subtypes, const char* regPath)
-                : SchemaTypeBase(name, FieldType::ArrayOfRegistryItems, policy), subtypes(subtypes), regPath(regPath) {}
+                : SchemaArrayBase(name, FieldType::ArrayOfRegistryItems, policy, EmptyPolicy::Warn), subtypes(subtypes), regPath(regPath) {}
+
+            constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, EmptyPolicy emptyPolicy, const Registry::Item* subtypes, const char* regPath)
+                : SchemaArrayBase(name, FieldType::ArrayOfRegistryItems, policy, emptyPolicy), subtypes(subtypes), regPath(regPath) {}
 
         };
 

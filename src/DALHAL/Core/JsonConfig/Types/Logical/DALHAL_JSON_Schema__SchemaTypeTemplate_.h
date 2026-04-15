@@ -36,7 +36,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-          struct _SchemaTypeTemplate_
+          struct _SchemaTypeTemplate_ : SchemaTypeBase
           {
               static const FieldTypeRegistryDefine RegistryDefine;
               static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);

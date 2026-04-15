@@ -39,24 +39,25 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldTypeRegistryDefine SchemaStringBase::RegistryDefine = {
+        constexpr FieldTypeRegistryDefine SchemaString::RegistryDefine = {
             &SchemaValidate,
             &ValidateJson,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
 
-        void SchemaStringBase::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaString::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             if (SchemaTypeBase::SchemaValidateNameNotNull(fieldSchema, sourceObjTypeName) == false) {
                 anyError = true;
             }
         }
 
-        ValidatorResult SchemaStringBase::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult res = SchemaTypeBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
-            if (res != ValidatorResult::Success) {
-                return res; // base do currently only return ValidatorResult::RequiredFieldMissing
+        ValidatorResult SchemaString::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
             }
+            
             const JsonVariant& value = jsonObj[fieldSchema.name];
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), fieldSchema.name);
@@ -75,18 +76,18 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaStringBase::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
-            const SchemaStringBase& strSchema = static_cast<const SchemaStringBase&>(fieldSchema);
+            const SchemaString& strSchema = static_cast<const SchemaString&>(fieldSchema);
             if (strSchema.defaultValue != nullptr) {
                 ToJsonString::appendString(out, "default", strSchema.defaultValue);
             }
-            if (fieldSchema.type == FieldType::StringBase) {
+            if (fieldSchema.type == FieldType::String) {
                 out += '}'; // add the object finalizer if this is the actual object
             }
         }
 
-        const char* SchemaStringBase::GetJavaScriptValidator() { return R"rawliteral(
+        const char* SchemaString::GetJavaScriptValidator() { return R"rawliteral(
             function validateString(value) {
                 if (value == undefined) {
                     // emit not a string error here

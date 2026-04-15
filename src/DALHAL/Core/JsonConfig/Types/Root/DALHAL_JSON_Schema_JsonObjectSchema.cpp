@@ -28,12 +28,182 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        
+      // this is only a helper/support function and do not use anyError
+        // as this could be just defined as a warning, depending on strict level requirements
+        bool isUnknownField2(const char* key, const SchemaTypeBase* const* fields)
+        {
+            for (int i = 0; fields[i] != nullptr; i++) {
+                const SchemaTypeBase* f = fields[i];
+                
+                // to make this clearer find field functionality should been inside each group type for nicer code here
+                if (f->type == FieldType::OneOfFieldsGroup) {
+                    const SchemaOneOfFieldsGroup* group = static_cast<const SchemaOneOfFieldsGroup*>(f);
+
+                    for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (group->fields[g]->name == nullptr) {
+                            GlobalLogger.Warn(F("OneOfGroup - group->fields[g]->name == nullptr @ key: "), key);
+                            continue;
+                        }
+                        if (strcmp(key, group->fields[g]->name) == 0)
+                            return false; // isUnknownField
+                    }
+                } else if (f->type == FieldType::AllOfFieldsGroup) {
+                    const SchemaAllOfFieldsGroup* group = static_cast<const SchemaAllOfFieldsGroup*>(f);
+
+                    for (int g = 0; group->fields[g] != nullptr; g++) {
+                        if (group->fields[g]->name == nullptr) {
+                            GlobalLogger.Warn(F("AllOfGroup - group->fields[g]->name == nullptr @ key: "), key);
+                            continue;
+                        }
+                        if (strcmp(key, group->fields[g]->name) == 0)
+                            return false; // isUnknownField
+                    }
+                } else if (f->type == FieldType::FieldsGroup) {
+                    const SchemaFieldsGroup* group = static_cast<const SchemaFieldsGroup*>(f);
+                    if (!isUnknownField2(key, group->fields)) { // recurse into the subgroup
+                        return false;
+                    }
+                }
+                else {
+                    if (f->name == nullptr) {
+                        GlobalLogger.Warn(F("f->name == nullptr @ key: "), key);
+                        continue;
+                    }
+                    //Serial.println(key);
+                    //Serial.print(FieldTypeToString(f->type));
+                    //Serial.println(f->name);
+                    if (strcmp(key, f->name) == 0)
+                        return false; // isUnknownField
+                }
+            }
+
+            return true; // isUnknownField
+        }
+
+        void JsonObjectSchema::SchemaValidate(const JsonObjectSchema* schema, const char* sourceObjTypeName, bool& anyError) {
+            if (schema->fields == nullptr) {
+                if (schema->typeName != nullptr) {
+                    sourceObjTypeName = schema->typeName;
+                } else if (sourceObjTypeName == nullptr) {
+                    sourceObjTypeName = "null";
+                }
+                GlobalLogger.Error(F("schema error - JsonObjectSchema - schema->fields == nullptr"), sourceObjTypeName);
+            }
+        }
+
+        ValidatorResult JsonObjectSchema::ValidateJson(const JsonObjectSchema* jsonObjectSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            if (jsonObjectSchema == nullptr) { return ValidatorResult::Success; } // allow any content
+
+            if (jsonObj.size() == 0) {
+                if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
+                    std::string errStr = jsonObjectSchema->typeName;
+                    errStr += " @ ";errStr += sourceObjTypeName;
+                    GlobalLogger.Warn(F("JsonObject is empty: "), errStr.c_str());
+                    
+                } else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Error) {
+                    anyError = true;
+                    std::string errStr = jsonObjectSchema->typeName;
+                    errStr += " @ ";errStr += sourceObjTypeName;
+                    GlobalLogger.Error(F("JsonObject is empty: "), errStr.c_str());
+                    return ValidatorResult::FieldEmpty;
+                } /*else if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Ignore) {
+                    // simply do nothing
+                }*/
+                return ValidatorResult::Success;
+            }
+            
+            // 1. Check unknown fields
+            for (const JsonPair& kv : jsonObj.as<JsonObject>()) {
+                const char* key = kv.key().c_str();
+                if (key == nullptr) {
+                    GlobalLogger.Warn(F("key == nullptr: "), jsonObjectSchema->typeName);
+                    continue;
+                }
+                if (jsonObjectSchema->fields == nullptr) {
+                    GlobalLogger.Warn(F("jsonObjectSchema->fields == nullptr: "), key);
+                    continue;
+                }
+
+                if (isUnknownField2(key, jsonObjectSchema->fields)) {
+                    if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Ignore) {
+                        continue;
+                    } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
+                        std::string errMsg = key;
+                        errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        GlobalLogger.Warn(F("Unknown config field: "), errMsg.c_str());
+                    } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Error) {
+                        std::string errMsg = key;
+                        errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        GlobalLogger.Error(F("Unknown config field: "), errMsg.c_str());
+                        anyError = true;
+                    }                    
+                    
+                    // as this should not render the json invalid
+                    // anyError is not set
+                }
+            }
+
+            // 2. Validate each field
+            for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
+                const SchemaTypeBase* f = jsonObjectSchema->fields[i];
+
+                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f->type);
+                regDefItem.define.schemaValidator(*f, sourceObjTypeName, anyError);
+
+                /*if (f->type == FieldType::OneOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateOneOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaOneOfFieldsGroup*>(f), anyError);
+                } else if (f->type == FieldType::AllOfFieldsGroup) { // must validate this separate as it's a virtual group
+                    validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaAllOfFieldsGroup*>(f), anyError);
+                } else if (f->type == FieldType::FieldsGroup) {
+                    validateGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaFieldsGroup*>(f), anyError);
+                } else {
+                    validateField(j, jsonObjectSchema->typeName, f, anyError);
+                }*/
+            }
+
+            // 3. Evaluate modes if available
+            if (jsonObjectSchema->modes) {
+                int mode = evaluateModes(jsonObj, jsonObjectSchema->modes);
+                if (mode == -1) {
+                    std::string errInfoMsg = "["; errInfoMsg += jsonObjectSchema->typeName; errInfoMsg += "] ";
+                    serializeCollapsed(jsonObj, errInfoMsg);
+                    GlobalLogger.Error(F("No valid configuration mode found @ "), errInfoMsg.c_str());
+
+                    anyError = true;
+                } else if (mode == -2) {
+                    std::string errInfoMsg = "["; errInfoMsg += jsonObjectSchema->typeName; errInfoMsg += "] ";
+                    serializeCollapsed(jsonObj, errInfoMsg);
+                    GlobalLogger.Error(F("Configuration matches multiple modes @ "), errInfoMsg.c_str());
+                    anyError = true;
+                }
+            }
+
+            // 4. Evaluate constraints if available
+            if (jsonObjectSchema->constraints) {
+                evaluateConstraints(jsonObj, jsonObjectSchema->typeName, jsonObjectSchema->constraints, anyError);
+            }
+            return ValidatorResult::Success;
+        }
+
+        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* fieldSchema, std::string& out) {
+
+        }
+
+        const char* JsonObjectSchema::GetJavaScriptValidator() {
+            return R"rawliteral(
+
+            )rawliteral";
+        }
 
     }
 

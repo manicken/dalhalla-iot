@@ -32,7 +32,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include "../DALHAL_JSON_Schema_ToJsonStringHelpers.h"
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 namespace DALHAL {
 
@@ -46,7 +46,7 @@ namespace DALHAL {
         };
 
         void SchemaStringAnyOfByFuncConstrained::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            SchemaStringBase::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
+            SchemaString::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
             if (strSchema.describe == nullptr) {
                 GlobalLogger.Error(F("SchemaStringAnyOfByFuncConstrained schema error - strSchema.describe == nullptr @ "), sourceObjTypeName);
@@ -63,7 +63,7 @@ namespace DALHAL {
         }
         
         ValidatorResult SchemaStringAnyOfByFuncConstrained::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult res = SchemaStringBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            ValidatorResult res = SchemaString::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
 
             if (res != ValidatorResult::Success) {
                 return res; //  this mean either this field dont exist or that it's not a valid string 
@@ -83,10 +83,11 @@ namespace DALHAL {
         }
 
         void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaStringBase::SchemaToJson(fieldSchema, out);
+            SchemaString::SchemaToJson(fieldSchema, out);
             ToJsonString::appendKey(out, "allowedValues");
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
             out += strSchema.describe(strSchema.ctx);
+            
             if (fieldSchema.type == FieldType::StringAnyOfByFuncConstrained) {
                 out += '}'; // this is complete object
             }

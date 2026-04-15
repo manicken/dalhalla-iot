@@ -44,7 +44,7 @@ namespace DALHAL {
             return true;
         }
 
-        ValidatorResult SchemaTypeBase::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+        ValidatorResult SchemaTypeBase::ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             bool exists = jsonObj.containsKey(fieldSchema.name);
             if ((exists == false) && (fieldSchema.policy == FieldPolicy::Required)) {
                 std::string errMsg = fieldSchema.name; 
@@ -56,7 +56,7 @@ namespace DALHAL {
                 anyError = true;
                 return ValidatorResult::RequiredFieldMissing;
             }
-            return ValidatorResult::Success;
+            return (exists)?(ValidatorResult::Success):(ValidatorResult::FieldMissing);
         }
         
         void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, std::string& out) {

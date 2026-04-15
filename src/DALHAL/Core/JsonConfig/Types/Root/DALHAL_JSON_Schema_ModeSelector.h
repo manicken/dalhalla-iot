@@ -44,6 +44,8 @@ namespace DALHAL {
                 : name(name), conjunctions(conjunctions) {}
         };
 
+        int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
+
     }
 
 }

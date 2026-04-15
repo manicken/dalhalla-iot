@@ -24,9 +24,9 @@
 #include "DALHAL_JSON_Schema_ToJsonString.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
@@ -335,8 +335,8 @@ namespace DALHAL {
                 }
                 case FieldType::StringUID:
                 case FieldType::StringUID_Path:
-                case FieldType::StringBase: {
-                    auto fs = static_cast<const SchemaStringBase*>(f);
+                case FieldType::String: {
+                    auto fs = static_cast<const SchemaString*>(f);
                     out += ",\"default\":\"";
                     if (fs->defaultValue) out += fs->defaultValue;
                     out += '"';
@@ -375,7 +375,7 @@ namespace DALHAL {
                     break;
                 }
 
-                case FieldType::Array:
+                case FieldType::ArrayOfObjects:
                 {
                     auto fa = static_cast<const SchemaArrayOfObjects*>(f);
 
@@ -403,7 +403,7 @@ namespace DALHAL {
                     break;
                 }
 
-                case FieldType::RegistryArray: {
+                case FieldType::ArrayOfRegistryItems: {
                     auto fo = static_cast<const SchemaArrayOfRegistryItems*>(f);
                     out += ',';
                     appendKey(out, "regPath");

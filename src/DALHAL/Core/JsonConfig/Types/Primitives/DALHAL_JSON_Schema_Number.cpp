@@ -59,13 +59,10 @@ namespace DALHAL {
             }
         }
 
-        ValidatorResult SchemaNumber::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError)
-        {
-            ValidatorResult res = SchemaTypeBase::ValidateJson(
-                fieldSchema, sourceObjTypeName, jsonObj, anyError);
-
-            if (res != ValidatorResult::Success) {
-                return res; // e.g. RequiredFieldMissing
+        ValidatorResult SchemaNumber::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
             }
 
             const JsonVariant& value = jsonObj[fieldSchema.name];
@@ -110,6 +107,12 @@ namespace DALHAL {
             if (fieldSchema.type == FieldType::Number) {
                 out += '}'; // add the object finalizer if this is the actual object
             }
+        }
+
+        const char* SchemaNumber::GetJavaScriptValidator() {
+            return R"rawliteral(
+
+            )rawliteral";
         }
 
     }

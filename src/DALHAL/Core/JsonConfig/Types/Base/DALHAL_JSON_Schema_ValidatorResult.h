@@ -29,11 +29,13 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        /** used in situations when Validate functions need to pass special conditions */
         enum class ValidatorResult {
             Success,
             FieldTypeMismatch,
             FieldEmpty,
             RequiredFieldMissing,
+            FieldMissing,  // not a error and can be used when the type is inherited
             FieldInvalidValue
         };
         const char* ValidatorResultToString(ValidatorResult res);

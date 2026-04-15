@@ -35,7 +35,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaStringBase : SchemaTypeBase {
+        struct SchemaString : SchemaTypeBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -47,30 +47,30 @@ namespace DALHAL {
             const char* defaultValue;  // flash string default, or more like what to present at GUI
 
         protected:
-            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
                 : SchemaTypeBase(n, t, pol), defaultValue(defVal) {}
 
-            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
                 : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(defVal) {}
             
-            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol) 
                 : SchemaTypeBase(n, t, pol), defaultValue(nullptr) {}
 
-            constexpr SchemaStringBase(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
                 : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
             
         public:
-            constexpr SchemaStringBase(const char* n, FieldPolicy pol, const char* defVal) 
-                : SchemaTypeBase(n, FieldType::StringBase, pol), defaultValue(defVal) {}
+            constexpr SchemaString(const char* n, FieldPolicy pol, const char* defVal) 
+                : SchemaTypeBase(n, FieldType::String, pol), defaultValue(defVal) {}
 
-            constexpr SchemaStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
-                : SchemaTypeBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(defVal) {}
+            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+                : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(defVal) {}
 
-            constexpr SchemaStringBase(const char* n, FieldPolicy pol) 
-                : SchemaTypeBase(n, FieldType::StringBase, pol), defaultValue(nullptr) {}
+            constexpr SchemaString(const char* n, FieldPolicy pol) 
+                : SchemaTypeBase(n, FieldType::String, pol), defaultValue(nullptr) {}
 
-            constexpr SchemaStringBase(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
-                : SchemaTypeBase(n, FieldType::StringBase, pol, guiFlags), defaultValue(nullptr) {}
+            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
+                : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(nullptr) {}
         };
 
     }

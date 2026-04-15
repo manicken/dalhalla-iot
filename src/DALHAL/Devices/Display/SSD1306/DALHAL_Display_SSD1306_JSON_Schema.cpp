@@ -43,7 +43,7 @@ namespace DALHAL {
         // SSD1306_Element "device"
         constexpr SchemaUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
         constexpr SchemaUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
-        constexpr SchemaStringBase labelField = {"label", FieldPolicy::Optional};
+        constexpr SchemaString labelField = {"label", FieldPolicy::Optional};
         constexpr SchemaStringUID_Path sourceField = {"source", FieldPolicy::Optional};
 
         constexpr const SchemaTypeBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};

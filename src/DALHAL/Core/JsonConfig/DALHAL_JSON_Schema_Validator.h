@@ -29,9 +29,9 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
 #include <ArduinoJSON.h>
 using json = JsonVariant;
@@ -42,7 +42,7 @@ namespace DALHAL {
 
         bool isUnknownField(const char* key, const SchemaTypeBase* const* fields);
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const SchemaStringBase* f, bool& anyError);
+        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const SchemaString* f, bool& anyError);
         // Validate a single field
         void validateField(const JsonVariant& j, const char* sourceObjTypeName, const SchemaTypeBase* field, bool& anyError);
         // Validate OneOfGroup

@@ -60,10 +60,9 @@ namespace DALHAL {
         }
 
         ValidatorResult SchemaFloat::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult res = SchemaTypeBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
-
-            if (res != ValidatorResult::Success) {
-                return res; // base do currently only return ValidatorResult::RequiredFieldMissing
+            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
             }
 
             const JsonVariant& value = jsonObj[fieldSchema.name];
@@ -100,6 +99,13 @@ namespace DALHAL {
                 out += '}'; // add the object finalizer if this is the actual object
             }
         }
+
+        const char* SchemaFloat::GetJavaScriptValidator() {
+            return R"rawliteral(
+
+            )rawliteral";
+        }
+        
     }
 
 }

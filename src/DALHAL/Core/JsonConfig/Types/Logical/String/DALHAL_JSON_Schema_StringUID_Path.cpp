@@ -37,11 +37,11 @@ namespace DALHAL {
         };
 
         void SchemaStringUID_Path::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            SchemaStringBase::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
+            SchemaString::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
         }
 
         ValidatorResult SchemaStringUID_Path::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult res = SchemaStringBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            ValidatorResult res = SchemaString::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
 
             if (res != ValidatorResult::Success) {
                 return res; //  this mean either this field dont exist or that it's not a valid string 
@@ -58,7 +58,8 @@ namespace DALHAL {
         }
 
         void SchemaStringUID_Path::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaStringBase::SchemaToJson(fieldSchema, out);
+            SchemaString::SchemaToJson(fieldSchema, out);
+            
             if (fieldSchema.type == FieldType::StringUID_Path) {
                 out += '}'; // this is complete object
             }

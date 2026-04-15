@@ -31,6 +31,7 @@
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_EmptyPolicy.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -43,7 +44,7 @@ namespace DALHAL {
          * to the same JsonSchema::Device definition. This is used for structured data 
          * with a fixed schema (no type selection per element).
          */
-        struct SchemaArrayOfObjects : SchemaTypeBase {
+        struct SchemaArrayOfObjects : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -52,18 +53,17 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
 
             const JsonSchema::JsonObjectSchema* subtype;
-            EmptyPolicy emptyPolicy;
             const char* renderAllAllowedValuesFromStringConstraint;
 
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
-                : SchemaTypeBase(name, FieldType::ArrayOfObjects, policy), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
-                : SchemaTypeBase(name, FieldType::ArrayOfObjects, policy), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, emptyPolicy), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
 
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype)
-                : SchemaTypeBase(name, FieldType::ArrayOfObjects, policy, guiFlags), subtype(subtype), emptyPolicy(EmptyPolicy::Warn), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
-                : SchemaTypeBase(name, FieldType::ArrayOfObjects, policy, guiFlags), subtype(subtype), emptyPolicy(emptyPolicy), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, emptyPolicy), subtype(subtype), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
         };
 
     }

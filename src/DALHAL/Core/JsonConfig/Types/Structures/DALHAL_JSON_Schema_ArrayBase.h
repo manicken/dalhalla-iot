@@ -23,13 +23,12 @@
 
 #pragma once
 
+
 #include <stdlib.h>
-#include <DALHAL/Core/Types/DALHAL_UID_Path.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_EmptyPolicy.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
@@ -38,22 +37,24 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaHardwarePinOrVirtualPin : SchemaTypeBase {
-
-            static const FieldTypeRegistryDefine RegistryDefine;
-            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+        struct SchemaArrayBase : SchemaTypeBase
+        {
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            
             static const char* GetJavaScriptValidator();
 
-            DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
+            EmptyPolicy emptyPolicy;
 
-            constexpr SchemaHardwarePinOrVirtualPin(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)
-                : SchemaTypeBase(name, FieldType::HardwarePinOrVirtualPin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
-        
-            static ValidatorResult ValidateHardwarePinJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static ValidatorResult ValidateVirtualPinJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+        protected:
+            constexpr SchemaArrayBase(const char* n, FieldType t, FieldPolicy policy, EmptyPolicy emptyPolicy)
+                : SchemaTypeBase(n, t, policy), emptyPolicy(emptyPolicy) {}
+
+            constexpr SchemaArrayBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags, EmptyPolicy emptyPolicy)
+                : SchemaTypeBase(n, t, policy, guiFlags), emptyPolicy(emptyPolicy) {}
         };
+          
+          
+
 
     }
 

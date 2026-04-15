@@ -44,7 +44,7 @@ namespace DALHAL {
         constexpr ByArrayConstraints activeLevelConstraints = {activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
         constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
         
-        constexpr SchemaStringBase on_pressField = { "on_press", FieldPolicy::Optional};
+        constexpr SchemaString on_pressField = { "on_press", FieldPolicy::Optional};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

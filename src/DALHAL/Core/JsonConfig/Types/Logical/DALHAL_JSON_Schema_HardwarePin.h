@@ -47,6 +47,7 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
             
             DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
+            
             constexpr SchemaHardwarePin(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)
                 : SchemaTypeBase(name, FieldType::HardwarePin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         };

@@ -39,9 +39,9 @@
 
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
@@ -64,6 +64,9 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_PrimitiveTypeFlags.h>
+
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
  
 namespace DALHAL {
 
@@ -121,7 +124,7 @@ namespace DALHAL {
         }
 
         // Helper to validate FieldString / FieldUID
-        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const SchemaStringBase* f, bool& anyError)
+        void validateStringField(const JsonVariant& value, const char* sourceObjTypeName, const SchemaString* f, bool& anyError)
         {
             if (!value.is<const char*>()) {
                 std::string errMsg = f->name;
@@ -135,7 +138,7 @@ namespace DALHAL {
             ZeroCopyString zcStr = value_cStr; // wrap in ZeroCopyString for neat functions
             zcStr.Trim();
             unsigned int strLen = zcStr.Length(); // use of lenght here is fast
-            if (f->type == FieldType::StringBase || f->type == FieldType::StringUID_Path) {
+            if (f->type == FieldType::String || f->type == FieldType::StringUID_Path) {
                 if (strLen == 0) {
                     anyError = true;
                     std::string errMsg = f->name;
@@ -324,7 +327,7 @@ namespace DALHAL {
                     if (value.is<const char*>()) {
                         bool anyErrorTemp = false;
 
-                        validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyErrorTemp);
+                        validateStringField(value, sourceObjTypeName, static_cast<const SchemaString*>(field), anyErrorTemp);
                         if (anyErrorTemp == true) {
                             anyError = true;
                             return;
@@ -335,14 +338,14 @@ namespace DALHAL {
                     }
                     return;
                 }
-                case FieldType::StringBase:
+                case FieldType::String:
                 case FieldType::StringAnyOfArrayConstrained:
                 case FieldType::StringAnyOfByFuncConstrained:
                 case FieldType::StringSizeConstrained:
                 case FieldType::StringUID:
                 case FieldType::StringUID_Path: { // TODO make own validator for UID_Path as it need special tests except to be a simple string
                     // cast FieldString for UID / UID_Path / simple string fields
-                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyError);
+                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaString*>(field), anyError);
                     return;
                 }
                 case FieldType::Object: {
@@ -365,7 +368,7 @@ namespace DALHAL {
                 case FieldType::StringHexBytes: {
                     
                     bool anyErrorTemp = false;
-                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaStringBase*>(field), anyErrorTemp);
+                    validateStringField(value, sourceObjTypeName, static_cast<const SchemaString*>(field), anyErrorTemp);
                     if (anyErrorTemp == true) {
                         anyError = true;
                         break; // no point of continue
@@ -491,7 +494,7 @@ namespace DALHAL {
         }
 
         // Validate ModeSelector
-        int evaluateModes(const JsonVariant& j, const ModeSelector* modes) {
+        /*int evaluateModes(const JsonVariant& j, const ModeSelector* modes) {
             int matchedMode = -1;
             for (int i = 0; modes[i].name != nullptr; ++i) {
                 const ModeSelector& mode = modes[i];
@@ -540,9 +543,9 @@ namespace DALHAL {
             }
 
             return matchedMode;
-        }
+        }*/
 
-        bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {
+        /*bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {
             bool tempAnyError = false;
             validateField(j, sourceObjectTypeName, fcItem.fieldA, tempAnyError);
             validateField(j, sourceObjectTypeName, fcItem.fieldB, tempAnyError);
@@ -596,9 +599,7 @@ namespace DALHAL {
                     valA = j.containsKey(fA->name)?j[fA->name].as<float>():fA->defaultValue;
                     valB = j.containsKey(fB->name)?j[fB->name].as<float>():fB->defaultValue;
 
-                }/* else if (fcItem.fieldA->type == FieldType::Bool) { // could make sense in some situations
-                    // keep it unimplemented for now
-                } */else {
+                } else {
                     GlobalLogger.Warn(F("SchemaError - FieldConstraint fieldtype unsupported: "), FieldTypeToString(fcItem.fieldA->type));
 
                     continue;
@@ -633,7 +634,7 @@ namespace DALHAL {
                 }
 
             }
-        }
+        }*/
 
         // Validate a complete JSON Object
         void validateJsonObject(const JsonVariant& j, const char* fieldName, const JsonSchema::JsonObjectSchema* jsonObjectSchema, bool& anyError)

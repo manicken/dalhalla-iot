@@ -23,9 +23,9 @@
 
 #include "DALHAL_CommonSchemas_Base.h"
 
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
 namespace DALHAL {
 
@@ -34,9 +34,9 @@ namespace DALHAL {
         constexpr SchemaStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
         constexpr SchemaStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
 
-        constexpr SchemaStringBase typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
+        constexpr SchemaString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
 
-        constexpr SchemaStringBase noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
+        constexpr SchemaString noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
 
         constexpr SchemaBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
 

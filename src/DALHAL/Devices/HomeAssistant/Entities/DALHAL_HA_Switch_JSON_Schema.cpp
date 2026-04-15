@@ -35,7 +35,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringBase nameField = {"name", FieldPolicy::Required};
+        constexpr SchemaString nameField = {"name", FieldPolicy::Required};
         constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
         constexpr SchemaStringUID_Path targetField = {"target", FieldPolicy::Required};
 

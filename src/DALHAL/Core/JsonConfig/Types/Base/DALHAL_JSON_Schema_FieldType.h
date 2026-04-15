@@ -39,7 +39,7 @@
     X(Int) \
     X(Number) \
     X(Object) \
-    X(StringBase) \
+    X(String) \
     X(StringSizeConstrained) \
     X(StringAnyOfByFuncConstrained) \
     X(StringAnyOfArrayConstrained) \

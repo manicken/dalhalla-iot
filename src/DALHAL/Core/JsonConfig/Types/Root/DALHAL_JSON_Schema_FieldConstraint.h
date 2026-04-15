@@ -51,6 +51,8 @@ namespace DALHAL {
         };
         const char* FieldConstraintTypeToString(FieldConstraint::Type type);
 
+        void evaluateConstraints(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError);
+
     }
 
 }

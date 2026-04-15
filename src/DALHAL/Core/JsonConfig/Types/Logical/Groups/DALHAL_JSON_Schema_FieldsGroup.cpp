@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema__SchemaTypeTemplate_.h"
+#include "DALHAL_JSON_Schema_FieldsGroup.h"
 
 #include <stdlib.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -37,35 +37,38 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldTypeRegistryDefine _SchemaTypeTemplate_::RegistryDefine = {
+        constexpr FieldTypeRegistryDefine SchemaFieldsGroup::RegistryDefine = {
               &SchemaValidate,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void _SchemaTypeTemplate_::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaFieldsGroup::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
 
         }
 
-        ValidatorResult _SchemaTypeTemplate_::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
-            if (vRes != ValidatorResult::Success) {
-                return vRes; 
-            }
+        ValidatorResult SchemaFieldsGroup::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            auto group = static_cast<const SchemaFieldsGroup&>(fieldSchema);
 
+            for (size_t i = 0; group.fields[i] != nullptr; ++i) {
+                const SchemaTypeBase& f = *group.fields[i];
+
+                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
+                regDefItem.define.schemaValidator(f, group.name?group.name:sourceObjTypeName, anyError);
+            }
             return ValidatorResult::Success;
         }
 
-        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
 
             // dont forget to change type here to the correct one
-            if (fieldSchema.type == FieldType::_Count_) { 
+            if (fieldSchema.type == FieldType::FieldsGroup) { 
                 out += '}'; // add the object finalizer if this is the actual object
             }
         }
 
-        const char* _SchemaTypeTemplate_::GetJavaScriptValidator() {
+        const char* SchemaFieldsGroup::GetJavaScriptValidator() {
             return R"rawliteral(
 
             )rawliteral";

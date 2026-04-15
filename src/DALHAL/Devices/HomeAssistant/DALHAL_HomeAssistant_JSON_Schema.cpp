@@ -24,9 +24,9 @@
 #include "DALHAL_HomeAssistant_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
@@ -41,16 +41,16 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringBase deviceIdField = {"deviceId", FieldPolicy::Required};
-        constexpr SchemaStringBase hostField = {"host", FieldPolicy::Required};
+        constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
+        constexpr SchemaString hostField = {"host", FieldPolicy::Required};
         constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, 1, 65535, 1883};
-        constexpr SchemaStringBase userField = {"user", FieldPolicy::AllOfFieldsGroup};
-        constexpr SchemaStringBase passField = {"pass", FieldPolicy::AllOfFieldsGroup};
+        constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
+        constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
 
         constexpr const SchemaTypeBase* credentialsFields[] = {&userField, &passField, nullptr};
         constexpr SchemaAllOfFieldsGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};
 
-        constexpr SchemaStringBase groupNameField = {"name", FieldPolicy::Required};
+        constexpr SchemaString groupNameField = {"name", FieldPolicy::Required};
 
         constexpr const SchemaTypeBase* globalGroupFields[] = {&uidFieldRequired, &groupNameField, nullptr};
         constexpr JsonObjectSchema globalGroupSchema = {

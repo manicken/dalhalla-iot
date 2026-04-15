@@ -21,13 +21,14 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema__SchemaTypeTemplate_.h"
+#include "DALHAL_JSON_Schema_ArrayOfObjects.h"
 
 #include <stdlib.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayBase.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
@@ -37,35 +38,46 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldTypeRegistryDefine _SchemaTypeTemplate_::RegistryDefine = {
+        constexpr FieldTypeRegistryDefine SchemaArrayOfObjects::RegistryDefine = {
               &SchemaValidate,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void _SchemaTypeTemplate_::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaArrayOfObjects::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
 
         }
 
-        ValidatorResult _SchemaTypeTemplate_::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+        ValidatorResult SchemaArrayOfObjects::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
+            }
+            vRes = SchemaArrayBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
+            }
+            const JsonArray& array = jsonObj[fieldSchema.name].as<JsonArray>();
+            auto fs = static_cast<const SchemaArrayOfObjects&>(fieldSchema);
+
+            for (JsonVariant item : array) {
+                if (item.is<const char*>()) continue; // comment item
+                JsonObjectSchema::ValidateJson(fs.subtype, fieldSchema.name, item, anyError);
             }
 
             return ValidatorResult::Success;
         }
 
-        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
 
             // dont forget to change type here to the correct one
-            if (fieldSchema.type == FieldType::_Count_) { 
+            if (fieldSchema.type == FieldType::ArrayOfObjects) { 
                 out += '}'; // add the object finalizer if this is the actual object
             }
         }
 
-        const char* _SchemaTypeTemplate_::GetJavaScriptValidator() {
+        const char* SchemaArrayOfObjects::GetJavaScriptValidator() {
             return R"rawliteral(
 
             )rawliteral";

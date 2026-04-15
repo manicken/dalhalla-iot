@@ -38,6 +38,12 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct JsonObjectSchema {
+
+            static void SchemaValidate(const JsonObjectSchema* fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateJson(const JsonObjectSchema* fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static void SchemaToJson(const JsonObjectSchema* fieldSchema, std::string& out);
+            static const char* GetJavaScriptValidator();
+
             const char* typeName;
             const SchemaTypeBase* const* fields;
             const ModeSelector* modes;

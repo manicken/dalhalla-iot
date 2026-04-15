@@ -34,7 +34,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringBase urlField = { DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL, FieldPolicy::Required};
+        constexpr SchemaString urlField = { DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL, FieldPolicy::Required};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

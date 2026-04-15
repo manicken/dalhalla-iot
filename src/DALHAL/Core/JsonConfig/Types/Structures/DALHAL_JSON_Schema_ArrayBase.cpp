@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema__SchemaTypeTemplate_.h"
+#include "DALHAL_JSON_Schema_ArrayBase.h"
 
 #include <stdlib.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -37,35 +37,39 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr FieldTypeRegistryDefine _SchemaTypeTemplate_::RegistryDefine = {
-              &SchemaValidate,
-              &ValidateJson,
-              &SchemaToJson,
-              &GetJavaScriptValidator
-        };
-        
-        void _SchemaTypeTemplate_::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-
-        }
-
-        ValidatorResult _SchemaTypeTemplate_::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+        ValidatorResult SchemaArrayBase::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
             }
-
+            auto value = jsonObj[fieldSchema.name];
+            if (value.is<JsonArray>() == false) {
+                anyError = true;
+                std::string errMsg = fieldSchema.name;
+                errMsg += " @ "; errMsg += sourceObjTypeName;
+                GlobalLogger.Error(F("error field is not a array: "), errMsg.c_str());
+                return ValidatorResult::FieldTypeMismatch;
+            }
+            auto fs = static_cast<const SchemaArrayBase&>(fieldSchema);
+            const JsonArray& array = value.as<JsonArray>();
+            int arraySize = array.size();
+            if (arraySize == 0) {
+                if (fs.emptyPolicy == EmptyPolicy::Error) {
+                    anyError = true;
+                    std::string errMsg = fieldSchema.name;
+                    errMsg += " @ "; errMsg += sourceObjTypeName;
+                    GlobalLogger.Error(F("arraysize is zero: "), errMsg.c_str());
+                } else if (fs.emptyPolicy == EmptyPolicy::Warn) {
+                    std::string errMsg = fieldSchema.name;
+                    errMsg += " @ "; errMsg += sourceObjTypeName;
+                    GlobalLogger.Warn(F("arraysize is zero: "), errMsg.c_str());
+                }
+                return ValidatorResult::FieldInvalidValue;
+            }
             return ValidatorResult::Success;
         }
 
-        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-
-            // dont forget to change type here to the correct one
-            if (fieldSchema.type == FieldType::_Count_) { 
-                out += '}'; // add the object finalizer if this is the actual object
-            }
-        }
-
-        const char* _SchemaTypeTemplate_::GetJavaScriptValidator() {
+        const char* SchemaArrayBase::GetJavaScriptValidator() {
             return R"rawliteral(
 
             )rawliteral";
