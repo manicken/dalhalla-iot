@@ -349,15 +349,15 @@ namespace DALHAL {
                     validateJsonObject(value, field->name, static_cast<const SchemaObject*>(field)->subtype, anyError);
                     break;
                 }
-                case FieldType::Array: {
+                case FieldType::ArrayOfObjects: {
                     validateJsonArray(value, static_cast<const SchemaArrayOfObjects*>(field), anyError);
                     return;
                 }
-                case FieldType::ArrayPrimitive: {
+                case FieldType::ArrayOfPrimitives: {
                     validateJsonArrayPrimitive(value, static_cast<const SchemaArrayOfPrimitives*>(field), anyError);
                     return;
                 }
-                case FieldType::RegistryArray: {
+                case FieldType::ArrayOfRegistryItems: {
                     validateFromRegister(value, static_cast<const SchemaArrayOfRegistryItems*>(field)->subtypes, anyError);
                     break;
                 }
