@@ -23,11 +23,11 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h> // ModeSelector
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h> // ModeSelector
 
 namespace DALHAL {
 

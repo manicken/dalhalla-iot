@@ -25,9 +25,13 @@
 
 #include <stdlib.h>
 
+#include <ArduinoJson.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 

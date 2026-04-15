@@ -24,11 +24,11 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
 
 #define DALHAL_COMMON_CFG_NAME_DISABLED "disabled"
 #define DALHAL_COMMON_CFG_NAME_TYPE "type"

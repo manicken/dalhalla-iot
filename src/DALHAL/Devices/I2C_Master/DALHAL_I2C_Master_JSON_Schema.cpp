@@ -26,9 +26,9 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -41,7 +41,7 @@ namespace DALHAL {
         constexpr SchemaHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
         constexpr SchemaHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT | GPIO_manager::PinFunc::IN)};
 
-        constexpr SchemaRegistryArray itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
+        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

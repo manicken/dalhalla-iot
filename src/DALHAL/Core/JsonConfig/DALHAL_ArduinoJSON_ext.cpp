@@ -207,6 +207,32 @@ namespace DALHAL {
         return jsonObj[keyName].as<const char*>();
     }
     
+    void serializeCollapsed(const JsonVariant& var, std::string& output) {
+        if (var.is<JsonObject>()) {
+            output += '{';
+            bool first = true;
+            for (auto kv : var.as<JsonObject>()) {
+                if (!first) output += ',';
+                first = false;
 
+                output += '"';
+                output += kv.key().c_str();
+                output += "\":";
+
+                if (kv.value().is<JsonObject>()) {
+                    output += "{...}"; // collapsed object
+                } else if (kv.value().is<JsonArray>()) {
+                    output += "[...]"; // collapsed array
+                } else {
+                    serializeJson(kv.value(), output); // primitive
+                }
+            }
+            output += '}';
+        } else if (var.is<JsonArray>()) {
+            output += "[...]"; // array at root level
+        } else {
+            serializeJson(var, output); // primitive at root
+        }
+    }
     
 }

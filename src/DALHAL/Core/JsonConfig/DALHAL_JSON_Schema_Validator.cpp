@@ -35,63 +35,39 @@
 #include <math.h>
 #include <cstdint>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringHexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePinOrVirtualPin.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringHexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Number.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringSizeConstrained.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_StringUID_Path.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringSizeConstrained.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID_Path.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_PrimitiveTypeFlags.h>
  
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        void serializeCollapsed(const JsonVariant& var, std::string& output) {
-            if (var.is<JsonObject>()) {
-                output += '{';
-                bool first = true;
-                for (auto kv : var.as<JsonObject>()) {
-                    if (!first) output += ',';
-                    first = false;
-
-                    output += '"';
-                    output += kv.key().c_str();
-                    output += "\":";
-
-                    if (kv.value().is<JsonObject>()) {
-                        output += "{...}"; // collapsed object
-                    } else if (kv.value().is<JsonArray>()) {
-                        output += "[...]"; // collapsed array
-                    } else {
-                        serializeJson(kv.value(), output); // primitive
-                    }
-                }
-                output += '}';
-            } else if (var.is<JsonArray>()) {
-                output += "[...]"; // array at root level
-            } else {
-                serializeJson(var, output); // primitive at root
-            }
-        }
 
         // this is only a helper/support function and do not use anyError
         // as this could be just defined as a warning, depending on strict level requirements
@@ -374,15 +350,15 @@ namespace DALHAL {
                     break;
                 }
                 case FieldType::Array: {
-                    validateJsonArray(value, static_cast<const SchemaArray*>(field), anyError);
+                    validateJsonArray(value, static_cast<const SchemaArrayOfObjects*>(field), anyError);
                     return;
                 }
                 case FieldType::ArrayPrimitive: {
-                    validateJsonArrayPrimitive(value, static_cast<const SchemaArrayPrimitive*>(field), anyError);
+                    validateJsonArrayPrimitive(value, static_cast<const SchemaArrayOfPrimitives*>(field), anyError);
                     return;
                 }
                 case FieldType::RegistryArray: {
-                    validateFromRegister(value, static_cast<const SchemaRegistryArray*>(field)->subtypes, anyError);
+                    validateFromRegister(value, static_cast<const SchemaArrayOfRegistryItems*>(field)->subtypes, anyError);
                     break;
                 }
                 
@@ -752,7 +728,7 @@ namespace DALHAL {
             //return anyError ? -1 : mode; // dont think this is ever needed
         }
 
-        void validateJsonArray(const JsonVariant& j, const SchemaArray* field, bool& anyError)
+        void validateJsonArray(const JsonVariant& j, const SchemaArrayOfObjects* field, bool& anyError)
         {
             if (!j.is<JsonArray>()) {
                 GlobalLogger.Error(F("Field is not an array"), field->name);
@@ -780,7 +756,7 @@ namespace DALHAL {
             }
         }
 
-        void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::SchemaArrayPrimitive* field, bool& anyError)
+        void validateJsonArrayPrimitive(const JsonVariant& j, const JsonSchema::SchemaArrayOfPrimitives* field, bool& anyError)
         {
             using namespace JsonSchema;
 

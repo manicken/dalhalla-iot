@@ -24,15 +24,15 @@
 #include "DALHAL_HomeAssistant_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include "DALHAL_HA_DeviceTypeReg.h"
@@ -63,7 +63,7 @@ namespace DALHAL {
         };
         constexpr SchemaObject globalGroupField = {"group", FieldPolicy::ModeDefine, &globalGroupSchema};
 
-        constexpr SchemaRegistryArray itemsField = {"items", FieldPolicy::ModeDefine, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
         constexpr const SchemaTypeBase* individualGroupFields[] = {&uidFieldRequired, &groupNameField, &itemsField, nullptr};
         constexpr JsonObjectSchema individualGroupSchema = {
@@ -74,7 +74,7 @@ namespace DALHAL {
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,
         };
-        constexpr SchemaArray individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
+        constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

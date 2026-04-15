@@ -24,8 +24,8 @@
 #include "DALHAL_OneWireTempGroup_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -37,7 +37,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArray itemsField = {"items", FieldPolicy::Required, &OneWireTempBus, EmptyPolicy::Error};
+        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &OneWireTempBus, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

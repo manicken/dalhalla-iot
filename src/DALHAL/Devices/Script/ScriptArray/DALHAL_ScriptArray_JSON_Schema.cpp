@@ -24,9 +24,10 @@
 #include "DALHAL_ScriptArray_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_PrimitiveTypeFlags.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
@@ -36,7 +37,7 @@ namespace DALHAL {
 
         constexpr SchemaBool readonlyField = {"readonly", FieldPolicy::Optional, false};
 
-        constexpr SchemaArrayPrimitive items = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
+        constexpr SchemaArrayOfPrimitives items = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

@@ -26,93 +26,18 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
-#include <ArduinoJson.h>
 
-#define DALHAL_JsonSchema_FIELD_TYPE_LIST \
-    X(FieldsGroup) \
-    X(AllOfFieldsGroup) \
-    X(OneOfFieldsGroup) \
-    X(Array) \
-    X(ArrayPrimitive) \
-    X(Bool) \
-    X(Float) \
-    X(HardwarePin) \
-    X(HardwarePinOrVirtualPin) \
-    X(Int) \
-    X(Number) \
-    X(Object) \
-    X(RegistryArray) \
-    X(StringBase) \
-    X(StringSizeConstrained) \
-    X(StringAnyOfByFuncConstrained) \
-    X(StringAnyOfArrayConstrained) \
-    X(StringUID) \
-    X(StringUID_Path) \
-    X(StringHexBytes) \
-    X(UInt)
+#include <ArduinoJson.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldType.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldPolicy.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldGuiFlags.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        enum class ValidatorResult {
-            Success,
-            FieldTypeMismatch,
-            FieldEmpty,
-            RequiredFieldMissing,
-            FieldInvalidValue
-        };
-        const char* ValidatorResultToString(ValidatorResult res);
-        
-        void serializeCollapsed(const JsonVariant& var, std::string& output);
-
-        enum class FieldType : uint8_t {
-        #define X(name) name,
-            DALHAL_JsonSchema_FIELD_TYPE_LIST
-        #undef X
-            _Count_
-        };
-        //const char* FieldTypeToString(FieldType type);
-
-        enum class FieldPolicy {
-            Required,
-            Optional,
-            OneOfGroup, // the higher group defines
-            AllOfFieldsGroup, // the higher group defines
-            FieldsGroup, // the individual items decides the policy as they where defined flat, group defines no policy
-            ModeDefine // Mode defines
-        };
-        const char* FieldPolicyToString(FieldPolicy flag);
-
-        enum class EmptyPolicy {
-            Ignore,
-            Warn,
-            Error
-        };
-        const char* EmptyPolicyToString(EmptyPolicy policy);
-
-        using FieldGuiFlags = uint8_t;
-        namespace Gui {
-            constexpr FieldGuiFlags None                   = 0;
-            constexpr FieldGuiFlags UseInline              = 1 << 0;
-            constexpr FieldGuiFlags RenderAllAllowedValues = 1 << 1;
-            constexpr FieldGuiFlags DisableByDefault       = 1 << 2;
-            constexpr FieldGuiFlags ReadOnly               = 1 << 3;
-            constexpr FieldGuiFlags HideLabel              = 1 << 4;
-
-            constexpr bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag) {
-                return (flags & flag) != 0;
-            }
-        }
-
-        enum PrimitiveTypeFlags : uint8_t {
-            AllowAll   = 0xFF,
-            AllowNumbers = (1 << 0) | (1 << 1) | (1 << 2),
-            AllowInt   = 1 << 0,
-            AllowUInt  = 1 << 1,
-            AllowFloat = 1 << 2,
-            AllowBool = 1 << 3,
-        };
 
         struct SchemaTypeBase {
             const char* name;    // flash string

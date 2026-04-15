@@ -24,8 +24,8 @@
 #include "DALHAL_DeviceContainer_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
@@ -34,7 +34,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaRegistryArray itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
+        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

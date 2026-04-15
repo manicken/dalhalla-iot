@@ -26,10 +26,10 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
@@ -45,7 +45,7 @@ namespace DALHAL {
 
         constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
 
-        constexpr SchemaArray itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, "", &REGO600_Register, EmptyPolicy::Error};
+        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, "", &REGO600_Register, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

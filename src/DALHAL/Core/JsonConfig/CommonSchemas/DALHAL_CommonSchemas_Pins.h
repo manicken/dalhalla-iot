@@ -24,8 +24,8 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h> // JsonObjectSchema
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #define DALHAL_COMMON_CFG_NAME_PIN "pin"
 #define DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH "ActiveHigh"

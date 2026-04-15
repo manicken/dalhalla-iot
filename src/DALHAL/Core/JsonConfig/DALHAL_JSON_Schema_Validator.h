@@ -25,13 +25,13 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_StringBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_Array.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_ArrayPrimitive.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaAllOfFieldsGroup.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_SchemaOneOfFieldsGroup.h>
 
 #include <ArduinoJSON.h>
 using json = JsonVariant;
@@ -52,9 +52,9 @@ namespace DALHAL {
         // Validate ModeSelector
         int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
         // Validate a JsonArray
-        void validateJsonArray(const JsonVariant& j, const SchemaArray* field, bool& anyError);
+        void validateJsonArray(const JsonVariant& j, const SchemaArrayOfObjects* field, bool& anyError);
         // Validate a simple JsonArray of primitives such as bool,uint,int,float
-        void validateJsonArrayPrimitive(const JsonVariant& j, const SchemaArrayPrimitive* field, bool& anyError);
+        void validateJsonArrayPrimitive(const JsonVariant& j, const SchemaArrayOfPrimitives* field, bool& anyError);
         // Validate a full device
         void validateJsonObject(const JsonVariant& j, const char* fieldName, const JsonObjectSchema* jsonObjectSchema, bool& anyError);
         // Validate the JSON array against the given device registry.

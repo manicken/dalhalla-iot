@@ -24,8 +24,8 @@
 #include "DALHAL_TX433_JSON_Schema.h"
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_RegistryArray.h>
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -35,7 +35,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaRegistryArray unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry, "ROOT.TX433"};
+        constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry, "ROOT.TX433"};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group,

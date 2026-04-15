@@ -24,79 +24,17 @@
 #include "DALHAL_JSON_Schema_TypeBase.h"
 
 #include <ArduinoJson.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldPolicy.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        const char* ValidatorResultToString(ValidatorResult res) {
-            switch (res)
-            {
-                case ValidatorResult::FieldEmpty: return "FieldEmpty";
-                case ValidatorResult::FieldInvalidValue: return "FieldInvalidValue";
-                case ValidatorResult::FieldTypeMismatch: return "FieldTypeMismatch";
-                case ValidatorResult::RequiredFieldMissing: return "RequiredFieldMissing";
-                case ValidatorResult::Success: return "Success";
-                default: return "Unknown";
-            }
-        }
-
-        void serializeCollapsed(const JsonVariant& var, std::string& output) {
-            if (var.is<JsonObject>()) {
-                output += '{';
-                bool first = true;
-                for (auto kv : var.as<JsonObject>()) {
-                    if (!first) output += ',';
-                    first = false;
-
-                    output += '"';
-                    output += kv.key().c_str();
-                    output += "\":";
-
-                    if (kv.value().is<JsonObject>()) {
-                        output += "{...}"; // collapsed object
-                    } else if (kv.value().is<JsonArray>()) {
-                        output += "[...]"; // collapsed array
-                    } else {
-                        serializeJson(kv.value(), output); // primitive
-                    }
-                }
-                output += '}';
-            } else if (var.is<JsonArray>()) {
-                output += "[...]"; // array at root level
-            } else {
-                serializeJson(var, output); // primitive at root
-            }
-        }
-
-        const char* FieldPolicyToString(FieldPolicy policy) {
-            switch (policy)
-            {
-                case FieldPolicy::FieldsGroup: return "FieldsGroup";
-                case FieldPolicy::AllOfFieldsGroup: return "AllOfGroup";
-                case FieldPolicy::OneOfGroup: return "OneOfGroup";
-                case FieldPolicy::ModeDefine: return "ModeDefine";
-                case FieldPolicy::Optional: return "Optional";
-                case FieldPolicy::Required: return "Required";
-                //case FieldPolicy: return "";
-                default: return "Unknown";
-            }
-        }
-        
-        
-        const char* EmptyPolicyToString(EmptyPolicy policy) {
-            switch (policy)
-            {
-                case EmptyPolicy::Error: return "Error";
-                case EmptyPolicy::Ignore: return "Ignore";
-                case EmptyPolicy::Warn: return "Warn";
-                //case CanBeEmptyPolicy: return "";
-                default: return "Unknown";
-            }
-        }
 
         bool SchemaTypeBase::SchemaValidateNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName) {
             if (fieldSchema.name == nullptr) {
@@ -120,6 +58,7 @@ namespace DALHAL {
             }
             return ValidatorResult::Success;
         }
+        
         void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, std::string& out) {
             out += '{'; // this is allways added
             ToJsonString::appendString(out, "type", FieldTypeToString(schema.type));

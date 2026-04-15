@@ -64,4 +64,6 @@ namespace DALHAL {
     }
     const char* GetAsConstChar(const JsonVariant& jsonObj, const char* keyName);
 
+    void serializeCollapsed(const JsonVariant& var, std::string& output);
+
 }

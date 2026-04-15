@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS "firstUpdateAfterSeconds"
 #define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER "testserver"
