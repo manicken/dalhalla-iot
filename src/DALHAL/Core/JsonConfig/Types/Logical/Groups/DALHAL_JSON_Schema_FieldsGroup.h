@@ -49,6 +49,7 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
             
             const SchemaTypeBase* const* fields;
+            
             /*size_t fieldsCount;*/
             constexpr SchemaFieldsGroup(const SchemaTypeBase* const* fields/*, size_t fieldsCount*/)
                 : SchemaTypeBase(nullptr, FieldType::FieldsGroup, FieldPolicy::FieldsGroup), fields(fields)/*, fieldsCount(fieldsCount)*/ {}

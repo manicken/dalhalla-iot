@@ -73,8 +73,7 @@ namespace DALHAL {
                     if (!isUnknownField2(key, group->fields)) { // recurse into the subgroup
                         return false;
                     }
-                }
-                else {
+                } else {
                     if (f->name == nullptr) {
                         GlobalLogger.Warn(F("f->name == nullptr @ key: "), key);
                         continue;
@@ -152,23 +151,17 @@ namespace DALHAL {
                     // anyError is not set
                 }
             }
-
+            if (jsonObjectSchema->typeName != nullptr) {
+                sourceObjTypeName = jsonObjectSchema->typeName;
+            } else if (sourceObjTypeName == nullptr) {
+                sourceObjTypeName = "nullptr error";
+            }
             // 2. Validate each field
             for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
                 const SchemaTypeBase* f = jsonObjectSchema->fields[i];
 
                 const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f->type);
                 regDefItem.define.schemaValidator(*f, sourceObjTypeName, anyError);
-
-                /*if (f->type == FieldType::OneOfFieldsGroup) { // must validate this separate as it's a virtual group
-                    validateOneOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaOneOfFieldsGroup*>(f), anyError);
-                } else if (f->type == FieldType::AllOfFieldsGroup) { // must validate this separate as it's a virtual group
-                    validateAllOfGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaAllOfFieldsGroup*>(f), anyError);
-                } else if (f->type == FieldType::FieldsGroup) {
-                    validateGroup(j, jsonObjectSchema->typeName, static_cast<const SchemaFieldsGroup*>(f), anyError);
-                } else {
-                    validateField(j, jsonObjectSchema->typeName, f, anyError);
-                }*/
             }
 
             // 3. Evaluate modes if available
