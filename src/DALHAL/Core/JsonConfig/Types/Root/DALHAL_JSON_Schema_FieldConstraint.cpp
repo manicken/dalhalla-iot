@@ -51,7 +51,7 @@ namespace DALHAL {
 
         void validateField(const JsonVariant& j, const char* sourceObjectTypeName, const SchemaTypeBase& schema, bool& anyError) {
             const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(schema.type);
-            regDefItem.define.schemaValidator(schema, sourceObjectTypeName, anyError);
+            regDefItem.define.ValidateJson(schema, sourceObjectTypeName, j, anyError);
         }
 
         bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {

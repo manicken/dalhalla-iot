@@ -210,7 +210,7 @@ namespace DALHAL {
             float fVal = 0.0f;
             zcStr.ConvertTo_float(fVal);
             //Serial.printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
-            pulseUs = pulseUs = ratioValueTypeToPulse(fVal, false);
+            pulseUs = ratioValueTypeToPulse(fVal, false);
         } else if (zcCmd.EqualsIC("pulse")) {
             uint32_t uiVal = 0;
             zcStr.ConvertTo_uint32(uiVal);
@@ -224,6 +224,8 @@ namespace DALHAL {
         //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
 #if defined(ESP8266) || defined(ESP32)
         ledcWrite(pwmChannel, duty);
+#else
+        printf("\r\n PWM_Servo write duty:%d\r\n", duty);
 #endif
 
         if (autoOffAfterMs != 0) {

@@ -222,7 +222,7 @@ namespace DALHAL {
             zcByteCount.ConvertTo_uint32(bytesToWrite);
             if (bytesToWrite == 0) return HALOperationResult::StringRequestParameterError;
             
-            int paramCount = zcStr.CountChar('/')+1; // +1 to make it easier/clearer
+            uint32_t paramCount = zcStr.CountChar('/')+1; // +1 to make it easier/clearer
             if (paramCount < bytesToWrite) return HALOperationResult::StringRequestParameterError;
             uint32_t addr = 0;
             zcAddr.ConvertTo_uint32(addr);

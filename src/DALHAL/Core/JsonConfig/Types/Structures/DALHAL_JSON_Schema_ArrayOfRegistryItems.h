@@ -47,7 +47,8 @@ namespace DALHAL {
         struct SchemaArrayOfRegistryItems : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
-            static void SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateArrayOfRegistryItems(const Registry::Item* reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();

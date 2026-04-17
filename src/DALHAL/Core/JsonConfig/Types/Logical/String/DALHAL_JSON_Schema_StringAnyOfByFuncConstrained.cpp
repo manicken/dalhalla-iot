@@ -39,14 +39,14 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaStringAnyOfByFuncConstrained::RegistryDefine = {
-            &SchemaValidate,
+            &ValidateSchema,
             &ValidateJson,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
 
-        void SchemaStringAnyOfByFuncConstrained::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            SchemaString::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
+        void SchemaStringAnyOfByFuncConstrained::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            SchemaString::ValidateSchema(fieldSchema, sourceObjTypeName, anyError);
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
             if (strSchema.describe == nullptr) {
                 GlobalLogger.Error(F("SchemaStringAnyOfByFuncConstrained schema error - strSchema.describe == nullptr @ "), sourceObjTypeName);

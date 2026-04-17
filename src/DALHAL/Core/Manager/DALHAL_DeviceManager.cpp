@@ -31,7 +31,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
 
 namespace DALHAL {
 
@@ -108,8 +109,20 @@ namespace DALHAL {
     bool DeviceManager::ParseJSON(const JsonVariant &jsonArray) {
         //Serial.println("PArse json thianasoidnoasidnasoidnsaiodnsaodinasdoiandoisandiosndoiasnd");
         GPIO_manager::ClearAllReservations(); // when devices are verified they also reservate the pins to include checks for duplicate use
+        
+        if (jsonArray.is<JsonArray>() == false) {
+            GlobalLogger.Error(F("root is not a array"));
+            return false;
+        }
+        int arraySize = jsonArray.as<JsonArray>().size();
+        if (arraySize == 0) {
+            GlobalLogger.Error(F("root array is empty"));
+            return false;
+        }
+
         bool anyError = false;
-        JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, anyError);
+        JsonSchema::SchemaArrayOfRegistryItems::ValidateArrayOfRegistryItems(RootDevicesRegistry, jsonArray, "root", anyError);
+        //JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, anyError);
         if (anyError) {
             GlobalLogger.Error(F("The loaded JSON cfg contains errors"));
             GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
@@ -118,7 +131,7 @@ namespace DALHAL {
 
         // First pass: count enabled/(non comment) entries
         uint32_t deviceCount = 0;
-        int arraySize = jsonArray.size();
+        
         for (int i=0;i<arraySize;i++) {
             JsonVariant jsonItem = jsonArray[i];
             if (IsConstChar(jsonItem) == true) { continue; } // comment item
@@ -257,15 +270,6 @@ namespace DALHAL {
         std::string memUsage = std::to_string(jsonDoc.memoryUsage()) + " of " + std::to_string(jsonDoc.capacity());
         GlobalLogger.Info(F("jsonDoc.memoryUsage="), memUsage.c_str());
 
-        
-        /*if (!jsonDoc.is<JsonArray>())
-        {
-            delete[] jsonBuffer;
-            GlobalLogger.Error(F("jsonDoc root is not a JsonArray"));
-            return false;
-        }
-        const JsonArray& jsonItems = jsonDoc.as<JsonArray>();
-*/
         bool parseOk = ParseJSON(jsonDoc);
 
         delete[] jsonBuffer;

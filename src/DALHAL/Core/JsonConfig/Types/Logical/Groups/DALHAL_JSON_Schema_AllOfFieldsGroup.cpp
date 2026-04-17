@@ -38,14 +38,34 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaAllOfFieldsGroup::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void SchemaAllOfFieldsGroup::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-
+        void SchemaAllOfFieldsGroup::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            auto group = static_cast<const SchemaAllOfFieldsGroup&>(fieldSchema);
+            if (group.fields == nullptr) {
+                GlobalLogger.Error(F("schema error - SchemaAllOfFieldsGroup fields is nullptr"), sourceObjTypeName);
+                anyError = true;
+            } else {
+                for (size_t i = 0; group.fields[i] != nullptr; ++i) {
+                    const SchemaTypeBase& f = *group.fields[i];
+                    if (f.type == FieldType::AllOfFieldsGroup || 
+                        f.type == FieldType::OneOfFieldsGroup ||
+                        f.type == FieldType::FieldsGroup)
+                    {
+                        // AllOfFieldsGroup and OneOfFieldsGroup collide with the policy
+                        // to only find one field, so they cannot be resolved
+                        // FieldsGroup can be resolved as it only defines a policy free group
+                        // But as it would not solve any special cases we can also skip that case
+                        anyError = true;
+                        std::string errMsg = f.name?f.name:"nullptr"; errMsg += " @ "; errMsg += sourceObjTypeName?sourceObjTypeName:"nullptr";
+                        GlobalLogger.Error(F("schema error - SchemaAllOfFieldsGroup cannot contain any other kind of group"), errMsg.c_str());
+                    }
+                }
+            }
         }
 
         ValidatorResult SchemaAllOfFieldsGroup::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
@@ -55,11 +75,16 @@ namespace DALHAL {
 
             for (size_t i = 0; group.fields[i] != nullptr; ++i) {
                 const SchemaTypeBase& f = *group.fields[i];
+                // failsafe check not really needed as ValidateSchema should take it
                 if (f.type == FieldType::AllOfFieldsGroup || 
                     f.type == FieldType::OneOfFieldsGroup ||
                     f.type == FieldType::FieldsGroup)
                 {
-                    continue; // cannot resolve cascaded special groups right now
+                    // AllOfFieldsGroup and OneOfFieldsGroup collide with the policy
+                    // to only find one field, so they cannot be resolved
+                    // FieldsGroup can be resolved as it only defines a policy free group
+                    // But as it would not solve any special cases we can also skip that case
+                    continue;
                 }
                 totalCount++;
 
@@ -70,7 +95,7 @@ namespace DALHAL {
                 foundCount++;
                 
                 const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.schemaValidator(f, group.name?group.name:sourceObjTypeName, anyError);
+                regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
                 
             }
 

@@ -38,13 +38,13 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine _SchemaTypeTemplate_::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void _SchemaTypeTemplate_::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void _SchemaTypeTemplate_::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
 
         }
 

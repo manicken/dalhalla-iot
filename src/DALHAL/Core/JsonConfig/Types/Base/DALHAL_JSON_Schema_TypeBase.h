@@ -45,7 +45,7 @@ namespace DALHAL {
             FieldPolicy policy;
             FieldGuiFlags guiFlags;
         protected:
-            static bool SchemaValidateNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
+            static bool ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
             static ValidatorResult ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
 

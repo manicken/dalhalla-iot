@@ -41,13 +41,13 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaStringHexBytes::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void SchemaStringHexBytes::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaStringHexBytes::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             auto fs = static_cast<const SchemaStringHexBytes&>(fieldSchema);
             if (fs.byteCount == 0) {
                 GlobalLogger.Error(F("schema error - SchemaStringHexBytes byteCount cannot be zero"), sourceObjTypeName);

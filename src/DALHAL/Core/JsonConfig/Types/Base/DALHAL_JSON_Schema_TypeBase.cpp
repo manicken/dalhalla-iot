@@ -36,7 +36,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        bool SchemaTypeBase::SchemaValidateNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName) {
+        bool SchemaTypeBase::ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName) {
             if (fieldSchema.name == nullptr) {
                 GlobalLogger.Error(F("invalid schema field - name cannot be nullptr @ "), sourceObjTypeName);
                 return false;

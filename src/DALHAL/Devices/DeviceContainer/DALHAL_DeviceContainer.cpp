@@ -27,7 +27,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include "DALHAL_DeviceContainer_JSON_Schema.h"

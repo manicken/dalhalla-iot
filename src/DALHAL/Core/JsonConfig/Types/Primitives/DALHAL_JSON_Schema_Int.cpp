@@ -42,14 +42,14 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaInt::RegistryDefine = {
-            &SchemaValidate,
+            &ValidateSchema,
             &ValidateJson,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
 
-        void SchemaInt::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            if (SchemaTypeBase::SchemaValidateNameNotNull(fieldSchema, sourceObjTypeName) == false) {
+        void SchemaInt::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            if (SchemaTypeBase::ValidateSchemaNameNotNull(fieldSchema, sourceObjTypeName) == false) {
                 anyError = true;
             }
             const SchemaInt& intSchema = static_cast<const SchemaInt&>(fieldSchema);
@@ -76,7 +76,7 @@ namespace DALHAL {
             }
 
             auto fs = static_cast<const SchemaInt&>(fieldSchema);
-            unsigned int v = value.as<int>();
+            int v = value.as<int>();
             if (((fs.minValue != 0) && (v < fs.minValue)) || ((fs.maxValue != 0) && (v > fs.maxValue))) { // if maxValue == 0 then the value can be anything
                 std::string errStr = fieldSchema.name; errStr += " @ ";
                 serializeCollapsed(jsonObj, errStr);

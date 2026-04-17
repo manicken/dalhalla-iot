@@ -42,31 +42,19 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaArrayOfRegistryItems::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void SchemaArrayOfRegistryItems::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+        void SchemaArrayOfRegistryItems::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
 
         }
 
-        ValidatorResult SchemaArrayOfRegistryItems::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
-            if (vRes != ValidatorResult::Success) {
-                return vRes; 
-            }
-            vRes = SchemaArrayBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
-            if (vRes != ValidatorResult::Success) {
-                return vRes; 
-            }
-            const JsonArray& items = jsonObj[fieldSchema.name].as<JsonArray>();
-            auto fs = static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema);
-
+        ValidatorResult SchemaArrayOfRegistryItems::ValidateArrayOfRegistryItems(const Registry::Item* reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError) {
             uint32_t itemCount = items.size();
-            const Registry::Item* reg = fs.subtypes;
-            
+
             for (uint32_t i = 0; i < itemCount; ++i) {
                 const JsonVariant& jsonItem = items[i];
                 if (jsonItem.is<const char*>()) { continue; } // comment item
@@ -104,6 +92,21 @@ namespace DALHAL {
             }
 
             return ValidatorResult::Success;
+        }
+
+        ValidatorResult SchemaArrayOfRegistryItems::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
+            }
+            vRes = SchemaArrayBase::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            if (vRes != ValidatorResult::Success) {
+                return vRes; 
+            }
+            return ValidateArrayOfRegistryItems(
+                static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema).subtypes, 
+                jsonObj[fieldSchema.name].as<JsonArray>(), 
+                sourceObjTypeName, anyError);
         }
 
         void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

@@ -34,6 +34,8 @@
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -89,7 +91,7 @@ namespace DALHAL {
             return true; // isUnknownField
         }
 
-        void JsonObjectSchema::SchemaValidate(const JsonObjectSchema* schema, const char* sourceObjTypeName, bool& anyError) {
+        void JsonObjectSchema::ValidateSchema(const JsonObjectSchema* schema, const char* sourceObjTypeName, bool& anyError) {
             if (schema->fields == nullptr) {
                 if (schema->typeName != nullptr) {
                     sourceObjTypeName = schema->typeName;
@@ -102,6 +104,17 @@ namespace DALHAL {
 
         ValidatorResult JsonObjectSchema::ValidateJson(const JsonObjectSchema* jsonObjectSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             if (jsonObjectSchema == nullptr) { return ValidatorResult::Success; } // allow any content
+
+            if (!jsonObj.is<JsonObject>()) {
+                anyError = true;
+
+                std::string err = jsonObjectSchema->typeName;
+                err += " @ ";
+                err += sourceObjTypeName;
+
+                GlobalLogger.Error(F("Expected JsonObject: "), err.c_str());
+                return ValidatorResult::FieldTypeMismatch;
+            }
 
             if (jsonObj.size() == 0) {
                 if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
@@ -139,12 +152,20 @@ namespace DALHAL {
                     } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Warn) {
                         std::string errMsg = key;
                         errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        errMsg += ' '; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                        errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                         GlobalLogger.Warn(F("Unknown config field: "), errMsg.c_str());
                     } else if (jsonObjectSchema->unknownFieldPolicy == UnknownFieldPolicy::Error) {
+                        
                         std::string errMsg = key;
                         errMsg += " @ "; errMsg += jsonObjectSchema->typeName;
+                        errMsg += ' '; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
+                        errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                         GlobalLogger.Error(F("Unknown config field: "), errMsg.c_str());
                         anyError = true;
+                        //int i=0;
+                        //int u=5/i;
+                        //printf("", u);
                     }                    
                     
                     // as this should not render the json invalid
@@ -161,7 +182,7 @@ namespace DALHAL {
                 const SchemaTypeBase* f = jsonObjectSchema->fields[i];
 
                 const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f->type);
-                regDefItem.define.schemaValidator(*f, sourceObjTypeName, anyError);
+                regDefItem.define.ValidateJson(*f, sourceObjTypeName, jsonObj, anyError);
             }
 
             // 3. Evaluate modes if available

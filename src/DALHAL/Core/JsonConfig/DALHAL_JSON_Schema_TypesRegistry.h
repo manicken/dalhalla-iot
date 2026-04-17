@@ -37,27 +37,27 @@ namespace DALHAL {
 
         // used to validate the schema itself
         using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);
-        using ValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
+        using JsonValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
         using SchemaToJsonFn = void (*)(const SchemaTypeBase&, std::string& jsonStr);
         using GetJavaScriptValidatorFn = const char* (*)();
 
         struct FieldTypeRegistryDefine {
-            SchemaValidatorFn schemaValidator = nullptr;
-            ValidatorFn validator = nullptr;
-            SchemaToJsonFn toJson = nullptr;
-            GetJavaScriptValidatorFn getJavaScriptValidator = nullptr;
+            SchemaValidatorFn ValidateSchema = nullptr;
+            JsonValidatorFn ValidateJson = nullptr;
+            SchemaToJsonFn ToJson = nullptr;
+            GetJavaScriptValidatorFn GetJavaScriptValidator = nullptr;
 
             constexpr FieldTypeRegistryDefine(
-                SchemaValidatorFn schemaValidator, 
-                ValidatorFn validator, 
-                SchemaToJsonFn toJson, 
-                GetJavaScriptValidatorFn getJavaScriptValidator
+                SchemaValidatorFn ValidateSchema, 
+                JsonValidatorFn ValidateJson, 
+                SchemaToJsonFn ToJson, 
+                GetJavaScriptValidatorFn GetJavaScriptValidator
             ) 
                 : 
-                schemaValidator(schemaValidator), 
-                validator(validator), 
-                toJson(toJson), 
-                getJavaScriptValidator(getJavaScriptValidator)
+                ValidateSchema(ValidateSchema), 
+                ValidateJson(ValidateJson), 
+                ToJson(ToJson), 
+                GetJavaScriptValidator(GetJavaScriptValidator)
                 {}
         };
 

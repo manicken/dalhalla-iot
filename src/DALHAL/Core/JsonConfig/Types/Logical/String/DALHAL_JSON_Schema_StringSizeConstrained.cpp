@@ -42,14 +42,14 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaStringSizeConstrained::RegistryDefine = {
-            &SchemaValidate,
+            &ValidateSchema,
             &ValidateJson,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
 
-        void SchemaStringSizeConstrained::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            SchemaString::SchemaValidate(fieldSchema, sourceObjTypeName, anyError);
+        void SchemaStringSizeConstrained::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            SchemaString::ValidateSchema(fieldSchema, sourceObjTypeName, anyError);
             const SchemaStringSizeConstrained& strSchema = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
             if (strSchema.maxLength < strSchema.minLength) {
                 GlobalLogger.Error(F("schema error - strSchema.maxLength < strSchema.minLength @ "), sourceObjTypeName);

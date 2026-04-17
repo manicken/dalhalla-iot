@@ -38,14 +38,18 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaFieldsGroup::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void SchemaFieldsGroup::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-
+        void SchemaFieldsGroup::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            auto group = static_cast<const SchemaFieldsGroup&>(fieldSchema);
+            if (group.fields == nullptr) {
+                GlobalLogger.Error(F("schema error - SchemaFieldsGroup fields is nullptr"), sourceObjTypeName?sourceObjTypeName:"nullptr");
+                anyError = true;
+            } 
         }
 
         ValidatorResult SchemaFieldsGroup::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
@@ -55,7 +59,7 @@ namespace DALHAL {
                 const SchemaTypeBase& f = *group.fields[i];
 
                 const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.schemaValidator(f, group.name?group.name:sourceObjTypeName, anyError);
+                regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
             }
             return ValidatorResult::Success;
         }

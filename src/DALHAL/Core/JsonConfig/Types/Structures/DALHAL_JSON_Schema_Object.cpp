@@ -39,14 +39,14 @@ namespace DALHAL {
     namespace JsonSchema {
 
         constexpr FieldTypeRegistryDefine SchemaObject::RegistryDefine = {
-              &SchemaValidate,
+              &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
         
-        void SchemaObject::SchemaValidate(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
-            if (SchemaTypeBase::SchemaValidateNameNotNull(fieldSchema, sourceObjTypeName)) {
+        void SchemaObject::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
+            if (SchemaTypeBase::ValidateSchemaNameNotNull(fieldSchema, sourceObjTypeName)) {
                 anyError = true;
             }
             auto fs = static_cast<const SchemaObject&>(fieldSchema);
@@ -54,7 +54,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("schema error - SchemaObject subtype == nullptr"), sourceObjTypeName);
                 anyError = true;
             } else {
-                JsonObjectSchema::SchemaValidate(fs.subtype, sourceObjTypeName, anyError);
+                JsonObjectSchema::ValidateSchema(fs.subtype, sourceObjTypeName, anyError);
             }
         }
 
@@ -63,7 +63,7 @@ namespace DALHAL {
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
             }
-            return JsonObjectSchema::ValidateJson(static_cast<const SchemaObject&>(fieldSchema).subtype, sourceObjTypeName, jsonObj, anyError);
+            return JsonObjectSchema::ValidateJson(static_cast<const SchemaObject&>(fieldSchema).subtype, sourceObjTypeName, jsonObj[fieldSchema.name], anyError);
         }
 
         void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
