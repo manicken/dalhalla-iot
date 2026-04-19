@@ -189,7 +189,7 @@ namespace DALHAL {
                 out += '{';
                 appendKey(out, "fieldA"); appendQuoted(out, constraints[i].fieldA->name);
                 out += ',';
-                appendKey(out, "type"); appendQuoted(out, FieldConstraintTypeToString(constraints[i].type));
+                appendKey(out, "type"); appendQuoted(out, FieldConstraint::TypeToString(constraints[i].type));
                 out += ',';
                 appendKey(out, "fieldB"); appendQuoted(out, constraints[i].fieldB->name);
                 out += '}';

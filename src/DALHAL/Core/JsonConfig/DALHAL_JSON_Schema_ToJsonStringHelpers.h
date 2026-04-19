@@ -24,6 +24,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <cstring>
+#include <math.h>
+
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
@@ -31,43 +36,29 @@ namespace DALHAL {
 
         namespace ToJsonString {
 
-            inline void appendQuoted(std::string& out, const char* str) {
-                out += '"';
-                if (str) out += str;
-                out += '"';
-            }
+            struct JsonKeyValue {
+                const char* key; 
+                std::string value;
+            };
 
-            inline void appendKey(std::string& out, const char* key) {
-                appendQuoted(out, key);
-                out += ':';
-            }
+            bool registerContains(const char* key);
 
-            inline void appendBool(std::string& out, bool v) {
-                out += (v ? "true" : "false");
-            }
+            bool inlinesContains(const char* key);
+            void addToInlines(const char* key, std::string contents);
 
-            inline void appendBool(std::string& out, const char* key, bool v) {
-                appendKey(out, key);
-                appendBool(out, v);
-            }
+            void addRegistrySchemaAndBuild(const Registry::Item* reg, const char* regPath);
+            void buildCompleteJsonSchemasStartingFrom(const Registry::Item* reg, std::string &out);
 
-            inline void appendNumber(std::string& out, const char* key, unsigned int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-            inline void appendNumber(std::string& out, const char* key, int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-            inline void appendNumber(std::string& out, const char* key, float v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
+            void clear();
 
-            inline void appendString(std::string& out, const char* key, const char* cStr) {
-                appendKey(out, key);
-                appendQuoted(out, cStr);
-            }
+            void appendQuoted(std::string& out, const char* str);
+            void appendKey(std::string& out, const char* key);
+            void appendBool(std::string& out, bool v);
+            void appendBool(std::string& out, const char* key, bool v);
+            void appendNumber(std::string& out, const char* key, unsigned int v);
+            void appendNumber(std::string& out, const char* key, int v);
+            void appendNumber(std::string& out, const char* key, float v);
+            void appendString(std::string& out, const char* key, const char* cStr);
 
         }
 

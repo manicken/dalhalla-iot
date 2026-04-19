@@ -48,10 +48,11 @@ namespace DALHAL {
                 type(type),
                 fieldB(fieldB)
                 {}
-        };
-        const char* FieldConstraintTypeToString(FieldConstraint::Type type);
 
-        void evaluateConstraints(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError);
+            static void ToJson(const FieldConstraint* constraints, std::string& out);
+            static const char* TypeToString(FieldConstraint::Type type);
+            static void evaluate(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError);
+        };
 
     }
 

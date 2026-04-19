@@ -103,6 +103,7 @@ namespace DALHAL {
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
             }
+
             return ValidateArrayOfRegistryItems(
                 static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema).subtypes, 
                 jsonObj[fieldSchema.name].as<JsonArray>(), 
@@ -110,6 +111,13 @@ namespace DALHAL {
         }
 
         void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+            SchemaArrayBase::SchemaToJson(fieldSchema, out);
+
+            auto fs = static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema);
+            if (ToJsonString::registerContains(fs.regPath) == false) {
+                ToJsonString::addRegistrySchemaAndBuild(fs.subtypes, fs.regPath);
+            }
+            ToJsonString::appendString(out, "regPath", fs.regPath);
 
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::ArrayOfRegistryItems) { 

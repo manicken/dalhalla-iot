@@ -28,6 +28,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
@@ -41,20 +42,18 @@ namespace DALHAL {
          * and if present, all child field must exist. 
          * The group's presence can be overridden by ModeSelector rules.
          */
-        struct SchemaAllOfFieldsGroup : SchemaTypeBase {
+        struct SchemaAllOfFieldsGroup : SchemaFieldsGroup {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-
-            const SchemaTypeBase* const* fields;
             
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
-                : SchemaTypeBase(outputName, FieldType::AllOfFieldsGroup, policy), fields(fields) {}
+                : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields) {}
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
-                : SchemaTypeBase(outputName, FieldType::AllOfFieldsGroup, policy, guiFlags), fields(fields) {}
+                : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields, guiFlags) {}
         };
 
     } // namespace JsonSchema

@@ -32,11 +32,13 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* FieldConstraintTypeToString(FieldConstraint::Type type) {
+        const char* FieldConstraint::TypeToString(FieldConstraint::Type type) {
             switch (type)
             {
                 case FieldConstraint::Type::GreaterThan: return ">";
@@ -66,7 +68,7 @@ namespace DALHAL {
             return true;
         }
 
-        void evaluateConstraints(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError) {
+        void FieldConstraint::evaluate(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError) {
             if (constraints == nullptr) return;
 
             for (int i=0; constraints[i].type != FieldConstraint::Type::Void; ++i) {
@@ -141,10 +143,27 @@ namespace DALHAL {
                         GlobalLogger.Error(F("Constraint failed: "), err.c_str());
                     }
                 } else {
-                    GlobalLogger.Error(F("SchemaError - Constraint type not found: "), FieldConstraintTypeToString(fcItem.type));
+                    GlobalLogger.Error(F("SchemaError - Constraint type not found: "), FieldConstraint::TypeToString(fcItem.type));
                 }
 
             }
+        }
+
+        void FieldConstraint::ToJson(const FieldConstraint* constraints, std::string& out)
+        {
+            ToJsonString::appendKey(out, "constraints");
+            out += '[';
+            for (int i=0;constraints[i].type != FieldConstraint::Type::Void; ++i) {
+                if (i>0) out += ',';
+                out += '{';
+                ToJsonString::appendString(out, "fieldA", constraints[i].fieldA->name);
+                out += ',';
+                ToJsonString::appendString(out, "type", FieldConstraint::TypeToString(constraints[i].type));
+                out += ',';
+                ToJsonString::appendString(out, "fieldB", constraints[i].fieldB->name);
+                out += '}';
+            }
+            out += ']';
         }
 
     }

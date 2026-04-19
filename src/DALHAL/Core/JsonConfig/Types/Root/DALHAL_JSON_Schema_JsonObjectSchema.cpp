@@ -36,6 +36,8 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -163,9 +165,6 @@ namespace DALHAL {
                         errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                         GlobalLogger.Error(F("Unknown config field: "), errMsg.c_str());
                         anyError = true;
-                        //int i=0;
-                        //int u=5/i;
-                        //printf("", u);
                     }                    
                     
                     // as this should not render the json invalid
@@ -187,7 +186,7 @@ namespace DALHAL {
 
             // 3. Evaluate modes if available
             if (jsonObjectSchema->modes) {
-                int mode = evaluateModes(jsonObj, jsonObjectSchema->modes);
+                int mode = ModeSelector::evaluate(jsonObjectSchema->modes, jsonObj);
                 if (mode == -1) {
                     std::string errInfoMsg = "["; errInfoMsg += jsonObjectSchema->typeName; errInfoMsg += "] ";
                     serializeCollapsed(jsonObj, errInfoMsg);
@@ -204,13 +203,48 @@ namespace DALHAL {
 
             // 4. Evaluate constraints if available
             if (jsonObjectSchema->constraints) {
-                evaluateConstraints(jsonObj, jsonObjectSchema->typeName, jsonObjectSchema->constraints, anyError);
+                FieldConstraint::evaluate(jsonObj, jsonObjectSchema->typeName, jsonObjectSchema->constraints, anyError);
             }
             return ValidatorResult::Success;
         }
 
-        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* fieldSchema, std::string& out) {
+        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, std::string& out) {
+            out += '{';
 
+            out += "\"type\":\"object\",";
+            out += "\"name\":\"";
+            out += schema->typeName;
+            out += "\",";
+
+            out += "\"unknownPolicy\":\"";
+            out += UnknownFieldPolicyToString(schema->unknownFieldPolicy);
+            out += "\",";
+            out += "\"emptyPolicy\":\"";
+            out += EmptyPolicyToString(schema->emptyPolicy);
+            out += '"';
+            // MAJOR TODO implement the ToJson functions in the respective types
+            
+            if (schema->modes != nullptr) {
+                out += ',';
+                ModeSelector::ToJson(schema->modes, out);
+            }
+            if (schema->constraints != nullptr) {
+                out += ',';
+                FieldConstraint::ToJson(schema->constraints, out);
+            }
+            out += ',';
+            ToJsonString::appendKey(out, "fields");
+            out += '[';
+
+            for (int i = 0; schema->fields[i] != nullptr; ++i) {
+                if (i > 0) out += ",";
+                const SchemaTypeBase& f = *schema->fields[i];
+                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
+                regDefItem.define.ToJson(f, out);                
+            }
+
+            out += ']';
+            out += '}';
         }
 
         const char* JsonObjectSchema::GetJavaScriptValidator() {

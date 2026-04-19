@@ -67,7 +67,9 @@ namespace DALHAL {
         }
 
         void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, out);
 
+            
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::Object) { 
                 out += '}'; // add the object finalizer if this is the actual object

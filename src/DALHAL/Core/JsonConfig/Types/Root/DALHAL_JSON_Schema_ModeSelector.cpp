@@ -29,11 +29,13 @@
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        int evaluateModes(const JsonVariant& j, const ModeSelector* modes) {
+        int ModeSelector::evaluate(const ModeSelector* modes, const JsonVariant& j) {
             int matchedMode = -1;
             for (int i = 0; modes[i].name != nullptr; ++i) {
                 const ModeSelector& mode = modes[i];
@@ -82,6 +84,47 @@ namespace DALHAL {
             }
 
             return matchedMode;
+        }
+
+        void ModeSelector::ToJson(const ModeSelector* modes, std::string& out)
+        {
+            ToJsonString::appendKey(out, "modes");
+            out += '[';
+            bool firstMode = true;
+            for (size_t i = 0; modes[i].name; ++i) {
+                const auto& mode = modes[i];
+                if (!firstMode) { out += ','; }
+                else { firstMode = false; }
+                out += '{';
+                // mode name
+                ToJsonString::appendString(out, "name", mode.name ? mode.name : "null");
+                // conjunctions
+                out += ',';
+                ToJsonString::appendKey(out, "conjunctions");
+                const auto* conj = mode.conjunctions;
+                if (conj == nullptr) {
+                    out += "null"; // a empty array mean something different
+                    out += '}';
+                    continue;
+                }
+                out += '[';
+                bool firstConj = true;
+                for (size_t j = 0; conj[j].fieldRef; ++j) {
+                    const auto& c = conj[j];
+                    // skip invalid entries safely
+                    if (!c.fieldRef || !c.fieldRef->name) continue;
+                    if (!firstConj) { out += ','; }
+                    else { firstConj = false; }
+                    out += '{';
+                    ToJsonString::appendString(out, "name", c.fieldRef->name);
+                    out += ',';
+                    ToJsonString::appendBool(out, "required", c.required);
+                    out += '}';
+                }
+                out += ']';
+                out += '}';
+            }
+            out += ']';
         }
 
     }

@@ -22,6 +22,7 @@
 */
 
 #include <stdlib.h>
+#include <string>
 
 namespace DALHAL {
 
@@ -36,9 +37,11 @@ namespace DALHAL {
             constexpr FieldGuiFlags ReadOnly               = 1 << 3;
             constexpr FieldGuiFlags HideLabel              = 1 << 4;
 
-            constexpr bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag) {
-                return (flags & flag) != 0;
-            }
+            bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag);
+
+            void ToJson(FieldGuiFlags flags, std::string& out);
+
+            bool HaveUseInline(FieldGuiFlags flags);
         }
 
     }

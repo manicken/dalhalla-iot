@@ -34,6 +34,8 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
+#include <DALHAL/Support/ConvertHelper.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -85,7 +87,11 @@ namespace DALHAL {
         }
 
         void SchemaArrayOfPrimitives::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-
+            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+            auto fs = static_cast<const SchemaArrayOfPrimitives&>(fieldSchema);
+            // TODO do proper convertion into bool fields
+            std::string primitiveTypeFlagsHex = Convert::toHex(fs.primitiveTypeFlags);
+            out += ','; ToJsonString::appendString(out, "primitiveTypeFlags", primitiveTypeFlagsHex.c_str());
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::ArrayOfPrimitives) { 
                 out += '}'; // add the object finalizer if this is the actual object

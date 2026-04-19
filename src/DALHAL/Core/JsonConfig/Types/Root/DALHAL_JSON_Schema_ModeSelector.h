@@ -42,10 +42,12 @@ namespace DALHAL {
 
             constexpr ModeSelector(const char* name, const ModeConjunctionDefine* conjunctions)
                 : name(name), conjunctions(conjunctions) {}
+
+            static int evaluate(const ModeSelector* modes, const JsonVariant& j);
+            static void ToJson(const ModeSelector* modes, std::string& out);
         };
 
-        int evaluateModes(const JsonVariant& j, const ModeSelector* modes);
-
+        
     }
 
 }

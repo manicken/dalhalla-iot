@@ -65,22 +65,7 @@ namespace DALHAL {
             out += ','; ToJsonString::appendString(out, "name", schema.name);
             out += ','; ToJsonString::appendBool(out, "required", (schema.policy == FieldPolicy::Required));
             out += ','; ToJsonString::appendKey(out, "gui"); out += '{';
-            if (Gui::hasFlag(schema.guiFlags, Gui::DisableByDefault)) {
-                out += ",\"DisableByDefault\":true";
-            }
-            if (Gui::hasFlag(schema.guiFlags, Gui::HideLabel)) {
-                out += ",\"HideLabel\":true";
-            }
-            if (Gui::hasFlag(schema.guiFlags, Gui::ReadOnly)) {
-                out += ",\"ReadOnly\":true";
-            }
-            if (Gui::hasFlag(schema.guiFlags, Gui::RenderAllAllowedValues)) {
-                out += ",\"RenderAllAllowedValues\":true";
-            }
-            // this is actually a SchemaToJson parameter but we can include it here for clarity
-            if (Gui::hasFlag(schema.guiFlags, Gui::UseInline)) {
-                out += ",\"UseInline\":true";
-            }
+            Gui::ToJson(schema.guiFlags, out);
             out += '}';
         }
     }

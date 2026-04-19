@@ -43,6 +43,7 @@
 #include <Scheduler/Scheduler.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -162,7 +163,7 @@ namespace DALHAL {
             else if (zcCommand.EqualsIC("printJsonSchemas")) {
                 if (cb != nullptr) {
                     std::string ret;
-                    JsonSchema::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, ret);
+                    JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, ret);
                     cb(ret);
                 }
             }

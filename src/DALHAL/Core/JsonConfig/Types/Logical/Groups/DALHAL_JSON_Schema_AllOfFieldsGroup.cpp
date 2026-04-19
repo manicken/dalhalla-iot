@@ -120,11 +120,16 @@ namespace DALHAL {
         }
 
         void SchemaAllOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+            std::string outTemp;
+            SchemaTypeBase::SchemaToJson(fieldSchema, outTemp);
 
-            // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::AllOfFieldsGroup) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, outTemp);                
+            } else {
+                outTemp+= ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), outTemp);
             }
+            
+            out += outTemp;
         }
 
         const char* SchemaAllOfFieldsGroup::GetJavaScriptValidator() {
