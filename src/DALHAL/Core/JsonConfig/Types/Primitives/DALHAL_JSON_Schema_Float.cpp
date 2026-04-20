@@ -91,9 +91,9 @@ namespace DALHAL {
         void SchemaFloat::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaFloat&>(fieldSchema);
-            ToJsonString::appendNumber(out, "default", fs.defaultValue);
-            ToJsonString::appendNumber(out, "minValue", fs.minValue);
-            ToJsonString::appendNumber(out, "maxValue", fs.maxValue);
+            out += ','; ToJsonString::appendNumber(out, "default", fs.defaultValue);
+            out += ','; ToJsonString::appendNumber(out, "minValue", fs.minValue);
+            out += ','; ToJsonString::appendNumber(out, "maxValue", fs.maxValue);
             
             if (fieldSchema.type == FieldType::Float) {
                 out += '}'; // add the object finalizer if this is the actual object

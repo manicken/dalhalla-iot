@@ -21,28 +21,34 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include <stdlib.h>
 #include <string>
+#include <cstdint>
 
 namespace DALHAL {
 
     namespace JsonSchema {
+        
+        using FieldGuiFlagsType = uint8_t;
+        
+        struct Gui {
+            
 
-        using FieldGuiFlags = uint8_t;
-        namespace Gui {
-            constexpr FieldGuiFlags None                   = 0;
-            constexpr FieldGuiFlags UseInline              = 1 << 0;
-            constexpr FieldGuiFlags RenderAllAllowedValues = 1 << 1;
-            constexpr FieldGuiFlags DisableByDefault       = 1 << 2;
-            constexpr FieldGuiFlags ReadOnly               = 1 << 3;
-            constexpr FieldGuiFlags HideLabel              = 1 << 4;
+            static const FieldGuiFlagsType None                   = 0;
+            static const FieldGuiFlagsType UseInline              = 1 << 0;
+            static const FieldGuiFlagsType RenderAllAllowedValues = 1 << 1;
+            static const FieldGuiFlagsType DisableByDefault       = 1 << 2;
+            static const FieldGuiFlagsType ReadOnly               = 1 << 3;
+            static const FieldGuiFlagsType HideLabel              = 1 << 4;
 
-            bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag);
+            static bool hasFlag(FieldGuiFlagsType flags, FieldGuiFlagsType flag);
 
-            void ToJson(FieldGuiFlags flags, std::string& out);
+            static void ToJson(FieldGuiFlagsType flags, std::string& out);
 
-            bool HaveUseInline(FieldGuiFlags flags);
-        }
+            static bool HaveUseInline(FieldGuiFlagsType flags);
+        };
 
     }
 

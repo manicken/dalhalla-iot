@@ -191,13 +191,6 @@ namespace DALHAL {
         }; // const gpio_pin available_gpio_list[] {
         constexpr size_t available_gpio_list_size = sizeof(available_gpio_list) / sizeof(available_gpio_list[0]);
 
-        /*int available_gpio_list_lenght = -1; // not set yet
-        void set_available_gpio_list_length() {
-            int len = 0;
-            while (available_gpio_list[len].pin != 0xFF) ++len;
-            available_gpio_list_lenght = len;
-        }*/
-
         constexpr PinFuncDef PinModeStrings[] = {
             {"Reserved", (PinFunc::Reserved)},
             {"SpecialAtBoot", (PinFunc::SpecialAtBoot)},
@@ -218,10 +211,10 @@ namespace DALHAL {
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             std::string result;
-            int i = 0;
-            while (true) {
+            for (int i=0; i < PinModeStrings_size; ++i) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
-                if (pinModeDef.Name == nullptr) break;
+                if (pinModeDef.Name == nullptr) continue; // failsafe
+
                 if (pinFuncMask & pinModeDef.func) {
                     if (!result.empty()) result += "|";
                     result += pinModeDef.Name;
@@ -308,7 +301,7 @@ namespace DALHAL {
 
             uint64_t mask = 0;
 
-            for (size_t i = 0; i < available_gpio_list_size; ++i) {
+            for (int i = 0; i < (int)available_gpio_list_size; ++i) {
                 const auto& g = available_gpio_list[i];
 
                 // Skip pins reserved for boot, flash, JTAG, etc.
@@ -360,7 +353,7 @@ namespace DALHAL {
             if (listMode != PrintListMode::String) {
                 strList.append("\"PinModes\":{");
                 
-                for (int i=0;PinModeStrings_size;++i)
+                for (int i=0;i<(int)PinModeStrings_size;++i)
                 {
                     if (i>0) { strList += ',';}
                     strList += '"';

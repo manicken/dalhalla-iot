@@ -53,7 +53,7 @@
       {"uid":"D2","type":"lc","anid":"D002"}
     ]
   },
-  {"uid":"hp","type":"REGO600","rxpin":34,"txpin":-23,"refreshtimesec":5,"items": [
+  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":-23,"refreshtimesec":5,"items": [
 	  {"uid":"gt1","regname":"gt1"},
 	  {"uid":"gt2","regname":"gt2"},
 	  {"uid":"gt3","regname":"gt3"},
@@ -84,7 +84,7 @@
     {"uid":"pcf1","type":"PCF8574x","addr":"38"},
     {"uid":"pcf2","type":"PCF8574x","addr":"39"}
   ]},
-  {"uid":"ts1","type":"THINGSPEAK","refreshtimesec":5,"firstUpdateAfterSeconds":0,"testserver":true,"key":"0123456789ABCDEF",
+  {"disabled":true,"uid":"ts1","type":"THINGSPEAK","refreshtimesec":5,"firstUpdateAfterSeconds":0,"testserver":true,"key":"0123456789ABCDEF",
     "items":{
       "1":"temps:a:a",
       "2":"temps:a:b",
@@ -99,7 +99,7 @@
   {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
   {"uid":"arr1","type":"ARRAY","readonly":true,"items":[2,3.14,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67]},
   {"uid":"arr2","type":"ARRAY","readonly":true,"items":[3.1415,1.4142,1.732,2.236]},
-  {"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"disabled":true,"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp1", "name":"Development Test"}, 
     "items": [
 	{"uid":"temp", "type":"CONTAINER", "items":[
@@ -110,13 +110,13 @@
 	{"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
     ]
   },
-  {"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"disabled":true,"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "group":{"uid":"ha_grp2", "name":"Development Test2"}, 
     "items": [
 	  {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
     ]
   },
-  {"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
+  {"disabled":true,"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
 	  {"uid":"ha_grp1", "name":"Development Test",
 	    "items": [

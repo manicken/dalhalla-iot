@@ -49,7 +49,7 @@ namespace DALHAL {
             constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)
                 : SchemaString(name, FieldType::StringHexBytes, policy, defaultValue), byteCount(byteCount) {}
 
-            constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* defaultValue, uint8_t byteCount)
+            constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, FieldGuiFlagsType guiFlags, const char* defaultValue, uint8_t byteCount)
                 : SchemaString(name, FieldType::StringHexBytes, policy, guiFlags, defaultValue), byteCount(byteCount) {}
         };
 

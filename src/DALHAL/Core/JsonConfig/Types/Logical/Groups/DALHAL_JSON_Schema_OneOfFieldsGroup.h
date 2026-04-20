@@ -51,9 +51,9 @@ namespace DALHAL {
             static const char* GetJavaScriptValidator();
             
             constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
-                : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields) {}
-            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
-                : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields, guiFlags) {}
+                : SchemaFieldsGroup(outputName, FieldType::OneOfFieldsGroup, policy, fields) {}
+            constexpr SchemaOneOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlagsType guiFlags, const SchemaTypeBase* const* fields)
+                : SchemaFieldsGroup(outputName, FieldType::OneOfFieldsGroup, policy, fields, guiFlags) {}
         };
 
     } // namespace JsonSchema

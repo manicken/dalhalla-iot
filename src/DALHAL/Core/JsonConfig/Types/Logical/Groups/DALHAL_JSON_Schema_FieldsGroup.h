@@ -59,14 +59,14 @@ namespace DALHAL {
             constexpr SchemaFieldsGroup(const char* n, FieldType t, FieldPolicy policy, const SchemaTypeBase* const* fields/*, size_t fieldsCount*/)
                 : SchemaTypeBase(n, t, policy), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
 
-            constexpr SchemaFieldsGroup(const char* n, FieldType t, FieldPolicy policy, const SchemaTypeBase* const* fields, FieldGuiFlags guiFlags/*, size_t fieldsCount*/)
+            constexpr SchemaFieldsGroup(const char* n, FieldType t, FieldPolicy policy, const SchemaTypeBase* const* fields, FieldGuiFlagsType guiFlags/*, size_t fieldsCount*/)
                 : SchemaTypeBase(n, t, policy, guiFlags), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
 
         public:
             constexpr SchemaFieldsGroup(const char* n, const SchemaTypeBase* const* fields/*, size_t fieldsCount*/)
                 : SchemaTypeBase(n, FieldType::FieldsGroup, FieldPolicy::FieldsGroup), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
 
-            constexpr SchemaFieldsGroup(const char* n, const SchemaTypeBase* const* fields, FieldGuiFlags guiFlags/*, size_t fieldsCount*/)
+            constexpr SchemaFieldsGroup(const char* n, const SchemaTypeBase* const* fields, FieldGuiFlagsType guiFlags/*, size_t fieldsCount*/)
                 : SchemaTypeBase(n, FieldType::FieldsGroup, FieldPolicy::FieldsGroup, guiFlags), fields(fields)/*, fieldsCount(fieldsCount)*/ {}
         };
 

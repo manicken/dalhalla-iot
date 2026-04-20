@@ -209,38 +209,32 @@ namespace DALHAL {
         }
 
         void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, std::string& out) {
+
+            if (schema == nullptr) {
+                out += "{}";
+                return;
+            }
             out += '{';
 
-            out += "\"type\":\"object\",";
-            out += "\"name\":\"";
-            out += schema->typeName;
-            out += "\",";
+            out += "\"type\":\"object\"";
+            out += ','; ToJsonString::appendString(out, "name", (schema->typeName!=nullptr)?schema->typeName:"nullptr");
+            out += ','; ToJsonString::appendString(out, "unknownPolicy", UnknownFieldPolicyToString(schema->unknownFieldPolicy));
+            out += ','; ToJsonString::appendString(out, "emptyPolicy", EmptyPolicyToString(schema->emptyPolicy));
 
-            out += "\"unknownPolicy\":\"";
-            out += UnknownFieldPolicyToString(schema->unknownFieldPolicy);
-            out += "\",";
-            out += "\"emptyPolicy\":\"";
-            out += EmptyPolicyToString(schema->emptyPolicy);
-            out += '"';
-            // MAJOR TODO implement the ToJson functions in the respective types
-            
             if (schema->modes != nullptr) {
-                out += ',';
-                ModeSelector::ToJson(schema->modes, out);
+                out += ','; ModeSelector::ToJson(schema->modes, out);
             }
             if (schema->constraints != nullptr) {
-                out += ',';
-                FieldConstraint::ToJson(schema->constraints, out);
+                out += ','; FieldConstraint::ToJson(schema->constraints, out);
             }
-            out += ',';
-            ToJsonString::appendKey(out, "fields");
+            out += ','; ToJsonString::appendKey(out, "fields");
             out += '[';
 
             for (int i = 0; schema->fields[i] != nullptr; ++i) {
                 if (i > 0) out += ",";
                 const SchemaTypeBase& f = *schema->fields[i];
                 const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.ToJson(f, out);                
+                regDefItem.define.ToJson(f, out);
             }
 
             out += ']';

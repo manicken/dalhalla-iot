@@ -55,7 +55,7 @@ namespace DALHAL {
                 : SchemaString(n, t, pol, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining type, guiFlags, maxLength
-            constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLength) 
+            constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal, uint16_t maxLength) 
                 : SchemaString(n, t, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining type, minLength, maxLength
@@ -63,7 +63,7 @@ namespace DALHAL {
                 : SchemaString(n, t, pol, defVal), minLength(minLength), maxLength(maxLength) {}
 
             // defining type, guiFlags, minLength, maxLength
-            constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
+            constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
                 : SchemaString(n, t, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
         public:
@@ -72,7 +72,7 @@ namespace DALHAL {
                 : SchemaString(n, FieldType::StringSizeConstrained, pol, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining guiFlags, maxLength
-            constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t maxLength) 
+            constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal, uint16_t maxLength) 
                 : SchemaString(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(1), maxLength(maxLength) {}
 
             // defining minLength, maxLength
@@ -80,7 +80,7 @@ namespace DALHAL {
                 : SchemaString(n, FieldType::StringSizeConstrained, pol, defVal), minLength(minLength), maxLength(maxLength) {}
 
             // defining guiFlags, minLength, maxLength
-            constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
+            constexpr SchemaStringSizeConstrained(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal, uint16_t minLength, uint16_t maxLength) 
                 : SchemaString(n, FieldType::StringSizeConstrained, pol, guiFlags, defVal), minLength(minLength), maxLength(maxLength) {}
 
         };

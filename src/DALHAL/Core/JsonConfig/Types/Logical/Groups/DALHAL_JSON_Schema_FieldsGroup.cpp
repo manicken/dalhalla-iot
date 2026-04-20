@@ -84,7 +84,7 @@ namespace DALHAL {
             if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
                 if (ToJsonString::inlinesContains(fieldSchema.name) == false) {
                     std::string inlineStr = out;
-                    inlineStr += ',';
+                    //inlineStr += ','; not needed as we add , to 'out' at the top of this function
                     BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), inlineStr);
                     inlineStr += '}'; // add the object finalizer if this is the actual object
                     ToJsonString::addToInlines(fieldSchema.name, inlineStr);

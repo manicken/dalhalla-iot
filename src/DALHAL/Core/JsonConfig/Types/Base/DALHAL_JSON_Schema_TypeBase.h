@@ -43,7 +43,7 @@ namespace DALHAL {
             const char* name;    // flash string
             FieldType type;
             FieldPolicy policy;
-            FieldGuiFlags guiFlags;
+            FieldGuiFlagsType guiFlags;
         protected:
             static bool ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
             static ValidatorResult ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
@@ -52,7 +52,7 @@ namespace DALHAL {
             constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy)
                 : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
 
-            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags)
+            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlagsType guiFlags)
                 : name(n), type(t), policy(policy), guiFlags(guiFlags) {}
         };
 

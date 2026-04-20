@@ -70,8 +70,27 @@ namespace DALHAL {
         }
 
         void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+            auto fs = static_cast<const SchemaArrayOfObjects&>(fieldSchema);
+            out += ','; ToJsonString::appendKey(out, "subtype");
+            //out += '{'; SchemaToJson adds it
+            if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
+                if (ToJsonString::inlinesContains(fs.subtype->typeName) == false) {
+                    std::string subTypeOutTemp;
+                    JsonObjectSchema::SchemaToJson(fs.subtype, subTypeOutTemp);
+                    ToJsonString::addToInlines(fs.subtype->typeName, subTypeOutTemp);
+                }
+                ToJsonString::appendQuoted(out, fs.subtype->typeName);
+                
+            } else {
+                JsonObjectSchema::SchemaToJson(fs.subtype, out);
+            }
+            //out += '}'; SchemaToJson adds it
 
-            // dont forget to change type here to the correct one
+            if (fs.renderAllAllowedValuesFromStringConstraint != nullptr) {
+                out += ','; ToJsonString::appendString(out, "renderAllAllowedValuesFromStringConstraint", fs.renderAllAllowedValuesFromStringConstraint->name);
+            }
+            
             if (fieldSchema.type == FieldType::ArrayOfObjects) { 
                 out += '}'; // add the object finalizer if this is the actual object
             }

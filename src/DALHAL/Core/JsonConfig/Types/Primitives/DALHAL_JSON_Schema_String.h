@@ -50,26 +50,26 @@ namespace DALHAL {
             constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
                 : SchemaTypeBase(n, t, pol), defaultValue(defVal) {}
 
-            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal) 
                 : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(defVal) {}
             
             constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol) 
                 : SchemaTypeBase(n, t, pol), defaultValue(nullptr) {}
 
-            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlags guiFlags) 
+            constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlagsType guiFlags) 
                 : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
             
         public:
             constexpr SchemaString(const char* n, FieldPolicy pol, const char* defVal) 
                 : SchemaTypeBase(n, FieldType::String, pol), defaultValue(defVal) {}
 
-            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal) 
+            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal) 
                 : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(defVal) {}
 
             constexpr SchemaString(const char* n, FieldPolicy pol) 
                 : SchemaTypeBase(n, FieldType::String, pol), defaultValue(nullptr) {}
 
-            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlags guiFlags) 
+            constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags) 
                 : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(nullptr) {}
         };
 

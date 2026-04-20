@@ -96,7 +96,7 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaNumber&>(fieldSchema);
 
-            ToJsonString::appendKey(out, "allowedTypes");
+            out += ','; ToJsonString::appendKey(out, "allowedTypes");
             out += '{';
             ToJsonString::appendBool(out, "bool", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
             out += ','; ToJsonString::appendBool(out, "float", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));

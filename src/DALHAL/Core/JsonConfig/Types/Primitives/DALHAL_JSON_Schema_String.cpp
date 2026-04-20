@@ -80,7 +80,7 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             const SchemaString& strSchema = static_cast<const SchemaString&>(fieldSchema);
             if (strSchema.defaultValue != nullptr) {
-                ToJsonString::appendString(out, "default", strSchema.defaultValue);
+                out += ','; ToJsonString::appendString(out, "default", strSchema.defaultValue);
             }
             if (fieldSchema.type == FieldType::String) {
                 out += '}'; // add the object finalizer if this is the actual object

@@ -123,9 +123,9 @@ namespace DALHAL {
             std::string modeStr = GPIO_manager::describePinFunctions(fs.mode); // this is the most describable version, use this for development test only
             //std::string modeStr = Convert::toHex(fs.mode); // this is the most compact version
             //std::string modeStr = Convert::toBin(fs.mode)
-            ToJsonString::appendString(out, "mode", modeStr.c_str());
+            out += ','; ToJsonString::appendString(out, "mode", modeStr.c_str());
             
-            // dont forget to change type here to the correct one
+            
             if (fieldSchema.type == FieldType::HardwarePinOrVirtualPin) { 
                 out += '}'; // add the object finalizer if this is the actual object
             }

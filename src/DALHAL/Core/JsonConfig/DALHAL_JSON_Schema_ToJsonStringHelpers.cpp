@@ -86,7 +86,7 @@ namespace DALHAL {
                 auto idx = registers.size();
                 registers.push_back({ regPath, {} });
                 std::string out;
-                out.reserve(8192);
+                out.reserve(10240);
                 buildJsonSchemas(reg, out);
                 registers[idx].value = out;
             }
@@ -157,7 +157,11 @@ namespace DALHAL {
             
             void appendNumber(std::string& out, const char* key, float v) {
                 appendKey(out, key);
-                out += std::to_string(v);
+                if (isnan(v)) {
+                    out += "null"; // otherwise it will print nan which is a invalid json type
+                } else {
+                    out += std::to_string(v);
+                }
             }
 
             void appendString(std::string& out, const char* key, const char* cStr) {

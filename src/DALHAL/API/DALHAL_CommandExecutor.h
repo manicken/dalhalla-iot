@@ -68,8 +68,8 @@ namespace DALHAL {
 
 #if defined(ESP32)
   static portMUX_TYPE g_pendingMux;
-  #define CommandExecutor_LOCK_QUEUE()   portENTER_CRITICAL(&CommandExecutor::g_pendingMux)
-  #define CommandExecutor_UNLOCK_QUEUE() portEXIT_CRITICAL(&CommandExecutor::g_pendingMux)
+  #define CommandExecutor_LOCK_QUEUE()   portENTER_CRITICAL(&DALHAL::CommandExecutor::g_pendingMux)
+  #define CommandExecutor_UNLOCK_QUEUE() portEXIT_CRITICAL(&DALHAL::CommandExecutor::g_pendingMux)
 #elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
   static std::mutex g_pendingMutex;
   #define CommandExecutor_LOCK_QUEUE()   CommandExecutor::g_pendingMutex.lock()

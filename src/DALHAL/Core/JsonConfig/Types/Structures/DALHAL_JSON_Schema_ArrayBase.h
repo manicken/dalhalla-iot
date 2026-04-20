@@ -49,7 +49,7 @@ namespace DALHAL {
             constexpr SchemaArrayBase(const char* n, FieldType t, FieldPolicy policy, EmptyPolicy emptyPolicy)
                 : SchemaTypeBase(n, t, policy), emptyPolicy(emptyPolicy) {}
 
-            constexpr SchemaArrayBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlags guiFlags, EmptyPolicy emptyPolicy)
+            constexpr SchemaArrayBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlagsType guiFlags, EmptyPolicy emptyPolicy)
                 : SchemaTypeBase(n, t, policy, guiFlags), emptyPolicy(emptyPolicy) {}
         };
           

@@ -45,7 +45,7 @@ namespace DALHAL {
 
         constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
 
-        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, "", &REGO600_Register, EmptyPolicy::Error};
+        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, &regnameField, &REGO600_Register, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

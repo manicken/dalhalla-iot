@@ -76,7 +76,7 @@ namespace DALHAL {
         void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaString::SchemaToJson(fieldSchema, out);
             
-            if (fieldSchema.type == FieldType::StringUID_Path) {
+            if (fieldSchema.type == FieldType::StringUID) {
                 out += '}'; // this is complete object
             }
         }

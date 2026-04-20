@@ -38,6 +38,9 @@
 #include "OTA.h"
 #include "FSBrowserAsync.h"
 
+#include <DALHAL/API/DALHAL_API.h>
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
+
 namespace System {
 
     void Setup()
@@ -114,6 +117,22 @@ namespace System {
     }
 #endif
 
+    void failsafeLoop_API_exec_cmd() {
+         while (true) {
+            CommandExecutor_LOCK_QUEUE();
+            if (DALHAL::CommandExecutor::g_pending.empty()) {
+                CommandExecutor_UNLOCK_QUEUE();
+                break;
+            }
+            DALHAL::PendingRequest pr = std::move(DALHAL::CommandExecutor::g_pending.front());
+            DALHAL::CommandExecutor::g_pending.pop();
+            CommandExecutor_UNLOCK_QUEUE();
+
+            DALHAL::ZeroCopyString zcCmd(pr.command.c_str());
+            bool ok = DALHAL::CommandExecutor::execute(zcCmd, pr.cb);
+        }
+    }
+
     void failsafeLoop()
     {
         // Fast blink on crash
@@ -165,6 +184,7 @@ namespace System {
         });
 
         FSBrowser::setup(*server);
+        DALHAL::WebSocketAPI::setup();
 
         server->begin();
         Serial.println("\r\nFailsafe HTTP server started");
@@ -182,6 +202,7 @@ namespace System {
                 Serial.println("\r\n***************************************\r\n");
                 ESP.restart();
             }
+            failsafeLoop_API_exec_cmd();           
             delay(10);              // Prevent WDT reset
         }
     }

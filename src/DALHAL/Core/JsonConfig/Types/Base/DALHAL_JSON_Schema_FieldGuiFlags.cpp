@@ -29,25 +29,47 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        namespace Gui {
+
             
-            bool hasFlag(FieldGuiFlags flags, FieldGuiFlags flag) {
+            bool Gui::hasFlag(FieldGuiFlagsType flags, FieldGuiFlagsType flag) {
                 return (flags & flag) != 0;
             }
 
-            void ToJson(FieldGuiFlags flags, std::string& out) {
-
-                ToJsonString::appendBool(out, "DisableByDefault", Gui::hasFlag(flags, Gui::DisableByDefault));
-                out += ','; ToJsonString::appendBool(out, "HideLabel", Gui::hasFlag(flags, Gui::HideLabel));
-                out += ','; ToJsonString::appendBool(out, "ReadOnly", Gui::hasFlag(flags, Gui::ReadOnly));
-                out += ','; ToJsonString::appendBool(out, "RenderAllAllowedValues", Gui::hasFlag(flags, Gui::RenderAllAllowedValues));
-                out += ','; ToJsonString::appendBool(out, "UseInline", Gui::hasFlag(flags, Gui::UseInline));
+            void Gui::ToJson(FieldGuiFlagsType flags, std::string& out) {
+                bool first = true;
+                out += '[';
+                if (hasFlag(flags, DisableByDefault)) {
+                    first = false;
+                    ToJsonString::appendQuoted(out, "DisableByDefault");
+                }
+                
+                if (hasFlag(flags, HideLabel)) {
+                    if (first == false) { out += ','; }
+                    first = false;
+                    ToJsonString::appendQuoted(out, "HideLabel");
+                }
+                if (hasFlag(flags, ReadOnly)) {
+                    if (first == false) { out += ','; }
+                    first = false;
+                    ToJsonString::appendQuoted(out, "ReadOnly");
+                }
+                if (hasFlag(flags, RenderAllAllowedValues)) {
+                    if (first == false) { out += ','; }
+                    first = false;
+                    ToJsonString::appendQuoted(out, "RenderAllAllowedValues");
+                }
+                if (hasFlag(flags, UseInline)) {
+                    if (first == false) { out += ','; }
+                    first = false;
+                    ToJsonString::appendQuoted(out, "UseInline");
+                }
+                out += ']';
             }
 
-            constexpr bool HaveUseInline(FieldGuiFlags flags) {
+            bool Gui::HaveUseInline(FieldGuiFlagsType flags) {
                 return (flags & UseInline) != 0;
             }
-        }
+        
 
     }
 

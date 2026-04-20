@@ -24,13 +24,14 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
         extern const JsonObjectSchema REGO600_Register;
-
+        extern const SchemaStringAnyOfByFuncConstrained regnameField;
     }
 
 }

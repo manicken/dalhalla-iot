@@ -60,7 +60,7 @@ namespace DALHAL {
                 : SchemaString(n, FieldType::StringAnyOfByFuncConstrained, pol, defVal), validate(validate), describe(describe), ctx(ctx) { }
 
             constexpr SchemaStringAnyOfByFuncConstrained(
-                const char* n, FieldPolicy pol, FieldGuiFlags guiFlags, const char* defVal, ValidateFunc validate, DescribeFunc describe, void* ctx
+                const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags, const char* defVal, ValidateFunc validate, DescribeFunc describe, void* ctx
             )
                 : SchemaString(n, FieldType::StringAnyOfByFuncConstrained, pol, guiFlags, defVal), validate(validate), describe(describe), ctx(ctx) { }
             

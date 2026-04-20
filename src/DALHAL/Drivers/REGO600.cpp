@@ -679,7 +679,7 @@ namespace Drivers {
             if ((now - lastRequestMs) >= requestTimeoutMs) {
                 //DebugErrorMessage("REGO600-req-TiOu");
                 GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
-                DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout");
+                //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
                 
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
                 SendRequestFrameAndResetRx(); // retry @ timeout

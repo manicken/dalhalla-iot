@@ -37,7 +37,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &OneWireTempBus, EmptyPolicy::Error};
+        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &OneWireTempBus, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

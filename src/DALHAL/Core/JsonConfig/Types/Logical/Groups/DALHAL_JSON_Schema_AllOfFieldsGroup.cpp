@@ -103,6 +103,7 @@ namespace DALHAL {
             if (foundCount != 0 && foundCount != totalCount) {
                 std::string errMsg = group.name;
                 errMsg += " @ "; errMsg += sourceObjTypeName;
+                errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                 GlobalLogger.Error(F("AllOfGroup partially defined: "), errMsg.c_str());
                 anyError = true;
                 return ValidatorResult::FieldMissing;
@@ -111,6 +112,7 @@ namespace DALHAL {
             if (foundCount == 0 && group.policy == FieldPolicy::Required) {
                 std::string errMsg = group.name;
                 errMsg += " @ "; errMsg += sourceObjTypeName;
+                errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                 GlobalLogger.Error(F("Required AllOfGroup missing: "), errMsg.c_str());
                 anyError = true;
                 return ValidatorResult::RequiredFieldMissing;

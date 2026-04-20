@@ -74,7 +74,7 @@ namespace DALHAL {
             constexpr SchemaStringAnyOfArrayConstrained(
                 const char* name, 
                 FieldPolicy pol,
-                FieldGuiFlags guiFlags,
+                FieldGuiFlagsType guiFlags,
                 const char* defVal,
                 const ByArrayConstraints* byArrayConstraints
             )

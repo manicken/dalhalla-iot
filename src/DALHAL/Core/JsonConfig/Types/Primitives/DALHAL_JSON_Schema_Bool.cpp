@@ -75,7 +75,7 @@ namespace DALHAL {
         void SchemaBool::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaBool&>(fieldSchema);
-            ToJsonString::appendNumber(out, "default", fs.defaultValue);
+            out += ','; ToJsonString::appendNumber(out, "default", fs.defaultValue);
             
             if (fieldSchema.type == FieldType::Bool) {
                 out += '}'; // add the object finalizer if this is the actual object

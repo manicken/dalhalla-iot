@@ -76,11 +76,11 @@ namespace DALHAL {
             valueType = ServoValueType::PulseUS;
         }
 
-        Serial.printf("\r\n MinVal:%f\r\n", minVal);
-        Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
-        Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
-        Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
-        Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
+        //Serial.printf("\r\n MinVal:%f\r\n", minVal);
+        //Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
+        //Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
+        //Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
+        //Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
     }
 
     Device* PWM_Servo::Create(DeviceCreateContext& context) {

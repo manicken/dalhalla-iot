@@ -52,7 +52,7 @@ namespace DALHAL {
             
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
                 : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields) {}
-            constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlags guiFlags, const SchemaTypeBase* const* fields)
+            constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlagsType guiFlags, const SchemaTypeBase* const* fields)
                 : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields, guiFlags) {}
         };
 

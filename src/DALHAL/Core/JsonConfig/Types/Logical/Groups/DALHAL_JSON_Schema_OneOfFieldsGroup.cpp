@@ -96,18 +96,14 @@ namespace DALHAL {
             if (foundCount == 0 && group.policy == FieldPolicy::Required) {
                 std::string errMsg = group.name;
                 errMsg += " @ "; errMsg += sourceObjTypeName;
-                std::string jsonStr;
-                serializeCollapsed(jsonObj, jsonStr);
-                errMsg += jsonStr;
+                errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                 GlobalLogger.Error(F("None of the OneOfGroup fields present: "), errMsg.c_str());
                 anyError = true;
                 return ValidatorResult::RequiredFieldMissing;
             } else if (foundCount > 1) {
                 std::string errMsg = group.name;
                 errMsg += " @ "; errMsg += sourceObjTypeName;
-                std::string jsonStr;
-                serializeCollapsed(jsonObj, jsonStr);
-                errMsg += jsonStr;
+                errMsg += ' '; serializeCollapsed(jsonObj, errMsg);
                 GlobalLogger.Error(F("Multiple fields of the OneOfGroup present: "), errMsg.c_str());
                 anyError = true;
                 return ValidatorResult::FieldInvalidValue;

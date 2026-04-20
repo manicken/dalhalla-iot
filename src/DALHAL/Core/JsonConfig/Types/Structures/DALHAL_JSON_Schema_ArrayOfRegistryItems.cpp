@@ -117,9 +117,9 @@ namespace DALHAL {
             if (ToJsonString::registerContains(fs.regPath) == false) {
                 ToJsonString::addRegistrySchemaAndBuild(fs.subtypes, fs.regPath);
             }
-            ToJsonString::appendString(out, "regPath", fs.regPath);
+            out += ','; ToJsonString::appendString(out, "regPath", fs.regPath);
 
-            // dont forget to change type here to the correct one
+            
             if (fieldSchema.type == FieldType::ArrayOfRegistryItems) { 
                 out += '}'; // add the object finalizer if this is the actual object
             }

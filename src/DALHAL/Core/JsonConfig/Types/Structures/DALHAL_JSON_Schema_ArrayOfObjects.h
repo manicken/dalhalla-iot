@@ -52,17 +52,22 @@ namespace DALHAL {
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 
-            const JsonSchema::JsonObjectSchema* subtype;
-            const char* renderAllAllowedValuesFromStringConstraint;
+            const JsonObjectSchema* subtype;
+            const SchemaTypeBase* renderAllAllowedValuesFromStringConstraint;
 
-            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonObjectSchema* subtype)
                 : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
-            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
                 : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, emptyPolicy), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
 
-            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype)
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlagsType guiFlags, const JsonObjectSchema* subtype)
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlagsType guiFlags, const JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+                : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, emptyPolicy), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
+
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlagsType guiFlags, const SchemaTypeBase* renderAllAllowedValuesFromStringConstraint, const JsonObjectSchema* subtype)
                 : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
-            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlags guiFlags, const char* renderAllAllowedValuesFromStringConstraint, const JsonSchema::JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
+            constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, FieldGuiFlagsType guiFlags, const SchemaTypeBase* renderAllAllowedValuesFromStringConstraint, const JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)
                 : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, guiFlags, emptyPolicy), subtype(subtype), renderAllAllowedValuesFromStringConstraint(renderAllAllowedValuesFromStringConstraint) {}
         };
 

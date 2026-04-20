@@ -61,12 +61,12 @@ namespace DALHAL {
         
         void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, std::string& out) {
             out += '{'; // this is allways added
-            ToJsonString::appendString(out, "type", FieldTypeToString(schema.type));
+            const char* type_cStr = FieldTypeToString(schema.type);
+            //const char* type_cStr = "test";
+            ToJsonString::appendString(out, "type", type_cStr?type_cStr:"nullptr unknown");
             out += ','; ToJsonString::appendString(out, "name", schema.name);
             out += ','; ToJsonString::appendBool(out, "required", (schema.policy == FieldPolicy::Required));
-            out += ','; ToJsonString::appendKey(out, "gui"); out += '{';
-            Gui::ToJson(schema.guiFlags, out);
-            out += '}';
+            out += ','; ToJsonString::appendKey(out, "gui"); Gui::ToJson(schema.guiFlags, out);
         }
     }
 
