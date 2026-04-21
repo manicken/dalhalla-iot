@@ -42,7 +42,7 @@
 #include <DALHAL/Drivers/HearbeatLed.h>
 #include <Scheduler/Scheduler.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
+//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 #if defined(ESP8266)

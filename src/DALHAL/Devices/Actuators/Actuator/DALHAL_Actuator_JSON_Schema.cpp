@@ -26,6 +26,7 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
@@ -101,10 +102,10 @@ namespace DALHAL {
         };
 
         constexpr const ModeSelector modes[] = {
-            {"h-bridge ab mode", conjunctions_hBridgeAB_Mode},
-            {"h-bridge open close mode", conjunctions_hBridgeOC_Mode},
-            {"dir/enable mode", conjunctions_dir_enable_Mode},
-            {"dir/enable/break mode", conjunctions_dir_enable_break_Mode},
+            {"h-bridge ab", conjunctions_hBridgeAB_Mode},
+            {"h-bridge open close", conjunctions_hBridgeOC_Mode},
+            {"dir/enable", conjunctions_dir_enable_Mode},
+            {"dir/enable/break", conjunctions_dir_enable_break_Mode},
             {nullptr, nullptr}
         };
         // this list only validates each field so that it match specification

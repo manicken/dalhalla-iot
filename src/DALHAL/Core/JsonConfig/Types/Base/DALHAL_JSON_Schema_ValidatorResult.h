@@ -32,6 +32,7 @@ namespace DALHAL {
         /** used in situations when Validate functions need to pass special conditions */
         enum class ValidatorResult {
             Success,
+            SchemaTypeNotFound,
             FieldTypeMismatch,
             FieldEmpty,
             RequiredFieldMissing,

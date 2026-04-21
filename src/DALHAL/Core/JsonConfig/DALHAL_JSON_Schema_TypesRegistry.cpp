@@ -67,7 +67,7 @@ namespace DALHAL {
             size_t idx = static_cast<size_t>(type);
             if (idx >= static_cast<size_t>(FieldType::_Count_)) {
                 static const FieldTypeRegistryItem unknown = {
-                    "Unknown", {nullptr, nullptr, nullptr, nullptr}
+                    nullptr, {nullptr, nullptr, nullptr, nullptr}
                 };
                 return unknown;
             }
@@ -76,6 +76,56 @@ namespace DALHAL {
 
         const char* FieldTypeToString(FieldType type) {
             return GetFieldTypeRegistryItem(type).name;
+        }
+
+        void ValidateSchema(const SchemaTypeBase& stb, const char* sourceObjTypeName, bool& anyError) {
+            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
+            if (regDefItem.name == nullptr) {
+                GlobalLogger.Error(F("schema error - could not find schema type @ ValidateSchema"));
+                return;
+            }
+            return regDefItem.define.ValidateSchema(stb, sourceObjTypeName, anyError);
+        }
+
+        ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
+            if (regDefItem.name == nullptr) {
+                GlobalLogger.Error(F("schema error - could not find schema type @ ValidateJson"));
+                return ValidatorResult::SchemaTypeNotFound;
+            }
+            return regDefItem.define.ValidateJson(stb, sourceObjTypeName, jsonObj, anyError);
+        }
+
+        HALValue GetValue(const SchemaTypeBase& stb, const DeviceCreateContext& context) {
+            return GetValue(stb, *context.jsonObjItem);
+        }
+
+        HALValue GetValue(const SchemaTypeBase& stb, const JsonVariant& jsonObj) {
+            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
+            if (regDefItem.name == nullptr) {
+                GlobalLogger.Error(F("schema error - could not find schema type @ GetValue"));
+                return 0;
+            }
+            return regDefItem.define.GetValue(stb, jsonObj);
+        }
+
+        void SchemaToJson(const SchemaTypeBase& stb, std::string& jsonStr) {
+            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
+            if (regDefItem.name == nullptr) {
+                GlobalLogger.Error(F("schema error - could not find schema type @ SchemaToJson"));
+                jsonStr += "{}";
+                return;
+            }
+            regDefItem.define.ToJson(stb, jsonStr);
+        }
+
+        const char* GetJavaScriptValidator(const SchemaTypeBase& stb) {
+            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
+            if (regDefItem.name == nullptr) {
+                GlobalLogger.Error(F("schema error - could not find schema type @ GetJavaScriptValidator"));
+                return "";
+            }
+            return regDefItem.define.GetJavaScriptValidator();
         }
 
     }

@@ -42,6 +42,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaString::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
+            &GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
@@ -74,6 +75,10 @@ namespace DALHAL {
                 return ValidatorResult::FieldEmpty;
             }
             return ValidatorResult::Success;
+        }
+
+        HALValue SchemaString::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            return HALValue(jsonObj[fieldSchema.name].as<const char*>());
         }
 
         void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

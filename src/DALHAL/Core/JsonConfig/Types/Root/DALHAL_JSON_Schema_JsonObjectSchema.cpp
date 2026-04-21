@@ -178,10 +178,11 @@ namespace DALHAL {
             }
             // 2. Validate each field
             for (int i = 0; jsonObjectSchema->fields[i] != nullptr; ++i) {
-                const SchemaTypeBase* f = jsonObjectSchema->fields[i];
+                //const SchemaTypeBase& f = *jsonObjectSchema->fields[i];
 
-                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f->type);
-                regDefItem.define.ValidateJson(*f, sourceObjTypeName, jsonObj, anyError);
+                JsonSchema::ValidateJson(*jsonObjectSchema->fields[i], sourceObjTypeName, jsonObj, anyError);
+                //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f->type);
+                //regDefItem.define.ValidateJson(*f, sourceObjTypeName, jsonObj, anyError);
             }
 
             // 3. Evaluate modes if available
@@ -232,9 +233,10 @@ namespace DALHAL {
 
             for (int i = 0; schema->fields[i] != nullptr; ++i) {
                 if (i > 0) out += ",";
-                const SchemaTypeBase& f = *schema->fields[i];
-                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.ToJson(f, out);
+                const SchemaTypeBase& field = *schema->fields[i];
+                JsonSchema::SchemaToJson(field, out); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(field.type);
+                //regDefItem.define.ToJson(field, out);
             }
 
             out += ']';

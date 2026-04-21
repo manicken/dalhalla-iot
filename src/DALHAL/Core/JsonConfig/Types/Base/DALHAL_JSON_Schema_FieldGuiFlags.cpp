@@ -29,7 +29,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+            bool Gui::HaveAny(FieldGuiFlagsType flags) {
+                return (flags != 0);
+            }
 
+            bool Gui::HaveAnyNotIncludingInline(FieldGuiFlagsType flags) {
+                flags &= ~UseInline;
+                return (flags != 0);
+            }
             
             bool Gui::hasFlag(FieldGuiFlagsType flags, FieldGuiFlagsType flag) {
                 return (flags & flag) != 0;

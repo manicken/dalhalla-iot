@@ -32,6 +32,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaStringUID_Path::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
+              &SchemaString::GetValue,
               &SchemaToJson,
               &GetJavaScriptValidator
         };

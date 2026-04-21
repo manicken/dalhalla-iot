@@ -54,7 +54,7 @@ namespace DALHAL {
         constexpr const SchemaTypeBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
 
         constexpr JsonObjectSchema itemsFieldScheme = {
-            "items",
+            "ThingSpeakField",
             itemsFields,
             nullptr, // no modes
             nullptr,  // no constraints

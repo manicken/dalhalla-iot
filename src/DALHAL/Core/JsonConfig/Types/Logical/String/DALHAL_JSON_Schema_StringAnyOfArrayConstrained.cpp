@@ -40,6 +40,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaStringAnyOfArrayConstrained::RegistryDefine {
             &ValidateSchema,
             &ValidateJson,
+            &SchemaString::GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
         };

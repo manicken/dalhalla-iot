@@ -89,8 +89,9 @@ namespace DALHAL {
                     continue;
                 }
                 foundCount++;
-                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
+                JsonSchema::ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
+                //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
+                //regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
             }
 
             if (foundCount == 0 && group.policy == FieldPolicy::Required) {
@@ -113,16 +114,13 @@ namespace DALHAL {
         }
 
         void SchemaOneOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            std::string outTemp;
-            SchemaTypeBase::SchemaToJson(fieldSchema, outTemp);
-
             if (fieldSchema.type == FieldType::OneOfFieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, outTemp);                
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, out);
+                
             } else {
-                outTemp+= ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), outTemp);
+                SchemaTypeBase::SchemaToJson(fieldSchema, out);
+                out += ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
             }
-            
-            out += outTemp;
         }
 
         const char* SchemaOneOfFieldsGroup::GetJavaScriptValidator() {

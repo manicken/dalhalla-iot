@@ -31,7 +31,8 @@
 #include <esp_err.h> // esp-idf
 #endif
 
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+//#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
@@ -39,6 +40,8 @@
 #include "DALHAL_PWM_Servo_JSON_Schema.h"
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
+
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 
 namespace DALHAL {
 
@@ -50,20 +53,22 @@ namespace DALHAL {
 
     PWM_Servo::PWM_Servo(DeviceCreateContext& context) : PWM_Servo_DeviceBase(context.deviceType)
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        pin = jsonObj["pin"];
-        pwmChannel = jsonObj["ch"]; // verified by VerifyJSON
+        //const JsonVariant& jsonObj = *(context.jsonObjItem);
 
-        minPulseLength = jsonObj.containsKey("minPulseLength") ? jsonObj["minPulseLength"] : 1000;
-        maxPulseLength = jsonObj.containsKey("maxPulseLength") ? jsonObj["maxPulseLength"] : 2000;
-        startPulseLength = jsonObj.containsKey("startPulseLength") ? jsonObj["startPulseLength"] : 1500;
-        autoOffAfterMs = jsonObj.containsKey("autoOffAfterMs") ? jsonObj["autoOffAfterMs"] : 0;
-        pulseLengthOffset = jsonObj.containsKey("pulseLengthOffset") ? jsonObj["pulseLengthOffset"] : 0;
+        //HALValue uidStr = JsonSchema::GetValue(JsonSchema::uidFieldRequired, context);
+        //const char* uid_cStr = JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar(); //GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::pinField, context);// jsonObj["pin"];
+        pwmChannel = (ledc_channel_t)JsonSchema::GetValue(JsonSchema::chField, context).asUInt();//jsonObj["ch"]; // verified by VerifyJSON
+
+        minPulseLength = JsonSchema::GetValue(JsonSchema::minPulseLengthField, context); // jsonObj.containsKey("minPulseLength") ? jsonObj["minPulseLength"] : 1000;
+        maxPulseLength = JsonSchema::GetValue(JsonSchema::maxPulseLengthField, context); // jsonObj.containsKey("maxPulseLength") ? jsonObj["maxPulseLength"] : 2000;
+        startPulseLength = JsonSchema::GetValue(JsonSchema::startPulseLengthField, context); // jsonObj.containsKey("startPulseLength") ? jsonObj["startPulseLength"] : 1500;
+        autoOffAfterMs = JsonSchema::GetValue(JsonSchema::autoOffAfterMsField, context); // jsonObj.containsKey("autoOffAfterMs") ? jsonObj["autoOffAfterMs"] : 0;
+        pulseLengthOffset = JsonSchema::GetValue(JsonSchema::pulseLengthOffsetField, context); // jsonObj.containsKey("pulseLengthOffset") ? jsonObj["pulseLengthOffset"] : 0;
 
         // minVal / maxVal optional
-        bool hasMin = ValidateFloat(jsonObj, "minVal");
+        /*bool hasMin = ValidateFloat(jsonObj, "minVal");
         bool hasMax = ValidateFloat(jsonObj, "maxVal");
 
         if (hasMin && hasMax) {
@@ -74,7 +79,35 @@ namespace DALHAL {
             minVal = NAN; // not used in this mode
             maxVal = NAN; // not used in this mode
             valueType = ServoValueType::PulseUS;
+        }*/
+
+        int modeIndex = JsonSchema::ModeSelector::evaluate(JsonSchema::PWM_ServoDevice.modes, *context.jsonObjItem);
+
+        if (modeIndex == 0) { // ratio mode
+            minVal = JsonSchema::GetValue(JsonSchema::minValField, context);
+            maxVal = JsonSchema::GetValue(JsonSchema::maxValField, context);
+            valueType = ServoValueType::Ratio;
+        } else if (modeIndex == 1) {
+            minVal = NAN; // not used in this mode
+            maxVal = NAN; // not used in this mode
+            valueType = ServoValueType::PulseUS;
+        } else {
+            GlobalLogger.Error(F("schema error @ PWM_Servo mode"));
+            minVal = NAN; // not used in this mode
+            maxVal = NAN; // not used in this mode
+            valueType = ServoValueType::PulseUS;
         }
+
+        
+
+
+
+        // this is completely wrong as it's not what the values return that defines the mode
+        /*if (isnan(minVal) || isnan(maxVal)) {
+            valueType = ServoValueType::PulseUS;
+        } else { // both must be non NAN for this "mode"
+            valueType = ServoValueType::Ratio;
+        }*/
 
         //Serial.printf("\r\n MinVal:%f\r\n", minVal);
         //Serial.printf("\r\n MaxVal:%f\r\n", maxVal);

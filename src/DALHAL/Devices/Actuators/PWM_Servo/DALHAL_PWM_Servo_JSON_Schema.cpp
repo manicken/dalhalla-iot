@@ -27,6 +27,8 @@
 
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
+#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
@@ -50,8 +52,26 @@ namespace DALHAL {
         constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, 0, 0, 0};
         constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, 0, 0, 0};
 
-        constexpr SchemaFloat minValField = {"minVal", FieldPolicy::Optional, 0};
-        constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::Optional, 100};
+        constexpr SchemaFloat minValField = {"minVal", FieldPolicy::ModeDefine, 0};
+        constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::ModeDefine, 100};
+
+        constexpr ModeConjunctionDefine conjunctions_ratio_value_Mode[] = {
+            { &minValField, true }, // field must exist for this mode
+            { &maxValField, true }, // field must exist for this mode
+            { nullptr, false}
+        };
+
+        constexpr ModeConjunctionDefine conjunctions_pulselen_value_Mode[] = {
+            { &minValField, false }, // field must NOT exist for this mode
+            { &maxValField, false }, // field must NOT exist for this mode
+            { nullptr, false}
+        };
+
+        constexpr const ModeSelector modes[] = {
+            {"ratio value", conjunctions_ratio_value_Mode},
+            {"pulse length", conjunctions_pulselen_value_Mode},
+            {nullptr, nullptr}
+        };
 
         constexpr FieldConstraint constraints[] = {
             {&minValField, FieldConstraint::Type::LessThan, &maxValField},
@@ -70,7 +90,7 @@ namespace DALHAL {
             &startPulseLengthField,
             &autoOffAfterMsField,
             &pulseLengthOffsetField,
-            &minValField,// min and max value defined must be in a group as they must be defined together
+            &minValField,
             &maxValField,
             nullptr,
         };
@@ -78,7 +98,7 @@ namespace DALHAL {
         constexpr JsonObjectSchema PWM_ServoDevice = {
             "PWM_Servo",
             fields,
-            nullptr, // no modes right now
+            modes,
             constraints,
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,

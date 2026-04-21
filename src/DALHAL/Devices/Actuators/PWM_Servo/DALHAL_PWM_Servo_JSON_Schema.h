@@ -25,6 +25,11 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
+
 #define DALHAL_DEVICE_PWM_SERVO_CFG_NAME_CH "ch"
 
 namespace DALHAL {
@@ -32,6 +37,17 @@ namespace DALHAL {
     namespace JsonSchema {
 
         extern const JsonObjectSchema PWM_ServoDevice;
+
+
+        extern const SchemaHardwarePin pinField;
+        extern const SchemaUInt chField;
+        extern const SchemaUInt minPulseLengthField;
+        extern const SchemaUInt maxPulseLengthField;
+        extern const SchemaUInt startPulseLengthField;
+        extern const SchemaUInt autoOffAfterMsField;
+        extern const SchemaUInt pulseLengthOffsetField;
+        extern const SchemaFloat minValField;
+        extern const SchemaFloat maxValField;
 
     }
 

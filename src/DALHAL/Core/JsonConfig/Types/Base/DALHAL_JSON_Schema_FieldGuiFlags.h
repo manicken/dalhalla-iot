@@ -43,6 +43,9 @@ namespace DALHAL {
             static const FieldGuiFlagsType ReadOnly               = 1 << 3;
             static const FieldGuiFlagsType HideLabel              = 1 << 4;
 
+            static bool HaveAny(FieldGuiFlagsType flags);
+            static bool HaveAnyNotIncludingInline(FieldGuiFlagsType flags);
+
             static bool hasFlag(FieldGuiFlagsType flags, FieldGuiFlagsType flag);
 
             static void ToJson(FieldGuiFlagsType flags, std::string& out);

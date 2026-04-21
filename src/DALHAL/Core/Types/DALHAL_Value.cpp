@@ -43,7 +43,7 @@ namespace DALHAL {
 
     HALValue::HALValue(bool v) : type(Type::UINT), uval(v?1:0) {}
 
-    //HALValue::HALValue(char* str) : type(Type::STRING), str(v) {}
+    HALValue::HALValue(const char* cStr) : type(Type::CSTRING), cStr(cStr) {}
 
     HALValue::Type HALValue::getType() const {
         return type;
@@ -78,11 +78,20 @@ namespace DALHAL {
             return 0.0f;
     }
 
+    const char* HALValue::asConstChar() const {
+        if (type != Type::CSTRING) {
+            return "(value)";
+        } else {
+            return cStr;
+        }
+    }
+
     std::string HALValue::toString() const {
         switch (type) {
             case Type::INT: return std::to_string(ival);
             case Type::UINT: return std::to_string(uval);
             case Type::FLOAT: return std::to_string(fval);
+            case Type::CSTRING: return std::string(cStr);
             default: return "";
         }
     }
@@ -93,6 +102,7 @@ namespace DALHAL {
             case Type::INT:   snprintf(buf, sizeof(buf), "%d", ival); break;
             case Type::UINT:  snprintf(buf, sizeof(buf), "%u", uval); break;
             case Type::FLOAT: snprintf(buf, sizeof(buf), "%f", fval); break;
+            case Type::CSTRING: snprintf(buf, sizeof(buf), "%s", cStr); break;
             default:          buf[0] = '\0'; break;
         }
         target += buf;

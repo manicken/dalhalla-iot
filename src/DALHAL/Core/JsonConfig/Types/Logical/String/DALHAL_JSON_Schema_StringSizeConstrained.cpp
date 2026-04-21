@@ -44,6 +44,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaStringSizeConstrained::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
+            &SchemaString::GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
         };

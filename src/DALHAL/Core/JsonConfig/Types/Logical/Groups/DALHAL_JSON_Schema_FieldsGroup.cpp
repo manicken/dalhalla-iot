@@ -56,10 +56,11 @@ namespace DALHAL {
             auto group = static_cast<const SchemaFieldsGroup&>(fieldSchema);
 
             for (size_t i = 0; group.fields[i] != nullptr; ++i) {
-                const SchemaTypeBase& f = *group.fields[i];
+                //const SchemaTypeBase& f = *group.fields[i];
 
-                const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
-                regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
+                JsonSchema::ValidateJson(*group.fields[i], group.name?group.name:sourceObjTypeName, jsonObj, anyError);
+                //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(f.type);
+                //regDefItem.define.ValidateJson(f, group.name?group.name:sourceObjTypeName, jsonObj, anyError);
             }
             return ValidatorResult::Success;
         }
@@ -73,40 +74,42 @@ namespace DALHAL {
 
                 const SchemaTypeBase& field = *group.fields[i];
 
-                const auto& regDefItem = GetFieldTypeRegistryItem(field.type);
-                regDefItem.define.ToJson(field, out);
+                JsonSchema::SchemaToJson(field, out); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                //const auto& regDefItem = GetFieldTypeRegistryItem(field.type);
+                //regDefItem.define.ToJson(field, out);
             }
             out += ']';
         }
         /** this should only be used on final object */
         void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, std::string& out) {
-            out += ',';
+            
             if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
                 if (ToJsonString::inlinesContains(fieldSchema.name) == false) {
-                    std::string inlineStr = out;
-                    //inlineStr += ','; not needed as we add , to 'out' at the top of this function
-                    BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), inlineStr);
-                    inlineStr += '}'; // add the object finalizer if this is the actual object
+                    std::string inlineStr;
+                    SchemaTypeBase::SchemaToJson(fieldSchema, inlineStr);
+                    inlineStr += ','; BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), inlineStr);
+                    inlineStr += '}'; // add the object finalizer
                     ToJsonString::addToInlines(fieldSchema.name, inlineStr);
                 }
-                ToJsonString::appendString(out, "fields", "inline");
+                out += '{';
+                ToJsonString::appendString(out, "type", "_inline_");
+                out += ','; ToJsonString::appendString(out, "name", fieldSchema.name);
+
             } else {
-                BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
+                SchemaTypeBase::SchemaToJson(fieldSchema, out);
+                out += ','; BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
             }
-            out += '}'; // add the object finalizer if this is the actual object
+            out += '}'; // add the object finalizer
         }
 
         void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            std::string outTemp;
-            SchemaTypeBase::SchemaToJson(fieldSchema, outTemp);
-
             if (fieldSchema.type == FieldType::FieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, outTemp);                
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, out);
+                
             } else {
-                outTemp+= ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), outTemp);
+                SchemaTypeBase::SchemaToJson(fieldSchema, out);
+                out += ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
             }
-            
-            out += outTemp;
         }
 
         const char* SchemaFieldsGroup::GetJavaScriptValidator() {

@@ -43,6 +43,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaStringHexBytes::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
+              &SchemaString::GetValue,
               &SchemaToJson,
               &GetJavaScriptValidator
         };

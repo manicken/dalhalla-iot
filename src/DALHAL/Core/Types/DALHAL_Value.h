@@ -30,7 +30,7 @@ namespace DALHAL {
 
     class HALValue {
     public:
-        enum class Type {TEST, UNSET, UINT, INT, FLOAT/*, STRING*/ };
+        enum class Type {TEST, UNSET, UINT, INT, FLOAT, CSTRING };
 
     private:
         Type type;
@@ -38,8 +38,8 @@ namespace DALHAL {
             uint32_t uval;
             float fval;
             int32_t ival;
-            //char* str; // future use?? // check chatgpt conversation "Function Parameter Passing"
-            //uint8_t* arr; // future use (here the first byte defines how many lenght def bytes that comes after, and then that lenght def bytes def. how many actual data bytes come after that)
+            const char* cStr;
+            
         };
 
 
@@ -52,7 +52,7 @@ namespace DALHAL {
         HALValue(int32_t v);
         HALValue(float v);
         HALValue(bool v);
-        // HALValue(char* str); // future use??
+        HALValue(const char* str);
 
         Type getType() const;
         bool isNumber() const;
@@ -62,6 +62,7 @@ namespace DALHAL {
         int32_t asInt() const;
         uint32_t asUInt() const;
         float asFloat() const;
+        const char* asConstChar() const;
 
         std::string toString() const;
         void appendToString(std::string& target) const;

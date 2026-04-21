@@ -51,15 +51,10 @@ namespace DALHAL {
             }
         }
 
-        void validateField(const JsonVariant& j, const char* sourceObjectTypeName, const SchemaTypeBase& schema, bool& anyError) {
-            const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(schema.type);
-            regDefItem.define.ValidateJson(schema, sourceObjectTypeName, j, anyError);
-        }
-
-        bool evaluateConstraints_PrevalidateFields(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {
+        bool evaluateConstraints_PrevalidateFields(const JsonVariant& jsonObj, const char* sourceObjectTypeName, const FieldConstraint& fcItem) {
             bool tempAnyError = false;
-            validateField(j, sourceObjectTypeName, *fcItem.fieldA, tempAnyError);
-            validateField(j, sourceObjectTypeName, *fcItem.fieldB, tempAnyError);
+            JsonSchema::ValidateJson(*fcItem.fieldA, sourceObjectTypeName, jsonObj, tempAnyError);
+            JsonSchema::ValidateJson(*fcItem.fieldB, sourceObjectTypeName, jsonObj, tempAnyError);
             if (tempAnyError) {
                 GlobalLogger.Warn(F("both FieldConstraint fields must be valid"));
 
@@ -68,7 +63,7 @@ namespace DALHAL {
             return true;
         }
 
-        void FieldConstraint::evaluate(const JsonVariant& j, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError) {
+        void FieldConstraint::evaluate(const JsonVariant& jsonObj, const char* sourceObjectTypeName, const FieldConstraint* constraints, bool& anyError) {
             if (constraints == nullptr) return;
 
             for (int i=0; constraints[i].type != FieldConstraint::Type::Void; ++i) {
@@ -83,32 +78,32 @@ namespace DALHAL {
                 // now both are the same type so it wont matter which one we check the type against
                 if (fcItem.fieldA->type == FieldType::UInt) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(jsonObj, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const SchemaUInt*>(fcItem.fieldA);
                     auto fB = static_cast<const SchemaUInt*>(fcItem.fieldB);
-                    valA = j.containsKey(fA->name)?j[fA->name].as<uint32_t>():fA->defaultValue;
-                    valB = j.containsKey(fB->name)?j[fB->name].as<uint32_t>():fB->defaultValue;
+                    valA = jsonObj.containsKey(fA->name)?jsonObj[fA->name].as<uint32_t>():fA->defaultValue;
+                    valB = jsonObj.containsKey(fB->name)?jsonObj[fB->name].as<uint32_t>():fB->defaultValue;
                 } else if (fcItem.fieldA->type == FieldType::Int) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(jsonObj, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const SchemaInt*>(fcItem.fieldA);
                     auto fB = static_cast<const SchemaInt*>(fcItem.fieldB);
-                    valA = j.containsKey(fA->name)?j[fA->name].as<int32_t>():fA->defaultValue;
-                    valB = j.containsKey(fB->name)?j[fB->name].as<int32_t>():fB->defaultValue;
+                    valA = jsonObj.containsKey(fA->name)?jsonObj[fA->name].as<int32_t>():fA->defaultValue;
+                    valB = jsonObj.containsKey(fB->name)?jsonObj[fB->name].as<int32_t>():fB->defaultValue;
 
                 } else if (fcItem.fieldA->type == FieldType::Float) {
                     // first validate so that the basic values are in range and that it's the correct type
-                    if (evaluateConstraints_PrevalidateFields(j, sourceObjectTypeName, fcItem) == false) {
+                    if (evaluateConstraints_PrevalidateFields(jsonObj, sourceObjectTypeName, fcItem) == false) {
                         continue;
                     }
                     auto fA = static_cast<const SchemaFloat*>(fcItem.fieldA);
                     auto fB = static_cast<const SchemaFloat*>(fcItem.fieldB);
-                    valA = j.containsKey(fA->name)?j[fA->name].as<float>():fA->defaultValue;
-                    valB = j.containsKey(fB->name)?j[fB->name].as<float>():fB->defaultValue;
+                    valA = jsonObj.containsKey(fA->name)?jsonObj[fA->name].as<float>():fA->defaultValue;
+                    valB = jsonObj.containsKey(fB->name)?jsonObj[fB->name].as<float>():fB->defaultValue;
 
                 }/* else if (fcItem.fieldA->type == FieldType::Bool) { // could make sense in some situations
                     // keep it unimplemented for now
