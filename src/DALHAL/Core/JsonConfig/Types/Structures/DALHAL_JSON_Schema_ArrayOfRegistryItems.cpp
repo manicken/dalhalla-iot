@@ -58,6 +58,11 @@ namespace DALHAL {
             for (uint32_t i = 0; i < itemCount; ++i) {
                 const JsonVariant& jsonItem = items[i];
                 if (jsonItem.is<const char*>()) { continue; } // comment item
+                if (!jsonItem.is<JsonObject>()) {
+                    GlobalLogger.Error(F("Field is not an object:"), sourceObjTypeName);
+                    anyError = true;
+                    return ValidatorResult::FieldTypeMismatch;
+                }
                 // TODO make this optional so that we can validate disabled items as well
                 if (DALHAL::Device::DisabledInJson(jsonItem)) { continue; } // disabled
 

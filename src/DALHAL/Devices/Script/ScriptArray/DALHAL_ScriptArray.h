@@ -50,13 +50,13 @@ namespace DALHAL {
         static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);
         static HALOperationResult BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val);
 
-        HALValue* values;
+        HALValue* values = nullptr;
         int valueCount = 0;
         bool readOnly = false;
 
     public:
         ScriptArray(DeviceCreateContext& context);
-        ~ScriptArray() override = default;
+        ~ScriptArray() override;
 
         void begin() override;
 

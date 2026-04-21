@@ -27,6 +27,9 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
@@ -107,7 +110,7 @@ namespace DALHAL {
         ValidatorResult JsonObjectSchema::ValidateJson(const JsonObjectSchema* jsonObjectSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             if (jsonObjectSchema == nullptr) { return ValidatorResult::Success; } // allow any content
 
-            if (!jsonObj.is<JsonObject>()) {
+            if (!jsonObj.is<JsonObject>()) { // absolutely failsafe if i have somehow missed it upper in the stream
                 anyError = true;
 
                 std::string err = jsonObjectSchema->typeName;
@@ -118,7 +121,7 @@ namespace DALHAL {
                 return ValidatorResult::FieldTypeMismatch;
             }
 
-            if (jsonObj.size() == 0) {
+            if (jsonObj.as<JsonObject>().size() == 0) {
                 if (jsonObjectSchema->emptyPolicy == EmptyPolicy::Warn) {
                     std::string errStr = jsonObjectSchema->typeName;
                     errStr += " @ ";errStr += sourceObjTypeName;

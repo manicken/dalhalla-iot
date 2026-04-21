@@ -39,7 +39,7 @@ namespace DALHAL {
         };
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
+        //const JsonVariant& jsonObj = *(context.jsonObjItem);
     }
 
     Device* _Template_::Create(DeviceCreateContext& context) {

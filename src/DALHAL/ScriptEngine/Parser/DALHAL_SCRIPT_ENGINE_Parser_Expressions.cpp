@@ -344,7 +344,7 @@ namespace DALHAL {
 
             int startIndex = tokens.currIndex;
             int endIndex = tokens.currentEndIndex;
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+#if defined(DALHAL_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE))
             ReportInfo("\nValidateExpression startIndex:" + std::to_string(startIndex) + "\n");
             ReportInfo("ValidateExpression endIndex:" + std::to_string(endIndex) + "\n");
             ReportInfo("ValidateExpression tokens.count:" + std::to_string(tokens.count) + "\n");
@@ -361,9 +361,10 @@ namespace DALHAL {
                     effectiveStart  = token.start;
                 }
 
+                
+#if defined(DALHAL_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE))
                 ScriptToken tokToPrint = token;
                 tokToPrint.start = effectiveStart;
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 tokToPrint.ReportTokenInfo("checking token:", tokToPrint.ToString().c_str());
 #endif
                 const char* tokenEnd = token.end;
@@ -454,7 +455,7 @@ namespace DALHAL {
                 varOperand.end = bracketPos;
             }
 
-#if defined(DALHAL_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
+#if defined(DALHAL_SCRIPTS_EXPRESSIONS_PARSER_SHOW_DEBUG) && (defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE))
             std::string msg;
             //if (OperandIsVariable(operandToken)) {
             if (operandToken.ValidNumber() == false) {

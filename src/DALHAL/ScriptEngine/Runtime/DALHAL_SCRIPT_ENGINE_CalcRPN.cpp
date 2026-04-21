@@ -30,10 +30,11 @@ namespace DALHAL {
         CalcRPN::CalcRPN(ExpressionTokens* tokens, int startIndex, int endIndex) {
             calcRPNstr = PrintExpressionTokensOneRow(*tokens, startIndex, endIndex);
             count = endIndex - startIndex;
-            int tokensCurrCount = tokens->currentCount;
+            
             //if (count != tokensCurrCount) // this is not really a error here
             //    printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR count != tokensCurrCount ****************\n");
 #ifdef DEBUG_CALCRPN_EXEC
+            int tokensCurrCount = tokens->currentCount;
             printf("CalcRPN::CalcRPN constr - count:%d, tokensCurrCount:%d, rpn:%s\n", count, tokensCurrCount, PrintExpressionTokensOneRow(*tokens,startIndex, endIndex).c_str());
 #endif
             items = new CalcRPNToken[count];

@@ -41,6 +41,7 @@ namespace DALHAL {
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             
@@ -48,14 +49,23 @@ namespace DALHAL {
             float maxValue;
             float defaultValue;
             // used to define when minValue/maxValue are not defined
-            constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue) 
-                : SchemaTypeBase(name, FieldType::Float, policy), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
-            // can be used when inherited and used as a subtupe
+            
+        protected:
             constexpr SchemaFloat(const char* name, FieldType type, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
                 : SchemaTypeBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
-            // explicit select type to float
+        
+        public:
             constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
                 : SchemaTypeBase(name, FieldType::Float, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue) 
+                : SchemaTypeBase(name, FieldType::Float, policy), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue, size_t structOffset)
+                : SchemaTypeBase(name, FieldType::Float, policy, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue, size_t structOffset) 
+                : SchemaTypeBase(name, FieldType::Float, policy, structOffset), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}  
         };
 
     }

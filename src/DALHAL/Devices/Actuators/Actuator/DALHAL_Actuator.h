@@ -73,7 +73,7 @@ namespace DALHAL {
         // private structures/enums/types
         union DrivePins {
             struct { gpio_num_t a, b; } hbridge;
-            struct { gpio_num_t dir, enable; } diren;
+            struct { gpio_num_t dir, enable, brk; } diren;
         };
         enum class DriveMode : uint8_t {
             HBridge,      // forward / backward

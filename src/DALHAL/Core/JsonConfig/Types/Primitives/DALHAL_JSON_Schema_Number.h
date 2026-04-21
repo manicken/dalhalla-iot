@@ -41,14 +41,24 @@ namespace DALHAL {
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             
             uint8_t primitiveTypeFlags;
 
-            constexpr SchemaNumber(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags = PrimitiveTypeFlags::AllowNumbers) 
+            constexpr SchemaNumber(const char* name, FieldPolicy policy) 
+                : SchemaTypeBase(name, FieldType::Number, policy), primitiveTypeFlags(PrimitiveTypeFlags::AllowNumbers) {}
+
+            constexpr SchemaNumber(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags) 
                 : SchemaTypeBase(name, FieldType::Number, policy), primitiveTypeFlags(primitiveTypeFlags) {}
 
+            constexpr SchemaNumber(const char* name, FieldPolicy policy, size_t structOffset) 
+                : SchemaTypeBase(name, FieldType::Number, policy, structOffset), primitiveTypeFlags(PrimitiveTypeFlags::AllowNumbers) {}
+
+            constexpr SchemaNumber(const char* name, FieldPolicy policy, uint8_t primitiveTypeFlags, size_t structOffset) 
+                : SchemaTypeBase(name, FieldType::Number, policy, structOffset), primitiveTypeFlags(primitiveTypeFlags) {}
+                
         };
 
     }

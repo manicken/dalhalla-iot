@@ -85,7 +85,7 @@ namespace DALHAL {
                 DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
                 if (devFindRes != DeviceFindResult::Success) {  // failsafe
-                    printf("\nCalcRPNToken - @non bracket non funcname accessor - %d:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
+                    printf("\nCalcRPNToken - @non bracket non funcname accessor - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;
                     return;
                 }

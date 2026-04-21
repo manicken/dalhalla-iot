@@ -194,13 +194,16 @@ namespace Drivers {
         uint8_t uartRxBuffer[REGO600_UART_RX_BUFFER_SIZE];
         size_t uartRxBufferIndex = 0;
         size_t currentExpectedRxLength = 0;
-        
+
+        Request* const* refreshLoopList = nullptr; // a const pointer to a list of mutable Request object pointers
+        const int refreshLoopCount = 0;
         uint32_t refreshTimeMs = 5000; // this needs to calculated depending on how many items in refreshLoopList (max items is 17 -> 17*0.2 = 3.4 sec) but also what the json cfg have
+
+        
         unsigned long requestTimeoutMs = 1000;
         unsigned long lastUpdateMs = 0;
         uint32_t lastRequestMs = 0;
-        Request* const* refreshLoopList; // a const pointer to a list of mutable Request object pointers
-        const int refreshLoopCount;
+        
         int refreshLoopIndex = 0;
         bool refreshLoopDone = false;
 

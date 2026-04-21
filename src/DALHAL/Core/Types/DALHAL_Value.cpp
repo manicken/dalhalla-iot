@@ -41,7 +41,7 @@ namespace DALHAL {
 
     HALValue::HALValue(float v) : type(Type::FLOAT), fval(v) {}
 
-    HALValue::HALValue(bool v) : type(Type::UINT), uval(v?1:0) {}
+    HALValue::HALValue(bool v) : type(Type::BOOL), bval(v) {}
 
     HALValue::HALValue(const char* cStr) : type(Type::CSTRING), cStr(cStr) {}
 
@@ -61,6 +61,10 @@ namespace DALHAL {
 
     uint32_t HALValue::asUInt() const {
         return uval;
+    }
+
+    bool HALValue::asBool() const {
+        return bval;
     }
 
     int32_t HALValue::asInt() const {
@@ -150,6 +154,16 @@ namespace DALHAL {
     void HALValue::set(float v) {
         type = Type::FLOAT;
         fval = v;
+    }
+
+    void HALValue::set(bool v) {
+        type = Type::BOOL;
+        bval = v;
+    }
+
+    void HALValue::set(const char* v) {
+        type = Type::CSTRING;
+        cStr = v;
     }
 
 

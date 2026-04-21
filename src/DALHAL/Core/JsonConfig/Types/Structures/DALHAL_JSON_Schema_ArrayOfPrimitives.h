@@ -48,6 +48,7 @@ namespace DALHAL {
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static bool ExtractValues(const SchemaArrayOfPrimitives& fieldSchema, const JsonVariant& jsonObj, HALValue** outValues, int& valueCount);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 

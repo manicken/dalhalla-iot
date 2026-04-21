@@ -34,6 +34,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
@@ -125,63 +127,47 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     Actuator::Actuator(DeviceCreateContext& context) : Actuator_DeviceBase(context.deviceType), state(State::Idle) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
+        //const JsonVariant& jsonObj = *(context.jsonObjItem);
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
+        //const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar());
 
-        // as we allready verified in VerifyJSON that the pin cfg is absolutely explicit defined
-        // we only need to check any of the pins to exist to determine the mode
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A)) {
-            // H-bridge mode raw a/b pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B);
+        int modeIndex = JsonSchema::ModeSelector::evaluate(JsonSchema::Actuator.modes, *context.jsonObjItem);
+        if (modeIndex == 0) { // "h-bridge ab"
+            pins.hbridge.a = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_a_field, context).asUInt();
+            pins.hbridge.b = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_b_field, context).asUInt();
             mode = DriveMode::HBridge;
-        } else if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN)) {
-            // H-bridge mode open/close pins defined
-            pins.hbridge.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN);
-            pins.hbridge.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE);
+        } else if (modeIndex == 1) { // "h-bridge open close"
+            pins.hbridge.a = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_open_field, context).asUInt();
+            pins.hbridge.b = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_close_field, context).asUInt();
             mode = DriveMode::HBridge;
-        } else if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR)) {
-            pins.diren.dir = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR);
-            pins.diren.enable = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE);
-            mode = DriveMode::DirEnable;
-        } 
-        // reserved for future modes
-
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP)) {
-            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP];
-            pinMinEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
-            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
-                pinMinEndStopActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
-            } else {
-                pinMinEndStopActiveHigh = true;
+        } else if (modeIndex == 2 || modeIndex == 3) { // "dir/enable"
+            pins.diren.dir = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_dir_field, context).asUInt();
+            pins.diren.enable = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_enable_field, context).asUInt();
+            if (modeIndex == 3) { // "dir/enable/break"
+                pins.diren.brk = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_break_field, context).asUInt();
             }
+            mode = DriveMode::DirEnable;
+        }
+
+        JsonSchema::PinConfig endStopPinCfg;
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+            pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
+            pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
         } else {
             pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
             pinMinEndStopActiveHigh = true;
         }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP)) {
-            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP];
-            pinMaxEndStop = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
-            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
-                pinMaxEndStopActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
-            } else {
-                pinMaxEndStopActiveHigh = true;
-            }
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+            pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
+            pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
         } else {
             pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
             pinMaxEndStopActiveHigh = true;
         }
 
-        if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
-            timeoutMs = jsonObj["timeoutMs"].as<uint32_t>();
-        } else {
-            timeoutMs = 10000; // default 10 seconds
-        }
+        timeoutMs = JsonSchema::GetValue(JsonSchema::timeout_ms_field, context).asUInt();
 
         setup();
     }

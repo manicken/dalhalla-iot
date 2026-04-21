@@ -63,6 +63,11 @@ namespace DALHAL {
 
             for (JsonVariant item : array) {
                 if (item.is<const char*>()) continue; // comment item
+                if (!item.is<JsonObject>()) {
+                    GlobalLogger.Error(F("Field is not an object:"), fieldSchema.name);
+                    anyError = true;
+                    continue;
+                }
                 JsonObjectSchema::ValidateJson(fs.subtype, fieldSchema.name, item, anyError);
             }
 

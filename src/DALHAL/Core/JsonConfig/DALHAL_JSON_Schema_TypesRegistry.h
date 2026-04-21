@@ -78,6 +78,7 @@ namespace DALHAL {
                 ToJson(ToJson), 
                 GetJavaScriptValidator(GetJavaScriptValidator)
                 {}
+            
         };
 
         struct FieldTypeRegistryItem {
@@ -96,8 +97,10 @@ namespace DALHAL {
         void ValidateSchema(const SchemaTypeBase& stb, const char* sourceObjTypeName, bool& anyError);
         ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
         void SchemaToJson(const SchemaTypeBase& stb, std::string& jsonStr);
+
         HALValue GetValue(const SchemaTypeBase& stb, const JsonVariant& jsonObj);
         HALValue GetValue(const SchemaTypeBase& stb, const DeviceCreateContext& context);
+        
         const char* GetJavaScriptValidator(const SchemaTypeBase& stb);
         
 

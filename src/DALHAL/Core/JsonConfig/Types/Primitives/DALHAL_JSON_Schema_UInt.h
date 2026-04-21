@@ -41,21 +41,30 @@ namespace DALHAL {
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+            static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             
             uint32_t minValue;
             uint32_t maxValue;
             uint32_t defaultValue;
-            // used to define when minValue/maxValue are not defined
-            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue) 
-                : SchemaTypeBase(name, FieldType::Float, policy), minValue(0), maxValue(0), defaultValue(defaultValue) {}
-            // can be used when inherited and used as a subtupe
+
+        protected:
             constexpr SchemaUInt(const char* name, FieldType type, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
                 : SchemaTypeBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
-            // explicit select type to uint
+        
+        public:
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue) 
+                : SchemaTypeBase(name, FieldType::UInt, policy), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
                 : SchemaTypeBase(name, FieldType::UInt, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue, size_t structOffset) 
+                : SchemaTypeBase(name, FieldType::UInt, policy, structOffset), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, size_t structOffset)
+                : SchemaTypeBase(name, FieldType::UInt, policy, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
     }

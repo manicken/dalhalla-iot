@@ -54,8 +54,8 @@ namespace DALHAL {
         freq = GetAsUINT32(jsonObj, "freq");
         if (freq < 100000) freq = 100000; // defaults to 100khz
 
-        int busIndex = GetAsUINT8(jsonObj, "busindex");
 #if defined(ESP32)
+        int busIndex = GetAsUINT8(jsonObj, "busindex");
         if (busIndex == 1)
             wire = &Wire1;
         else

@@ -51,7 +51,7 @@ namespace DALHAL {
             }
 
             bool registerContains(const char* key) {
-                for (int i=0;i<registers.size();++i) {
+                for (int i=0;i<(int)registers.size();++i) {
                     if (strcmp(registers[i].key, key) == 0) {
                         return true;
                     }
@@ -60,7 +60,7 @@ namespace DALHAL {
             }
 
             bool inlinesContains(const char* key) {
-                for (int i=0;i<inlines.size();++i) {
+                for (int i=0;i<(int)inlines.size();++i) {
                     if (strcmp(inlines[i].key, key) == 0) {
                         return true;
                     }

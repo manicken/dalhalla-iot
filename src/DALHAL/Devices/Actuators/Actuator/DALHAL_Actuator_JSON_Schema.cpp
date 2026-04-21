@@ -44,21 +44,21 @@ namespace DALHAL {
     namespace JsonSchema {
 
         // output pins
-        constexpr SchemaHardwarePin pin_hbridge_a_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_b_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_open_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_close_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_direnable_dir_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_direnable_enable_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE, FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_hbridge_a_field = { "pinA", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_hbridge_b_field = { "pinB", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_hbridge_open_field = { "pinOpen", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_hbridge_close_field = { "pinClose", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direnable_dir_field = { "pinDir", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direnable_enable_field = { "pinEnable", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
         // this is a optional field in direnable mode
-        constexpr SchemaHardwarePin pin_direnable_break_field = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK, FieldPolicy::ModeDefine, (GPIO_manager::PinFunc::OUT)};
+        constexpr SchemaHardwarePin pin_direnable_break_field = { "pinBreak", FieldPolicy::ModeDefine, (GPIO_manager::PinFunc::OUT)};
 
         // input pins
         constexpr SchemaObject minEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP, FieldPolicy::Optional, &InputPinScheme };
         constexpr SchemaObject maxEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP, FieldPolicy::Optional, &InputPinScheme };
 
 
-        constexpr SchemaUInt timeout_ms_field = {DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS, FieldPolicy::Optional, 1, 0, DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS}; // default 10 seconds
+        constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, 1, 0, 10000}; // default 10 seconds
 
         constexpr const SchemaTypeBase* hbridgeModeAB_GroupItems[] = {&pin_hbridge_a_field, &pin_hbridge_b_field, nullptr};
         constexpr SchemaAllOfFieldsGroup hbridgeModeAB_GroupFields = {"hbridgeModeAB", FieldPolicy::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output

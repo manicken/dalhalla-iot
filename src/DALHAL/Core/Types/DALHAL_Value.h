@@ -30,7 +30,7 @@ namespace DALHAL {
 
     class HALValue {
     public:
-        enum class Type {TEST, UNSET, UINT, INT, FLOAT, CSTRING };
+        enum class Type {TEST, UNSET, UINT, INT, FLOAT, BOOL, CSTRING };
 
     private:
         Type type;
@@ -38,6 +38,7 @@ namespace DALHAL {
             uint32_t uval;
             float fval;
             int32_t ival;
+            bool bval;
             const char* cStr;
             
         };
@@ -62,6 +63,7 @@ namespace DALHAL {
         int32_t asInt() const;
         uint32_t asUInt() const;
         float asFloat() const;
+        bool asBool() const;
         const char* asConstChar() const;
 
         std::string toString() const;
@@ -70,6 +72,8 @@ namespace DALHAL {
         void set(int32_t v);
         void set(uint32_t v);
         void set(float v);
+        void set(bool v);
+        void set(const char* v);
 
         // Set operators
         HALValue& operator=(int32_t v);

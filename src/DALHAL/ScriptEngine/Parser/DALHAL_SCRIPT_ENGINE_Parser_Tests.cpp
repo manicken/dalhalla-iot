@@ -98,9 +98,9 @@ namespace DALHAL {
                     ReportInfo("\n\nnew complete RPN:");
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                        ExpressionToken& tok = newDirect->items[i];
+                        //ExpressionToken& tok = newDirect->items[i];
                         //if (tok->type == TokenType::Operand)
-                            ReportInfo(tok.ToString() + " ");
+                            ReportInfo(newDirect->items[i].ToString() + " ");
                         //else
                         //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
                     }
@@ -188,9 +188,9 @@ namespace DALHAL {
                     
                     ReportInfo("\n\nAction rhs calc RPN:");
                     for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
-                        ExpressionToken& tok = newDirect->items[i];
+                        //ExpressionToken& tok = newDirect->items[i];
                         //if (tok->type == TokenType::Operand)
-                            ReportInfo(tok.ToString() + " ");
+                            ReportInfo(newDirect->items[i].ToString() + " ");
                         //else
                         //    ReportInfo(TokenTypeToString(tok->type ) + std::string(" "));
                     }

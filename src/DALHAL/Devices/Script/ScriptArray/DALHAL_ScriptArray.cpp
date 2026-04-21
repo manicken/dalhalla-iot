@@ -27,6 +27,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
+
 #include "DALHAL_ScriptArray_JSON_Schema.h"
 
 namespace DALHAL {
@@ -38,23 +44,15 @@ namespace DALHAL {
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        const JsonArray jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        int arraySize = jsonArray.size();
-        valueCount = arraySize;
-        values = new HALValue[arraySize];
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& item = jsonArray[i];
-            if (item.is<uint32_t>())
-                values[i] = item.as<uint32_t>();
-            else if (item.is<int32_t>())
-                values[i] = item.as<int32_t>();
-            else
-                values[i] = item.as<float>();
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar());
+        readOnly = JsonSchema::GetValue(JsonSchema::readonlyField, context).asBool();
+        values = nullptr; // allways set it to nullptr
+        if (JsonSchema::SchemaArrayOfPrimitives::ExtractValues(JsonSchema::scriptArrayItems, jsonObj, &values, valueCount) == false) {
+            GlobalLogger.Error(F("Failed to extract script array items"));
         }
-        if (jsonObj.containsKey("readonly")) {
-            readOnly = jsonObj["readonly"];
-        }
+    }
+    ScriptArray::~ScriptArray() {
+        delete values;
     }
 
     Device* ScriptArray::Create(DeviceCreateContext& context) {

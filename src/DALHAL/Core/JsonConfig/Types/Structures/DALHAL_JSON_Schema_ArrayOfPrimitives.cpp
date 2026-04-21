@@ -104,6 +104,51 @@ namespace DALHAL {
             )rawliteral";
         }
 
+        bool SchemaArrayOfPrimitives::ExtractValues(const SchemaArrayOfPrimitives& fieldSchema, const JsonVariant& jsonObj, HALValue** outValues, int& valueCount)
+        {
+            if (jsonObj.containsKey(fieldSchema.name) == false) {
+                return false;
+            }
+            const JsonVariant& jsonFieldObj = jsonObj[fieldSchema.name];
+            if (jsonFieldObj.is<JsonArray>() == false) {
+                return false;
+            }
+            const JsonArray arr = jsonFieldObj.as<JsonArray>();
+            if (arr.size() == 0) {
+                return false;
+            }
+
+            if (outValues == nullptr) {
+                GlobalLogger.Error(F("SchemaArrayOfPrimitives::ExtractValues - outValues is nullptr"));
+                return false;
+            }
+
+            size_t arraySize = arr.size();
+
+            HALValue* out = new HALValue[arraySize];
+            *outValues = out;
+            valueCount = arraySize;
+
+            for (int i = 0; i < arraySize; ++i) {
+                const JsonVariant& item = arr[i];
+                HALValue hVal;
+                if (item.is<float>()) {
+                    hVal.set(item.as<float>());
+                } else if (item.is<signed int>()) {
+                    hVal.set(item.as<signed int>());
+                } else if (item.is<unsigned int>()) {
+                    hVal.set(item.as<unsigned int>());
+                } else if (item.is<bool>()) {
+                    hVal.set(item.as<bool>());
+                } else if (item.is<const char*>()) {
+                    hVal.set(item.as<const char*>());
+                } // else hVal is set to unset
+                out[i] = hVal;
+            }
+
+            return true;
+        }
+
     }
 
 }

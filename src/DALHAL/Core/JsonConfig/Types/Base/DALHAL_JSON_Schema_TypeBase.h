@@ -44,16 +44,23 @@ namespace DALHAL {
             FieldType type;
             FieldPolicy policy;
             FieldGuiFlagsType guiFlags;
+            size_t structOffset;
         protected:
             static bool ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
             static ValidatorResult ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
 
             constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy)
-                : name(n), type(t), policy(policy), guiFlags(Gui::None) {}
+                : name(n), type(t), policy(policy), guiFlags(Gui::None), structOffset(0) {}
 
             constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlagsType guiFlags)
-                : name(n), type(t), policy(policy), guiFlags(guiFlags) {}
+                : name(n), type(t), policy(policy), guiFlags(guiFlags), structOffset(0) {}
+
+            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, size_t structOffset)
+                : name(n), type(t), policy(policy), guiFlags(Gui::None), structOffset(structOffset) {}
+
+            constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy, FieldGuiFlagsType guiFlags, size_t structOffset)
+                : name(n), type(t), policy(policy), guiFlags(guiFlags), structOffset(structOffset) {}
         };
 
     }

@@ -116,6 +116,19 @@ namespace DALHAL {
             return ValidatorResult::Success; // just return success until i implement virtual pins
         }
 
+        HALValue SchemaHardwarePinOrVirtualPin::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            if (jsonObj.containsKey(fieldSchema.name)) {
+                if (jsonObj[fieldSchema.name].is<const char*>()) {
+                    return HALValue(jsonObj[fieldSchema.name].as<const char*>());
+                } else {
+                    return HALValue(jsonObj[fieldSchema.name].as<signed int>());
+                }
+                
+            } else {
+                return HALValue(-1);
+            }
+        }
+
         void SchemaHardwarePinOrVirtualPin::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaHardwarePinOrVirtualPin&>(fieldSchema);

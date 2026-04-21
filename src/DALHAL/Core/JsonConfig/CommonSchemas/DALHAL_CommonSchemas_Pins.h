@@ -35,6 +35,11 @@
 namespace DALHAL {
 
     namespace JsonSchema {
+        struct PinConfig {
+            int32_t pin;
+            bool activeHigh;
+        };
+
         /** defines a input pin field named 'pin' */
         extern const SchemaHardwarePin InputPinField;
         /** defines a output pin field named 'pin' */

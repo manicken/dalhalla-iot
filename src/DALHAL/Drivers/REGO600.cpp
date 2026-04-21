@@ -295,17 +295,17 @@ namespace Drivers {
     //  ██   ██ ██      ██    ██ ██    ██ ██    ██ ████  ██ ████  ██ 
     //  ██   ██ ███████  ██████   ██████   ██████   ██████   ██████  
 
-    REGO600::REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t _refreshTimeMs, unsigned long requestDelayMs) : 
+    REGO600::REGO600(int8_t rxPin, int8_t txPin, Request** refreshLoopList, int refreshLoopCount, uint32_t refreshTimeMs, unsigned long requestDelayMs) : 
         refreshLoopList(refreshLoopList), 
         refreshLoopCount(refreshLoopCount),
-        refreshTimeMs(_refreshTimeMs)
+        refreshTimeMs(refreshTimeMs)
     {
 
         uint32_t minRefreshTimeMs = refreshLoopCount * REGO600_DRIVER_READ_REGISTER_TIME_MS_ON_STATE;
         // subtract min from wanted to get total refresh time
-        refreshTimeMs -= minRefreshTimeMs; 
+        this->refreshTimeMs -= minRefreshTimeMs; 
         // ensure it's at least minRefreshTimeMs
-        if (refreshTimeMs < minRefreshTimeMs) refreshTimeMs = minRefreshTimeMs; 
+        if (this->refreshTimeMs < minRefreshTimeMs) this->refreshTimeMs = minRefreshTimeMs; 
         
         if (requestDelayMs < 10) { // minimum safe
             requestDelayMs = 10;

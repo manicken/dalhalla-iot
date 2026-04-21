@@ -23,31 +23,34 @@
 
 #pragma once
 
-
-// for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_OPEN     "pinOpen"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_CLOSE    "pinClose"
-// for dir/enable/(optional break) pin mode
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_ENABLE   "pinEnable"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_PIN_BREAK    "pinBreak"
-
-// 
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP "MinEndStop"
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP "MaxEndStop"
-
-#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_TIMEOUT_MS "timeoutMs"
-#define DALHAL_DEVICE_ACTUATOR_CFG_DEFAULT_TIMEOUT_MS 10000
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+
+#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP "MinEndStop"
+#define DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP "MaxEndStop"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
         extern const JsonObjectSchema Actuator;
+
+        extern const SchemaHardwarePin pin_hbridge_a_field;
+        extern const SchemaHardwarePin pin_hbridge_b_field;
+        extern const SchemaHardwarePin pin_hbridge_open_field;
+        extern const SchemaHardwarePin pin_hbridge_close_field;
+        extern const SchemaHardwarePin pin_direnable_dir_field;
+        extern const SchemaHardwarePin pin_direnable_enable_field;
+        // this is a optional field in direnable mode
+        extern const SchemaHardwarePin pin_direnable_break_field;
+
+        extern const SchemaObject minEndStopField;
+        extern const SchemaObject maxEndStopField;
+
+        extern const SchemaUInt timeout_ms_field;
 
     }
 }

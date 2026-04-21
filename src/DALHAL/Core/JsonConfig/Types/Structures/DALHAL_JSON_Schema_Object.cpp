@@ -63,7 +63,15 @@ namespace DALHAL {
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
             }
-            return JsonObjectSchema::ValidateJson(static_cast<const SchemaObject&>(fieldSchema).subtype, sourceObjTypeName, jsonObj[fieldSchema.name], anyError);
+            const JsonVariant& subJsonObj = jsonObj[fieldSchema.name];
+            if (!subJsonObj.is<JsonObject>()) {
+                GlobalLogger.Error(F("Field is not an object:"), fieldSchema.name);
+                anyError = true;
+                return ValidatorResult::FieldTypeMismatch;
+            }
+            const SchemaObject& fs = static_cast<const SchemaObject&>(fieldSchema);
+
+            return JsonObjectSchema::ValidateJson(fs.subtype, sourceObjTypeName, subJsonObj, anyError);
         }
 
         void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
@@ -82,6 +90,59 @@ namespace DALHAL {
             return R"rawliteral(
 
             )rawliteral";
+        }
+
+        void ApplyToStruct(size_t structOffset, const HALValue& val, void* outStruct)
+        {
+            uint8_t* base = static_cast<uint8_t*>(outStruct);
+            void* target = base + structOffset;
+
+            switch (val.getType()) {
+                case HALValue::Type::UINT:
+                    *static_cast<uint32_t*>(target) = val.asUInt();
+                    break;
+
+                case HALValue::Type::INT:
+                    *static_cast<int32_t*>(target) = val.asInt();
+                    break;
+
+                case HALValue::Type::BOOL:
+                    *static_cast<bool*>(target) = val.asBool();
+                    break;
+
+                case HALValue::Type::FLOAT:
+                    *static_cast<float*>(target) = val.asFloat();
+                    break;
+
+                case HALValue::Type::CSTRING:
+                    *static_cast<const char**>(target) = val.asConstChar();
+                    break;
+
+                default:
+                    GlobalLogger.Error(F("Unsupported HALValue type in ApplyToStruct"));
+                    break;
+            }
+        }
+
+        bool SchemaObject::ExtractValues(const SchemaObject& schemaField, const JsonVariant& jsonObj, void* outStruct)
+        {
+            if (schemaField.subtype == nullptr) {
+                GlobalLogger.Error(F("schema error - schemaField.subtype == nullptr @ SchemaObject::ExtractValues"));
+                return false; // should never happend
+            }
+            const JsonObjectSchema& jsonObjSchema = *schemaField.subtype;
+            if (jsonObj.containsKey(schemaField.name) == false) {
+                return false; // optional field, as required fields fail on prevalidation
+            }
+            const JsonVariant& jsonSubObject = jsonObj[schemaField.name];
+            for (int i = 0; jsonObjSchema.fields[i] != nullptr; ++i) {
+                const SchemaTypeBase& field = *jsonObjSchema.fields[i];
+
+                HALValue val = GetValue(field, jsonSubObject); // this return default values if the field themselves are missing
+
+                ApplyToStruct(field.structOffset, val, outStruct);
+            }
+            return true;
         }
 
     }

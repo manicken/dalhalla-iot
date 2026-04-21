@@ -37,12 +37,12 @@ namespace DALHAL {
 
         constexpr SchemaBool readonlyField = {"readonly", FieldPolicy::Optional, false};
 
-        constexpr SchemaArrayOfPrimitives items = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
+        constexpr SchemaArrayOfPrimitives scriptArrayItems = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
             &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &readonlyField,
-            &items,
+            &scriptArrayItems,
             nullptr,
         };
 

@@ -54,6 +54,6 @@ namespace DALHAL {
                 deviceNames += I2C_DeviceRegistry[i].typeName;
             }
         }
-        return std::move(deviceNames);
+        return deviceNames;
     }
 }
