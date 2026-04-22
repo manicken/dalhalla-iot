@@ -24,14 +24,18 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
-#define DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL "url"
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema REST_Value;
+        namespace REST_Value {
+
+            extern const JsonObjectSchema Root;
+            extern const SchemaString urlField;
+
+        }
 
     }
 

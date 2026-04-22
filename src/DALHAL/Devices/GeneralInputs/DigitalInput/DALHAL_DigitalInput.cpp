@@ -30,11 +30,13 @@
 
 #include "DALHAL_DigitalInput_JSON_Schema.h"
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase DigitalInput::RegistryDefine = {
         Create,
-        &JsonSchema::DigitalInput,
+        &JsonSchema::DigitalInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)
     };
     
@@ -43,16 +45,9 @@ namespace DALHAL {
     }
 
     DigitalInput::DigitalInput(DeviceCreateContext& context) : DigitalInput_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
-        //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();
-        GPIO_manager::ReservePin(pin);
-        
-        //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID];//.as<const char*>();
-        //uid = encodeUID(uidStr);
-
-        pinMode(pin, INPUT); // input
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::DigitalInput::pinField, context);
+        pinMode(pin, INPUT);
     }
 
     HALOperationResult DigitalInput::read(HALValue &val) {

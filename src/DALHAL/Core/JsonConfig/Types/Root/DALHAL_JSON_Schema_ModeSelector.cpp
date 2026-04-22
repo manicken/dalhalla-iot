@@ -86,6 +86,15 @@ namespace DALHAL {
             return matchedMode;
         }
 
+        bool ModeSelector::Apply(const ModeSelector* modes, const DALHAL::DeviceCreateContext& createCtx, void* outStruct) {
+            int modeIndex = evaluate(modes, *createCtx.jsonObjItem);
+            if (modeIndex < 0) {
+                return false;
+            }
+            modes[modeIndex].apply(createCtx, outStruct);
+            return true;
+        }
+
         void ModeSelector::ToJson(const ModeSelector* modes, std::string& out)
         {
             ToJsonString::appendKey(out, "modes");

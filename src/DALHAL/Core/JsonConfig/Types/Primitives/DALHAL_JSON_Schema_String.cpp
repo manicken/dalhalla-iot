@@ -78,7 +78,11 @@ namespace DALHAL {
         }
 
         HALValue SchemaString::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            return HALValue(jsonObj[fieldSchema.name].as<const char*>());
+            if (jsonObj.containsKey(fieldSchema.name)) {
+                return HALValue(jsonObj[fieldSchema.name].as<const char*>());
+            } else {
+                return HALValue((const char*)nullptr);
+            }
         }
 
         void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

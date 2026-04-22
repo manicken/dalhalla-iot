@@ -39,96 +39,144 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include "DALHAL_Actuator.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        // output pins
-        constexpr SchemaHardwarePin pin_hbridge_a_field = { "pinA", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_b_field = { "pinB", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_open_field = { "pinOpen", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_hbridge_close_field = { "pinClose", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_direnable_dir_field = { "pinDir", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        constexpr SchemaHardwarePin pin_direnable_enable_field = { "pinEnable", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
-        // this is a optional field in direnable mode
-        constexpr SchemaHardwarePin pin_direnable_break_field = { "pinBreak", FieldPolicy::ModeDefine, (GPIO_manager::PinFunc::OUT)};
+        namespace Actuator {
 
-        // input pins
-        constexpr SchemaObject minEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MIN_END_STOP, FieldPolicy::Optional, &InputPinScheme };
-        constexpr SchemaObject maxEndStopField = { DALHAL_DEVICE_ACTUATOR_CFG_NAME_MAX_END_STOP, FieldPolicy::Optional, &InputPinScheme };
+            // output pins
+            constexpr SchemaHardwarePin pin_hbridge_a_field = { "pinA", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            constexpr SchemaHardwarePin pin_hbridge_b_field = { "pinB", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            constexpr SchemaHardwarePin pin_hbridge_open_field = { "pinOpen", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            constexpr SchemaHardwarePin pin_hbridge_close_field = { "pinClose", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            constexpr SchemaHardwarePin pin_direnable_dir_field = { "pinDir", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            constexpr SchemaHardwarePin pin_direnable_enable_field = { "pinEnable", FieldPolicy::AllOfFieldsGroup, (GPIO_manager::PinFunc::OUT)};
+            // this is a optional field in direnable mode
+            constexpr SchemaHardwarePin pin_direnable_break_field = { "pinBreak", FieldPolicy::ModeDefine, (GPIO_manager::PinFunc::OUT)};
+
+            // input pins
+            constexpr SchemaObject minEndStopField = { "MinEndStop", FieldPolicy::Optional, &CommonPins::InputPinScheme };
+            constexpr SchemaObject maxEndStopField = { "MaxEndStop", FieldPolicy::Optional, &CommonPins::InputPinScheme };
 
 
-        constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, 1, 0, 10000}; // default 10 seconds
+            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (uint)1, (uint)0, (uint)10000}; // default 10 seconds
 
-        constexpr const SchemaTypeBase* hbridgeModeAB_GroupItems[] = {&pin_hbridge_a_field, &pin_hbridge_b_field, nullptr};
-        constexpr SchemaAllOfFieldsGroup hbridgeModeAB_GroupFields = {"hbridgeModeAB", FieldPolicy::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output
-        
-        constexpr const SchemaTypeBase* hbridgeModeOC_GroupItems[] = {&pin_hbridge_open_field, &pin_hbridge_close_field, nullptr};
-        constexpr SchemaAllOfFieldsGroup hbridgeModeOC_GroupFields = {"hbridgeModeOC", FieldPolicy::ModeDefine, hbridgeModeOC_GroupItems}; // here hbridgeModeOC defines what name to use for the BSON output
-        
-        constexpr const SchemaTypeBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
-        constexpr SchemaAllOfFieldsGroup direnableMode_GroupFields = {"dir_enableMode", FieldPolicy::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
+            constexpr const SchemaTypeBase* hbridgeModeAB_GroupItems[] = {&pin_hbridge_a_field, &pin_hbridge_b_field, nullptr};
+            constexpr SchemaAllOfFieldsGroup hbridgeModeAB_GroupFields = {"hbridgeModeAB", FieldPolicy::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output
+            
+            constexpr const SchemaTypeBase* hbridgeModeOC_GroupItems[] = {&pin_hbridge_open_field, &pin_hbridge_close_field, nullptr};
+            constexpr SchemaAllOfFieldsGroup hbridgeModeOC_GroupFields = {"hbridgeModeOC", FieldPolicy::ModeDefine, hbridgeModeOC_GroupItems}; // here hbridgeModeOC defines what name to use for the BSON output
+            
+            constexpr const SchemaTypeBase* direnableMode_GroupItems[] = {&pin_direnable_dir_field, &pin_direnable_enable_field, nullptr};
+            constexpr SchemaAllOfFieldsGroup direnableMode_GroupFields = {"dir_enableMode", FieldPolicy::ModeDefine, direnableMode_GroupItems}; // here direnableMode defines what name to use for the BSON output
 
-        constexpr ModeConjunctionDefine conjunctions_hBridgeAB_Mode[] = {
-            { &hbridgeModeAB_GroupFields, true },  // group must exist for this mode
-            { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
-            { &direnableMode_GroupFields, false }, // group must NOT exist for this mode
-            { &pin_direnable_break_field, false }, // field must NOT exist for this mode
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine conjunctions_hBridgeAB_Mode[] = {
+                { &hbridgeModeAB_GroupFields, true },  // group must exist for this mode
+                { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
+                { &direnableMode_GroupFields, false }, // group must NOT exist for this mode
+                { &pin_direnable_break_field, false }, // field must NOT exist for this mode
+                { nullptr, false}
+            };
 
-        constexpr ModeConjunctionDefine conjunctions_hBridgeOC_Mode[] = {
-            { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
-            { &hbridgeModeOC_GroupFields, true },  // group must exist for this mode
-            { &direnableMode_GroupFields, false }, // group must NOT exist for this mode
-            { &pin_direnable_break_field, false }, // field must NOT exist for this mode
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine conjunctions_hBridgeOC_Mode[] = {
+                { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
+                { &hbridgeModeOC_GroupFields, true },  // group must exist for this mode
+                { &direnableMode_GroupFields, false }, // group must NOT exist for this mode
+                { &pin_direnable_break_field, false }, // field must NOT exist for this mode
+                { nullptr, false}
+            };
 
-        constexpr ModeConjunctionDefine conjunctions_dir_enable_Mode[] = {
-            { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
-            { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
-            { &direnableMode_GroupFields, true },  // group must exist for this mode
-            { &pin_direnable_break_field, false }, // field must NOT exist for this mode
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine conjunctions_dir_enable_Mode[] = {
+                { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
+                { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
+                { &direnableMode_GroupFields, true },  // group must exist for this mode
+                { &pin_direnable_break_field, false }, // field must NOT exist for this mode
+                { nullptr, false}
+            };
 
-        constexpr ModeConjunctionDefine conjunctions_dir_enable_break_Mode[] = {
-            { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
-            { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
-            { &direnableMode_GroupFields, true },  // group must exist for this mode
-            { &pin_direnable_break_field, true },  // field must exist for this mode
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine conjunctions_dir_enable_break_Mode[] = {
+                { &hbridgeModeAB_GroupFields, false }, // group must NOT exist for this mode
+                { &hbridgeModeOC_GroupFields, false }, // group must NOT exist for this mode
+                { &direnableMode_GroupFields, true },  // group must exist for this mode
+                { &pin_direnable_break_field, true },  // field must exist for this mode
+                { nullptr, false}
+            };
 
-        constexpr const ModeSelector modes[] = {
-            {"h-bridge ab", conjunctions_hBridgeAB_Mode},
-            {"h-bridge open close", conjunctions_hBridgeOC_Mode},
-            {"dir/enable", conjunctions_dir_enable_Mode},
-            {"dir/enable/break", conjunctions_dir_enable_break_Mode},
-            {nullptr, nullptr}
-        };
-        // this list only validates each field so that it match specification
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &hbridgeModeAB_GroupFields,
-            &hbridgeModeOC_GroupFields,
-            &direnableMode_GroupFields,
-            &pin_direnable_break_field,
-            &minEndStopField,
-            &maxEndStopField,
-            &timeout_ms_field,
-            nullptr
-        };
+            void Apply_DirEnableBreak(const DeviceCreateContext& ctx, void* out);
+            void Apply_HBridge_a_b(const DeviceCreateContext& ctx, void* out);
+            void Apply_HBridge_open_close(const DeviceCreateContext& ctx, void* out);
 
-        constexpr JsonObjectSchema Actuator = {
-            "Actuator",
-            fields,
-            modes,
-            nullptr, // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const ModeSelector modes[] = {
+                {"h-bridge ab", conjunctions_hBridgeAB_Mode, Apply_HBridge_a_b},
+                {"h-bridge open close", conjunctions_hBridgeOC_Mode, Apply_HBridge_open_close},
+                {"dir/enable", conjunctions_dir_enable_Mode, Apply_DirEnableBreak},
+                {"dir/enable/break", conjunctions_dir_enable_break_Mode, Apply_DirEnableBreak},
+                {nullptr, nullptr, nullptr}
+            };
+            // this list only validates each field so that it match specification
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &hbridgeModeAB_GroupFields,
+                &hbridgeModeOC_GroupFields,
+                &direnableMode_GroupFields,
+                &pin_direnable_break_field,
+                &minEndStopField,
+                &maxEndStopField,
+                &timeout_ms_field,
+                nullptr
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "Actuator",
+                fields,
+                modes,
+                nullptr, // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Apply_DirEnableBreak(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<DALHAL::Actuator*>(out);
+                self->pins.diren.dir =
+                    (gpio_num_t)JsonSchema::GetValue(pin_direnable_dir_field, ctx).asUInt();
+
+                self->pins.diren.enable =
+                    (gpio_num_t)JsonSchema::GetValue(pin_direnable_enable_field, ctx).asUInt();
+
+                self->pins.diren.brk =
+                    (gpio_num_t)JsonSchema::GetValue(pin_direnable_break_field, ctx).asUInt();
+
+                self->mode = DALHAL::Actuator::DriveMode::DirEnable;
+            }
+
+            void Apply_HBridge_a_b(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<DALHAL::Actuator*>(out);
+                self->pins.hbridge.a =
+                    (gpio_num_t)JsonSchema::GetValue(pin_hbridge_a_field, ctx).asUInt();
+
+                self->pins.hbridge.b =
+                    (gpio_num_t)JsonSchema::GetValue(pin_hbridge_b_field, ctx).asUInt();
+
+                self->mode = DALHAL::Actuator::DriveMode::HBridge;
+            }
+
+            void Apply_HBridge_open_close(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<DALHAL::Actuator*>(out);
+                self->pins.hbridge.a =
+                    (gpio_num_t)JsonSchema::GetValue(pin_hbridge_open_field, ctx).asUInt();
+
+                self->pins.hbridge.b =
+                    (gpio_num_t)JsonSchema::GetValue(pin_hbridge_close_field, ctx).asUInt();
+
+                self->mode = DALHAL::Actuator::DriveMode::HBridge;
+            }
+        }
 
     }
 

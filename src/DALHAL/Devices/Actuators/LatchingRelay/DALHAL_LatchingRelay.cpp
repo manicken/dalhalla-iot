@@ -33,16 +33,77 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase LatchingRelay::RegistryDefine = {
         Create,
-        &JsonSchema::LatchingRelay,
+        &JsonSchema::LatchingRelay::Root,
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
     };
 
     Device* LatchingRelay::Create(DeviceCreateContext& context) {
         return new LatchingRelay(context);
+    }
+
+    LatchingRelay::LatchingRelay(DeviceCreateContext& context) : LatchingRelay_DeviceBase(context.deviceType), state(State::Idle) {
+        const JsonVariant& jsonObj = *(context.jsonObjItem);
+        isr_data.location = Location::Unknown;
+        isr_data.handled = false;
+
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        JsonSchema::ModeSelector::Apply(JsonSchema::LatchingRelay::Root.modes, context, this);
+
+        JsonSchema::PinConfig statePinCfg;
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::setStateField, *(context.jsonObjItem), &statePinCfg)) {
+            pinFeedbackSet = (gpio_num_t)statePinCfg.pin;
+            pinFeedbackSetActiveHigh = statePinCfg.activeHigh;
+        } else {
+            pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
+        }
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::resetStateField, *(context.jsonObjItem), &statePinCfg)) {
+            pinFeedbackReset = (gpio_num_t)statePinCfg.pin;
+            pinFeedbackResetActiveHigh = statePinCfg.activeHigh;
+        } else {
+            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
+        }
+
+        timeoutMs = JsonSchema::GetValue(JsonSchema::LatchingRelay::timeout_ms_field, context).asUInt();
+
+        setup();
+    }
+
+    LatchingRelay::~LatchingRelay() {
+#if defined(ESP8266) || defined(ESP32)
+        // FREE all used pins by setting them to INPUTS
+        uint64_t mask = 0;
+
+        if (mode == DriveMode::Direct) {
+            mask |= (1ULL << pins.direct.a);
+            mask |= (1ULL << pins.direct.b);
+        } else if (mode == DriveMode::DataEnable) {
+            mask |= (1ULL << pins.data_enable.data);
+            mask |= (1ULL << pins.data_enable.enable);
+        }
+
+        mask |= (1ULL << pinFeedbackReset);
+        mask |= (1ULL << pinFeedbackSet);
+
+        if (mask == 0) return;  // nothing to configure
+
+        gpio_config_t io_conf = {};
+        io_conf.pin_bit_mask = mask;
+        io_conf.mode = GPIO_MODE_INPUT;      // set all to input
+        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        io_conf.intr_type = GPIO_INTR_DISABLE; // no interrupts
+
+        esp_err_t res = gpio_config(&io_conf);
+        if (res != ESP_OK) {
+            printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
+        }
+#endif
     }
 
 #if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
@@ -122,97 +183,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data->handled = true;
     }
 
-    LatchingRelay::LatchingRelay(DeviceCreateContext& context) : LatchingRelay_DeviceBase(context.deviceType), state(State::Idle) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        isr_data.location = Location::Unknown;
-        isr_data.handled = false;
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-
-        // as we allready verified in VerifyJSON that the pin cfg is absolutely explicit defined
-        // we only need to check any of the pins to exist to determine the mode
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A)) {
-            // H-bridge mode raw a/b pins defined
-            pins.direct.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A);
-            pins.direct.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B);
-            mode = DriveMode::Direct;
-        } else if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET)) {
-            // H-bridge mode open/close pins defined
-            pins.direct.a = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET);
-            pins.direct.b = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET);
-            mode = DriveMode::Direct;
-        } else if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR)) {
-            pins.data_enable.data = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR);
-            pins.data_enable.enable = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE);
-            mode = DriveMode::DataEnable;
-        } 
-        // reserved for future modes
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE)) {
-            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE];
-            pinFeedbackSet = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
-            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
-                pinFeedbackSetActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
-            } else {
-                pinFeedbackSetActiveHigh = true;
-            }
-        } else {
-            pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
-            pinFeedbackSetActiveHigh = true;
-        }
-
-        if (jsonObj.containsKey(DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE)) {
-            const JsonVariant& endStop = jsonObj[DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE];
-            pinFeedbackReset = (gpio_num_t)GetAsUINT32(jsonObj, DALHAL_COMMON_CFG_NAME_PIN);
-            if (endStop.containsKey(DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH)) {
-                pinFeedbackResetActiveHigh = endStop[DALHAL_COMMON_CFG_NAME_PIN_ACTIVE_HIGH];
-            } else {
-                pinFeedbackResetActiveHigh = true;
-            }
-        } else {
-            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
-            pinFeedbackResetActiveHigh = true;
-        }
-
-        if (jsonObj.containsKey("timeoutMs") && jsonObj["timeoutMs"].is<uint32_t>()) {
-            timeoutMs = jsonObj["timeoutMs"].as<uint32_t>();
-        } else {
-            timeoutMs = 10000; // default 10 seconds
-        }
-
-        setup();
-    }
-
-    LatchingRelay::~LatchingRelay() {
-#if defined(ESP8266) || defined(ESP32)
-        // FREE all used pins by setting them to INPUTS
-        uint64_t mask = 0;
-
-        if (mode == DriveMode::Direct) {
-            mask |= (1ULL << pins.direct.a);
-            mask |= (1ULL << pins.direct.b);
-        } else if (mode == DriveMode::DataEnable) {
-            mask |= (1ULL << pins.data_enable.data);
-            mask |= (1ULL << pins.data_enable.enable);
-        }
-
-        mask |= (1ULL << pinFeedbackReset);
-        mask |= (1ULL << pinFeedbackSet);
-
-        if (mask == 0) return;  // nothing to configure
-
-        gpio_config_t io_conf = {};
-        io_conf.pin_bit_mask = mask;
-        io_conf.mode = GPIO_MODE_INPUT;      // set all to input
-        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.intr_type = GPIO_INTR_DISABLE; // no interrupts
-
-        esp_err_t res = gpio_config(&io_conf);
-        if (res != ESP_OK) {
-            printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
-        }
-#endif
-    }
+    
 
     void LatchingRelay::setup() {
 #if defined(ESP8266) || defined(ESP32)

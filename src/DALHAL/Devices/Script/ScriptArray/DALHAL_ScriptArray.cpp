@@ -44,7 +44,7 @@ namespace DALHAL {
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar());
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
         readOnly = JsonSchema::GetValue(JsonSchema::readonlyField, context).asBool();
         values = nullptr; // allways set it to nullptr
         if (JsonSchema::SchemaArrayOfPrimitives::ExtractValues(JsonSchema::scriptArrayItems, jsonObj, &values, valueCount) == false) {

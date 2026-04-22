@@ -30,6 +30,9 @@
 
 #include "DALHAL_ThingSpeak_JSON_Schema.h"
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
+
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
 #endif
@@ -40,7 +43,7 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase ThingSpeak::RegistryDefine = {
         Create,
-        &JsonSchema::ThingSpeak,
+        &JsonSchema::ThingSpeak::Root,
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
     };
 
@@ -48,18 +51,19 @@ namespace DALHAL {
     
     ThingSpeak::ThingSpeak(DeviceCreateContext& context) : ThingSpeak_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
 
-        refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0);
-        if (refreshTimeMs != 0) {
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+
+        HALValue refreshTimeMsTemp = JsonSchema::GetValue(JsonSchema::CommonTime::refreshTimeGroupFields, context);
+        if (refreshTimeMsTemp.isSet()) {
+            refreshTimeMs = refreshTimeMsTemp.asUInt();
             useOwnTaskLoop = true;
-            //if (refreshTimeMs < 1000) refreshTimeMs = 1000;
         } else {
+            refreshTimeMs = 0;
             useOwnTaskLoop = false;
         }
-        
-        if (jsonObj["testserver"].as<bool>()) {
+        HALValue testserverEnabled = JsonSchema::GetValue(JsonSchema::ThingSpeak::testserverField, context);
+        if (testserverEnabled.isSet() && testserverEnabled.asBool()) {
 #ifdef DALHAL_DEVICES_THINGSPEAK_TEST_SERVER
             ThingSpeak::TS_ROOT_URL = "http://" DALHAL_DEVICES_THINGSPEAK_TEST_SERVER ":8083/update?api_key=";
 #else
@@ -69,25 +73,26 @@ namespace DALHAL {
             ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
         }
 
-
-        const char* keyStr = GetAsConstChar(jsonObj, "key");
-        
+        const char* keyStr = JsonSchema::GetValue(JsonSchema::ThingSpeak::keyField, context).asConstChar();
         strncpy(API_KEY, keyStr, sizeof(API_KEY) - 1);
         API_KEY[sizeof(API_KEY) - 1] = '\0'; // ensure null-termination
 
-        JsonObject items = jsonObj[DALHAL_KEYNAME_ITEMS];
+
+        const JsonObject& items = JsonSchema::SchemaObject::GetValidatedJsonObject(JsonSchema::ThingSpeak::itemsField, jsonObj);
         fieldCount = items.size();
         fields = new ThingSpeakField[fieldCount];
         int index = 0;
         for (const JsonPair& kv : items) {
-            int fieldIndex = atoi(kv.key().c_str());
+            //int fieldIndex = atoi(kv.key().c_str());
+            uint8_t fieldIndex = kv.key().c_str()[0] - '0';
             const char* uidPathAndFuncName_cStr = kv.value().as<const char*>();
             fields[index++].Set(fieldIndex, uidPathAndFuncName_cStr);
         }
+
         urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
 
         if (useOwnTaskLoop) {
-            uint32_t firstUpdateAfterSeconds = jsonObj["firstUpdateAfterSeconds"].as<uint32_t>();
+            uint32_t firstUpdateAfterSeconds = JsonSchema::GetValue(JsonSchema::ThingSpeak::firstUpdateAfterSecondsField, context).asUInt();
             if (firstUpdateAfterSeconds == 0) {
                 lastUpdateMs = millis() - refreshTimeMs; // force a first update directly
             } else {

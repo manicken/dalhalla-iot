@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "DALHAL_DeviceCreateContext.h"
+
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
@@ -32,13 +34,6 @@
 #include <string>
 
 namespace DALHAL {
-
-    struct DeviceCreateContext
-    {
-        const JsonVariant* jsonObjItem;
-        const char* deviceType;
-        DeviceCreateContext(): jsonObjItem(nullptr), deviceType("NOT_SET") { }
-    };
 
     namespace Registry {
         

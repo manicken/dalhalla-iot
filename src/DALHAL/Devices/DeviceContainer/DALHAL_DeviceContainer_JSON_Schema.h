@@ -24,12 +24,19 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema DeviceContainer;
+        namespace DeviceContainer {
+
+            extern const JsonObjectSchema Root;
+
+            extern const SchemaArrayOfRegistryItems itemsField;
+
+            }
 
     }
 

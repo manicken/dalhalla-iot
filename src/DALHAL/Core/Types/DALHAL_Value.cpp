@@ -58,6 +58,9 @@ namespace DALHAL {
     bool HALValue::isNaN() const {
         return !isNumber();
     }
+    bool HALValue::isSet() const {
+        return type != Type::UNSET;
+    }
 
     uint32_t HALValue::asUInt() const {
         return uval;

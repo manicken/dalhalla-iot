@@ -44,6 +44,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaUInt::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
+            &GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
         };
@@ -89,11 +90,19 @@ namespace DALHAL {
         }
 
         HALValue SchemaUInt::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            const auto& fs = static_cast<const SchemaUInt&>(fieldSchema);
+            int raw;
             if (jsonObj.containsKey(fieldSchema.name)) {
-                return HALValue(jsonObj[fieldSchema.name].as<unsigned int>());
+                raw = jsonObj[fieldSchema.name].as<unsigned int>();
             } else {
-                return HALValue(static_cast<const SchemaUInt&>(fieldSchema).defaultValue);
+                raw = fs.defaultValue;
             }
+            if (fs.HasConversion() == false) {
+                return HALValue(raw);
+            }
+            unsigned int result = static_cast<unsigned int>(raw * fs.conversionFactor);
+
+            return HALValue(result);
         }
 
         void SchemaUInt::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

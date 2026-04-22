@@ -37,9 +37,9 @@ namespace DALHAL {
         constexpr SchemaStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
         constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
-        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, 0, 3, 0};
-        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, 0, 3, 0};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
+        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (uint)0, (uint)3, (uint)0};
+        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (uint)0, (uint)3, (uint)0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0};
 
         constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {
             { &anidField, true },  // group must exist for this mode
@@ -54,14 +54,14 @@ namespace DALHAL {
         };
 
         constexpr const ModeSelector modes[] = {
-            {"AlphaNumeric ID mode", conjunctions_anid_Mode},
-            {"hex ID mode", conjunctions_hexid_Mode},
-            {nullptr, nullptr}
+            {"AlphaNumeric ID mode", conjunctions_anid_Mode, nullptr}, // mode extract function is not yet used here
+            {"hex ID mode", conjunctions_hexid_Mode, nullptr},  // mode extract function is not yet used here
+            {nullptr, nullptr, nullptr}
         };
 
         
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &anidField,
             &hexidField,
             &grp_btnField,

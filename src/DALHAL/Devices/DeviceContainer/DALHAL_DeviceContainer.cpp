@@ -27,16 +27,19 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
+
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include "DALHAL_DeviceContainer_JSON_Schema.h"
+
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase DeviceContainer::RegistryDefine = {
         Create,
-        &JsonSchema::DeviceContainer,
+        &JsonSchema::DeviceContainer::Root,
         nullptr /* no events available */
     };
     
@@ -53,21 +56,16 @@ namespace DALHAL {
     // then fix DeviceContainer and other things loading devices so that they can use that instead
     DeviceContainer::DeviceContainer(DeviceCreateContext& context) : Device(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
 
-        const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
+        const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::DeviceContainer::itemsField, jsonObj);
         
         uint32_t deviceCountTmp = 0;
         int arraySize = jsonArray.size();
-        bool* validDevices = new bool[arraySize]; // dont' forget the delete[] call at end of function
 
         // First pass: count valid entries
         for (int i=0;i<arraySize;i++) {
-            JsonVariant jsonItem = jsonArray[i];
-            if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-           // bool valid = DeviceManager::VerifyDeviceJson(jsonItem);
-            validDevices[i] = true;
+            if (Device::DisabledOrCommentItem(jsonArray[i]) == true) { continue; }
             deviceCountTmp++;
         }
         
@@ -91,14 +89,12 @@ namespace DALHAL {
         // Second pass: actually create and store devices
         uint32_t index = 0;
         for (int i=0;i<arraySize;i++) {
-            JsonVariant jsonItem = jsonArray[i];
-            if (validDevices[i] == false) continue;
+            const JsonVariant& jsonItem = jsonArray[i];
+            if (Device::DisabledOrCommentItem(jsonItem) == true) { continue; }
             devices[index++] = DeviceManager::CreateDeviceFromJSON(jsonItem);
         }
         std::string devCountStr = std::to_string(deviceCount);
         GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
-
-        delete[] validDevices; // free memory
     }
 
     Device* DeviceContainer::Create(DeviceCreateContext& context) {

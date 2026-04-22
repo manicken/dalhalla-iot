@@ -24,12 +24,19 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema DigitalInput;
+        namespace DigitalInput {
+
+            extern const JsonObjectSchema Root;
+
+            extern const SchemaHardwarePin pinField;
+
+        }
 
     }
 

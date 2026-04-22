@@ -83,7 +83,7 @@
 
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
 
-#include <System/WiFiManagerWrapper.h>
+//#include <System/WiFiManagerWrapper.h>
 #include <System/System.h>
 #include <DALHAL/Drivers/HearbeatLed.h> // this should not be here in final version (should only be accessible through HAL interface)
 

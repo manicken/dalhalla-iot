@@ -40,12 +40,72 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
         Create,
-        &JsonSchema::Actuator,
+        &JsonSchema::Actuator::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
     };
 
     Device* Actuator::Create(DeviceCreateContext& context) {
         return new Actuator(context);
+    }
+
+    Actuator::Actuator(DeviceCreateContext& context) : Actuator_DeviceBase(context.deviceType), state(State::Idle) {
+
+        isr_data.location = Location::Unknown;
+        isr_data.handled = false;
+
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+
+        JsonSchema::ModeSelector::Apply(JsonSchema::Actuator::Root.modes, context, this);
+
+        JsonSchema::PinConfig endStopPinCfg;
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+            pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
+            pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
+        } else {
+            pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
+        }
+        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+            pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
+            pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
+        } else {
+            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
+        }
+
+        timeoutMs = JsonSchema::GetValue(JsonSchema::Actuator::timeout_ms_field, context).asUInt();
+
+        setup();
+    }
+
+    Actuator::~Actuator() {
+        // FREE all used pins by setting them to INPUTS
+#if defined(ESP8266) || defined(ESP32)
+        uint64_t mask = 0;
+
+        if (mode == DriveMode::HBridge) {
+            mask |= (1ULL << pins.hbridge.a);
+            mask |= (1ULL << pins.hbridge.b);
+        } else if (mode == DriveMode::DirEnable) {
+            mask |= (1ULL << pins.diren.dir);
+            mask |= (1ULL << pins.diren.enable);
+        }
+
+        mask |= (1ULL << pinMinEndStop);
+        mask |= (1ULL << pinMaxEndStop);
+
+        if (mask == 0) return;  // nothing to configure
+
+        gpio_config_t io_conf = {};
+        io_conf.pin_bit_mask = mask;
+        io_conf.mode = GPIO_MODE_INPUT;      // set all to input
+        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        io_conf.intr_type = GPIO_INTR_DISABLE; // no interrupts
+
+        esp_err_t res = gpio_config(&io_conf);
+        if (res != ESP_OK) {
+            printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
+        }
+#endif
     }
 
 
@@ -125,86 +185,6 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // signal to "main loop"
         isr_data->handled = true;
     }
-
-    Actuator::Actuator(DeviceCreateContext& context) : Actuator_DeviceBase(context.deviceType), state(State::Idle) {
-        //const JsonVariant& jsonObj = *(context.jsonObjItem);
-        isr_data.location = Location::Unknown;
-        isr_data.handled = false;
-        //const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::uidFieldRequired, context).asConstChar());
-
-        int modeIndex = JsonSchema::ModeSelector::evaluate(JsonSchema::Actuator.modes, *context.jsonObjItem);
-        if (modeIndex == 0) { // "h-bridge ab"
-            pins.hbridge.a = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_a_field, context).asUInt();
-            pins.hbridge.b = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_b_field, context).asUInt();
-            mode = DriveMode::HBridge;
-        } else if (modeIndex == 1) { // "h-bridge open close"
-            pins.hbridge.a = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_open_field, context).asUInt();
-            pins.hbridge.b = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_hbridge_close_field, context).asUInt();
-            mode = DriveMode::HBridge;
-        } else if (modeIndex == 2 || modeIndex == 3) { // "dir/enable"
-            pins.diren.dir = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_dir_field, context).asUInt();
-            pins.diren.enable = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_enable_field, context).asUInt();
-            if (modeIndex == 3) { // "dir/enable/break"
-                pins.diren.brk = (gpio_num_t)JsonSchema::GetValue(JsonSchema::pin_direnable_break_field, context).asUInt();
-            }
-            mode = DriveMode::DirEnable;
-        }
-
-        JsonSchema::PinConfig endStopPinCfg;
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-            pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
-            pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
-        } else {
-            pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
-            pinMinEndStopActiveHigh = true;
-        }
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-            pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
-            pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
-        } else {
-            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
-            pinMaxEndStopActiveHigh = true;
-        }
-
-        timeoutMs = JsonSchema::GetValue(JsonSchema::timeout_ms_field, context).asUInt();
-
-        setup();
-    }
-
-    Actuator::~Actuator() {
-        // FREE all used pins by setting them to INPUTS
-#if defined(ESP8266) || defined(ESP32)
-        uint64_t mask = 0;
-
-        if (mode == DriveMode::HBridge) {
-            mask |= (1ULL << pins.hbridge.a);
-            mask |= (1ULL << pins.hbridge.b);
-        } else if (mode == DriveMode::DirEnable) {
-            mask |= (1ULL << pins.diren.dir);
-            mask |= (1ULL << pins.diren.enable);
-        }
-
-        mask |= (1ULL << pinMinEndStop);
-        mask |= (1ULL << pinMaxEndStop);
-
-        if (mask == 0) return;  // nothing to configure
-
-        gpio_config_t io_conf = {};
-        io_conf.pin_bit_mask = mask;
-        io_conf.mode = GPIO_MODE_INPUT;      // set all to input
-        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.intr_type = GPIO_INTR_DISABLE; // no interrupts
-
-        esp_err_t res = gpio_config(&io_conf);
-        if (res != ESP_OK) {
-            printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
-        }
-#endif
-    }
-
-    
 
     void Actuator::setup() {
 #if defined(ESP8266) || defined(ESP32)

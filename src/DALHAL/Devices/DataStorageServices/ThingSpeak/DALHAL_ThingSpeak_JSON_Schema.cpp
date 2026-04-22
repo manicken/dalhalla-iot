@@ -38,50 +38,54 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaUInt firstUpdateAfterSecondsField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS, FieldPolicy::Optional, 0, 0, 0};
-        constexpr SchemaBool testserverField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER, FieldPolicy::Optional, false};
-        constexpr SchemaStringSizeConstrained keyField = {DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY, FieldPolicy::Required, "0123456789ABCDEF", 16, 16}; // here min/max defines so that the string must be exact 16 characters long
+        namespace ThingSpeak {
 
-        constexpr SchemaStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF3 = {"3", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF4 = {"4", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF5 = {"5", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF6 = {"6", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF7 = {"7", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path itemsF8 = {"8", FieldPolicy::Optional};
+            constexpr SchemaUInt firstUpdateAfterSecondsField = {"firstUpdateAfterSeconds", FieldPolicy::Optional, (uint)0, (uint)0, (uint)0};
+            constexpr SchemaBool testserverField = {"testserver", FieldPolicy::Optional, false};
+            constexpr SchemaStringSizeConstrained keyField = {"key", FieldPolicy::Required, "0123456789ABCDEF", (uint)16, (uint)16}; // here min/max defines so that the string must be exact 16 characters long
 
-        constexpr const SchemaTypeBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
+            constexpr SchemaStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF3 = {"3", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF4 = {"4", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF5 = {"5", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF6 = {"6", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF7 = {"7", FieldPolicy::Optional};
+            constexpr SchemaStringUID_Path itemsF8 = {"8", FieldPolicy::Optional};
 
-        constexpr JsonObjectSchema itemsFieldScheme = {
-            "ThingSpeakField",
-            itemsFields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Error,
-            UnknownFieldPolicy::Error,
-        };
+            constexpr const SchemaTypeBase* itemsFields[] = {&itemsF1, &itemsF2, &itemsF3, &itemsF4, &itemsF5, &itemsF6, &itemsF7, &itemsF8, nullptr};
 
-        constexpr SchemaObject itemsField = {"items", FieldPolicy::Required, &itemsFieldScheme};
+            constexpr JsonObjectSchema itemsFieldScheme = {
+                "ThingSpeakField",
+                itemsFields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Error,
+                UnknownFieldPolicy::Error,
+            };
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &refreshTimeGroupFields,
-            &firstUpdateAfterSecondsField,
-            &testserverField,
-            &keyField,
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaObject itemsField = {"items", FieldPolicy::Required, &itemsFieldScheme};
 
-        constexpr JsonObjectSchema ThingSpeak = {
-            "ThingSpeak",
-            fields,
-            nullptr, // no modes
-            nullptr, // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &CommonTime::refreshTimeGroupFields,
+                &firstUpdateAfterSecondsField,
+                &testserverField,
+                &keyField,
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "ThingSpeak",
+                fields,
+                nullptr, // no modes
+                nullptr, // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 

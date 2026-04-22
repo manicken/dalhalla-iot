@@ -39,7 +39,7 @@ namespace DALHAL {
         constexpr SchemaStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &regnameField,
             nullptr,
         };

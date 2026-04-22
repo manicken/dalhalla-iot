@@ -44,6 +44,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaFloat::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
+            &GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
         };

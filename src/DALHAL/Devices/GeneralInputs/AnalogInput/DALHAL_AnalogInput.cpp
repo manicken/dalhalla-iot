@@ -30,10 +30,12 @@
 
 #include "DALHAL_AnalogInput_JSON_Schema.h"
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+
 namespace DALHAL {
     constexpr Registry::DefineBase AnalogInput::RegistryDefine = {
         Create,
-        &JsonSchema::AnalogInput,
+        &JsonSchema::AnalogInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
     };
     
@@ -43,13 +45,8 @@ namespace DALHAL {
     }
 
     AnalogInput::AnalogInput(DeviceCreateContext& context) : AnalogInput_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID)); 
-        //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();
-        GPIO_manager::ReservePin(pin);
-        //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID];//.as<const char*>();
-        //uid = encodeUID(uidStr);
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::AnalogInput::pinField, context);
         pinMode(pin, INPUT);
     }
 

@@ -59,6 +59,7 @@ namespace DALHAL {
         bool isNumber() const;
         bool isUintOrInt() const;
         bool isNaN() const;
+        bool isSet() const;
 
         int32_t asInt() const;
         uint32_t asUInt() const;

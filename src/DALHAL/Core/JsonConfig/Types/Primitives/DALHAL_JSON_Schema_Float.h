@@ -30,13 +30,15 @@
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_NumericBase.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaFloat : SchemaTypeBase {
+        struct SchemaFloat : SchemaNumericBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -51,21 +53,33 @@ namespace DALHAL {
             // used to define when minValue/maxValue are not defined
             
         protected:
-            constexpr SchemaFloat(const char* name, FieldType type, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
-                : SchemaTypeBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr SchemaFloat(const char* name, FieldType type, FieldPolicy policy, float minValue, float maxValue, float defaultValue, float conversionFactor, size_t structOffset)
+                : SchemaNumericBase(name, type, policy, conversionFactor, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         
         public:
             constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue)
-                : SchemaTypeBase(name, FieldType::Float, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::Float, policy, 1.0f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
 
             constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue) 
-                : SchemaTypeBase(name, FieldType::Float, policy), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::Float, policy, 1.0f), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
 
             constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue, size_t structOffset)
-                : SchemaTypeBase(name, FieldType::Float, policy, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::Float, policy, 1.0f, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
 
             constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue, size_t structOffset) 
-                : SchemaTypeBase(name, FieldType::Float, policy, structOffset), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}  
+                : SchemaNumericBase(name, FieldType::Float, policy, 1.0f, structOffset), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}  
+            // using conversionFactor
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue, float conversionFactor)
+                : SchemaNumericBase(name, FieldType::Float, policy, conversionFactor), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue, float conversionFactor) 
+                : SchemaNumericBase(name, FieldType::Float, policy, conversionFactor), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float minValue, float maxValue, float defaultValue, float conversionFactor, size_t structOffset)
+                : SchemaNumericBase(name, FieldType::Float, policy, conversionFactor, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaFloat(const char* name, FieldPolicy policy, float defaultValue, float conversionFactor, size_t structOffset) 
+                : SchemaNumericBase(name, FieldType::Float, policy, conversionFactor, structOffset), minValue(NAN), maxValue(NAN), defaultValue(defaultValue) {}
         };
 
     }

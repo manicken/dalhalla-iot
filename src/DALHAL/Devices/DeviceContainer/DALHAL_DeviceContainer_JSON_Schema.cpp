@@ -34,22 +34,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
+        namespace DeviceContainer {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
 
-        constexpr JsonObjectSchema DeviceContainer = {
-            "DeviceContainer",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "DeviceContainer",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 

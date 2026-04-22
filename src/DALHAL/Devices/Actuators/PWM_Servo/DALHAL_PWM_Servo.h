@@ -54,12 +54,18 @@ public: // public static fields and exposed external structures
     static const Registry::DefineBase RegistryDefine;
     static Device* Create(DeviceCreateContext& context);
 
-private:
-    // private structures/enums/types
+public:
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
         PulseUS,     // raw microseconds
     };
+    ServoValueType valueType = ServoValueType::PulseUS;
+    float minVal;  // min for ratio type
+    float maxVal;  // max for ratio type
+
+private:
+    // private structures/enums/types
+    
     // private member data
     uint8_t pin = 0;
     ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
@@ -71,9 +77,7 @@ private:
 
     uint32_t startPulseLength = 1500;
 
-    ServoValueType valueType = ServoValueType::PulseUS;
-    float minVal;  // min for ratio type
-    float maxVal;  // max for ratio type
+    
 
     uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
     uint32_t lastWriteMs = 0;

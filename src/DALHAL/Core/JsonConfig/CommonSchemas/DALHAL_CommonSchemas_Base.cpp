@@ -31,39 +31,43 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
-        constexpr SchemaStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
+        namespace CommonBase {
 
-        constexpr SchemaString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
+            constexpr SchemaStringUID uidFieldRequired{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Required};
+            constexpr SchemaStringUID uidFieldOptional{DALHAL_COMMON_CFG_NAME_UID, FieldPolicy::Optional};
 
-        constexpr SchemaString noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
+            constexpr SchemaString typeField = {DALHAL_COMMON_CFG_NAME_TYPE, FieldPolicy::Required, nullptr};
 
-        constexpr SchemaBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
+            constexpr SchemaString noteField = {DALHAL_COMMON_CFG_NAME_NOTE, FieldPolicy::Optional, nullptr};
 
-        constexpr const SchemaTypeBase* disabled_uidreq_note_group_items[] = { 
-            &disabledField, 
-            &uidFieldRequired, 
-            &noteField, 
-            nullptr
-        };
-        constexpr SchemaFieldsGroup disabled_uidreq_note_group = {
-            "disabled_uidreq_note_group_items",
-            disabled_uidreq_note_group_items,
-            Gui::UseInline,
-            /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation
-        };
+            constexpr SchemaBool disabledField = {DALHAL_COMMON_CFG_NAME_DISABLED, FieldPolicy::Optional, false};
 
-        constexpr const SchemaTypeBase* disabled_type_uidreq_note_group_items[] = {
-            &disabled_uidreq_note_group,
-            &typeField,
-            nullptr
-        };
-        constexpr SchemaFieldsGroup disabled_type_uidreq_note_group = {
-            "disabled_type_uidreq_note_group_items",
-            disabled_type_uidreq_note_group_items,
-            Gui::UseInline,
-            /*sizeof(disabled_type_uidreq_note_group_items)/sizeof(disabled_type_uidreq_note_group_items[0])*/ // future implementation
-        };
+            constexpr const SchemaTypeBase* disabled_uidreq_note_group_items[] = { 
+                &disabledField, 
+                &uidFieldRequired, 
+                &noteField, 
+                nullptr
+            };
+            constexpr SchemaFieldsGroup disabled_uidreq_note_group = {
+                "disabled_uidreq_note_group_items",
+                disabled_uidreq_note_group_items,
+                Gui::UseInline,
+                /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation
+            };
+
+            constexpr const SchemaTypeBase* disabled_type_uidreq_note_group_items[] = {
+                &disabled_uidreq_note_group,
+                &typeField,
+                nullptr
+            };
+            constexpr SchemaFieldsGroup disabled_type_uidreq_note_group = {
+                "disabled_type_uidreq_note_group_items",
+                disabled_type_uidreq_note_group_items,
+                Gui::UseInline,
+                /*sizeof(disabled_type_uidreq_note_group_items)/sizeof(disabled_type_uidreq_note_group_items[0])*/ // future implementation
+            };
+
+        }
     }
 
 }

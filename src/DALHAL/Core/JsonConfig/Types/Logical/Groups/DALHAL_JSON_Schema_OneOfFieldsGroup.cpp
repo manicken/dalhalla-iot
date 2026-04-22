@@ -40,6 +40,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaOneOfFieldsGroup::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
+              &GetValue,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
@@ -111,6 +112,25 @@ namespace DALHAL {
             }
 
             return ValidatorResult::Success;
+        }
+
+        HALValue SchemaOneOfFieldsGroup::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            const auto& group = static_cast<const SchemaOneOfFieldsGroup&>(fieldSchema);
+
+            for (size_t i = 0; group.fields[i] != nullptr; ++i) {
+                const SchemaTypeBase& f = *group.fields[i];
+
+                if (jsonObj.containsKey(f.name)) {
+                    // Delegate to the actual field type
+                    return JsonSchema::GetValue(f, jsonObj);
+                }
+            }
+            if (group.defaultValueField != nullptr) {
+                // utilize the fact that if a field is not found the GetValue return the default value
+                // otherwise it fallbacks to that GetValue returns a unset HALValue if it cannot get the value
+                return JsonSchema::GetValue(*group.defaultValueField, jsonObj); 
+            }
+            return HALValue(); // unset / invalid
         }
 
         void SchemaOneOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

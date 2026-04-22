@@ -23,21 +23,15 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
+#include <ArduinoJson.h> // this dependency can be removed when I begin to use the new config schema validator
 
 namespace DALHAL {
 
-    namespace JsonSchema {
+    struct DeviceCreateContext
+    {
+        const JsonVariant* jsonObjItem;
+        const char* deviceType;
+        DeviceCreateContext(): jsonObjItem(nullptr), deviceType("NOT_SET") { }
+    };
 
-        namespace CommonTime {
-
-            extern const SchemaOneOfFieldsGroup refreshTimeGroupFields;
-            extern const SchemaOneOfFieldsGroup refreshTimeGroupFieldsRequired;
-
-        }
-        
-    }
-    
 }

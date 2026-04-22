@@ -35,22 +35,27 @@
 namespace DALHAL {
 
     namespace JsonSchema {
+
         struct PinConfig {
             int32_t pin;
             bool activeHigh;
         };
 
-        /** defines a input pin field named 'pin' */
-        extern const SchemaHardwarePin InputPinField;
-        /** defines a output pin field named 'pin' */
-        extern const SchemaHardwarePin OutputPinField;
-        /** defines a input/output pin field named 'pin' */
-        extern const SchemaHardwarePin InputOutputPinField;
+        namespace CommonPins {
 
-        extern const JsonObjectSchema InputPinScheme;
-        extern const JsonObjectSchema OutputPinScheme;
+            /** defines a required input pin field named 'pin' */
+            extern const SchemaHardwarePin InputPinField;
+            /** defines a required output pin field named 'pin' */
+            extern const SchemaHardwarePin OutputPinField;
+            /** defines a input/output pin field named 'pin' */
+            extern const SchemaHardwarePin InputOutputPinField;
 
-        static constexpr const char* activeLevelStrings[] = {DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, nullptr};
+            extern const JsonObjectSchema InputPinScheme;
+            extern const JsonObjectSchema OutputPinScheme;
+
+            static constexpr const char* activeLevelStrings[] = {DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, nullptr};
+            
+        }
 
     }
     

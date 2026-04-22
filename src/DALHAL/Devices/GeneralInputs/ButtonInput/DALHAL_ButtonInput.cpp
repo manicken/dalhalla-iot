@@ -39,7 +39,7 @@
 namespace DALHAL {
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {
         Create,
-        &JsonSchema::ButtonInput,
+        &JsonSchema::ButtonInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
     };
 
@@ -58,17 +58,11 @@ namespace DALHAL {
     // Constructor
     ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::ButtonInput::pinField, context);
+        debounceMs = JsonSchema::GetValue(JsonSchema::ButtonInput::debounceMsField, context);
+        activeLevel = JsonSchema::GetValue(JsonSchema::ButtonInput::activeLevelField, context);
 
-        // Optional debounce, default 30ms
-        debounceMs = jsonObj.containsKey("debounce_ms") ? jsonObj["debounce_ms"].as<uint32_t>() : 30;
-
-        // Active level (default HIGH)
-        activeLevel = jsonObj.containsKey("activeLevel") && strcmp(jsonObj["activeLevel"], DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW) == 0;
-
-        GPIO_manager::ReservePin(pin);
         pinMode(pin, activeLevel ? INPUT_PULLDOWN : INPUT_PULLUP);
 
         // Initial states
@@ -77,9 +71,12 @@ namespace DALHAL {
         lastChangeMs = millis();
 
         // Optional external action target
-        if (jsonObj.containsKey("on_press")) {
+        // todo can also use react events
+        // but this allow direct actions
+        const char* on_press_cStr = JsonSchema::GetValue(JsonSchema::ButtonInput::on_pressField, context).asConstChar();
+        if (on_press_cStr != nullptr) {
             toggleTarget = new CachedDeviceAccess();
-            if (toggleTarget->Set(jsonObj["on_press"].as<const char*>()) == false) {
+            if (toggleTarget->Set(on_press_cStr) == false) {
                 delete toggleTarget;
                 toggleTarget = nullptr;
             }

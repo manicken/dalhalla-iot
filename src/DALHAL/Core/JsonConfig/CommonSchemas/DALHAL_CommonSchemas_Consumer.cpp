@@ -30,40 +30,77 @@
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
 
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
+
 #include "DALHAL_CommonSchemas_Time.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringUID_Path sourceField = { "source", FieldPolicy::Optional}; 
-        constexpr SchemaStringUID_Path eventSourceField = { "event_source", FieldPolicy::Optional};
+        namespace CommonConsumer {
+
+            constexpr SchemaStringUID_Path sourceField = { "source", FieldPolicy::Optional}; 
+            constexpr SchemaStringUID_Path eventSourceField = { "event_source", FieldPolicy::Optional};
+
+            constexpr const SchemaTypeBase* consumerFields[] = { &sourceField, &eventSourceField, &CommonTime::refreshTimeGroupFields, nullptr };
+            constexpr SchemaFieldsGroup consumerFieldsGroup = {"consumer", consumerFields, Gui::UseInline};
+            
+            constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
+                { &CommonTime::refreshTimeGroupFields, true },  // group must exist for this mode
+                { &sourceField, true },            // source must exist
+                { &eventSourceField, false },      // event_source must NOT exist
+                { nullptr, false}
+            };
+            constexpr ModeConjunctionDefine eventModeConjunctions[] = {
+                { &CommonTime::refreshTimeGroupFields, false },  // group must NOT exist for this mode
+                { &sourceField, true },            // source must exist
+                { &eventSourceField, true },      // event_source must exist
+                { nullptr, false}
+            };
+            constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
+                { &CommonTime::refreshTimeGroupFields, false },  // group must NOT exist for this mode
+                { &sourceField, false },            // source must NOT exist
+                { &eventSourceField, false },      // event_source must NOT exist
+                { nullptr, false}
+            };
+
+            void Apply_RefreshModeValues(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<ConsumerStruct*>(out);
+                self->mode = ConsumerStruct::Mode::Refresh;
+                self->eventSource = nullptr;
+                self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
+                self->refreshtimems = JsonSchema::GetValue(CommonTime::refreshTimeGroupFields, ctx).asUInt();
+            }
+
+            void Apply_EventModeValues(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<ConsumerStruct*>(out);
+                self->mode = ConsumerStruct::Mode::Event;
+                self->eventSource = JsonSchema::GetValue(eventSourceField, ctx).asConstChar();;
+                self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
+                self->refreshtimems = 0;
+            }
+
+            void Apply_ScriptModeValues(const DeviceCreateContext& ctx, void* out)
+            {
+                auto* self = static_cast<ConsumerStruct*>(out);
+                self->mode = ConsumerStruct::Mode::Script;
+                self->eventSource = nullptr;
+                self->source = nullptr;
+                self->refreshtimems = 0;
+            }
+            
+            constexpr ModeSelector consumerDeviceModes[] = {
+                {"refresh", refreshModeConjunctions, Apply_RefreshModeValues},
+                {"event", eventModeConjunctions, Apply_EventModeValues},
+                {"script", scriptModeConjunctions, Apply_ScriptModeValues},
+                {nullptr, nullptr, nullptr}
+            };
+
+        }
         
-        constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
-            { &refreshTimeGroupFields, true },  // group must exist for this mode
-            { &sourceField, true },            // source must exist
-            { &eventSourceField, false },      // event_source must NOT exist
-            { nullptr, false}
-        };
-        constexpr ModeConjunctionDefine eventModeConjunctions[] = {
-            { &refreshTimeGroupFields, false },  // group must NOT exist for this mode
-            { &sourceField, true },            // source must exist
-            { &eventSourceField, true },      // event_source must exist
-            { nullptr, false}
-        };
-        constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
-            { &refreshTimeGroupFields, false },  // group must NOT exist for this mode
-            { &sourceField, false },            // source must NOT exist
-            { &eventSourceField, false },      // event_source must NOT exist
-            { nullptr, false}
-        };
-        
-        constexpr ModeSelector consumerDeviceModes[] = {
-            {"refresh mode", refreshModeConjunctions},
-            {"event mode", eventModeConjunctions},
-            {"script mode", scriptModeConjunctions},
-            {nullptr, nullptr}
-        };
     }
 
 }

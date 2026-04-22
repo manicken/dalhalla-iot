@@ -59,14 +59,6 @@ namespace DALHAL {
         return new TX433_Unit(static_cast<TX433_Unit_CreateFunctionContext&>(context));
     }
     
-
-   /* bool TX433_Unit::VerifyFC_JSON(const JsonVariant &jsonObj) {
-        if (!ValidateJsonStringField(jsonObj,"ch")) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_FC_JSON); return false; }
-        if (!ValidateJsonStringField(jsonObj,"btn")) { SET_ERR_LOC(DALHAL_ERROR_SOURCE_TX433_UNIT_VERIFY_FC_JSON); return false; }
-        //if (!ValidateJsonStringField(jsonObj,"state")) return false;
-        return true;
-    }*/
-    
     TX433_Unit::TX433_Unit(TX433_Unit_CreateFunctionContext& context) : TX433unit_DeviceBase(context.deviceType), pin(context.pin) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
         const char* uidStr = jsonObj[DALHAL_COMMON_CFG_NAME_UID].as<const char*>();

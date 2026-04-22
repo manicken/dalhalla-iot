@@ -24,16 +24,25 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
-#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_FIRST_UPDATE_AFTER_SECONDS "firstUpdateAfterSeconds"
-#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_TESTSERVER "testserver"
-#define DALHAL_DEVICE_THINGSPEAK_CFG_NAME_KEY "key"
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringSizeConstrained.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema ThingSpeak;
+        namespace ThingSpeak {
+
+            extern const JsonObjectSchema Root;
+            extern const SchemaUInt firstUpdateAfterSecondsField;
+            extern const SchemaBool testserverField;
+            extern const SchemaStringSizeConstrained keyField;
+
+            extern const SchemaObject itemsField;
+
+        }
 
     }
 

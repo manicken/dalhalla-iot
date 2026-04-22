@@ -25,34 +25,32 @@
 
 #include <stdlib.h>
 
+#include <DALHAL/Support/DALHAL_Logger.h>
+
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
-#include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
+
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct ModeConjunctionDefine {
-            const SchemaTypeBase* fieldRef;
-            bool required; // true = must exist, false = must explicit NOT exist
-        };
-
-        using ModeApplyFn = void (*)(const DALHAL::DeviceCreateContext&, void* outStruct);
-
-        struct ModeSelector {
-            const char* name; // optional
-            const ModeConjunctionDefine* conjunctions; // nullptr terminated
-            ModeApplyFn apply;
-
-            constexpr ModeSelector(const char* name, const ModeConjunctionDefine* conjunctions, ModeApplyFn apply)
-                : name(name), conjunctions(conjunctions), apply(apply) {}
-
-            static int evaluate(const ModeSelector* modes, const JsonVariant& j);
-            static bool Apply(const ModeSelector* modes, const DALHAL::DeviceCreateContext&, void* outStruct);
-            static void ToJson(const ModeSelector* modes, std::string& out);
-        };
-
+        struct SchemaNumericBase : SchemaTypeBase {
         
+            float conversionFactor;
+
+            bool HasConversion() const {
+                return conversionFactor != 1.0f;
+            }
+
+        protected:
+            constexpr SchemaNumericBase(const char* name, FieldType type, FieldPolicy policy, float conversionFactor)
+                : SchemaTypeBase(name, type, policy), conversionFactor(conversionFactor) {}
+            constexpr SchemaNumericBase(const char* name, FieldType type, FieldPolicy policy, float conversionFactor, size_t structOffset)
+                : SchemaTypeBase(name, type, policy, structOffset), conversionFactor(conversionFactor) {}
+        };
+
     }
 
 }

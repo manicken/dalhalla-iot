@@ -44,7 +44,7 @@ namespace DALHAL {
         constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &sckpinField,
             &sdapinField,
             &itemsField,

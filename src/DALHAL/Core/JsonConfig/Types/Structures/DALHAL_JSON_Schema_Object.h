@@ -46,6 +46,8 @@ namespace DALHAL {
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static bool ExtractValues(const SchemaObject& schemaField, const JsonVariant& jsonObj, void* outStruct);
+            /** please note that this is should only be used on validated json, or when the the usage is safe */
+            static const JsonObject& GetValidatedJsonObject(const SchemaObject& schemaField, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             

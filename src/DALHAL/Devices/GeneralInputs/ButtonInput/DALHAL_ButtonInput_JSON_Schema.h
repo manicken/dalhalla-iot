@@ -25,11 +25,26 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema ButtonInput;
+        namespace ButtonInput {
+
+            extern const JsonObjectSchema Root;
+
+            extern const SchemaHardwarePin pinField;
+            extern const SchemaStringAnyOfArrayConstrained activeLevelField;
+            extern const SchemaUInt debounceMsField;
+            extern const SchemaString on_pressField;
+
+
+        }
 
     }
 

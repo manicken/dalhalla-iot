@@ -37,7 +37,7 @@ namespace DALHAL {
 
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &valueField,
             nullptr,
         };

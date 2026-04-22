@@ -62,6 +62,19 @@ namespace DALHAL {
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
         
+    public:
+        
+        union DrivePins {
+            struct { gpio_num_t a, b; } hbridge;
+            struct { gpio_num_t dir, enable, brk; } diren;
+        };
+        enum class DriveMode : uint8_t {
+            HBridge,      // forward / backward
+            DirEnable     // dir + enable
+        };
+        DrivePins pins;
+        DriveMode mode;
+
     private:
         // private Static functions
         static void IRAM_ATTR endstop_isr(void* arg);
@@ -71,14 +84,6 @@ namespace DALHAL {
         static HALOperationResult exec_reset(Device* device);
 
         // private structures/enums/types
-        union DrivePins {
-            struct { gpio_num_t a, b; } hbridge;
-            struct { gpio_num_t dir, enable, brk; } diren;
-        };
-        enum class DriveMode : uint8_t {
-            HBridge,      // forward / backward
-            DirEnable     // dir + enable
-        };
         enum class GpioRegType {
             Set,
             Clear
@@ -108,8 +113,7 @@ namespace DALHAL {
 
         State state = State::Idle;
 
-        DrivePins pins;
-        DriveMode mode;
+        
 
         gpio_num_t pinMinEndStop;
         gpio_num_t pinMaxEndStop;

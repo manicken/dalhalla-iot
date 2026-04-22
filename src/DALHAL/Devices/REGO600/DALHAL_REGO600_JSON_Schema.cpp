@@ -43,16 +43,16 @@ namespace DALHAL {
         constexpr SchemaHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
         constexpr SchemaHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, 0, 0, 10};
+        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, (uint)0, (uint)0, (uint)10};
 
         constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, &regnameField, &REGO600_Register, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &rxpinField,
             &txpinField,
             &requestDelayMsField,
-            &refreshTimeGroupFieldsRequired,
+            &CommonTime::refreshTimeGroupFieldsRequired,
             &itemsField,
             nullptr,
         };

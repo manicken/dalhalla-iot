@@ -29,6 +29,11 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        enum class GroupMode {
+            GlobalGroup,
+            IndividualGroup
+        };
+
         extern const JsonObjectSchema HomeAssistant;
 
     }

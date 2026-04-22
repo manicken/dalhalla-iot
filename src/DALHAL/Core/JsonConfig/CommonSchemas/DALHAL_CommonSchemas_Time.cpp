@@ -31,13 +31,18 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaUInt    refreshTimeMsField  = { "refreshtimems", FieldPolicy::OneOfGroup, 1}; // here we dont define min/max, only default
-        constexpr SchemaFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max, only default
-        constexpr SchemaFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f}; // here we dont define min/max, only default
-        constexpr const SchemaTypeBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
+        namespace CommonTime {
 
-        constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFields = {"refreshtime", FieldPolicy::Optional, Gui::UseInline, refreshGroupItems}; // here refreshtimems defines what name to use for the BSON output
-        constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFieldsRequired = {"refreshtime", FieldPolicy::Required, Gui::UseInline, refreshGroupItems};
+            constexpr SchemaUInt     refreshTimeMsField  = { "refreshtimems", FieldPolicy::OneOfGroup, 1, 1.0f}; // here we dont define min/max, only default
+            constexpr SchemaFloat    refreshTimeSecField  = { "refreshtimesec", FieldPolicy::OneOfGroup, 1.0f, 1000.0f}; // here we dont define min/max, only default
+            constexpr SchemaFloat    refreshTimeMinField  = { "refreshtimemin", FieldPolicy::OneOfGroup, 1.0f, 60000.0f}; // here we dont define min/max, only default
+            constexpr const SchemaTypeBase* refreshGroupItems[] = {&refreshTimeMsField, &refreshTimeSecField, &refreshTimeMinField, nullptr};
+
+            constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFields = {"refreshtime", FieldPolicy::Optional, Gui::UseInline, refreshGroupItems};
+            constexpr SchemaOneOfFieldsGroup   refreshTimeGroupFieldsRequired = {"refreshtime", FieldPolicy::Required, Gui::UseInline, refreshGroupItems};
+
+        }
+
     }
 
 }

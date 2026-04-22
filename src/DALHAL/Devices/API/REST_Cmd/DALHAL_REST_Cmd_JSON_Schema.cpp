@@ -35,22 +35,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaString urlField = { DALHAL_DEVICE_REST_CMD_CFG_NAME_URL, FieldPolicy::Required};
+        namespace REST_Cmd {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &urlField,
-            nullptr,
-        };
+            constexpr SchemaString urlField = { "url", FieldPolicy::Required};
 
-        constexpr JsonObjectSchema REST_Cmd = {
-            "REST_Cmd",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &urlField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "REST_Cmd",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 

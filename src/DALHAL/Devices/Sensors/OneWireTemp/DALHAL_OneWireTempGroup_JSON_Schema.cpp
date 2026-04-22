@@ -40,8 +40,8 @@ namespace DALHAL {
         constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &OneWireTempBus, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonTime::refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
                                              // if it should not depend on automatic refresh, it do need a cmd that start a conversion
                                              // that then emit a reactive event when the convertion is done
             &itemsField,

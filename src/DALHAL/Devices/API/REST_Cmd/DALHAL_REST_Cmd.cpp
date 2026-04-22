@@ -34,7 +34,7 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase REST_Cmd::RegistryDefine = {
         Create,
-        &JsonSchema::REST_Cmd,
+        &JsonSchema::REST_Cmd::Root,
         nullptr // no events available on obsolete device
     };
 
@@ -44,9 +44,8 @@ namespace DALHAL {
 
     REST_Cmd::REST_Cmd(DeviceCreateContext& context) : DALHAL::Device(context.deviceType)
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_COMMON_CFG_NAME_UID));
-        remoteUrl = GetAsConstChar(jsonObj, DALHAL_DEVICE_REST_CMD_CFG_NAME_URL);
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        remoteUrl = JsonSchema::GetValue(JsonSchema::REST_Cmd::urlField, context).asConstChar();
     }
 
     DALHAL::HALOperationResult REST_Cmd::exec() {

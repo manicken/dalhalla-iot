@@ -34,47 +34,62 @@
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        // SSD1306_Element "device"
-        constexpr SchemaUInt xField = {"x", FieldPolicy::Required, 0, 128, 0};
-        constexpr SchemaUInt yField = {"y", FieldPolicy::Required, 0, 64, 0};
-        constexpr SchemaString labelField = {"label", FieldPolicy::Optional};
-        constexpr SchemaStringUID_Path sourceField = {"source", FieldPolicy::Optional};
+        namespace Display_SSD1306 {
 
-        constexpr const SchemaTypeBase* elementFields[] = {&disabledField, &uidFieldRequired, &xField, &yField, &labelField, &sourceField, nullptr};
+            // SSD1306_Element "device"
+            constexpr SchemaUInt xField = {"x", FieldPolicy::Required, (uint)0, (uint)128, (uint)0};
+            constexpr SchemaUInt yField = {"y", FieldPolicy::Required, (uint)0, (uint)64, (uint)0};
+            constexpr SchemaString labelField = {"label", FieldPolicy::Optional};
+            //constexpr SchemaStringUID_Path sourceField = {"source", FieldPolicy::Optional};
 
-        constexpr JsonObjectSchema elementObject = {"SSD1306 element", elementFields, nullptr, nullptr, EmptyPolicy::Warn, UnknownFieldPolicy::Warn};
+            constexpr const SchemaTypeBase* elementFields[] = {
+                &CommonBase::disabledField, 
+                &CommonBase::uidFieldRequired, 
+                &xField, 
+                &yField, 
+                &labelField, 
+                &CommonConsumer::sourceField, 
+                nullptr
+            };
 
-        // SSD1306 display
-        constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, 8, 128, 128};
-        constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, 8, 64, 64};
-        constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
+            constexpr JsonObjectSchema elementObject = {"SSD1306 element", elementFields, nullptr, nullptr, EmptyPolicy::Warn, UnknownFieldPolicy::Warn};
 
-        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &elementObject};
-        
+            // SSD1306 display
+            constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, (uint)8, (uint)128, (uint)128};
+            constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, (uint)8, (uint)64, (uint)64};
+            constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (uint)1, (uint)64, (uint)1};
+            constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &widthField,
-            &heightField,
-            &addrField,
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &elementObject};
+            
 
-        constexpr JsonObjectSchema Display_SSD1306 = {
-            "Display_SSD1306",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &widthField,
+                &heightField,
+                &textsizeField,
+                &addrField,
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "Display_SSD1306",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 

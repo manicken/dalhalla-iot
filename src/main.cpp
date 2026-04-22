@@ -101,6 +101,32 @@ void setup() {
 #else
     bool connected = WiFiManagerWrapper::Setup();
 #endif
+#else
+#if defined(USE_DISPLAY)
+        display.setCursor(0, 0);
+        display.println(F("WiFi connecting..."));
+        display.display();
+#endif
+    wl_status_t wifiState = WiFi.begin();
+    bool wifiConnected = false;
+    if (wifiState == wl_status_t::WL_CONNECTED) {
+        Serial.println(F("wifi/status/ok/connect"));
+        wifiConnected = true;
+    } else {
+        Serial.println(F("wifi/status/error/connect"));
+    }
+#if defined(USE_DISPLAY)
+        display.setCursor(0, 9);
+        if (wifiConnected) {
+            display.println(F("OK"));
+            display.setCursor(0, 17);
+            display.println(WiFi.localIP());
+        } else {
+            display.println(F("FAIL"));
+        }
+        display.display();
+        delay(2000); // allow user to see result
+#endif
 #endif
     OTA::setup();
 

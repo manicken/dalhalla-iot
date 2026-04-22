@@ -46,10 +46,10 @@ namespace DALHAL {
         constexpr const SchemaStringAnyOfArrayConstrained modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, &modelFieldConstraints};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &modelField,
-            &refreshTimeGroupFieldsRequired,
-            &InputOutputPinField,
+            &CommonTime::refreshTimeGroupFieldsRequired,
+            &CommonPins::InputOutputPinField,
             nullptr,
         };
 

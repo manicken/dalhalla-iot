@@ -30,13 +30,15 @@
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_ValidatorResult.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_NumericBase.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        struct SchemaUInt : SchemaTypeBase {
+        struct SchemaUInt : SchemaNumericBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
@@ -50,21 +52,34 @@ namespace DALHAL {
             uint32_t defaultValue;
 
         protected:
-            constexpr SchemaUInt(const char* name, FieldType type, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
-                : SchemaTypeBase(name, type, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+            constexpr SchemaUInt(const char* name, FieldType type, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, float conversionFactor, size_t structOffset)
+                : SchemaNumericBase(name, type, policy, conversionFactor, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         
         public:
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue) 
-                : SchemaTypeBase(name, FieldType::UInt, policy), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::UInt, policy, 1.0f), minValue(0), maxValue(0), defaultValue(defaultValue) {}
 
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue)
-                : SchemaTypeBase(name, FieldType::UInt, policy), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::UInt, policy, 1.0f), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
 
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue, size_t structOffset) 
-                : SchemaTypeBase(name, FieldType::UInt, policy, structOffset), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::UInt, policy, 1.0f, structOffset), minValue(0), maxValue(0), defaultValue(defaultValue) {}
 
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, size_t structOffset)
-                : SchemaTypeBase(name, FieldType::UInt, policy, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+                : SchemaNumericBase(name, FieldType::UInt, policy, 1.0f, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            // using conversionFactor
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue, float conversionFactor) 
+                : SchemaNumericBase(name, FieldType::UInt, policy, conversionFactor), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, float conversionFactor)
+                : SchemaNumericBase(name, FieldType::UInt, policy, conversionFactor), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t defaultValue, float conversionFactor, size_t structOffset) 
+                : SchemaNumericBase(name, FieldType::UInt, policy, conversionFactor, structOffset), minValue(0), maxValue(0), defaultValue(defaultValue) {}
+
+            constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, float conversionFactor, size_t structOffset)
+                : SchemaNumericBase(name, FieldType::UInt, policy, conversionFactor, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
         };
 
     }

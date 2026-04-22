@@ -35,6 +35,7 @@
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+
 #include "DALHAL_HA_DeviceTypeReg.h"
 
 namespace DALHAL {
@@ -43,7 +44,7 @@ namespace DALHAL {
 
         constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
         constexpr SchemaString hostField = {"host", FieldPolicy::Required};
-        constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, 1, 65535, 1883};
+        constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, (uint)1, (uint)65535, (uint)1883};
         constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
         constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
 
@@ -52,7 +53,7 @@ namespace DALHAL {
 
         constexpr SchemaString groupNameField = {"name", FieldPolicy::Required};
 
-        constexpr const SchemaTypeBase* globalGroupFields[] = {&uidFieldRequired, &groupNameField, nullptr};
+        constexpr const SchemaTypeBase* globalGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, nullptr};
         constexpr JsonObjectSchema globalGroupSchema = {
             "GlobalGroup",
             globalGroupFields,
@@ -65,7 +66,7 @@ namespace DALHAL {
 
         constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
-        constexpr const SchemaTypeBase* individualGroupFields[] = {&uidFieldRequired, &groupNameField, &itemsField, nullptr};
+        constexpr const SchemaTypeBase* individualGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, &itemsField, nullptr};
         constexpr JsonObjectSchema individualGroupSchema = {
             "IndividualGroup",
             individualGroupFields,
@@ -77,7 +78,7 @@ namespace DALHAL {
         constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &deviceIdField,
             &hostField,
             &portField,
@@ -98,20 +99,28 @@ namespace DALHAL {
         constexpr ModeConjunctionDefine individualGroupModeConjunctions[] = {
             { &globalGroupField, false },      // group must NOT exist for this mode
             { &itemsField, false },            // items must NOT exist
-            { &individualGroupsField, true },// groups must exist
+            { &individualGroupsField, true },  // groups must exist
             { nullptr, false}
         };
 
-        constexpr ModeSelector consumerDeviceModes[] = {
-            {"global group mode", globalGroupModeConjunctions},
-            {"individual groups mode", individualGroupModeConjunctions},
-            {nullptr, nullptr}
+        void ExtractGlobalGroupMode(const DeviceCreateContext& ctx, void* out) {
+            *static_cast<GroupMode*>(out) = GroupMode::GlobalGroup;
+        }
+
+        void ExtractIndividualGroupMode(const DeviceCreateContext& ctx, void* out) {
+            *static_cast<GroupMode*>(out) = GroupMode::IndividualGroup;
+        }
+
+        constexpr ModeSelector modes[] = {
+            {"global group mode", globalGroupModeConjunctions, ExtractGlobalGroupMode},
+            {"individual groups mode", individualGroupModeConjunctions, ExtractIndividualGroupMode},
+            {nullptr, nullptr, nullptr}
         };
 
         constexpr JsonObjectSchema HomeAssistant = {
             "HomeAssistant",
             fields,
-            consumerDeviceModes,
+            modes,
             nullptr,  // no constraints
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,

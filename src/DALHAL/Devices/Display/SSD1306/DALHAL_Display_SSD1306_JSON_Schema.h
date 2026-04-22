@@ -25,11 +25,28 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringHexBytes.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema Display_SSD1306;
+        namespace Display_SSD1306 {
+
+            extern const JsonObjectSchema Root;
+            extern const SchemaUInt widthField;
+            extern const SchemaUInt heightField;
+            extern const SchemaUInt textsizeField;
+            extern const SchemaStringHexBytes addrField;
+            extern const SchemaArrayOfObjects itemsField;
+
+            extern const SchemaUInt xField;
+            extern const SchemaUInt yField;
+            extern const SchemaString labelField;
+
+        }
 
     }
 

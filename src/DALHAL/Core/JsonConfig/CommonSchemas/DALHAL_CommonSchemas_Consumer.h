@@ -33,9 +33,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const SchemaStringUID_Path sourceField;
-        extern const SchemaStringUID_Path eventSourceField;
-        extern const ModeSelector consumerDeviceModes[];
+        namespace CommonConsumer {
+
+            struct ConsumerStruct {
+                enum class Mode {
+                    Refresh,
+                    Event,
+                    Script
+                };
+                const char* source;
+                const char* eventSource;
+                uint32_t refreshtimems;
+                Mode mode;
+            };
+
+            extern const SchemaStringUID_Path sourceField;
+            extern const SchemaStringUID_Path eventSourceField;
+            extern const SchemaFieldsGroup consumerFieldsGroup;
+            extern const ModeSelector consumerDeviceModes[];
+        }
+        
     }
     
 }

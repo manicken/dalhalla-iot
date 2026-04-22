@@ -29,12 +29,13 @@
 
 #include "DALHAL_REST_Value_JSON_Schema.h"
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h> // for DALHAL_COMMON_CFG_NAME_UID
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase REST_Value::RegistryDefine = {
         Create,
-        &JsonSchema::REST_Value,
+        &JsonSchema::REST_Value::Root,
         nullptr /* no events available on obsolete device*/
     };
 
@@ -44,10 +45,9 @@ namespace DALHAL {
 
     REST_Value::REST_Value(DeviceCreateContext& context) : DALHAL::Device(context.deviceType), lastRefresh(0)
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_COMMON_CFG_NAME_UID));
-        refreshTimeMs = ParseRefreshTimeMs(jsonObj, 2000);
-        remoteUrl = GetAsConstChar(jsonObj, DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL);
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        remoteUrl = JsonSchema::GetValue(JsonSchema::REST_Value::urlField, context).asConstChar();
+        refreshTimeMs = JsonSchema::GetValue(JsonSchema::CommonTime::refreshTimeGroupFieldsRequired, context).asUInt();
     }
 
     DALHAL::HALOperationResult REST_Value::read(DALHAL::HALValue& val) {

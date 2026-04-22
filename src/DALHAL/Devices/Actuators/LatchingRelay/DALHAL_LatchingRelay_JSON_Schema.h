@@ -23,30 +23,24 @@
 
 #pragma once
 
-
-// for raw h-bridge control using forward and backward pins
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_A        "pinA"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_B        "pinB"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_SET     "pinSet"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_RESET    "pinRst"
-// for dir/enable pin mode
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_DIR      "pinDir"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_PIN_ENABLE   "pinEnable"
-
-// 
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_RESET_STATE "ResetState"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_SET_STATE "SetState"
-
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_NAME_TIMEOUT_MS "timeoutMs"
-#define DALHAL_DEVICE_LATCHING_RELAY_CFG_DEFAULT_TIMEOUT_MS 500
-
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema LatchingRelay;
+        namespace LatchingRelay {
+
+            extern const JsonObjectSchema Root;
+
+            extern const SchemaObject resetStateField;
+            extern const SchemaObject setStateField;
+
+            extern const SchemaUInt timeout_ms_field;
+
+        }
 
     }
 }

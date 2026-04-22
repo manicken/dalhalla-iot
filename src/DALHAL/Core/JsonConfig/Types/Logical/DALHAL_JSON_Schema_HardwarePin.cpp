@@ -43,6 +43,7 @@ namespace DALHAL {
         constexpr FieldTypeRegistryDefine SchemaHardwarePin::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
+              &GetValue,
               &SchemaToJson,
               &GetJavaScriptValidator
         };

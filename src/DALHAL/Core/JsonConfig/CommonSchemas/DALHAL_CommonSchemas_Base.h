@@ -39,15 +39,18 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const SchemaBool disabledField;
-        extern const SchemaString typeField;
-        extern const SchemaStringUID uidFieldRequired;
-        extern const SchemaStringUID uidFieldOptional;
-        /** note this field is only for the GUI to optionally describe this device */
-        extern const SchemaString noteField;
-        
-        extern const SchemaFieldsGroup disabled_uidreq_note_group;
-        extern const SchemaFieldsGroup disabled_type_uidreq_note_group;
+        namespace CommonBase {
+
+            extern const SchemaBool disabledField;
+            extern const SchemaString typeField;
+            extern const SchemaStringUID uidFieldRequired;
+            extern const SchemaStringUID uidFieldOptional;
+            /** note this field is only for the GUI to optionally describe this device */
+            extern const SchemaString noteField;
+            
+            extern const SchemaFieldsGroup disabled_uidreq_note_group;
+            extern const SchemaFieldsGroup disabled_type_uidreq_note_group;
+        }
     }
     
 }

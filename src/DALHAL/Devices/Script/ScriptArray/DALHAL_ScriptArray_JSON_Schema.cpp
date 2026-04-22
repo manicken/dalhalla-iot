@@ -40,7 +40,7 @@ namespace DALHAL {
         constexpr SchemaArrayOfPrimitives scriptArrayItems = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &readonlyField,
             &scriptArrayItems,
             nullptr,

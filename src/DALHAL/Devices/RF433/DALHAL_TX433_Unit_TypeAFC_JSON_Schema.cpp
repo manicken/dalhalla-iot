@@ -49,10 +49,10 @@ namespace DALHAL {
         constexpr ByArrayConstraints hexNumbersConstraint = {ids, ByArrayConstraints::Policy::IgnoreCase};
         constexpr SchemaStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
         constexpr SchemaStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, 0, 1, 0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0};
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
             &chField,
             &btnField,
             &stateField,

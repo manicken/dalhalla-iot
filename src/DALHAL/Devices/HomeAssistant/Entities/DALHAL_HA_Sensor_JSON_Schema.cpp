@@ -40,11 +40,12 @@ namespace DALHAL {
         constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
 
         constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+            //&CommonTime::refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+            //&CommonConsumer::sourceField,
+            //&CommonConsumer::eventSourceField,
+            &CommonConsumer::consumerFieldsGroup, // includes: refreshTimeGroupFields, sourceField, eventSourceField
             &nameField,
-            &sourceField,
-            &eventSourceField,
             &discoveryField,
             nullptr,
         };
@@ -52,7 +53,7 @@ namespace DALHAL {
         constexpr JsonObjectSchema HA_Sensor = {
             "HA_Sensor",
             fields,
-            consumerDeviceModes, // DALHAL_CommonSchemas_Consumer
+            CommonConsumer::consumerDeviceModes, // DALHAL_CommonSchemas_Consumer
             nullptr, // no constraints
             EmptyPolicy::Warn,
             UnknownFieldPolicy::Warn,

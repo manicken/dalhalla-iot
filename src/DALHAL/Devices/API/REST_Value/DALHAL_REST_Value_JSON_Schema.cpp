@@ -34,23 +34,27 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaString urlField = { DALHAL_DEVICE_REST_VALUE_CFG_NAME_URL, FieldPolicy::Required};
+        namespace REST_Value {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &urlField,
-            &refreshTimeGroupFields,
-            nullptr,
-        };
+            constexpr SchemaString urlField = { "url", FieldPolicy::Required};
 
-        constexpr JsonObjectSchema REST_Value = {
-            "REST_Value",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &urlField,
+                &CommonTime::refreshTimeGroupFieldsRequired,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "REST_Value",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 
