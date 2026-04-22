@@ -30,11 +30,13 @@
 
 #include "DALHAL_DigitalOutput_JSON_Schema.h"
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+
 namespace DALHAL {
 
     constexpr Registry::DefineBase DigitalOutput::RegistryDefine = {
         Create,
-        &JsonSchema::DigitalOutput,
+        &JsonSchema::DigitalOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
     };
     
@@ -43,15 +45,8 @@ namespace DALHAL {
     }
 
     DigitalOutput::DigitalOutput(DeviceCreateContext& context) : DigitalOutput_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
-        //pin = jsonObj[DALHAL_KEYNAME_PIN];//.as<uint8_t>();
-        GPIO_manager::ReservePin(pin);
-
-        //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID];//.as<const char*>();
-        //uid = encodeUID(uidStr);
-
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::DigitalOutput::pinField, context);
         pinMode(pin, OUTPUT); // output
     }
 

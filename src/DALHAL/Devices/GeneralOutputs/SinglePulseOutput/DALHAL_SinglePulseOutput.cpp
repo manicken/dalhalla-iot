@@ -36,7 +36,7 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
         Create,
-        &JsonSchema::SinglePulseOutput,
+        &JsonSchema::SinglePulseOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
     };
     
@@ -45,15 +45,15 @@ namespace DALHAL {
     }
 
     SinglePulseOutput::SinglePulseOutput(DeviceCreateContext& context) : SinglePulseOutput_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);// jsonObj[DALHAL_KEYNAME_PIN];// | 0;//.as<uint8_t>();
-        uid = encodeUID(GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID));
-        activeLevel = jsonObj.containsKey("activeLevel") && strcmp(jsonObj["activeLevel"], DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_LOW) == 0;
+        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+        pin = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pinField, context);
+        activeLevel = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::activeLevelField, context);
+        pulseLength = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pulseLengthField, context);
+        
         // use the following to make sure that it's explicit defined states
         if (activeLevel == 1) inactiveLevel = 0;
         else inactiveLevel = 1;
         // pulseLength is optional as it can be given by the write function
-        pulseLength = GetAsUINT32(jsonObj, DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, 0);
         pinMode(pin, OUTPUT); // output
         digitalWrite(pin, inactiveLevel);
     }

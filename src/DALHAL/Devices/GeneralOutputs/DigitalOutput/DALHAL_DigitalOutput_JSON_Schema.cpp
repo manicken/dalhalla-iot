@@ -36,22 +36,26 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT) };
+        namespace DigitalOutput {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &pinField,
-            nullptr,
-        };
+            constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT) };
 
-        constexpr JsonObjectSchema DigitalOutput = {
-            "DigitalOutput",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &pinField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "DigitalOutput",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+        }
 
     }
 

@@ -43,8 +43,9 @@ namespace DALHAL {
             constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
             constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, (uint)1, (uint)0, (uint)30};
 
-            constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
-            constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
+            //constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
+            //constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, "high", &activeLevelConstraints};
+            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0}; 
             
             constexpr SchemaString on_pressField = { "on_press", FieldPolicy::Optional};
 

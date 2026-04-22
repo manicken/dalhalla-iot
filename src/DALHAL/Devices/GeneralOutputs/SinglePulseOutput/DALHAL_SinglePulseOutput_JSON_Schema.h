@@ -24,12 +24,24 @@
 #pragma once
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h> // also ByArrayConstraints
+#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema SinglePulseOutput;
+        namespace SinglePulseOutput {
+
+            extern const JsonObjectSchema Root;
+
+            constexpr SchemaHardwarePin pinField;
+            constexpr SchemaUInt pulseLengthField;
+            constexpr SchemaStringAnyOfArrayConstrained activeLevelField;
+
+
+        }
 
     }
 
