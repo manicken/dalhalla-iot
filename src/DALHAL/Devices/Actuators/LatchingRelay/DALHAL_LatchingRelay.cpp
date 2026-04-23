@@ -24,16 +24,8 @@
 #include "DALHAL_LatchingRelay.h"
 
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
 #include "DALHAL_LatchingRelay_JSON_Schema.h"
-
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
-
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
 
 namespace DALHAL {
 
@@ -48,29 +40,7 @@ namespace DALHAL {
     }
 
     LatchingRelay::LatchingRelay(DeviceCreateContext& context) : LatchingRelay_DeviceBase(context.deviceType), state(State::Idle) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        isr_data.location = Location::Unknown;
-        isr_data.handled = false;
-
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        JsonSchema::ModeSelector::Apply(JsonSchema::LatchingRelay::Root.modes, context, this);
-
-        JsonSchema::PinConfig statePinCfg;
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::setStateField, *(context.jsonObjItem), &statePinCfg)) {
-            pinFeedbackSet = (gpio_num_t)statePinCfg.pin;
-            pinFeedbackSetActiveHigh = statePinCfg.activeHigh;
-        } else {
-            pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
-        }
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::resetStateField, *(context.jsonObjItem), &statePinCfg)) {
-            pinFeedbackReset = (gpio_num_t)statePinCfg.pin;
-            pinFeedbackResetActiveHigh = statePinCfg.activeHigh;
-        } else {
-            pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
-        }
-
-        timeoutMs = JsonSchema::GetValue(JsonSchema::LatchingRelay::timeout_ms_field, context).asUInt();
-
+        JsonSchema::LatchingRelay::Extractors::Apply(context, this);
         setup();
     }
 
@@ -186,6 +156,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     
 
     void LatchingRelay::setup() {
+        isr_data.location = Location::Unknown;
+        isr_data.handled = false;
+
 #if defined(ESP8266) || defined(ESP32)
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 

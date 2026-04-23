@@ -26,7 +26,7 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
+
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
@@ -51,23 +51,14 @@ using LatchingRelay_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
+    namespace JsonSchema { namespace LatchingRelay { struct Extractors; } } // forward declaration
 
     class LatchingRelay : public LatchingRelay_DeviceBase {
+        friend struct JsonSchema::LatchingRelay::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
-
-    public:
-        union DrivePins {
-            struct { gpio_num_t a, b; } direct;
-            struct { gpio_num_t data, enable; } data_enable;
-        };
-        enum class DriveMode : uint8_t {
-            Direct,      // set / reset
-            DataEnable     // Data + Enable
-        };
-        DrivePins pins;
-        DriveMode mode;
         
     private:
         // private Static functions
@@ -78,7 +69,14 @@ namespace DALHAL {
         static HALOperationResult exec_resetMode(Device* device);
 
         // private structures/enums/types
-        
+        union DrivePins {
+            struct { gpio_num_t a, b; } direct;
+            struct { gpio_num_t data, enable; } data_enable;
+        };
+        enum class DriveMode : uint8_t {
+            Direct,      // set / reset
+            DataEnable     // Data + Enable
+        };
         enum class GpioRegType {
             Set,
             Clear
@@ -107,7 +105,8 @@ namespace DALHAL {
 
         State state = State::Idle;
 
-        
+        DrivePins pins;
+        DriveMode mode;
 
         gpio_num_t pinFeedbackReset;
         gpio_num_t pinFeedbackSet;

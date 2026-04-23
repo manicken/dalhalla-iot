@@ -30,6 +30,9 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
+#include "DALHAL_DeviceContainer.h"
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -52,6 +55,49 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DeviceContainer* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+
+                const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::DeviceContainer::itemsField, jsonObj);
+                
+                uint32_t deviceCountTmp = 0;
+                int arraySize = jsonArray.size();
+
+                // First pass: count valid entries
+                for (int i=0;i<arraySize;i++) {
+                    if (Device::DisabledOrCommentItem(jsonArray[i]) == true) { continue; }
+                    deviceCountTmp++;
+                }
+                
+                out->deviceCount = deviceCountTmp;
+                if (out->deviceCount == 0) {
+                    out->devices = nullptr;
+                    GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
+                }
+
+                // Allocate space for all devices
+                out->devices = new Device*[out->deviceCount]();
+
+                if (out->devices == nullptr) {
+                    out->deviceCount = 0;
+                    GlobalLogger.Error(F("Failed to allocate device array"));
+                    return;
+                }
+
+                // Second pass: actually create and store devices
+                uint32_t index = 0;
+                for (int i=0;i<arraySize;i++) {
+                    const JsonVariant& jsonItem = jsonArray[i];
+                    if (Device::DisabledOrCommentItem(jsonItem) == true) { continue; }
+                    out->devices[index++] = DeviceManager::CreateDeviceFromJSON(jsonItem);
+                }
+                std::string devCountStr = std::to_string(out->deviceCount);
+                GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
+            }
 
         }
 

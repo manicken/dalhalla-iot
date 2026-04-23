@@ -32,66 +32,41 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 #include "DALHAL_HA_Switch_JSON_Schema.h"
 
 namespace DALHAL {
 
-    constexpr Registry::DefineBase Switch::RegistryDefine = {
+    constexpr Registry::DefineBase HA_Switch::RegistryDefine = {
         Create,
-        &JsonSchema::HA_Switch,
+        &JsonSchema::HA_Switch::Root,
     };
 
-    const char* Switch::PAYLOAD_OFF = "OFF";
-    const char* Switch::PAYLOAD_ON = "ON";
+    const char* HA_Switch::PAYLOAD_OFF = "OFF";
+    const char* HA_Switch::PAYLOAD_ON = "ON";
 
-    void Switch::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_Switch::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_on":"%s"), Switch::PAYLOAD_ON);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_off":"%s"), Switch::PAYLOAD_OFF);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_on":"%s"), HA_Switch::PAYLOAD_ON);
+        PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_off":"%s"), HA_Switch::PAYLOAD_OFF);
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Switch::Switch(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
-
-        if (jsonObj["momentary"].is<bool>()) { // do return false if key not found
-            momentary = jsonObj["momentary"].as<bool>();
-        } else {
-            momentary = false;
-        }
-  
-        topicBasePath.Set(deviceId_cStr, uidStr);
-
-        if (ValidateJsonStringField(jsonObj, "target")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
-            cda = new CachedDeviceAccess();
-            if (cda->Set(zcSrcDeviceUidStr) == false) {
-                delete cda;
-                cda = nullptr;
-            }
-        } else {
-            cda = nullptr;
-        }
-        //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-
-        //const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, Switch::SendDeviceDiscovery);
-        //delete[] cfgTopic_cStr;
+    HA_Switch::HA_Switch(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
+        JsonSchema::HA_Switch::Extractors::Apply(context, this);
     }
-    Switch::~Switch() {
+    HA_Switch::~HA_Switch() {
         delete cda;
     }
 
-    Device* Switch::Create(DeviceCreateContext& context) {
-        return new Switch(static_cast<HA_CreateFunctionContext&>(context));
+    Device* HA_Switch::Create(DeviceCreateContext& context) {
+        return new HA_Switch(static_cast<HA_CreateFunctionContext&>(context));
     }
 
-    String Switch::ToString() {
+    String HA_Switch::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -103,22 +78,22 @@ namespace DALHAL {
         return ret;
     }
 
-    HALOperationResult Switch::read(HALValue& val) {
+    HALOperationResult HA_Switch::read(HALValue& val) {
         if (cda != nullptr) {
             return cda->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Switch::write(const HALValue& val) {
+    HALOperationResult HA_Switch::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
 
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         if (val.asUInt() == 0) {
-            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_OFF);
+            mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_OFF);
         } else {
-            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_ON);
+            mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_ON);
         }
         if (cda != nullptr) {
             return cda->WriteSimple(val);
@@ -126,14 +101,14 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation;
     };
 
-    HALOperationResult Switch::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Switch::exec(const ZeroCopyString& cmd) {
         if (momentary == false) {
             HALValue valState;
             HALOperationResult res = HALOperationResult::NotSet;
             const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-            if (cmd == Switch::PAYLOAD_ON) {
+            if (cmd == HA_Switch::PAYLOAD_ON) {
                 valState.set((uint32_t)1);
-            } else if (cmd == Switch::PAYLOAD_OFF) {
+            } else if (cmd == HA_Switch::PAYLOAD_OFF) {
                 valState.set((uint32_t)0);
             } else {
                 return HALOperationResult::UnsupportedCommand; // or some error code
@@ -142,16 +117,16 @@ namespace DALHAL {
             if (res == HALOperationResult::Success) {
                 Serial.println("switch exec OK");
                 if (valState.asUInt() == 0)
-                    mqttClient.publish(stateTopicStr, Switch::PAYLOAD_OFF);
+                    mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_OFF);
                 else
-                    mqttClient.publish(stateTopicStr, Switch::PAYLOAD_ON);
+                    mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_ON);
             } else {
                 Serial.println("switch exec fail");
             }
             return res;
         } else {
             const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-            mqttClient.publish(stateTopicStr, Switch::PAYLOAD_OFF);
+            mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_OFF);
             return cda->Exec();
         }
     }

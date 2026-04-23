@@ -23,21 +23,33 @@
 
 #include "DALHAL_HA_DeviceContainer.h"
 
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+#include "DALHAL_HA_CreateFunctionContext.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/Device/DALHAL_Device.h>
+
+//#include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 #include "DALHAL_HA_DeviceContainer_JSON_Schema.h"
+
 
 namespace DALHAL {
     constexpr Registry::DefineBase HA_DeviceContainer::RegistryDefine = {
         Create,
-        &JsonSchema::HA_DeviceContainer,
+        &JsonSchema::HA_DeviceContainer::Root,
     };
+
+    Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {
+        return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));
+    }
     
+    HA_DeviceContainer::HA_DeviceContainer(HA_CreateFunctionContext& context) : Device(context.deviceType) {
+        JsonSchema::HA_DeviceContainer::Extractors::Apply(context, this);
+    }
+
     HA_DeviceContainer::~HA_DeviceContainer() {
         if (devices) {
             for (int i = 0; i < deviceCount; ++i) {
@@ -47,64 +59,24 @@ namespace DALHAL {
         }
     }
 
-    HA_DeviceContainer::HA_DeviceContainer(HA_CreateFunctionContext& context) : Device(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        const JsonArray& jsonArray = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        
-        uint32_t deviceCountTmp = 0;
-        int arraySize = jsonArray.size();
-        bool* validDevices = new bool[arraySize]; // dont' forget the delete[] call at end of function
-
-        // First pass: count valid entries
-        for (int i=0;i<arraySize;i++) {
-            JsonVariant jsonItem = jsonArray[i];
-            if (IsConstChar(jsonItem) == true) { validDevices[i] = false;  continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { validDevices[i] = false;  continue; } // disabled
-            const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            /*const Registry::Item& regItem = */Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            
-            validDevices[i] = true; // allways valid in strict mode
-            deviceCountTmp++;
+    void HA_DeviceContainer::begin() {
+        if (devices == nullptr || deviceCount == 0) return;
+        for (int i=0;i<deviceCount;i++)
+        {
+            devices[i]->begin();
         }
-        
-        deviceCount = deviceCountTmp;
-        if (deviceCount == 0) {
-            devices = nullptr;
-            GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
-                                 "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
-            return;
-        }
-
-        // Allocate space for all devices
-        devices = new Device*[deviceCount]();
-
-        if (devices == nullptr) {
-            deviceCount = 0;
-            GlobalLogger.Error(F("Failed to allocate device array"));
-            return;
-        }
-
-        // Second pass: actually create and store devices
-        uint32_t index = 0;
-        
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& jsonItem = jsonArray[i];
-            if (validDevices[i] == false) continue;
-            const char* type_cStr = GetAsConstChar(jsonItem, DALHAL_KEYNAME_TYPE);
-            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            context.jsonObjItem = &jsonItem;
-            context.deviceType = regItem.typeName;
-            devices[index++] = regItem.def->Create_Function(context);
-        }
-        std::string devCountStr = std::to_string(deviceCount);
-        GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
-
-        delete[] validDevices; // free memory
     }
 
-    Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {
-        return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));
+    void HA_DeviceContainer::loop() {
+        if (devices == nullptr || deviceCount == 0) return;
+        for (int i=0;i<deviceCount;i++)
+        {
+            devices[i]->loop();
+        }
+    }
+
+    DeviceFindResult HA_DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
     String HA_DeviceContainer::ToString() {
@@ -124,26 +96,6 @@ namespace DALHAL {
         }
         ret += ']';
         return ret;
-    }
-
-    void HA_DeviceContainer::loop() {
-        if (devices == nullptr || deviceCount == 0) return;
-        for (int i=0;i<deviceCount;i++)
-        {
-            devices[i]->loop();
-        }
-    }
-
-    void HA_DeviceContainer::begin() {
-        if (devices == nullptr || deviceCount == 0) return;
-        for (int i=0;i<deviceCount;i++)
-        {
-            devices[i]->begin();
-        }
-    }
-    
-    DeviceFindResult HA_DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
 }

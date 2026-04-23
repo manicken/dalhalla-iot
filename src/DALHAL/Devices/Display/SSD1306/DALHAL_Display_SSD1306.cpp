@@ -23,19 +23,11 @@
 
 #include "DALHAL_Display_SSD1306.h"
 
-#include <ArduinoJson.h>
-
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include "DALHAL_Display_SSD1306_JSON_Schema.h"
-
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
 
 namespace DALHAL {
 
@@ -55,50 +47,7 @@ namespace DALHAL {
     }
     
     Display_SSD1306::Display_SSD1306(I2C_Master_CreateFunctionContext& context) : Display_SSD1306_DeviceBase(context.deviceType) {
-
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-
-        uint32_t width = JsonSchema::GetValue(JsonSchema::Display_SSD1306::widthField, context);
-        uint32_t height = JsonSchema::GetValue(JsonSchema::Display_SSD1306::heightField, context);
-        const char* addrStr = JsonSchema::GetValue(JsonSchema::Display_SSD1306::addrField, context).asConstChar();
-        uint8_t addr = static_cast<uint8_t>(std::strtoul(addrStr, nullptr, 16));
-        uint8_t textSize = JsonSchema::GetValue(JsonSchema::Display_SSD1306::textsizeField, context);
-        //if (textSize == 0) textSize = 1; can never happend as schema defines min 1
-
-        display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
-
-        delay(200);
-        if (display->begin(SSD1306_SWITCHCAPVCC, addr))
-        {
-            display->clearDisplay();
-            display->setTextSize(textSize);
-            display->setTextColor(SSD1306_WHITE);
-            display->setCursor(0,0);
-            //display.println(F("Hello ESP32!"));
-            display->display(); // <--- push buffer to screen
-        }
-
-        const JsonArray& items = JsonSchema::SchemaArrayOfObjects::GetValidatedJsonArray(JsonSchema::Display_SSD1306::itemsField, *(context.jsonObjItem));
-
-        int itemCount = items.size();
-        // first pass count valid items
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            if (Device::DisabledOrCommentItem(items[i])) { continue; }
-            validItemCount++;
-        }
-        // second pass actually create the devices
-        elementCount = validItemCount;
-        elements = new Device*[validItemCount]();
-        int index = 0;
-        DeviceCreateContext createContext;
-        createContext.deviceType = "Display_SSD1306_Element";
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            createContext.jsonObjItem = &item;
-            elements[index++] = new Display_SSD1306_Element(createContext);
-        }
+        JsonSchema::Display_SSD1306::Extractors::Apply(context, this);
     }
 
     Display_SSD1306::~Display_SSD1306() {

@@ -24,7 +24,9 @@
 #pragma once
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
 #include <Arduino.h> // Needed for String class
 
@@ -35,12 +37,18 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
+#include <DALHAL/Core/Types/DALHAL_Consumer.h>
 
 #define DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS 5000
 
 namespace DALHAL {
 
-    class BinarySensor : public Device {
+    namespace JsonSchema { namespace HA_BinarySensor { struct Extractors; } } // forward declaration
+
+    class HA_BinarySensor : public Device {
+        friend struct JsonSchema::HA_BinarySensor::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
@@ -49,16 +57,23 @@ namespace DALHAL {
         static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
         
         PubSubClient& mqttClient;
-        CachedDeviceRead* cdr;
+        
         TopicBasePath topicBasePath;
 
+        Consumer::Mode consumerMode = Consumer::Mode::Manual;
+        CachedDeviceRead* cdr = nullptr;
+        ReactiveEvent* eventSource = nullptr;
         uint32_t refreshMs;
         uint32_t lastMs;
         bool wasOnline;
+    
+    private: // functions
+        bool IsTimedRefresh_NOT_Due();
+        void SetAvailability(bool online);
 
     public:
-        BinarySensor(HA_CreateFunctionContext& context);
-        ~BinarySensor() override;
+        HA_BinarySensor(HA_CreateFunctionContext& context);
+        ~HA_BinarySensor() override;
         
         void begin() override;
         void loop() override;
@@ -67,5 +82,6 @@ namespace DALHAL {
         HALOperationResult write(const HALValue& val) override;
 
         String ToString() override;
+    
     };
 }

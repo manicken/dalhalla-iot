@@ -30,8 +30,6 @@
 
 #include "DALHAL_DigitalOutput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-
 namespace DALHAL {
 
     constexpr Registry::DefineBase DigitalOutput::RegistryDefine = {
@@ -45,8 +43,7 @@ namespace DALHAL {
     }
 
     DigitalOutput::DigitalOutput(DeviceCreateContext& context) : DigitalOutput_DeviceBase(context.deviceType) {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        pin = JsonSchema::GetValue(JsonSchema::DigitalOutput::pinField, context);
+        JsonSchema::DigitalOutput::Extractors::Apply(context, this);
         pinMode(pin, OUTPUT); // output
     }
 

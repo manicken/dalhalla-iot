@@ -22,7 +22,8 @@
 */
 
 #include "DALHAL_ThingSpeakField.h"
-#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h> // DeviceManager::GetDeviceEvent
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {

@@ -48,25 +48,26 @@ using PWM_Servo_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
+    namespace JsonSchema { namespace PWM_Servo { struct Extractors; } } // forward declaration
 
 class PWM_Servo : public PWM_Servo_DeviceBase {
+    friend struct JsonSchema::PWM_Servo::Extractors; // allow access to private memebers of this class from the schema extractor
+
 public: // public static fields and exposed external structures
     static const Registry::DefineBase RegistryDefine;
     static Device* Create(DeviceCreateContext& context);
 
-public:
+private:
+    // private structures/enums/types
     enum class ServoValueType {
         Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
         PulseUS,     // raw microseconds
     };
+    
+    // private member data
     ServoValueType valueType = ServoValueType::PulseUS;
     float minVal;  // min for ratio type
     float maxVal;  // max for ratio type
-
-private:
-    // private structures/enums/types
-    
-    // private member data
     uint8_t pin = 0;
     ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
 

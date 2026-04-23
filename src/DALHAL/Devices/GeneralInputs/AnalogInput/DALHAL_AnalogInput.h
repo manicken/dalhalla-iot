@@ -26,7 +26,6 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
@@ -41,8 +40,12 @@ using AnalogInput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace AnalogInput { struct Extractors; } } // forward declaration
+
 #if defined(ESP32) || defined(_WIN32)
     class AnalogInput : public AnalogInput_DeviceBase {
+        friend struct JsonSchema::AnalogInput::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

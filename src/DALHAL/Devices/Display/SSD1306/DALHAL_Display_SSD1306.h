@@ -47,7 +47,11 @@ using Display_SSD1306_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace Display_SSD1306 { struct Extractors; } } // forward declaration
+
     class Display_SSD1306 : public Display_SSD1306_DeviceBase {
+        friend struct JsonSchema::Display_SSD1306::Extractors; // allow access to private memebers of this class from the schema extractor
+        
     public: // public static fields and exposed external structures
         static const I2C_RegistryDefine RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

@@ -26,7 +26,6 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
@@ -34,8 +33,11 @@
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace Display_SSD1306_Element { struct Extractors; } } // forward declaration
+
     class Display_SSD1306_Element : public Device {
-        
+        friend struct JsonSchema::Display_SSD1306_Element::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public:
         CachedDeviceAccess* cdaSource;
         HALValue val;

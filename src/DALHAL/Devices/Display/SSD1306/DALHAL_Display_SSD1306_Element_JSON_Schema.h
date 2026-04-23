@@ -26,7 +26,7 @@
 namespace DALHAL {
 
     // forward declarations
-    class REST_Value; 
+    class Display_SSD1306_Element; 
     struct DeviceCreateContext;
 
     namespace JsonSchema {
@@ -34,13 +34,13 @@ namespace DALHAL {
         // forward declaration
         struct JsonObjectSchema;
 
-        namespace REST_Value {
+        namespace Display_SSD1306_Element {
 
             extern const JsonObjectSchema Root;
             
             struct Extractors final {
                 /** used by the device class */
-                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::REST_Value* out);
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::Display_SSD1306_Element* out);
             };
 
         }

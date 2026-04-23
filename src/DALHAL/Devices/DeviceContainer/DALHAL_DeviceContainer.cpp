@@ -23,17 +23,9 @@
 
 #include "DALHAL_DeviceContainer.h"
 
-#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-
-#include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
 #include "DALHAL_DeviceContainer_JSON_Schema.h"
-
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
 
 namespace DALHAL {
 
@@ -51,54 +43,33 @@ namespace DALHAL {
             delete[] devices;
         }
     }
-    // MAJOR TODO
-    // fix DeviceManager PArseJson so that it can load into any devices array, and thus can be reused for any register
-    // then fix DeviceContainer and other things loading devices so that they can use that instead
-    DeviceContainer::DeviceContainer(DeviceCreateContext& context) : Device(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-
-        const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::DeviceContainer::itemsField, jsonObj);
-        
-        uint32_t deviceCountTmp = 0;
-        int arraySize = jsonArray.size();
-
-        // First pass: count valid entries
-        for (int i=0;i<arraySize;i++) {
-            if (Device::DisabledOrCommentItem(jsonArray[i]) == true) { continue; }
-            deviceCountTmp++;
-        }
-        
-        deviceCount = deviceCountTmp;
-        if (deviceCount == 0) {
-            devices = nullptr;
-            GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
-                                 "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
-            return;
-        }
-
-        // Allocate space for all devices
-        devices = new Device*[deviceCount]();
-
-        if (devices == nullptr) {
-            deviceCount = 0;
-            GlobalLogger.Error(F("Failed to allocate device array"));
-            return;
-        }
-
-        // Second pass: actually create and store devices
-        uint32_t index = 0;
-        for (int i=0;i<arraySize;i++) {
-            const JsonVariant& jsonItem = jsonArray[i];
-            if (Device::DisabledOrCommentItem(jsonItem) == true) { continue; }
-            devices[index++] = DeviceManager::CreateDeviceFromJSON(jsonItem);
-        }
-        std::string devCountStr = std::to_string(deviceCount);
-        GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
-    }
 
     Device* DeviceContainer::Create(DeviceCreateContext& context) {
         return new DeviceContainer(context);
+    }
+
+    DeviceContainer::DeviceContainer(DeviceCreateContext& context) : Device(context.deviceType) {
+        JsonSchema::DeviceContainer::Extractors::Apply(context, this);
+    }
+
+    void DeviceContainer::begin() {
+        if (devices == nullptr || deviceCount == 0) return;
+        for (int i=0;i<deviceCount;i++)
+        {
+            devices[i]->begin();
+        }
+    }
+
+    void DeviceContainer::loop() {
+        if (devices == nullptr || deviceCount == 0) return;
+        for (int i=0;i<deviceCount;i++)
+        {
+            devices[i]->loop();
+        }
+    }
+
+    DeviceFindResult DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
+        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
     String DeviceContainer::ToString() {
@@ -118,26 +89,6 @@ namespace DALHAL {
         }
         ret += ']';
         return ret;
-    }
-
-    void DeviceContainer::loop() {
-        if (devices == nullptr || deviceCount == 0) return;
-        for (int i=0;i<deviceCount;i++)
-        {
-            devices[i]->loop();
-        }
-    }
-
-    void DeviceContainer::begin() {
-        if (devices == nullptr || deviceCount == 0) return;
-        for (int i=0;i<deviceCount;i++)
-        {
-            devices[i]->begin();
-        }
-    }
-    
-    DeviceFindResult DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
-        return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
 }

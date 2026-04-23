@@ -23,13 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class HA_BinarySensor; 
+    struct HA_CreateFunctionContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema HA_BinarySensor;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace HA_BinarySensor {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_BinarySensor* out);
+            };
+
+        }
 
     }
 

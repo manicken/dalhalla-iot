@@ -50,7 +50,7 @@ namespace DALHAL {
 
         constexpr const char* ifspeeds[] = {"KHZ800", "KHZ400", nullptr};
 
-        constexpr SchemaUInt ledcountField = {"ledcount", FieldPolicy::Required, (uint)1, (uint)0, (uint)1};
+        constexpr SchemaUInt ledcountField = {"ledcount", FieldPolicy::Required, (unsigned int)1, (unsigned int)0, (unsigned int)1};
 
         constexpr ByArrayConstraints formatFieldConstraints = {formats, ByArrayConstraints::Policy::IgnoreCase};
         constexpr SchemaStringAnyOfArrayConstrained formatField = {"format", FieldPolicy::Required, "RGB", &formatFieldConstraints};
@@ -58,9 +58,9 @@ namespace DALHAL {
         constexpr ByArrayConstraints ifspeedFieldConstraints = {ifspeeds, ByArrayConstraints::Policy::IgnoreCase};
         constexpr SchemaStringAnyOfArrayConstrained ifspeedField = {"ifspeed", FieldPolicy::Optional, "KHZ800", &ifspeedFieldConstraints};
 
-        constexpr SchemaUInt brightnessField = {"brightness", FieldPolicy::Optional, (uint)1, (uint)127, (uint)127};
-        constexpr SchemaUInt modeField = {"mode", FieldPolicy::Optional, (uint)0, (uint)MODE_COUNT, (uint)0}; // MODE_COUNT is from WS2812FX.h
-        constexpr SchemaUInt fxspeedField = {"fxspeed", FieldPolicy::Optional, (uint)0, (uint)65535, (uint)3000};
+        constexpr SchemaUInt brightnessField = {"brightness", FieldPolicy::Optional, (unsigned int)1, (unsigned int)127, (unsigned int)127};
+        constexpr SchemaUInt modeField = {"mode", FieldPolicy::Optional, (unsigned int)0, (unsigned int)MODE_COUNT, (unsigned int)0}; // MODE_COUNT is from WS2812FX.h
+        constexpr SchemaUInt fxspeedField = {"fxspeed", FieldPolicy::Optional, (unsigned int)0, (unsigned int)65535, (unsigned int)3000};
 
         constexpr const SchemaTypeBase* fields[] = {
             &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

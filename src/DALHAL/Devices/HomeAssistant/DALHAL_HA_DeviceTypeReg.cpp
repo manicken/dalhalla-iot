@@ -43,15 +43,12 @@
 
 namespace DALHAL {
 
-    //constexpr HA_Registry::DefineBase RegistryItemNullDefault = {nullptr, nullptr };
-    //constexpr HA_DeviceRegistryItem RegistryTerminatorItem = {nullptr, RegistryItemNullDefault};
-
     constexpr Registry::Item HA_DeviceRegistry[] = {
-        {"sensor",         &Sensor::RegistryDefine},
-        {"binary_sensor",  &BinarySensor::RegistryDefine},
-        {"switch",         &Switch::RegistryDefine},
-        {"button",         &Button::RegistryDefine},
-        {"number",         &Number::RegistryDefine},
+        {"sensor",         &HA_Sensor::RegistryDefine},
+        {"binary_sensor",  &HA_BinarySensor::RegistryDefine},
+        {"switch",         &HA_Switch::RegistryDefine},
+        {"button",         &HA_Button::RegistryDefine},
+        {"number",         &HA_Number::RegistryDefine},
         {"CONTAINER",      &HA_DeviceContainer::RegistryDefine},
         /** mandatory null terminator */
         Registry::TerminatorItem

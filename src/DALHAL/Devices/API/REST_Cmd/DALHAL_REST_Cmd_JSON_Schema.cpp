@@ -23,13 +23,12 @@
 
 #include "DALHAL_REST_Cmd_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_FieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_AllOfFieldsGroup.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/Groups/DALHAL_JSON_Schema_OneOfFieldsGroup.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
+
+#include "DALHAL_REST_Cmd.h"
 
 namespace DALHAL {
 
@@ -53,6 +52,11 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::REST_Cmd* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->remoteUrl = JsonSchema::GetValue(JsonSchema::REST_Cmd::urlField, context).asConstChar();
+            }
 
         }
 

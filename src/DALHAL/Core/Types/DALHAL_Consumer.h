@@ -25,25 +25,16 @@
 
 namespace DALHAL {
 
-    // forward declarations
-    class REST_Value; 
-    struct DeviceCreateContext;
+    namespace Consumer {
 
-    namespace JsonSchema {
-
-        // forward declaration
-        struct JsonObjectSchema;
-
-        namespace REST_Value {
-
-            extern const JsonObjectSchema Root;
-            
-            struct Extractors final {
-                /** used by the device class */
-                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::REST_Value* out);
-            };
-
-        }
+        enum class Mode {
+            /** periodic trigger (timer-driven) */
+            TimedRefresh,
+            /** event-triggered read */
+            Event,
+            /** externally driven, no automatic trigger (examples from script or API) */
+            Manual
+        };
 
     }
 

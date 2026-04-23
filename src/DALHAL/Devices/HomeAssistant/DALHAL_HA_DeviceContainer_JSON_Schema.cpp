@@ -28,28 +28,84 @@
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include "DALHAL_HA_DeviceTypeReg.h"
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
+#include "DALHAL_HA_DeviceContainer.h"
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+        namespace HA_DeviceContainer {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
-        constexpr JsonObjectSchema HA_DeviceContainer = {
-            "HA_DeviceContainer",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "HA_DeviceContainer",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_DeviceContainer* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HA_DeviceContainer::itemsField, *(context.jsonObjItem));
+                
+                uint32_t deviceCountTmp = 0;
+                int arraySize = jsonArray.size();
+
+                // First pass: count valid entries
+                for (int i=0;i<arraySize;i++) {
+                    if (Device::DisabledOrCommentItem(jsonArray[i])) { continue; } // comment or disabled item
+                    deviceCountTmp++;
+                }
+                
+                out->deviceCount = deviceCountTmp;
+                if (deviceCountTmp == 0) {
+                    out->devices = nullptr;
+                    GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
+                }
+
+                // Allocate space for all devices
+                out->devices = new Device*[deviceCountTmp]();
+
+                if (out->devices == nullptr) {
+                    out->deviceCount = 0;
+                    GlobalLogger.Error(F("Failed to allocate device array"));
+                    return;
+                }
+
+                // Second pass: actually create and store devices
+                uint32_t index = 0;
+                
+                for (int i=0;i<arraySize;i++) {
+                    const JsonVariant& jsonItem = jsonArray[i];
+                    if (Device::DisabledOrCommentItem(jsonItem)) { continue; } // comment or disabled item
+
+                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, jsonItem).asConstChar();
+                    const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+                    // reuse the passed context as it also carry other important instances or references
+                    context.jsonObjItem = &jsonItem;
+                    context.deviceType = regItem.typeName;
+                    out->devices[index++] = regItem.def->Create_Function(context);
+                }
+                std::string devCountStr = std::to_string(deviceCountTmp);
+                GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
+            }
+
+        }
 
     }
 

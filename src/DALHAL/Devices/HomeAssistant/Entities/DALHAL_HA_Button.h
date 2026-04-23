@@ -35,9 +35,15 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 namespace DALHAL {
 
-    class Button : public Device {
+    namespace JsonSchema { namespace HA_Button { struct Extractors; } } // forward declaration
+
+    class HA_Button : public Device {
+        friend struct JsonSchema::HA_Button::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
@@ -50,12 +56,13 @@ namespace DALHAL {
         TopicBasePath topicBasePath;
 
     public:
-        Button(HA_CreateFunctionContext& context);
-        ~Button() override;
+        HA_Button(HA_CreateFunctionContext& context);
+        ~HA_Button() override;
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         HALOperationResult exec() override;
 
         String ToString() override;
     };
+
 }

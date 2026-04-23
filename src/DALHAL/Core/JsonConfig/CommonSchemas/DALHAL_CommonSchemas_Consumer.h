@@ -29,6 +29,8 @@
 #include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringUID_Path.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h> // ModeSelector
 
+#include <DALHAL/Core/Types/DALHAL_Consumer.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -36,15 +38,12 @@ namespace DALHAL {
         namespace CommonConsumer {
 
             struct ConsumerStruct {
-                enum class Mode {
-                    Refresh,
-                    Event,
-                    Script
-                };
+                /** explicit defines the mode */
+                DALHAL::Consumer::Mode mode;
+
                 const char* source;
                 const char* eventSource;
                 uint32_t refreshtimems;
-                Mode mode;
             };
 
             extern const SchemaStringUID_Path sourceField;

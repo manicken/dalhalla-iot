@@ -129,7 +129,7 @@ namespace DALHAL {
             *outValues = out;
             valueCount = arraySize;
 
-            for (int i = 0; i < arraySize; ++i) {
+            for (int i = 0; i < (int)arraySize; ++i) {
                 const JsonVariant& item = arr[i];
                 HALValue hVal;
                 if (item.is<float>()) {

@@ -22,19 +22,18 @@
 */
 #pragma once
 
-#include <DALHAL/Devices/API/REST_Value/DALHAL_REST_Value.h>
+#include <Arduino.h> // to use the dammed String as WiFi client dont support anything else
 
-#include <ArduinoJson.h>
-#include <HTTPClient.h>
-#include <string>
-
-#include <Arduino.h> // Needed for String class
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace REST_Cmd { struct Extractors; } } // forward declaration
+
     class REST_Cmd : public DALHAL::Device {
+        friend struct JsonSchema::REST_Cmd::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

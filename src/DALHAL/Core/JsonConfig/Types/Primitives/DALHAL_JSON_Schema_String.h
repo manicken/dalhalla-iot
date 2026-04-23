@@ -55,10 +55,10 @@ namespace DALHAL {
                 : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(defVal) {}
             
             constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol) 
-                : SchemaTypeBase(n, t, pol), defaultValue(nullptr) {}
+                : SchemaTypeBase(n, t, pol), defaultValue("") {}
 
             constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, FieldGuiFlagsType guiFlags) 
-                : SchemaTypeBase(n, t, pol, guiFlags), defaultValue(nullptr) {}
+                : SchemaTypeBase(n, t, pol, guiFlags), defaultValue("") {}
             
         public:
             constexpr SchemaString(const char* n, FieldPolicy pol, const char* defVal) 
@@ -68,10 +68,10 @@ namespace DALHAL {
                 : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(defVal) {}
 
             constexpr SchemaString(const char* n, FieldPolicy pol) 
-                : SchemaTypeBase(n, FieldType::String, pol), defaultValue(nullptr) {}
+                : SchemaTypeBase(n, FieldType::String, pol), defaultValue("") {}
 
             constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags) 
-                : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue(nullptr) {}
+                : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue("") {}
         };
 
     }

@@ -59,7 +59,7 @@ namespace DALHAL {
             constexpr SchemaObject setStateField = { "SetState", FieldPolicy::Optional, &CommonPins::InputPinScheme };
 
 
-            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (uint)1, (uint)0, (uint)500}; // default 500 mS
+            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)500}; // default 500 mS
 
             constexpr const SchemaTypeBase* directModeAB_GroupItems[] = {&pin_direct_a_field, &pin_direct_b_field, nullptr};
             constexpr SchemaAllOfFieldsGroup directModeAB_GroupFields = {"directModeAB", FieldPolicy::ModeDefine, directModeAB_GroupItems }; // here hbridgeModeAB defines what name to use for the BSON output
@@ -91,15 +91,10 @@ namespace DALHAL {
                 { nullptr, false}
             };
 
-            void Apply_Direct_a_b(const DeviceCreateContext& ctx, void* out);
-            void Apply_Direct_set_reset(const DeviceCreateContext& ctx, void* out);
-            void Apply_DataEnable(const DeviceCreateContext& ctx, void* out);
-            
-
             constexpr const ModeSelector modes[] = {
-                {"direct a b", conjunctions_directAB_Mode, Apply_Direct_a_b},
-                {"direct set reset", conjunctions_directSR_Mode, Apply_Direct_set_reset},
-                {"data/enable", conjunctions_data_enable_Mode, Apply_DataEnable},
+                {"direct a b", conjunctions_directAB_Mode, Extractors::Apply_Direct_a_b},
+                {"direct set reset", conjunctions_directSR_Mode, Extractors::Apply_Direct_set_reset},
+                {"data/enable", conjunctions_data_enable_Mode, Extractors::Apply_DataEnable},
                 {nullptr, nullptr, nullptr}
             };
             // this list only validates each field so that it match specification
@@ -123,7 +118,7 @@ namespace DALHAL {
                 UnknownFieldPolicy::Warn,
             };
 
-            void Apply_DataEnable(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_DataEnable(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
                 self->pins.data_enable.data =
@@ -135,7 +130,7 @@ namespace DALHAL {
                 self->mode = DALHAL::LatchingRelay::DriveMode::DataEnable;
             }
 
-            void Apply_Direct_a_b(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_Direct_a_b(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
                 self->pins.direct.a =
@@ -147,7 +142,7 @@ namespace DALHAL {
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
 
-            void Apply_Direct_set_reset(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_Direct_set_reset(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
                 self->pins.direct.a =
@@ -158,6 +153,28 @@ namespace DALHAL {
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::LatchingRelay* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                JsonSchema::ModeSelector::Apply(JsonSchema::LatchingRelay::Root.modes, context, out);
+
+                JsonSchema::PinConfig statePinCfg;
+                if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::setStateField, *(context.jsonObjItem), &statePinCfg)) {
+                    out->pinFeedbackSet = (gpio_num_t)statePinCfg.pin;
+                    out->pinFeedbackSetActiveHigh = statePinCfg.activeHigh;
+                } else {
+                    out->pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
+                }
+                if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::resetStateField, *(context.jsonObjItem), &statePinCfg)) {
+                    out->pinFeedbackReset = (gpio_num_t)statePinCfg.pin;
+                    out->pinFeedbackResetActiveHigh = statePinCfg.activeHigh;
+                } else {
+                    out->pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
+                }
+
+                out->timeoutMs = JsonSchema::GetValue(JsonSchema::LatchingRelay::timeout_ms_field, context).asUInt();
+            }
+
         }
 
     }

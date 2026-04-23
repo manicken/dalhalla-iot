@@ -29,9 +29,6 @@
 
 #include "DALHAL_SinglePulseOutput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
-
 namespace DALHAL {
 
     constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
@@ -45,11 +42,7 @@ namespace DALHAL {
     }
 
     SinglePulseOutput::SinglePulseOutput(DeviceCreateContext& context) : SinglePulseOutput_DeviceBase(context.deviceType) {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        pin = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pinField, context);
-        activeLevel = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::activeLevelField, context);
-        pulseLength = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pulseLengthField, context);
-        
+        JsonSchema::SinglePulseOutput::Extractors::Apply(context, this);
         // use the following to make sure that it's explicit defined states
         if (activeLevel == 1) inactiveLevel = 0;
         else inactiveLevel = 1;

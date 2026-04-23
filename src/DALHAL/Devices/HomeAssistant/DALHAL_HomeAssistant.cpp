@@ -41,7 +41,7 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
         Create,
-        &JsonSchema::HomeAssistant,
+        &JsonSchema::HomeAssistant::Root,
         nullptr /* no events available */
     };
 
@@ -50,23 +50,18 @@ namespace DALHAL {
     }
     
     HomeAssistant::HomeAssistant(DeviceCreateContext& context) : Device(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        devices = nullptr; // ensure that it's set
-        deviceCount = 0;
-        deviceID = std::string(GetAsConstChar(jsonObj, "deviceId"));
-
         mqttClient.setClient(wifiClient);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        //Serial.printf("device UID input:>>>%s<<< output:>>>%s<<<\n", uidStr, decodeUID(uid).c_str());
-        if (jsonObj.containsKey("port")) {
-            port = GetAsUINT16(jsonObj, "port");
-        } else {
-            port = DALHAL_HOME_ASSISTANT_DEFAULT_PORT;
-        }
+        JsonSchema::HomeAssistant::Extractors::Apply(context, this);
+        mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
+            this->mqttCallback(t, p, l);
+        });
+        // temporary subscribe to config topic to begin of cleanup of stale devices
+        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
+        mqttClient.subscribe(cfgTopic_cStr);
+        delete[] cfgTopic_cStr;
+    }
 
-        const char* hostStr = GetAsConstChar(jsonObj, "host");
-        host = std::string(hostStr);
+    void HomeAssistant::ConfigureMqttClient() {
         if (WiFi.hostByName(host.c_str(), ip)) {
             // Successfully resolved
             mqttClient.setServer(ip, port);
@@ -76,28 +71,6 @@ namespace DALHAL {
             mqttClient.setServer(host.c_str(), port); // last-resort attempt
             // could also have retry when doing automatic reconnect
         }
-        
-        if (jsonObj.containsKey("user"))
-            username = GetAsConstChar(jsonObj, "user");
-        if (jsonObj.containsKey("pass"))
-            password = GetAsConstChar(jsonObj, "pass");
-
-        Connect();
-
-        if (jsonObj.containsKey("groups")) {
-            ConstructDevicesFromFlattenGroupsItems(jsonObj);
-            // TODO add support for non flatten group items
-            // so that group uid:s can be included in the addressing scheme
-        } else {
-            ConstructDevicesNonGrouped(jsonObj);
-        }
-        mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
-            this->mqttCallback(t, p, l);
-        });
-        // temporary subscribe to config topic to begin of cleanup of stale devices
-        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
-        mqttClient.subscribe(cfgTopic_cStr);
-        delete[] cfgTopic_cStr;
     }
 
     void HomeAssistant::Connect() {
@@ -231,83 +204,6 @@ namespace DALHAL {
         Serial.println("device not found");
     }
 
-    void HomeAssistant::ConstructDevicesNonGrouped(const JsonVariant& jsonObj) {
-        const JsonArray& jsonArrayItems = jsonObj["items"];
-        int arrayCount = jsonArrayItems.size();
-
-        int validItemCount = 0;
-        // first pass count and check valid items
-        for (int i=0;i<arrayCount;i++) {
-            const JsonVariant& item = jsonArrayItems[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            validItemCount++;
-        }
-        deviceCount = validItemCount;
-        devices = new Device*[deviceCount](); // create array and initialize all to nullptr
-        int index = 0;
-        // second pass create devices
-        const JsonVariant& groupObj = jsonObj["group"];
-        HA_CreateFunctionContext createFuncContext(mqttClient);
-        createFuncContext.jsonGlobal = &groupObj;
-        createFuncContext.jsonObjRoot = &jsonObj;
-        for (int i=0;i<arrayCount;i++) {
-            const JsonVariant& item = jsonArrayItems[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-
-            const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            
-            const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-            createFuncContext.jsonObjItem = &item;
-            createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-            devices[index++] = regItem.def->Create_Function(createFuncContext);
-        }
-    }
-
-    void HomeAssistant::ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj) {
-        //int count = 0;
-        const JsonArray& jsonArrayGroups = jsonObj["groups"];
-        int jsonArrayGroupsCount = jsonArrayGroups.size();
-        
-        
-        int activeItemCount = 0;
-        // first pass count enabled/"non comment" items
-        for (int i=0;i<jsonArrayGroupsCount;i++) {
-            const JsonArray& jsonArrayItems = jsonArrayGroups[i]["items"];
-            int jsonArrayItemsCount = jsonArrayItems.size();
-            for (int j=0;j<jsonArrayItemsCount;j++) {
-                const JsonVariant& item = jsonArrayItems[j];
-                if (Device::DisabledOrCommentItem(item)) { continue; }
-                activeItemCount++;
-            }
-        }
-
-        // second pass create actual enabled/"non comment" items
-        deviceCount = activeItemCount;
-        devices = new Device*[deviceCount]();
-
-        int newItemIndex = 0;
-        HA_CreateFunctionContext createFuncContext(mqttClient);
-        for (int i=0;i<jsonArrayGroupsCount;i++) {
-            const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
-            const JsonArray& jsonArrayItems = jsonObjGrpItem["items"];
-            int jsonArrayItemsCount = jsonArrayItems.size();
-            createFuncContext.jsonGlobal = &jsonObjGrpItem;
-            createFuncContext.jsonObjRoot = &jsonObj;
-
-            for (int j=0;j<jsonArrayItemsCount;j++) {
-                const JsonVariant& item = jsonArrayItems[j];
-                if (Device::DisabledOrCommentItem(item)) { continue; }
-
-                const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-        
-                const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-                createFuncContext.jsonObjItem = &item;
-                createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-                devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
-            }
-        }
-    }
-
     HomeAssistant::~HomeAssistant() {
         if (devices) {
             for (int i=0;i<deviceCount;i++) {
@@ -370,5 +266,4 @@ namespace DALHAL {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
-    
 }

@@ -43,7 +43,7 @@ namespace DALHAL {
         constexpr SchemaHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
         constexpr SchemaHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, (uint)0, (uint)0, (uint)10};
+        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)10};
 
         constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, &regnameField, &REGO600_Register, EmptyPolicy::Error};
 

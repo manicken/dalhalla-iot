@@ -30,54 +30,36 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 #include "DALHAL_HA_Number_JSON_Schema.h"
 
 namespace DALHAL {
 
-    constexpr Registry::DefineBase Number::RegistryDefine = {
+    constexpr Registry::DefineBase HA_Number::RegistryDefine = {
         Create,
-        &JsonSchema::HA_Number,
+        &JsonSchema::HA_Number::Root,
     };
 
-    void Number::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_Number::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
     }
     
-    Number::Number(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
-
-          
-        topicBasePath.Set(deviceId_cStr, uidStr);
-
-        if (ValidateJsonStringField(jsonObj, "target")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
-            cda = new CachedDeviceAccess();
-            if (cda->Set(zcSrcDeviceUidStr) == false) {
-                delete cda;
-                cda = nullptr;
-            }
-        } else {
-            cda = nullptr;
-        }
-
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, Number::SendDeviceDiscovery);
-        
+    HA_Number::HA_Number(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
+        JsonSchema::HA_Number::Extractors::Apply(context, this);
     }
-    Number::~Number() {
+    HA_Number::~HA_Number() {
         delete cda;
     }
 
-    Device* Number::Create(DeviceCreateContext& context) {
-        return new Number(static_cast<HA_CreateFunctionContext&>(context));
+    Device* HA_Number::Create(DeviceCreateContext& context) {
+        return new HA_Number(static_cast<HA_CreateFunctionContext&>(context));
     }
 
-    String Number::ToString() {
+    String HA_Number::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -89,7 +71,7 @@ namespace DALHAL {
         return ret;
     }
 
-    HALOperationResult Number::read(HALValue& val) {
+    HALOperationResult HA_Number::read(HALValue& val) {
         if (cda != nullptr) {
             return cda->ReadSimple(val);
         } else {
@@ -97,7 +79,7 @@ namespace DALHAL {
             return HALOperationResult::Success;
         }
     }
-    HALOperationResult Number::write(const HALValue& val) {
+    HALOperationResult HA_Number::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
@@ -110,7 +92,7 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation;
     };
 
-    HALOperationResult Number::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Number::exec(const ZeroCopyString& cmd) {
 
         NumberResult numberRes = cmd.ConvertStringToNumber();     
         HALValue valState;
@@ -145,7 +127,7 @@ namespace DALHAL {
         
     }
 
-    void Number::sendCurrentValue() {
+    void HA_Number::sendCurrentValue() {
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         mqttClient.publish(stateTopicStr, currentValue.toString().c_str());
     }

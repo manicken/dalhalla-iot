@@ -23,18 +23,13 @@
 
 #include "DALHAL_ButtonInput.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #if defined(ESP8266) || defined(ESP32)
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
 #include <DALHAL_WebSocketAPI_Windows.h> // PC port - for SendMessage
 #endif
-#include "DALHAL_ButtonInput_JSON_Schema.h"
 
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
+#include "DALHAL_ButtonInput_JSON_Schema.h"
 
 namespace DALHAL {
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {
@@ -58,29 +53,13 @@ namespace DALHAL {
     // Constructor
     ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
     {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        pin = JsonSchema::GetValue(JsonSchema::ButtonInput::pinField, context);
-        debounceMs = JsonSchema::GetValue(JsonSchema::ButtonInput::debounceMsField, context);
-        activeLevel = JsonSchema::GetValue(JsonSchema::ButtonInput::activeLevelField, context);
-
+        JsonSchema::ButtonInput::Extractors::Apply(context, this);
         pinMode(pin, activeLevel ? INPUT_PULLDOWN : INPUT_PULLUP);
 
         // Initial states
         stableState = digitalRead(pin);
         lastRaw = stableState;
         lastChangeMs = millis();
-
-        // Optional external action target
-        // todo can also use react events
-        // but this allow direct actions
-        const char* on_press_cStr = JsonSchema::GetValue(JsonSchema::ButtonInput::on_pressField, context).asConstChar();
-        if (on_press_cStr != nullptr) {
-            toggleTarget = new CachedDeviceAccess();
-            if (toggleTarget->Set(on_press_cStr) == false) {
-                delete toggleTarget;
-                toggleTarget = nullptr;
-            }
-        }
     }
 
     // Loop: call from main scheduler

@@ -24,7 +24,8 @@
 #pragma once
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
-#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
 #include <Arduino.h> // Needed for String class
 #include <string>
@@ -37,7 +38,11 @@
 
 namespace DALHAL {
 
-    class Switch : public Device {
+    namespace JsonSchema { namespace HA_Switch { struct Extractors; } } // forward declaration
+
+    class HA_Switch : public Device {
+        friend struct JsonSchema::HA_Switch::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
@@ -54,8 +59,8 @@ namespace DALHAL {
         bool momentary;
 
     public:
-        Switch(HA_CreateFunctionContext& context);
-        ~Switch() override;
+        HA_Switch(HA_CreateFunctionContext& context);
+        ~HA_Switch() override;
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;

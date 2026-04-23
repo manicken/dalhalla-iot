@@ -23,6 +23,9 @@
 
 #include "DALHAL_REST_Cmd.h"
 
+#include <HTTPClient.h>
+#include <WiFiClient.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
@@ -44,8 +47,7 @@ namespace DALHAL {
 
     REST_Cmd::REST_Cmd(DeviceCreateContext& context) : DALHAL::Device(context.deviceType)
     {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        remoteUrl = JsonSchema::GetValue(JsonSchema::REST_Cmd::urlField, context).asConstChar();
+        JsonSchema::REST_Cmd::Extractors::Apply(context, this);
     }
 
     DALHAL::HALOperationResult REST_Cmd::exec() {

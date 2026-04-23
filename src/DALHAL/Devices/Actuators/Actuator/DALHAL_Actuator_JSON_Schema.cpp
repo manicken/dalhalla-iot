@@ -62,7 +62,7 @@ namespace DALHAL {
             constexpr SchemaObject maxEndStopField = { "MaxEndStop", FieldPolicy::Optional, &CommonPins::InputPinScheme };
 
 
-            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (uint)1, (uint)0, (uint)10000}; // default 10 seconds
+            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)10000}; // default 10 seconds
 
             constexpr const SchemaTypeBase* hbridgeModeAB_GroupItems[] = {&pin_hbridge_a_field, &pin_hbridge_b_field, nullptr};
             constexpr SchemaAllOfFieldsGroup hbridgeModeAB_GroupFields = {"hbridgeModeAB", FieldPolicy::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output
@@ -105,15 +105,11 @@ namespace DALHAL {
                 { nullptr, false}
             };
 
-            void Apply_DirEnableBreak(const DeviceCreateContext& ctx, void* out);
-            void Apply_HBridge_a_b(const DeviceCreateContext& ctx, void* out);
-            void Apply_HBridge_open_close(const DeviceCreateContext& ctx, void* out);
-
             constexpr const ModeSelector modes[] = {
-                {"h-bridge ab", conjunctions_hBridgeAB_Mode, Apply_HBridge_a_b},
-                {"h-bridge open close", conjunctions_hBridgeOC_Mode, Apply_HBridge_open_close},
-                {"dir/enable", conjunctions_dir_enable_Mode, Apply_DirEnableBreak},
-                {"dir/enable/break", conjunctions_dir_enable_break_Mode, Apply_DirEnableBreak},
+                {"h-bridge ab", conjunctions_hBridgeAB_Mode, Extractors::Apply_HBridge_a_b},
+                {"h-bridge open close", conjunctions_hBridgeOC_Mode, Extractors::Apply_HBridge_open_close},
+                {"dir/enable", conjunctions_dir_enable_Mode, Extractors::Apply_DirEnableBreak},
+                {"dir/enable/break", conjunctions_dir_enable_break_Mode, Extractors::Apply_DirEnableBreak},
                 {nullptr, nullptr, nullptr}
             };
             // this list only validates each field so that it match specification
@@ -138,7 +134,7 @@ namespace DALHAL {
                 UnknownFieldPolicy::Warn,
             };
 
-            void Apply_DirEnableBreak(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_DirEnableBreak(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
                 self->pins.diren.dir =
@@ -153,7 +149,7 @@ namespace DALHAL {
                 self->mode = DALHAL::Actuator::DriveMode::DirEnable;
             }
 
-            void Apply_HBridge_a_b(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_HBridge_a_b(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
                 self->pins.hbridge.a =
@@ -165,7 +161,7 @@ namespace DALHAL {
                 self->mode = DALHAL::Actuator::DriveMode::HBridge;
             }
 
-            void Apply_HBridge_open_close(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_HBridge_open_close(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
                 self->pins.hbridge.a =
@@ -175,6 +171,28 @@ namespace DALHAL {
                     (gpio_num_t)JsonSchema::GetValue(pin_hbridge_close_field, ctx).asUInt();
 
                 self->mode = DALHAL::Actuator::DriveMode::HBridge;
+            }
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::Actuator* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+
+                JsonSchema::ModeSelector::Apply(JsonSchema::Actuator::Root.modes, context, out);
+
+                JsonSchema::PinConfig endStopPinCfg;
+                if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+                    out->pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
+                    out->pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
+                } else {
+                    out->pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
+                }
+                if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
+                    out->pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
+                    out->pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
+                } else {
+                    out->pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
+                }
+
+                out->timeoutMs = JsonSchema::GetValue(JsonSchema::Actuator::timeout_ms_field, context).asUInt();
             }
         }
 

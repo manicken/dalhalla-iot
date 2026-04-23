@@ -32,32 +32,113 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+
+#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Core/Types/DALHAL_Consumer.h>
+
+#include "DALHAL_HA_Sensor.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaString nameField = {"name", FieldPolicy::Required};
-        constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
+        namespace HA_Sensor {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            //&CommonTime::refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
-            //&CommonConsumer::sourceField,
-            //&CommonConsumer::eventSourceField,
-            &CommonConsumer::consumerFieldsGroup, // includes: refreshTimeGroupFields, sourceField, eventSourceField
-            &nameField,
-            &discoveryField,
-            nullptr,
-        };
+            constexpr SchemaString nameField = {"name", FieldPolicy::Required};
+            constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
 
-        constexpr JsonObjectSchema HA_Sensor = {
-            "HA_Sensor",
-            fields,
-            CommonConsumer::consumerDeviceModes, // DALHAL_CommonSchemas_Consumer
-            nullptr, // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                //&CommonTime::refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
+                //&CommonConsumer::sourceField,
+                //&CommonConsumer::eventSourceField,
+                &CommonConsumer::consumerFieldsGroup, // includes: refreshTimeGroupFields, sourceField, eventSourceField
+                &nameField,
+                &discoveryField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "HA_Sensor",
+                fields,
+                CommonConsumer::consumerDeviceModes, // DALHAL_CommonSchemas_Consumer
+                nullptr, // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_Sensor* out) {
+                const char* uid_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar();
+                out->uid = encodeUID(uid_cStr);
+
+                JsonSchema::CommonConsumer::ConsumerStruct consumerData;
+                JsonSchema::ModeSelector::Apply(JsonSchema::HA_Sensor::Root.modes, context, &consumerData);
+                const char* source_cStr = nullptr;
+                const char* eventSource_cStr = nullptr;
+
+                if (consumerData.mode == DALHAL::Consumer::Mode::TimedRefresh) {
+                    out->refreshMs = consumerData.refreshtimems;
+                    source_cStr = consumerData.source;
+                } else if (consumerData.mode == DALHAL::Consumer::Mode::Event) {
+                    out->refreshMs = 0;
+                    source_cStr = consumerData.source;
+                    eventSource_cStr = consumerData.eventSource;
+                } else if (consumerData.mode == DALHAL::Consumer::Mode::Manual) {
+                    out->refreshMs = 0;
+
+                } // else there are no other modes, it's either above or else the cfg is rejected and this will not happend
+
+                // right now we include error check here as the consumer schema stuff is not yet finished
+                if (source_cStr != nullptr) {
+                    ZeroCopyString zcSrcDeviceUidStr = source_cStr;
+                    out->cdr = new CachedDeviceRead();
+                    if (out->cdr->Set(zcSrcDeviceUidStr) == false) {
+                        // emit errors inside so no reporting is needed here unless one need to specific
+                        delete out->cdr;
+                        out->cdr = nullptr;
+                    }
+                }
+                if (eventSource_cStr != nullptr) {
+                    ZeroCopyString zcSrcDeviceUidStr = eventSource_cStr;
+                    DeviceManager::GetDeviceEvent(zcSrcDeviceUidStr, &out->eventSource);
+                }
+                // have the following to make the modes explicit for now
+                // later it will be directly determined by the mode extractors
+                // as they will check if the sources exist before deciding the final mode
+                if (out->refreshMs == 0) {
+                    if (out->cdr == nullptr || out->eventSource == nullptr) {
+                        // it make no sense if either is nullptr
+                        // when refreshMs == 0
+                        out->consumerMode = DALHAL::Consumer::Mode::Manual;
+                    } else { //  this mean that both are valid
+                        out->consumerMode = DALHAL::Consumer::Mode::Event;
+                    }
+                } else if (out->cdr != nullptr) {
+                    out->consumerMode = DALHAL::Consumer::Mode::TimedRefresh;
+                } else {
+                    out->consumerMode = DALHAL::Consumer::Mode::Manual;
+                }
+
+                const char* deviceId_cStr = context.deviceId_cStr;
+        
+                out->topicBasePath.Set(deviceId_cStr, uid_cStr);
+
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(
+                    context.mqttClient, 
+                    deviceId_cStr, 
+                    context.deviceType, 
+                    uid_cStr, 
+                    *context.jsonObjItem, 
+                    *(context.jsonGlobal), 
+                    out->topicBasePath, 
+                    DALHAL::HA_Sensor::SendDeviceDiscovery
+                );
+
+            }
+
+        }
 
     }
 

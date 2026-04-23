@@ -33,9 +33,9 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaUInt chField = {"ch", FieldPolicy::Optional, (uint)1, (uint)4, (uint)0};
-        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (uint)1, (uint)4, (uint)0};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0};
+        constexpr SchemaUInt chField = {"ch", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
+        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
 
         constexpr const SchemaTypeBase* fields[] = {
             &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

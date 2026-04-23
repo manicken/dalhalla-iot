@@ -36,6 +36,8 @@
 #define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin(AUTOFORMAT_ON_FAIL, "/LittleFS", 10, "spiffs")
 #endif
 
+class AsyncWebServer;
+
 namespace System {
 
     void Setup();
@@ -47,6 +49,6 @@ namespace System {
 
     void failsafeLoop();
 
-   // void initWebServerHandlers(AsyncWebServer& webserver);
+    void initWebServerHandlers(AsyncWebServer& webserver);
 
 }

@@ -23,22 +23,31 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class LatchingRelay; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace LatchingRelay {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaObject resetStateField;
-            extern const SchemaObject setStateField;
-
-            extern const SchemaUInt timeout_ms_field;
+            struct Extractors final {
+                  /** only to be used internally of JsonSchema */
+                static void Apply_DataEnable(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** only to be used internally of JsonSchema */
+                static void Apply_Direct_a_b(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** only to be used internally of JsonSchema */
+                static void Apply_Direct_set_reset(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::LatchingRelay* out);
+            };
 
         }
 

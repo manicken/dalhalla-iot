@@ -31,6 +31,7 @@
 #include <SD_MMC.h>
 #endif
 
+
 #define BUILD_VER "1.0"
 
 void Timer_SyncTime() {
@@ -83,6 +84,7 @@ void setup() {
 
     DEBUG_UART.println(Info::getResetReasonStr());
 
+    
     System::Setup();
 
     MainConfig::begin();
@@ -143,7 +145,7 @@ void setup() {
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();
 #endif
-
+    System::initWebServerHandlers(webserver);
 #ifdef DALHAL_H_
     DALHAL::begin();
 #endif

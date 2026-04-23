@@ -26,7 +26,6 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
@@ -41,7 +40,11 @@ using DigitalInput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace DigitalInput { struct Extractors; } } // forward declaration
+
     class DigitalInput : public DigitalInput_DeviceBase {
+        friend struct JsonSchema::DigitalInput::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

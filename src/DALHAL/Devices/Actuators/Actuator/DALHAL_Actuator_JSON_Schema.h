@@ -23,22 +23,31 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class Actuator; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace Actuator {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaObject minEndStopField;
-            extern const SchemaObject maxEndStopField;
-
-            extern const SchemaUInt timeout_ms_field;
+            struct Extractors final {
+                  /** only to be used internally of JsonSchema */
+                static void Apply_DirEnableBreak(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** only to be used internally of JsonSchema */
+                static void Apply_HBridge_a_b(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** only to be used internally of JsonSchema */
+                static void Apply_HBridge_open_close(const DALHAL::DeviceCreateContext& ctx, void* out);
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::Actuator* out);
+            };
 
         }
 

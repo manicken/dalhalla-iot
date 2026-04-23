@@ -23,23 +23,25 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h> // also ByArrayConstraints
-#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class SinglePulseOutput; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema; 
 
         namespace SinglePulseOutput {
 
             extern const JsonObjectSchema Root;
 
-            constexpr SchemaHardwarePin pinField;
-            constexpr SchemaUInt pulseLengthField;
-            constexpr SchemaStringAnyOfArrayConstrained activeLevelField;
-
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::SinglePulseOutput* out);
+            };
 
         }
 

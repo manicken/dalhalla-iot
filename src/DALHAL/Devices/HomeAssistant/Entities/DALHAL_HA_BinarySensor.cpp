@@ -31,15 +31,17 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 #include "DALHAL_HA_BinarySensor_JSON_Schema.h"
 
 namespace DALHAL {
-    constexpr Registry::DefineBase BinarySensor::RegistryDefine = {
+    constexpr Registry::DefineBase HA_BinarySensor::RegistryDefine = {
         Create,
-        &JsonSchema::HA_BinarySensor,
+        &JsonSchema::HA_BinarySensor::Root,
     };
 
-    void BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         mqtt.write(',');
         mqtt.write('\n');
         HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, topicBasePath);
@@ -52,43 +54,22 @@ namespace DALHAL {
         PSC_JsonWriter::kv(mqtt, "platform", "binary_sensor");
     }
     
-    BinarySensor::BinarySensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
-  
-        topicBasePath.Set(deviceId_cStr, uidStr);
-
-        if (ValidateJsonStringField(jsonObj, "source")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "source");
-            cdr = new CachedDeviceRead();
-            if (cdr->Set(zcSrcDeviceUidStr) == false) {
-                // emit errors inside so no reporting is needed here unless one need to specific
-                delete cdr;
-                cdr = nullptr;
-            }
-        } else {
-            cdr = nullptr;
-        }
-        refreshMs = ParseRefreshTimeMs(jsonObj, DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS);
-
-        //const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceId_cStr, type, uidStr);
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, BinarySensor::SendDeviceDiscovery);
-        //delete[] cfgTopic_cStr;
-
+    HA_BinarySensor::HA_BinarySensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
+        JsonSchema::HA_BinarySensor::Extractors::Apply(context, this);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start
     }
-    BinarySensor::~BinarySensor() {
+    
+    HA_BinarySensor::~HA_BinarySensor() {
         delete cdr;
+        delete eventSource;
     }
 
-    Device* BinarySensor::Create(DeviceCreateContext& context) {
-        return new BinarySensor(static_cast<HA_CreateFunctionContext&>(context));
+    Device* HA_BinarySensor::Create(DeviceCreateContext& context) {
+        return new HA_BinarySensor(static_cast<HA_CreateFunctionContext&>(context));
     }
 
-    String BinarySensor::ToString() {
+    String HA_BinarySensor::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -100,24 +81,85 @@ namespace DALHAL {
         return ret;
     }
 
-    void BinarySensor::loop() {
-
-        if (cdr == nullptr) return; // nothing to automate
-
+    bool HA_BinarySensor::IsTimedRefresh_NOT_Due() {
+        // this check should not be needed
+        if (refreshMs == 0) return true;
         unsigned long now = millis();
         if (now - lastMs < refreshMs) {
-            return;
+            return true;
         }
         lastMs = now;
+        return false;
+    }
+
+    void HA_BinarySensor::SetAvailability(bool online) {
+        if (online == wasOnline) return;
+
+        const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+        bool success = mqttClient.publish(
+            topic,
+            online ? DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE
+                : DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE
+        );
+
+        if (success) {
+            wasOnline = online;
+        }
+    }
+
+    void HA_BinarySensor::loop() {
+
+        switch (consumerMode)
+        {
+            case Consumer::Mode::Manual:
+                return;
+            case Consumer::Mode::TimedRefresh:
+                if (IsTimedRefresh_NOT_Due()) {
+                    return;
+                }
+                break;
+            case Consumer::Mode::Event:
+                // check should not be needed in final version as then every mode should be explicit
+                if (eventSource == nullptr) { return; }
+                if (eventSource->CheckForEvent() == false) { return; }
+                break;
+            default: // should never happend
+                return;
+        }
+        // check should not be needed in final version as then every mode should be explicit
+        if (cdr == nullptr) { return; }
+
         //GlobalLogger.Info(F("BinarySensor::loop() exec"));
 
         HALValue val;
         HALOperationResult res = cdr->ReadSimple(val);
-        if (res == HALOperationResult::Success) {
+        bool isOnline = (res == HALOperationResult::Success);
+
+        if (isOnline)
+        {
+            if (!wasOnline)
+            {
+                SetAvailability(true);
+            }
+            mqttClient.publish(
+                topicBasePath.SetAndGet(TopicBasePathMode::State), 
+                (val.asBool())?"ON":"OFF"
+            );
+        }
+        else
+        {
+            if (wasOnline)
+            {
+                SetAvailability(false);
+            }
+        }
+    }
+
+    /*if (res == HALOperationResult::Success) {
             //GlobalLogger.Info(F("BinarySensor::loop() exec Success"));
             if (!wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                bool success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE);
+                success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE);
                 if (success) {
                     // this will make the availability update secure and non deadlock
                     GlobalLogger.Info(F("BinarySensor::loop() exec Success availability changed to active"));
@@ -137,7 +179,7 @@ namespace DALHAL {
             GlobalLogger.Info(F("BinarySensor::loop() exec fail"));
             if (wasOnline) {
                 const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                bool success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
+                success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
                 
                 if (success) {
                     // this will make the availability update secure and non deadlock
@@ -145,20 +187,20 @@ namespace DALHAL {
                     wasOnline = false;
                 }
             }
-        }
-    }
-    void BinarySensor::begin() {
+        }*/
+
+    void HA_BinarySensor::begin() {
 
     }
 
-    HALOperationResult BinarySensor::read(HALValue& val) {
+    HALOperationResult HA_BinarySensor::read(HALValue& val) {
         if (cdr != nullptr) {
             return cdr->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
 
     }
-    HALOperationResult BinarySensor::write(const HALValue& val) {
+    HALOperationResult HA_BinarySensor::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {

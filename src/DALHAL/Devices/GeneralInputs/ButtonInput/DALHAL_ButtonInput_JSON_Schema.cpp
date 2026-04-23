@@ -34,6 +34,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include "DALHAL_ButtonInput.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -41,11 +43,11 @@ namespace DALHAL {
         namespace ButtonInput {
 
             constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
-            constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, (uint)1, (uint)0, (uint)30};
+            constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)30};
 
             //constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
             //constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, "high", &activeLevelConstraints};
-            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0}; 
+            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0}; 
             
             constexpr SchemaString on_pressField = { "on_press", FieldPolicy::Optional};
 
@@ -66,6 +68,25 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::ButtonInput* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->pin = JsonSchema::GetValue(JsonSchema::ButtonInput::pinField, context);
+                out->debounceMs = JsonSchema::GetValue(JsonSchema::ButtonInput::debounceMsField, context);
+                out->activeLevel = JsonSchema::GetValue(JsonSchema::ButtonInput::activeLevelField, context);
+
+                // Optional external action target
+                // todo can also use react events
+                // but this allow direct actions
+                const char* on_press_cStr = JsonSchema::GetValue(JsonSchema::ButtonInput::on_pressField, context).asConstChar();
+                if (on_press_cStr != nullptr) {
+                    out->toggleTarget = new CachedDeviceAccess();
+                    if (out->toggleTarget->Set(on_press_cStr) == false) {
+                        delete out->toggleTarget;
+                        out->toggleTarget = nullptr;
+                    }
+                }
+            }
 
         }
 

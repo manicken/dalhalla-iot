@@ -23,26 +23,25 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
-#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class ButtonInput; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace ButtonInput {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaHardwarePin pinField;
-            extern const SchemaStringAnyOfArrayConstrained activeLevelField;
-            extern const SchemaUInt debounceMsField;
-            extern const SchemaString on_pressField;
-
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::ButtonInput* out);
+            };
 
         }
 

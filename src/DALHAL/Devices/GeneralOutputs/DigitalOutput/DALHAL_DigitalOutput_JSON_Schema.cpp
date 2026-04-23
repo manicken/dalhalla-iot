@@ -32,6 +32,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include "DALHAL_DigitalOutput.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -54,6 +56,11 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DigitalOutput* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->pin = JsonSchema::GetValue(JsonSchema::DigitalOutput::pinField, context);
+            }
 
         }
 

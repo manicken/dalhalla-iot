@@ -36,95 +36,212 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
-#include "DALHAL_HA_DeviceTypeReg.h"
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
+#include "DALHAL_HomeAssistant.h"
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <WiFi.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
-        constexpr SchemaString hostField = {"host", FieldPolicy::Required};
-        constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, (uint)1, (uint)65535, (uint)1883};
-        constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
-        constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
+        namespace HomeAssistant {
 
-        constexpr const SchemaTypeBase* credentialsFields[] = {&userField, &passField, nullptr};
-        constexpr SchemaAllOfFieldsGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};
+            constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
+            constexpr SchemaString hostField = {"host", FieldPolicy::Required};
+            constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, (unsigned int)1, (unsigned int)65535, (unsigned int)1883};
+            constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
+            constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
 
-        constexpr SchemaString groupNameField = {"name", FieldPolicy::Required};
+            constexpr const SchemaTypeBase* credentialsFields[] = {&userField, &passField, nullptr};
+            constexpr SchemaAllOfFieldsGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};
 
-        constexpr const SchemaTypeBase* globalGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, nullptr};
-        constexpr JsonObjectSchema globalGroupSchema = {
-            "GlobalGroup",
-            globalGroupFields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
-        constexpr SchemaObject globalGroupField = {"group", FieldPolicy::ModeDefine, &globalGroupSchema};
+            constexpr SchemaString groupNameField = {"name", FieldPolicy::Required};
 
-        constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+            constexpr const SchemaTypeBase* globalGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, nullptr};
+            constexpr JsonObjectSchema globalGroupSchema = {
+                "GlobalGroup",
+                globalGroupFields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+            constexpr SchemaObject globalGroupField = {"group", FieldPolicy::ModeDefine, &globalGroupSchema};
 
-        constexpr const SchemaTypeBase* individualGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, &itemsField, nullptr};
-        constexpr JsonObjectSchema individualGroupSchema = {
-            "IndividualGroup",
-            individualGroupFields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
-        constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &deviceIdField,
-            &hostField,
-            &portField,
-            &credentialsGroup,
-            &globalGroupField,
-            &itemsField,
-            &individualGroupsField,
-            nullptr,
-        };
+            constexpr const SchemaTypeBase* individualGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, &itemsField, nullptr};
+            constexpr JsonObjectSchema individualGroupSchema = {
+                "IndividualGroup",
+                individualGroupFields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+            constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
 
-        constexpr ModeConjunctionDefine globalGroupModeConjunctions[] = {
-            { &globalGroupField, true },      // group must exist for this mode
-            { &itemsField, true },            // items must exist
-            { &individualGroupsField, false },// groups must NOT exist
-            { nullptr, false}
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &deviceIdField,
+                &hostField,
+                &portField,
+                &credentialsGroup,
+                &globalGroupField,
+                &itemsField,
+                &individualGroupsField,
+                nullptr,
+            };
 
-        constexpr ModeConjunctionDefine individualGroupModeConjunctions[] = {
-            { &globalGroupField, false },      // group must NOT exist for this mode
-            { &itemsField, false },            // items must NOT exist
-            { &individualGroupsField, true },  // groups must exist
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine globalGroupModeConjunctions[] = {
+                { &globalGroupField, true },      // group must exist for this mode
+                { &itemsField, true },            // items must exist
+                { &individualGroupsField, false },// groups must NOT exist
+                { nullptr, false}
+            };
 
-        void ExtractGlobalGroupMode(const DeviceCreateContext& ctx, void* out) {
-            *static_cast<GroupMode*>(out) = GroupMode::GlobalGroup;
+            constexpr ModeConjunctionDefine individualGroupModeConjunctions[] = {
+                { &globalGroupField, false },      // group must NOT exist for this mode
+                { &itemsField, false },            // items must NOT exist
+                { &individualGroupsField, true },  // groups must exist
+                { nullptr, false}
+            };
+
+            constexpr ModeSelector modes[] = {
+                {"global group mode", globalGroupModeConjunctions, Extractors::ExtractGlobalGroupMode},
+                {"individual groups mode", individualGroupModeConjunctions, Extractors::ExtractIndividualGroupMode},
+                {nullptr, nullptr, nullptr}
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "HomeAssistant",
+                fields,
+                modes,
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::HomeAssistant* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->deviceID = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::deviceIdField, context).asConstChar());
+                out->host = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::hostField, context).asConstChar());
+                out->port = JsonSchema::GetValue(JsonSchema::HomeAssistant::portField, context).asUInt();
+                // note. can only be called after getting host and port
+                out->ConfigureMqttClient();
+                out->username = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::userField, context).asConstChar());
+                out->password = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::passField, context).asConstChar());
+                // note. can only be called after getting username and password
+                out->Connect();
+
+                JsonSchema::ModeSelector::Apply(JsonSchema::HomeAssistant::Root.modes, context, out);
+            }
+
+            void Extractors::CreateDevicesFromItems(const JsonArray& items, DALHAL::HA_CreateFunctionContext& createFuncContext, DALHAL::Device** devices, int& index) {
+                int arrayCount = items.size();
+                for (int i=0;i<arrayCount;i++) {
+                    const JsonVariant& item = items[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+
+                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                    
+                    const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+                    createFuncContext.jsonObjItem = &item;
+                    createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
+                    devices[index++] = regItem.def->Create_Function(createFuncContext);
+                }
+            }
+
+            void Extractors::ExtractGlobalGroupMode(const DALHAL::DeviceCreateContext& context, void* out) {
+                auto* self = static_cast<DALHAL::HomeAssistant*>(out);
+
+                const JsonVariant& jsonObj = *context.jsonObjItem;
+                const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObj);
+                int arrayCount = jsonArrayItems.size();
+
+                int validItemCount = 0;
+                // first pass count and check valid items
+                for (int i=0;i<arrayCount;i++) {
+                    const JsonVariant& item = jsonArrayItems[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+                    validItemCount++;
+                }
+                self->deviceCount = validItemCount;
+                self->devices = new Device*[validItemCount](); // create array and initialize all to nullptr
+                int index = 0;
+                // second pass create devices
+                const JsonVariant& groupObj = JsonSchema::SchemaObject::GetValidatedJsonObject(JsonSchema::HomeAssistant::globalGroupField, jsonObj);
+                
+                HA_CreateFunctionContext createFuncContext(self->mqttClient);
+                createFuncContext.jsonGlobal = &groupObj;
+                //createFuncContext.jsonObjRoot = &jsonObj;
+                createFuncContext.deviceId_cStr = JsonSchema::GetValue(JsonSchema::HomeAssistant::deviceIdField, context).asConstChar();
+                CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, index);
+                /*for (int i=0;i<arrayCount;i++) {
+                    const JsonVariant& item = jsonArrayItems[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+
+                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                    
+                    const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+                    createFuncContext.jsonObjItem = &item;
+                    createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
+                    self->devices[index++] = regItem.def->Create_Function(createFuncContext);
+                }*/
+            }
+
+            void Extractors::ExtractIndividualGroupMode(const DALHAL::DeviceCreateContext& context, void* out) {
+                auto* self = static_cast<DALHAL::HomeAssistant*>(out);
+
+                const JsonVariant& jsonObj = *context.jsonObjItem;
+                const JsonArray& jsonArrayGroups = JsonSchema::SchemaArrayOfObjects::GetValidatedJsonArray(JsonSchema::HomeAssistant::individualGroupsField, jsonObj);
+                int jsonArrayGroupsCount = jsonArrayGroups.size();
+                
+                int activeItemCount = 0;
+                // first pass count enabled/"non comment" items
+                for (int i=0;i<jsonArrayGroupsCount;i++) {
+                    const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
+                    const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObjGrpItem);
+                    int jsonArrayItemsCount = jsonArrayItems.size();
+                    for (int j=0;j<jsonArrayItemsCount;j++) {
+                        const JsonVariant& item = jsonArrayItems[j];
+                        if (Device::DisabledOrCommentItem(item)) { continue; }
+                        activeItemCount++;
+                    }
+                }
+
+                // second pass create actual enabled/"non comment" items
+                self->deviceCount = activeItemCount;
+                self->devices = new Device*[activeItemCount]();
+
+                int newItemIndex = 0;
+                HA_CreateFunctionContext createFuncContext(self->mqttClient);
+                //createFuncContext.jsonObjRoot = &jsonObj;
+                for (int i=0;i<jsonArrayGroupsCount;i++) {
+                    const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
+                    const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObjGrpItem);
+                    //int jsonArrayItemsCount = jsonArrayItems.size();
+                    createFuncContext.jsonGlobal = &jsonObjGrpItem;
+                    
+                    CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, newItemIndex);
+                    /*for (int j=0;j<jsonArrayItemsCount;j++) {
+                        const JsonVariant& item = jsonArrayItems[j];
+                        if (Device::DisabledOrCommentItem(item)) { continue; }
+
+                        const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                
+                        const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
+                        createFuncContext.jsonObjItem = &item;
+                        createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
+                        self->devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
+                    }*/
+                }
+            }
+
         }
-
-        void ExtractIndividualGroupMode(const DeviceCreateContext& ctx, void* out) {
-            *static_cast<GroupMode*>(out) = GroupMode::IndividualGroup;
-        }
-
-        constexpr ModeSelector modes[] = {
-            {"global group mode", globalGroupModeConjunctions, ExtractGlobalGroupMode},
-            {"individual groups mode", individualGroupModeConjunctions, ExtractIndividualGroupMode},
-            {nullptr, nullptr, nullptr}
-        };
-
-        constexpr JsonObjectSchema HomeAssistant = {
-            "HomeAssistant",
-            fields,
-            modes,
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
 
     }
 

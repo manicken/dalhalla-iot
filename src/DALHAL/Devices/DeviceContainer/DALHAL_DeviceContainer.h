@@ -32,14 +32,18 @@
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace DeviceContainer { struct Extractors; } } // forward declaration
+
     class DeviceContainer : public Device {
+        friend struct JsonSchema::DeviceContainer::Extractors; // allow access to private memebers of this class from the schema extractor
+        
     public: // public static fields and exposed external structures
         static Device* Create(DeviceCreateContext& context);
         static const Registry::DefineBase RegistryDefine;
 
     private:
-        Device** devices;
-        int deviceCount;
+        Device** devices = nullptr;
+        int deviceCount = 0;
 
     public:
 

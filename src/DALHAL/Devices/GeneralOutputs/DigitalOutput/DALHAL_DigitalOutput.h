@@ -41,7 +41,11 @@ using DigitalOutput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace DigitalOutput { struct Extractors; } } // forward declaration
+
     class DigitalOutput : public DigitalOutput_DeviceBase {
+        friend struct JsonSchema::DigitalOutput::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

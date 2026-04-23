@@ -32,6 +32,8 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
+#include <DALHAL/Core/Types/DALHAL_Consumer.h>
+
 #include "DALHAL_CommonSchemas_Time.h"
 
 namespace DALHAL {
@@ -46,7 +48,7 @@ namespace DALHAL {
             constexpr const SchemaTypeBase* consumerFields[] = { &sourceField, &eventSourceField, &CommonTime::refreshTimeGroupFields, nullptr };
             constexpr SchemaFieldsGroup consumerFieldsGroup = {"consumer", consumerFields, Gui::UseInline};
             
-            constexpr ModeConjunctionDefine refreshModeConjunctions[] = {
+            constexpr ModeConjunctionDefine timedRefreshModeConjunctions[] = {
                 { &CommonTime::refreshTimeGroupFields, true },  // group must exist for this mode
                 { &sourceField, true },            // source must exist
                 { &eventSourceField, false },      // event_source must NOT exist
@@ -58,17 +60,17 @@ namespace DALHAL {
                 { &eventSourceField, true },      // event_source must exist
                 { nullptr, false}
             };
-            constexpr ModeConjunctionDefine scriptModeConjunctions[] = {
+            constexpr ModeConjunctionDefine manualModeConjunctions[] = {
                 { &CommonTime::refreshTimeGroupFields, false },  // group must NOT exist for this mode
                 { &sourceField, false },            // source must NOT exist
                 { &eventSourceField, false },      // event_source must NOT exist
                 { nullptr, false}
             };
 
-            void Apply_RefreshModeValues(const DeviceCreateContext& ctx, void* out)
+            void Apply_TimedRefreshModeValues(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<ConsumerStruct*>(out);
-                self->mode = ConsumerStruct::Mode::Refresh;
+                self->mode = DALHAL::Consumer::Mode::TimedRefresh;
                 self->eventSource = nullptr;
                 self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
                 self->refreshtimems = JsonSchema::GetValue(CommonTime::refreshTimeGroupFields, ctx).asUInt();
@@ -77,25 +79,25 @@ namespace DALHAL {
             void Apply_EventModeValues(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<ConsumerStruct*>(out);
-                self->mode = ConsumerStruct::Mode::Event;
+                self->mode = DALHAL::Consumer::Mode::Event;
                 self->eventSource = JsonSchema::GetValue(eventSourceField, ctx).asConstChar();;
                 self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
                 self->refreshtimems = 0;
             }
 
-            void Apply_ScriptModeValues(const DeviceCreateContext& ctx, void* out)
+            void Apply_ManualModeValues(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<ConsumerStruct*>(out);
-                self->mode = ConsumerStruct::Mode::Script;
+                self->mode = DALHAL::Consumer::Mode::Manual;
                 self->eventSource = nullptr;
                 self->source = nullptr;
                 self->refreshtimems = 0;
             }
             
             constexpr ModeSelector consumerDeviceModes[] = {
-                {"refresh", refreshModeConjunctions, Apply_RefreshModeValues},
+                {"timedRefresh", timedRefreshModeConjunctions, Apply_TimedRefreshModeValues},
                 {"event", eventModeConjunctions, Apply_EventModeValues},
-                {"script", scriptModeConjunctions, Apply_ScriptModeValues},
+                {"manual", manualModeConjunctions, Apply_ManualModeValues},
                 {nullptr, nullptr, nullptr}
             };
 

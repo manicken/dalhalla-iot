@@ -56,18 +56,22 @@ using ThingSpeak_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ThingSpeak { struct Extractors; } } // forward declaration
+
     class ThingSpeak : public ThingSpeak_DeviceBase {
+        friend struct JsonSchema::ThingSpeak::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
 
-        static const char* TS_ROOT_URL;
-
     private:
+        const char* ts_root_url;
+
         HTTPClient http;
         WiFiClient wifiClient;
         
-        char API_KEY[17];
+        char api_key[17];
         std::string urlApi;
         ThingSpeakField* fields;
         int fieldCount;

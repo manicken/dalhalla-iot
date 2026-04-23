@@ -22,26 +22,15 @@
 */
 
 #include "DALHAL_PWM_Servo.h"
+#include <DALHAL/Support/DALHAL_Logger.h>
 
-#include <stdio.h>
-#include <math.h>
 // need to go hardcore on this stuff as arduino is only for beginners
 #if defined(ESP8266) || defined(ESP32)
 #include <driver/ledc.h> // esp-idf
 #include <esp_err.h> // esp-idf
 #endif
 
-//#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-
-#include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-
 #include "DALHAL_PWM_Servo_JSON_Schema.h"
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
-
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 
 namespace DALHAL {
 
@@ -55,25 +44,15 @@ namespace DALHAL {
         return new PWM_Servo(context);
     }
 
-    PWM_Servo::PWM_Servo(DeviceCreateContext& context) : PWM_Servo_DeviceBase(context.deviceType)
-    {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        pin = JsonSchema::GetValue(JsonSchema::CommonPins::OutputPinField, context);
-        pwmChannel = (ledc_channel_t)JsonSchema::GetValue(JsonSchema::PWM_Servo::chField, context).asUInt();
+    PWM_Servo::PWM_Servo(DeviceCreateContext& context) : PWM_Servo_DeviceBase(context.deviceType) {
+        JsonSchema::PWM_Servo::Extractors::Apply(context, this);
 
-        minPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::minPulseLengthField, context);
-        maxPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::maxPulseLengthField, context);
-        startPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::startPulseLengthField, context);
-        autoOffAfterMs = JsonSchema::GetValue(JsonSchema::PWM_Servo::autoOffAfterMsField, context);
-        pulseLengthOffset = JsonSchema::GetValue(JsonSchema::PWM_Servo::pulseLengthOffsetField, context);
-
-        JsonSchema::ModeSelector::Apply(JsonSchema::PWM_Servo::Root.modes, context, this);
-
-        //Serial.printf("\r\n MinVal:%f\r\n", minVal);
-        //Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
-        //Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
-        //Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
-        //Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
+        // debug prints
+        Serial.printf("\r\n MinVal:%f\r\n", minVal);
+        Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
+        Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
+        Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
+        Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
     }
 
     PWM_Servo::~PWM_Servo() {

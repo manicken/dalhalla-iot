@@ -23,18 +23,10 @@
 
 #include "DALHAL_Actuator.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
 #include "DALHAL_Actuator_JSON_Schema.h"
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
-
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_Object.h>
 
 namespace DALHAL {
 
@@ -49,30 +41,7 @@ namespace DALHAL {
     }
 
     Actuator::Actuator(DeviceCreateContext& context) : Actuator_DeviceBase(context.deviceType), state(State::Idle) {
-
-        isr_data.location = Location::Unknown;
-        isr_data.handled = false;
-
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-
-        JsonSchema::ModeSelector::Apply(JsonSchema::Actuator::Root.modes, context, this);
-
-        JsonSchema::PinConfig endStopPinCfg;
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-            pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
-            pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
-        } else {
-            pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
-        }
-        if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-            pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
-            pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
-        } else {
-            pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
-        }
-
-        timeoutMs = JsonSchema::GetValue(JsonSchema::Actuator::timeout_ms_field, context).asUInt();
-
+        JsonSchema::Actuator::Extractors::Apply(context, this);
         setup();
     }
 
@@ -187,6 +156,9 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     void Actuator::setup() {
+        isr_data.location = Location::Unknown;
+        isr_data.handled = false;
+
 #if defined(ESP8266) || defined(ESP32)
         gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 

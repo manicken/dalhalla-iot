@@ -23,21 +23,13 @@
 
 #include "DALHAL_ThingSpeak.h"
 
-#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
-#include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
-
-#include "DALHAL_ThingSpeak_JSON_Schema.h"
-
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
-
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
 #endif
 
-#define DEBUG_UART Serial
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include "DALHAL_ThingSpeak_JSON_Schema.h"
 
 namespace DALHAL {
 
@@ -47,59 +39,12 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
     };
 
-    const char* ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
+    Device* ThingSpeak::Create(DeviceCreateContext& context) {
+        return new ThingSpeak(context);
+    }
     
     ThingSpeak::ThingSpeak(DeviceCreateContext& context) : ThingSpeak_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-
-        HALValue refreshTimeMsTemp = JsonSchema::GetValue(JsonSchema::CommonTime::refreshTimeGroupFields, context);
-        if (refreshTimeMsTemp.isSet()) {
-            refreshTimeMs = refreshTimeMsTemp.asUInt();
-            useOwnTaskLoop = true;
-        } else {
-            refreshTimeMs = 0;
-            useOwnTaskLoop = false;
-        }
-        HALValue testserverEnabled = JsonSchema::GetValue(JsonSchema::ThingSpeak::testserverField, context);
-        if (testserverEnabled.isSet() && testserverEnabled.asBool()) {
-#ifdef DALHAL_DEVICES_THINGSPEAK_TEST_SERVER
-            ThingSpeak::TS_ROOT_URL = "http://" DALHAL_DEVICES_THINGSPEAK_TEST_SERVER ":8083/update?api_key=";
-#else
-            ThingSpeak::TS_ROOT_URL = "http://127.0.0.1:8083/update?api_key=";
-#endif
-        } else {
-            ThingSpeak::TS_ROOT_URL = "http://api.thingspeak.com/update?api_key=";
-        }
-
-        const char* keyStr = JsonSchema::GetValue(JsonSchema::ThingSpeak::keyField, context).asConstChar();
-        strncpy(API_KEY, keyStr, sizeof(API_KEY) - 1);
-        API_KEY[sizeof(API_KEY) - 1] = '\0'; // ensure null-termination
-
-
-        const JsonObject& items = JsonSchema::SchemaObject::GetValidatedJsonObject(JsonSchema::ThingSpeak::itemsField, jsonObj);
-        fieldCount = items.size();
-        fields = new ThingSpeakField[fieldCount];
-        int index = 0;
-        for (const JsonPair& kv : items) {
-            //int fieldIndex = atoi(kv.key().c_str());
-            uint8_t fieldIndex = kv.key().c_str()[0] - '0';
-            const char* uidPathAndFuncName_cStr = kv.value().as<const char*>();
-            fields[index++].Set(fieldIndex, uidPathAndFuncName_cStr);
-        }
-
-        urlApi.reserve(strlen(TS_ROOT_URL) + strlen(API_KEY) + fieldCount*(strlen("&fieldx=")+32));
-
-        if (useOwnTaskLoop) {
-            uint32_t firstUpdateAfterSeconds = JsonSchema::GetValue(JsonSchema::ThingSpeak::firstUpdateAfterSecondsField, context).asUInt();
-            if (firstUpdateAfterSeconds == 0) {
-                lastUpdateMs = millis() - refreshTimeMs; // force a first update directly
-            } else {
-                lastUpdateMs = millis() - firstUpdateAfterSeconds*1000; // force a first update after timeout
-            }
-        }
-        
+        JsonSchema::ThingSpeak::Extractors::Apply(context, this);        
     }
 
     ThingSpeak::~ThingSpeak() {
@@ -122,8 +67,8 @@ namespace DALHAL {
         //std::string urlApi;
         bool hasUpdates = false;
         urlApi.clear();
-        urlApi += TS_ROOT_URL;
-        urlApi += API_KEY;
+        urlApi += ts_root_url;
+        urlApi += api_key;
         for (int i=0;i<fieldCount;i++) {
             ThingSpeakField& field = fields[i];
             
@@ -149,10 +94,10 @@ namespace DALHAL {
                 
         int httpCode = http.GET();
         if (httpCode <= 0) {
-            DEBUG_UART.println(F("ERROR - ThingSpeak post\r\n"));
+            GlobalLogger.Error(F("ThingSpeak post"));
         }
         /*else {
-            DEBUG_UART.println(F("[OK]\r\n"));
+            GlobalLogger.Info(F("ThingSpeak post [OK]"));
         }*/
 
         http.end();
@@ -161,10 +106,6 @@ namespace DALHAL {
         triggerExec();
 #endif
         return HALOperationResult::Success;
-    }
-
-    Device* ThingSpeak::Create(DeviceCreateContext& context) {
-        return new ThingSpeak(context);
     }
 
     String ThingSpeak::ToString() {

@@ -30,52 +30,33 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
 #include "DALHAL_HA_Button_JSON_Schema.h"
 
 namespace DALHAL {
-    constexpr Registry::DefineBase Button::RegistryDefine = {
+    constexpr Registry::DefineBase HA_Button::RegistryDefine = {
         Create,
-        &JsonSchema::HA_Button,
+        &JsonSchema::HA_Button::Root,
     };
 
-    void Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }
     
-    Button::Button(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        const char* deviceId_cStr = (*(context.jsonObjRoot))["deviceId"];
-  
-        topicBasePath.Set(deviceId_cStr, uidStr);
-
-        if (ValidateJsonStringField(jsonObj, "target")) {
-            ZeroCopyString zcSrcDeviceUidStr = GetAsConstChar(jsonObj, "target");
-            cda = new CachedDeviceAccess();
-            if (cda->Set(zcSrcDeviceUidStr) == false) {
-                delete cda;
-                cda = nullptr;
-            }
-        } else {
-            cda = nullptr;
-        }
-        //refreshMs = ParseRefreshTimeMs(jsonObj, 5000);
-
-        HA_DeviceDiscovery::SendDiscovery(mqttClient, deviceId_cStr, context.deviceType, uidStr, jsonObj, *(context.jsonGlobal), topicBasePath, Button::SendDeviceDiscovery);
-
-        //lastMs = millis()-refreshMs; // force a direct update after start
+    HA_Button::HA_Button(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
+        JsonSchema::HA_Button::Extractors::Apply(context, this);
     }
-    Button::~Button() {
+    HA_Button::~HA_Button() {
         delete cda;
     }
 
-    Device* Button::Create(DeviceCreateContext& context) {
-        return new Button(static_cast<HA_CreateFunctionContext&>(context));
+    Device* HA_Button::Create(DeviceCreateContext& context) {
+        return new HA_Button(static_cast<HA_CreateFunctionContext&>(context));
     }
 
-    String Button::ToString() {
+    String HA_Button::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
@@ -87,11 +68,11 @@ namespace DALHAL {
         return ret;
     }
 
-    HALOperationResult Button::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Button::exec(const ZeroCopyString& cmd) {
         return cda->Exec();
     }
 
-    HALOperationResult Button::exec() {
+    HALOperationResult HA_Button::exec() {
         return cda->Exec();
     }
 

@@ -23,19 +23,25 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class REST_Cmd; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace REST_Cmd {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaString urlField;
-
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::REST_Cmd* out);
+            };
         }
 
     }

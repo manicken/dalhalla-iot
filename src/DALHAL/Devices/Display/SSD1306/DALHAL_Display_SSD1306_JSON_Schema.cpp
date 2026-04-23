@@ -23,6 +23,10 @@
 
 #include "DALHAL_Display_SSD1306_JSON_Schema.h"
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
@@ -37,38 +41,23 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 
+#include "DALHAL_Display_SSD1306.h"
+#include "DALHAL_Display_SSD1306_Element.h"
+
+#include "DALHAL_Display_SSD1306_Element_JSON_Schema.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
         namespace Display_SSD1306 {
 
-            // SSD1306_Element "device"
-            constexpr SchemaUInt xField = {"x", FieldPolicy::Required, (uint)0, (uint)128, (uint)0};
-            constexpr SchemaUInt yField = {"y", FieldPolicy::Required, (uint)0, (uint)64, (uint)0};
-            constexpr SchemaString labelField = {"label", FieldPolicy::Optional};
-            //constexpr SchemaStringUID_Path sourceField = {"source", FieldPolicy::Optional};
-
-            constexpr const SchemaTypeBase* elementFields[] = {
-                &CommonBase::disabledField, 
-                &CommonBase::uidFieldRequired, 
-                &xField, 
-                &yField, 
-                &labelField, 
-                &CommonConsumer::sourceField, 
-                nullptr
-            };
-
-            constexpr JsonObjectSchema elementObject = {"SSD1306 element", elementFields, nullptr, nullptr, EmptyPolicy::Warn, UnknownFieldPolicy::Warn};
-
-            // SSD1306 display
-            constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, (uint)8, (uint)128, (uint)128};
-            constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, (uint)8, (uint)64, (uint)64};
-            constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (uint)1, (uint)64, (uint)1};
+            constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, (unsigned int)8, (unsigned int)128, (unsigned int)128};
+            constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, (unsigned int)8, (unsigned int)64, (unsigned int)64};
+            constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (unsigned int)1, (unsigned int)64, (unsigned int)1};
             constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
-            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &elementObject};
-            
+            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &JsonSchema::Display_SSD1306_Element::Root};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -88,6 +77,52 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::I2C_Master_CreateFunctionContext& context, DALHAL::Display_SSD1306* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+
+                uint32_t width = JsonSchema::GetValue(JsonSchema::Display_SSD1306::widthField, context);
+                uint32_t height = JsonSchema::GetValue(JsonSchema::Display_SSD1306::heightField, context);
+                const char* addrStr = JsonSchema::GetValue(JsonSchema::Display_SSD1306::addrField, context).asConstChar();
+                uint8_t addr = static_cast<uint8_t>(std::strtoul(addrStr, nullptr, 16));
+                uint8_t textSize = JsonSchema::GetValue(JsonSchema::Display_SSD1306::textsizeField, context);
+                //if (textSize == 0) textSize = 1; can never happend as schema defines min 1
+
+                out->display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
+
+                delay(200);
+                if (out->display->begin(SSD1306_SWITCHCAPVCC, addr))
+                {
+                    out->display->clearDisplay();
+                    out->display->setTextSize(textSize);
+                    out->display->setTextColor(SSD1306_WHITE);
+                    out->display->setCursor(0,0);
+                    //display.println(F("Hello ESP32!"));
+                    out->display->display(); // <--- push buffer to screen
+                }
+
+                const JsonArray& items = JsonSchema::SchemaArrayOfObjects::GetValidatedJsonArray(JsonSchema::Display_SSD1306::itemsField, *(context.jsonObjItem));
+
+                int itemCount = items.size();
+                // first pass count valid items
+                size_t validItemCount = 0;
+                for (int i=0;i<itemCount;i++) {
+                    if (Device::DisabledOrCommentItem(items[i])) { continue; }
+                    validItemCount++;
+                }
+                // second pass actually create the devices
+                out->elementCount = validItemCount;
+                out->elements = new Device*[validItemCount]();
+                int index = 0;
+                DeviceCreateContext createContext;
+                createContext.deviceType = "Display_SSD1306_Element";
+                for (int i=0;i<itemCount;i++) {
+                    const JsonVariant& item = items[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+                    createContext.jsonObjItem = &item;
+                    out->elements[index++] = new DALHAL::Display_SSD1306_Element(createContext);
+                }
+            }
 
         }
 

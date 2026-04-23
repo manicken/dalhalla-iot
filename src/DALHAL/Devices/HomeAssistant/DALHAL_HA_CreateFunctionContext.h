@@ -23,10 +23,22 @@
 
 #pragma once
 
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+
+#include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
 
 namespace DALHAL {
 
-    extern const Registry::Item HA_DeviceRegistry[];
+    struct HA_CreateFunctionContext : DeviceCreateContext {
+        // set from the jsonObjRoot as the HA devices dont have/should not have access to the base Schema
+        const char* deviceId_cStr;
 
+        PubSubClient& mqttClient;
+        const JsonVariant* jsonGlobal;
+        //const JsonVariant* jsonObjRoot; // cannot be used anymore as it breaks schema separation
+
+        HA_CreateFunctionContext(PubSubClient& mqttClient) : DeviceCreateContext(), mqttClient(mqttClient), jsonGlobal(nullptr) {}
+        //HA_CreateFunctionContext(const JsonVariant& jsonObj, const char* const type, PubSubClient& mqttClient, const JsonVariant& jsonGlobal, const JsonVariant& jsonObjRoot) : DeviceCreateContext(context), mqttClient(mqttClient), jsonGlobal(jsonGlobal), jsonObjRoot(jsonObjRoot) {}
+    };
 }

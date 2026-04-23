@@ -23,9 +23,6 @@
 
 #include "DALHAL_DigitalInput.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include "DALHAL_DigitalInput_JSON_Schema.h"
@@ -45,8 +42,7 @@ namespace DALHAL {
     }
 
     DigitalInput::DigitalInput(DeviceCreateContext& context) : DigitalInput_DeviceBase(context.deviceType) {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        pin = JsonSchema::GetValue(JsonSchema::DigitalInput::pinField, context);
+        JsonSchema::DigitalInput::Extractors::Apply(context, this);
         pinMode(pin, INPUT);
     }
 

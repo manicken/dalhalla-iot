@@ -29,8 +29,6 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
-#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
-
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(BUTTON_INPUT)
@@ -42,7 +40,11 @@ using ButtonInput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ButtonInput { struct Extractors; } } // forward declaration
+
     class ButtonInput : public ButtonInput_DeviceBase {
+        friend struct JsonSchema::ButtonInput::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

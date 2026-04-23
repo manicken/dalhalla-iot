@@ -36,6 +36,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include "DALHAL_SinglePulseOutput.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -43,11 +45,11 @@ namespace DALHAL {
         namespace SinglePulseOutput {
 
             constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
-            constexpr SchemaUInt pulseLengthField = { DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, FieldPolicy::Optional, (uint)1, (uint)0, (uint)500};
+            constexpr SchemaUInt pulseLengthField = { DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)500};
             
             //constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
             //constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
-            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0}; 
+            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0}; 
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -65,6 +67,14 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::SinglePulseOutput* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->pin = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pinField, context);
+                out->activeLevel = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::activeLevelField, context);
+                out->pulseLength = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pulseLengthField, context);
+        
+            }
 
         }
 

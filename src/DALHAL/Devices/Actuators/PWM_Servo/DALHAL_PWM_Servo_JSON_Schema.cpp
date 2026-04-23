@@ -25,14 +25,12 @@
 
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
-
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_ModeSelector.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_FieldConstraint.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
-
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
@@ -47,17 +45,17 @@ namespace DALHAL {
 
             //constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-            constexpr SchemaUInt chField = {"ch", FieldPolicy::Required, (uint)0, (uint)7, (uint)0};
+            constexpr SchemaUInt chField = {"ch", FieldPolicy::Required, (unsigned int)0, (unsigned int)7, (unsigned int)0};
 
-            constexpr SchemaUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, (uint)100, (uint)20000, (uint)1000};
-            constexpr SchemaUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, (uint)100, (uint)20000, (uint)2000};
-            constexpr SchemaUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, (uint)100, (uint)20000, (uint)1500};
+            constexpr SchemaUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)1000};
+            constexpr SchemaUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)2000};
+            constexpr SchemaUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)1500};
 
-            constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, (uint)0, (uint)0, (uint)0};
-            constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, (uint)0, (uint)0, (uint)0};
+            constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)0};
+            constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)0};
 
-            constexpr SchemaFloat minValField = {"minVal", FieldPolicy::ModeDefine, (uint)0};
-            constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::ModeDefine, (uint)100};
+            constexpr SchemaFloat minValField = {"minVal", FieldPolicy::ModeDefine, (unsigned int)0};
+            constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::ModeDefine, (unsigned int)100};
 
             constexpr ModeConjunctionDefine conjunctions_ratio_value_Mode[] = {
                 { &minValField, true }, // field must exist for this mode
@@ -71,12 +69,9 @@ namespace DALHAL {
                 { nullptr, false}
             };
 
-            void Apply_RatioValueMode(const DeviceCreateContext& ctx, void* out);
-            void Apply_PulseLengthValueMode(const DeviceCreateContext& ctx, void* out);
-
             constexpr const ModeSelector modes[] = {
-                {"ratio value", conjunctions_ratio_value_Mode, Apply_RatioValueMode},
-                {"pulse length", conjunctions_pulselen_value_Mode, Apply_PulseLengthValueMode},
+                {"ratio value", conjunctions_ratio_value_Mode, Extractors::Apply_RatioValueMode},
+                {"pulse length", conjunctions_pulselen_value_Mode, Extractors::Apply_PulseLengthValueMode},
                 {nullptr, nullptr, nullptr}
             };
 
@@ -111,8 +106,7 @@ namespace DALHAL {
                 UnknownFieldPolicy::Warn,
             };
 
-
-            void Apply_RatioValueMode(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_RatioValueMode(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::PWM_Servo*>(out);
                 self->valueType = DALHAL::PWM_Servo::ServoValueType::Ratio;
@@ -120,13 +114,28 @@ namespace DALHAL {
                 self->maxVal = JsonSchema::GetValue(maxValField, ctx).asFloat();
             }
 
-            void Apply_PulseLengthValueMode(const DeviceCreateContext& ctx, void* out)
+            void Extractors::Apply_PulseLengthValueMode(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::PWM_Servo*>(out);
                 self->valueType = DALHAL::PWM_Servo::ServoValueType::PulseUS;
                 self->minVal = NAN;
                 self->maxVal = NAN;
             }
+
+            void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::PWM_Servo* out) {
+                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->pin = JsonSchema::GetValue(JsonSchema::CommonPins::OutputPinField, context);
+                out->pwmChannel = (ledc_channel_t)JsonSchema::GetValue(JsonSchema::PWM_Servo::chField, context).asUInt();
+
+                out->minPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::minPulseLengthField, context);
+                out->maxPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::maxPulseLengthField, context);
+                out->startPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::startPulseLengthField, context);
+                out->autoOffAfterMs = JsonSchema::GetValue(JsonSchema::PWM_Servo::autoOffAfterMsField, context);
+                out->pulseLengthOffset = JsonSchema::GetValue(JsonSchema::PWM_Servo::pulseLengthOffsetField, context);
+
+                JsonSchema::ModeSelector::Apply(JsonSchema::PWM_Servo::Root.modes, context, out);
+            }
+
         }
 
     }

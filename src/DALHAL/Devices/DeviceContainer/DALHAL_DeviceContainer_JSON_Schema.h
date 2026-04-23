@@ -23,20 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class DeviceContainer; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace DeviceContainer {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaArrayOfRegistryItems itemsField;
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DeviceContainer* out);
+            };
 
-            }
+        }
 
     }
 

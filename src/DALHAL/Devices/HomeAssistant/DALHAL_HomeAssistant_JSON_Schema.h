@@ -23,18 +23,35 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
+#include <ArduinoJson.h>
 
 namespace DALHAL {
 
+    // forward declarations
+    class HomeAssistant; 
+    struct DeviceCreateContext;
+    struct HA_CreateFunctionContext;
+    class Device;
+
     namespace JsonSchema {
 
-        enum class GroupMode {
-            GlobalGroup,
-            IndividualGroup
-        };
+        // forward declaration
+        struct JsonObjectSchema; 
 
-        extern const JsonObjectSchema HomeAssistant;
+        namespace HomeAssistant {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                static void CreateDevicesFromItems(const JsonArray& items, DALHAL::HA_CreateFunctionContext& createFuncContext, DALHAL::Device** devices, int& index);
+                static void ExtractGlobalGroupMode(const DALHAL::DeviceCreateContext& context, void* out);
+                static void ExtractIndividualGroupMode(const DALHAL::DeviceCreateContext& context, void* out);
+
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::HomeAssistant* out);
+            };
+
+        }
 
     }
 

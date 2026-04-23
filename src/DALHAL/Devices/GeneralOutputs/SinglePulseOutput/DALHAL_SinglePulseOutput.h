@@ -26,10 +26,11 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 #include <Ticker.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
@@ -42,7 +43,11 @@ using SinglePulseOutput_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace SinglePulseOutput { struct Extractors; } } // forward declaration
+
     class SinglePulseOutput : public SinglePulseOutput_DeviceBase {
+        friend struct JsonSchema::SinglePulseOutput::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

@@ -23,19 +23,25 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class DigitalInput; 
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema;
 
         namespace DigitalInput {
 
             extern const JsonObjectSchema Root;
 
-            extern const SchemaHardwarePin pinField;
-
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DigitalInput* out);
+            };
         }
 
     }

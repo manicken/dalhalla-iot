@@ -26,13 +26,9 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
-
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
-
-//#include "DALHAL_Actuator_JSON_Schema.h"
 
 #define DALHAL_DEVICE_ACTUATOR_CMD_OPEN   "open"
 #define DALHAL_DEVICE_ACTUATOR_CMD_CLOSE  "close"
@@ -40,7 +36,6 @@
 #define DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX "toMax"
 #define DALHAL_DEVICE_ACTUATOR_CMD_STOP   "stop"
 #define DALHAL_DEVICE_ACTUATOR_CMD_RESET  "reset"
-
 
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
@@ -56,14 +51,16 @@ using Actuator_DeviceBase = DALHAL::Device;
 #endif
 
 namespace DALHAL {
+    namespace JsonSchema { namespace Actuator { struct Extractors; } } // forward declaration
 
     class Actuator : public Actuator_DeviceBase {
+        friend struct JsonSchema::Actuator::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
-        
-    public:
-        
+
+    private:
         union DrivePins {
             struct { gpio_num_t a, b; } hbridge;
             struct { gpio_num_t dir, enable, brk; } diren;
@@ -74,8 +71,6 @@ namespace DALHAL {
         };
         DrivePins pins;
         DriveMode mode;
-
-    private:
         // private Static functions
         static void IRAM_ATTR endstop_isr(void* arg);
         static HALOperationResult exec_drive_to_min(Device* device);
@@ -125,6 +120,7 @@ namespace DALHAL {
         uint32_t timeoutMs;
 
         // private member functions
+        void setup();
         void reset();
         void stopDrive();
         void driveToMin();
@@ -139,7 +135,6 @@ namespace DALHAL {
         Actuator(DeviceCreateContext& context);
         ~Actuator() override;
 
-        void setup();
         virtual void loop() override;
 
         virtual HALOperationResult write(const HALValue& val) override;

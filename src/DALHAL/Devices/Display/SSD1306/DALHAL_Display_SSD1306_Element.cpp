@@ -23,36 +23,14 @@
 
 #include "DALHAL_Display_SSD1306_Element.h"
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
-
-#include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include <DALHAL/Core/Types/DALHAL_Registry.h>
-
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
-#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Consumer.h>
-
-#include "DALHAL_Display_SSD1306_JSON_Schema.h"
+#include "DALHAL_Display_SSD1306_Element_JSON_Schema.h"
 
 namespace DALHAL {
     
     Display_SSD1306_Element::Display_SSD1306_Element(DeviceCreateContext& context) : Device(context.deviceType) {
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        xPos = JsonSchema::GetValue(JsonSchema::Display_SSD1306::xField, context);
-        yPos = JsonSchema::GetValue(JsonSchema::Display_SSD1306::yField, context);
-        label = std::string(JsonSchema::GetValue(JsonSchema::Display_SSD1306::labelField, context).asConstChar());
-
-        const char* sourceStr = JsonSchema::GetValue(JsonSchema::CommonConsumer::sourceField, context).asConstChar();
-        if (sourceStr != nullptr) {
-            cdaSource = new CachedDeviceAccess();
-            if (cdaSource->Set(sourceStr) == false) {
-                delete cdaSource;
-                cdaSource = nullptr;
-            }
-        }
-        else
-            cdaSource = nullptr;
+        JsonSchema::Display_SSD1306_Element::Extractors::Apply(context, this);
     }
 
     String Display_SSD1306_Element::ToString() {

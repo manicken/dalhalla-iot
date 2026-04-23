@@ -37,9 +37,9 @@ namespace DALHAL {
         constexpr SchemaStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
         constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
-        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (uint)0, (uint)3, (uint)0};
-        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (uint)0, (uint)3, (uint)0};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (uint)0, (uint)1, (uint)0};
+        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
+        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
+        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
 
         constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {
             { &anidField, true },  // group must exist for this mode

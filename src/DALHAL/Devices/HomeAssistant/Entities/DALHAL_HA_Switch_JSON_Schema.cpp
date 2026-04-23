@@ -31,30 +31,75 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
+
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+
+#include "DALHAL_HA_Switch.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaString nameField = {"name", FieldPolicy::Required};
-        constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
-        constexpr SchemaStringUID_Path targetField = {"target", FieldPolicy::Required};
+        namespace HA_Switch {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &targetField,
-            &nameField, 
-            &discoveryField,
-            nullptr,
-        };
+            constexpr SchemaString nameField = {"name", FieldPolicy::Required};
+            constexpr SchemaBool momentaryField = {"momentary", FieldPolicy::Optional, false};
+            constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
+            constexpr SchemaStringUID_Path targetField = {"target", FieldPolicy::Required};
 
-        constexpr JsonObjectSchema HA_Switch = {
-            "HA_Switch",
-            fields,
-            nullptr, // no modes
-            nullptr, // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &targetField,
+                &momentaryField,
+                &nameField, 
+                &discoveryField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "HA_Switch",
+                fields,
+                nullptr, // no modes
+                nullptr, // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_Switch* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+
+                const char* uid_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar();
+                out->uid = encodeUID(uid_cStr);
+
+                const char* deviceId_cStr = context.deviceId_cStr;
+        
+                out->topicBasePath.Set(deviceId_cStr, uid_cStr);
+
+                const char* target_cStr = JsonSchema::GetValue(JsonSchema::HA_Switch::targetField, context).asConstChar();
+                
+                ZeroCopyString zcSrcDeviceUidStr = target_cStr; // target_cStr cannot be nullptr as that is a required field
+                out->cda = new CachedDeviceAccess();
+                if (out->cda->Set(zcSrcDeviceUidStr) == false) {
+                    delete out->cda;
+                    out->cda = nullptr;
+                }
+
+                out->momentary = JsonSchema::GetValue(JsonSchema::HA_Switch::momentaryField, context).asBool();
+
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(
+                    context.mqttClient, 
+                    deviceId_cStr, 
+                    context.deviceType, 
+                    uid_cStr, 
+                    jsonObj, 
+                    *(context.jsonGlobal), 
+                    out->topicBasePath, 
+                    DALHAL::HA_Switch::SendDeviceDiscovery
+                );
+            }
+
+        }
 
     }
 

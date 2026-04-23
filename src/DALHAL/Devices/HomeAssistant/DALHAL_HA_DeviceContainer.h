@@ -33,10 +33,15 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
+#include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace HA_DeviceContainer { struct Extractors; } } // forward declaration
+
     class HA_DeviceContainer : public Device {
+        friend struct JsonSchema::HA_DeviceContainer::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

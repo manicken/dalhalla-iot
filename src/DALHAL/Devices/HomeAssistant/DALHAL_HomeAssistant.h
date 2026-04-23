@@ -26,7 +26,6 @@
 #include <Arduino.h> // Needed for String class
 
 #include <string>
-#include <ArduinoJson.h>
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
@@ -40,7 +39,11 @@
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace HomeAssistant { struct Extractors; } } // forward declaration
+
     class HomeAssistant : public Device {
+        friend struct JsonSchema::HomeAssistant::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
@@ -56,19 +59,16 @@ namespace DALHAL {
         WiFiClient wifiClient;
         PubSubClient mqttClient;
 
-        Device** devices;
-        int deviceCount;
+        Device** devices = nullptr;
+        int deviceCount = 0;
 
         unsigned long lastReconnectAttempt = 0;
         const unsigned long reconnectInterval = 10000; // 10 seconds
 
-        void ConstructDevicesNonGrouped(const JsonVariant& jsonObj);
-        void ConstructDevicesFromFlattenGroupsItems(const JsonVariant& jsonObj);
-
         void mqttCallback(char* topic, byte* payload, unsigned int length);
 
         void SubscribeToCommandTopic();
-
+        void ConfigureMqttClient();
         void Connect();
         
     public:

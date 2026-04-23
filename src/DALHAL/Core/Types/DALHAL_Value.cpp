@@ -67,7 +67,18 @@ namespace DALHAL {
     }
 
     bool HALValue::asBool() const {
-        return bval;
+        if (type == Type::BOOL)
+            return bval;
+        else if (type == Type::UINT)
+            return uval != 0;
+        else if (type == Type::INT)
+            return ival != 0;
+        else if (type == Type::FLOAT)
+            return fval != 0.0f;
+        else if (type == Type::CSTRING)
+            return cStr != nullptr && cStr[0] != '\0';
+        else
+            return false;
     }
 
     int32_t HALValue::asInt() const {
