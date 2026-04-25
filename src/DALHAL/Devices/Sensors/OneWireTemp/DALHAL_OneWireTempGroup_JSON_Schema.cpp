@@ -33,29 +33,63 @@
 
 #include "DALHAL_OneWireTempBus_JSON_Schema.h"
 
+#include "DALHAL_OneWireTempGroup.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &OneWireTempBus, EmptyPolicy::Error};
+        namespace OneWireTempGroup {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &CommonTime::refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
-                                             // if it should not depend on automatic refresh, it do need a cmd that start a conversion
-                                             // that then emit a reactive event when the convertion is done
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &OneWireTempBus::Root, EmptyPolicy::Error};
 
-        constexpr JsonObjectSchema OneWireTempGroup = { // allways at root
-            "OneWireTempGroupAtRoot",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &CommonTime::refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
+                                                // if it should not depend on automatic refresh, it do need a cmd that start a conversion
+                                                // that then emit a reactive event when the convertion is done
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = { // allways at root
+                "OneWireTempGroup",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempGroup* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));      
+
+                out->busCount = 0;
+                const JsonArray& items = JsonSchema::OneWireTempGroup::itemsField.GetValidatedJsonArray(jsonObj);
+                int itemCount = items.size();
+                // first pass count valid busses
+                for (int i=0;i<itemCount;i++) {
+                    const JsonVariant& item = items[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+                    out->busCount++;
+                }
+                out->busses = new Device*[out->busCount]();
+                // second pass create busses
+                uint32_t index = 0;
+                DeviceCreateContext createContext;
+                createContext.deviceType = "OneWireTempBus";
+                for (int i=0;i<itemCount;i++) {
+                    const JsonVariant& item = items[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+
+                    createContext.jsonObjItem = &item;
+                    out->busses[index++] = new DALHAL::OneWireTempBus(createContext);
+                }
+            }
+
+        }
 
     }
 

@@ -33,18 +33,15 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase ScriptVariable::RegistryDefine = {
         Create,
-        &JsonSchema::ScriptVariable,
+        &JsonSchema::ScriptVariable::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
     };
 
     ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        value = GetAsUINT32(jsonObj, "val", 0);
+        JsonSchema::ScriptVariable::Extractors::Apply(context, this);
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
         value.setCallbacks(this, GenericValueCallback<ScriptVariable_DeviceBase>, nullptr);
 #endif
-        DeviceCreateContext ctx(context);
     }
 
     Device* ScriptVariable::Create(DeviceCreateContext& context) {

@@ -23,20 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
-#define DALHAL_KEYNAME_DHT_MODEL          "model"
-// DHT models
-#define DALHAL_TYPE_DHT_MODEL_DHT11       "DHT11"
-#define DALHAL_TYPE_DHT_MODEL_DHT22       "DHT22"
-#define DALHAL_TYPE_DHT_MODEL_AM2302      "AM2302"
-#define DALHAL_TYPE_DHT_MODEL_RHT03       "RTH03"
-
 namespace DALHAL {
+
+    // forward declarations
+    class DHT; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema DHT;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace DHT {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::DHT* out);
+            };
+
+        }
 
     }
 

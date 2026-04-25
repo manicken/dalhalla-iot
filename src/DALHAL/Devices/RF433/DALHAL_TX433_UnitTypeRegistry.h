@@ -34,6 +34,33 @@
 
 
 namespace DALHAL {
+
+  class TX433_Unit; // forward declaration
+
+  struct TX433_UNIT_RegistryDefine : public Registry::DefineBase {
+    using ApplyFn = void (*)(DALHAL::DeviceCreateContext&, DALHAL::TX433_Unit*);
+        ApplyFn Apply;
+
+        constexpr TX433_UNIT_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            ApplyFn Apply
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema),
+            Apply(Apply)
+        {}
+
+        constexpr TX433_UNIT_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const EventDescriptor* reactiveTable,
+            ApplyFn Apply
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, reactiveTable),
+            Apply(Apply)
+        {}
+
+    };
     
     extern const Registry::Item TX433_UnitTypeRegistry[];
 

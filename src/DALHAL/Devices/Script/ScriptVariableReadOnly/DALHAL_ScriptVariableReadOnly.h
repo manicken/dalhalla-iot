@@ -35,7 +35,11 @@
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ScriptVariableReadOnly { struct Extractors; } } // forward declaration
+
     class ScriptVariableReadOnly : public Device {
+        friend struct JsonSchema::ScriptVariableReadOnly::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

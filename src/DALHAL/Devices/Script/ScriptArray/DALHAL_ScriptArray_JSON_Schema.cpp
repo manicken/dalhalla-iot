@@ -31,29 +31,46 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include "DALHAL_ScriptArray.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaBool readonlyField = {"readonly", FieldPolicy::Optional, false};
+        namespace ScriptArray {
 
-        constexpr SchemaArrayOfPrimitives scriptArrayItems = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
+            constexpr SchemaBool readonlyField = {"readonly", FieldPolicy::Optional, false};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &readonlyField,
-            &scriptArrayItems,
-            nullptr,
-        };
+            constexpr SchemaArrayOfPrimitives scriptArrayItems = {"items", FieldPolicy::Required, PrimitiveTypeFlags::AllowNumbers, EmptyPolicy::Error};
 
-        constexpr JsonObjectSchema ScriptArray = {
-            "ScriptArray",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &readonlyField,
+                &scriptArrayItems,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "ScriptArray",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptArray* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
+                out->readOnly = JsonSchema::ScriptArray::readonlyField.ExtractFrom(jsonObj);
+                out->values = nullptr; // allways set it to nullptr
+                if (JsonSchema::ScriptArray::scriptArrayItems.ExtractValues(jsonObj, &out->values, out->valueCount) == false) {
+                    // should never happend
+                    GlobalLogger.Error(F("Failed to extract script array items"));
+                }
+            }
+
+        }
 
     }
 

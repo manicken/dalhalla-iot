@@ -23,7 +23,10 @@
 
 #include "DALHAL_OneWireTempDevice_JSON_Schema.h"
 
+#include <DALHAL/Support/ConvertHelper.h>
+
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfArrayConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringHexBytes.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
@@ -31,46 +34,81 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 
+#include "DALHAL_OneWireTempDevice.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr const SchemaStringHexBytes romIdField = {"romid", FieldPolicy::Required, "00:00:00:00:00:00:00:00", 8};
-        
+        namespace OneWireTempDevice {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &romIdField,
-            nullptr,
-        };
+            constexpr SchemaStringHexBytes romIdField = {"romid", FieldPolicy::Required, "00:00:00:00:00:00:00:00", 8};
 
-        constexpr const SchemaTypeBase* fieldsAtRoot[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &CommonTime::refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
-                                             // if it should not depend on automatic refresh, it do need a cmd that start a conversion
-                                             // that then emit a reactive event when the convertion is done
-            &CommonPins::InputOutputPinField,
-            &romIdField,
-            nullptr,
-        };
+            constexpr const char* formats[] = {"C", "F", nullptr};
+            constexpr ByArrayConstraints formatsConstraint = {formats, ByArrayConstraints::Policy::IgnoreCase};
+            constexpr SchemaStringAnyOfArrayConstrained formatField = {"format", FieldPolicy::Optional, "C", &formatsConstraint};
+            
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &romIdField,
+                nullptr,
+            };
 
-        constexpr JsonObjectSchema OneWireTempDevice = {
-            "OneWireTempDevice",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Error,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr JsonObjectSchema Root = {
+                "OneWireTempDevice",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Error,
+                UnknownFieldPolicy::Warn,
+            };
 
-        constexpr JsonObjectSchema OneWireTempDeviceAtRoot = {
-            "OneWireTempDeviceAtRoot",
-            fieldsAtRoot,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempDevice* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj)); 
+
+                const char* romIdStr = JsonSchema::OneWireTempDevice::romIdField.ExtractFrom(jsonObj);
+                Convert::HexToBytes(romIdStr, out->romid.bytes, 8);
+                // optional settings
+                const char* formatStr = JsonSchema::OneWireTempDevice::formatField.ExtractFrom(jsonObj);
+                if (formatStr[0] == 'c' || formatStr[0] == 'C')
+                    out->format = OneWireTempDeviceTempFormat::Celsius;
+                else if (formatStr[0] == 'f' || formatStr[0] == 'F')
+                    out->format = OneWireTempDeviceTempFormat::Fahrenheit;
+
+                
+
+            }
+
+        }
+
+        namespace OneWireTempDeviceAtRoot {
+
+            constexpr const SchemaTypeBase* fieldsAtRoot[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &CommonTime::refreshTimeGroupFieldsRequired, // required for now as this device need to run refresh in background
+                                                // if it should not depend on automatic refresh, it do need a cmd that start a conversion
+                                                // that then emit a reactive event when the convertion is done
+                &CommonPins::InputOutputPinField,
+                &OneWireTempDevice::romIdField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "OneWireTempDeviceAtRoot",
+                fieldsAtRoot,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempDeviceAtRoot* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->pin = JsonSchema::CommonPins::InputOutputPinField.ExtractFrom(jsonObj);
+            }
+
+        }
 
     }
 

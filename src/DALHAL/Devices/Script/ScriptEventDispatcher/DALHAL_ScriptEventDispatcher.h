@@ -42,7 +42,11 @@ using ScriptEventDispatcher_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ScriptEventDispatcher { struct Extractors; } } // forward declaration
+
     class ScriptEventDispatcher : public ScriptEventDispatcher_DeviceBase {
+        friend struct JsonSchema::ScriptEventDispatcher::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

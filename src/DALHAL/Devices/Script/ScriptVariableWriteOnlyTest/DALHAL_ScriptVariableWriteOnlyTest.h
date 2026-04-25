@@ -42,7 +42,11 @@ using ScriptVariableWriteOnlyTest_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ScriptVariableWriteOnlyTest { struct Extractors; } } // forward declaration
+
     class ScriptVariableWriteOnlyTest : public ScriptVariableWriteOnlyTest_DeviceBase {
+        friend struct JsonSchema::ScriptVariableWriteOnlyTest::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

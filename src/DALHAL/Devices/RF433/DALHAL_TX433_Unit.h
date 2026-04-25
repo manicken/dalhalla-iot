@@ -43,11 +43,18 @@ using TX433unit_DeviceBase = DALHAL::TX433unit_Reactive;
 using TX433unit_DeviceBase = DALHAL::Device;
 #endif
 
+#include "DALHAL_TX433_UnitTypeRegistry.h"
+
 namespace DALHAL {
+
+    namespace JsonSchema { namespace TX433_Unit_TypeAFC { struct Extractors; } } // forward declaration
+    namespace JsonSchema { namespace TX433_Unit_TypeLC { struct Extractors; } } // forward declaration
+    namespace JsonSchema { namespace TX433_Unit_TypeSFC { struct Extractors; } } // forward declaration
 
     struct TX433_Unit_CreateFunctionContext : DeviceCreateContext {
         const uint32_t pin;
-        TX433_Unit_CreateFunctionContext(const uint32_t pin) : DeviceCreateContext(), pin(pin) {}
+        TX433_UNIT_RegistryDefine::ApplyFn ApplyFunction;
+        TX433_Unit_CreateFunctionContext(const uint32_t pin) : DeviceCreateContext(), pin(pin), ApplyFunction(nullptr) {}
     };
 
     enum class TX433_MODEL {
@@ -56,10 +63,14 @@ namespace DALHAL {
     };
 
     class TX433_Unit : public TX433unit_DeviceBase {
+        friend struct JsonSchema::TX433_Unit_TypeAFC::Extractors; // allow access to private memebers of this class from the schema extractor
+        friend struct JsonSchema::TX433_Unit_TypeLC::Extractors; // allow access to private memebers of this class from the schema extractor
+        friend struct JsonSchema::TX433_Unit_TypeSFC::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
-        static const Registry::DefineBase LCTypeRegistryDefine; // learning code
-        static const Registry::DefineBase SFCTypeRegistryDefine; // simple fixed code
-        static const Registry::DefineBase AFCTypeRegistryDefine; // advanced fixed code
+        static const TX433_UNIT_RegistryDefine LCTypeRegistryDefine; // learning code
+        static const TX433_UNIT_RegistryDefine SFCTypeRegistryDefine; // simple fixed code
+        static const TX433_UNIT_RegistryDefine AFCTypeRegistryDefine; // advanced fixed code
         static Device* Create(DeviceCreateContext& context);
 
     public: // public static fields and exposed external structures

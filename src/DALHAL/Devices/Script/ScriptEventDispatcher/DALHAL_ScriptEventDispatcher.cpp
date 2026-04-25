@@ -32,13 +32,12 @@
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptEventDispatcher::RegistryDefine = {
         Create,
-        &JsonSchema::ScriptEventDispatcher,
+        &JsonSchema::ScriptEventDispatcher::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
     };
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
+        JsonSchema::ScriptEventDispatcher::Extractors::Apply(context, this);
     }
 
     Device* ScriptEventDispatcher::Create(DeviceCreateContext& context) {

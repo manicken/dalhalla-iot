@@ -23,16 +23,41 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
 namespace DALHAL {
 
+    // forward declarations
+    class OneWireTempBus;
+    class OneWireTempBusAtRoot;
+    struct DeviceCreateContext;
+
     namespace JsonSchema {
+
+        // forward declaration
+        struct JsonObjectSchema; 
         
-        /** this is used when the device is under a virtual 1-wire bus device */
-        extern const JsonObjectSchema OneWireTempBus;
-        /** this is used when the device is directly at the root/or considered a root device */
-        extern const JsonObjectSchema OneWireTempBusAtRoot;
+        namespace OneWireTempBus {
+
+            /** this is used when the device is under a virtual 1-wire bus device */
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempBus* out);
+            };
+
+        }
+
+        namespace OneWireTempBusAtRoot {
+
+            /** this is used when the device is directly at the root/or considered a root device */
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempBusAtRoot* out);
+            };
+
+        }
 
     }
 

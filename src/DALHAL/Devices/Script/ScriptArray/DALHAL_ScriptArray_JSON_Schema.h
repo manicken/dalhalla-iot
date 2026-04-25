@@ -23,17 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Bool.h>
-#include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class ScriptArray; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema ScriptArray;
-        extern const SchemaBool readonlyField;
-        extern const SchemaArrayOfPrimitives scriptArrayItems;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace ScriptArray {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptArray* out);
+            };
+
+        }
 
     }
 

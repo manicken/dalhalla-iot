@@ -29,27 +29,38 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include "DALHAL_ScriptVariable.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaNumber valueField = {"value", FieldPolicy::Optional};
+        namespace ScriptVariable {
 
+            constexpr SchemaNumber valueField = {"value", FieldPolicy::Optional};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &valueField,
-            nullptr,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &valueField,
+                nullptr,
+            };
 
-        constexpr JsonObjectSchema ScriptVariable = {
-            "ScriptVariable",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr JsonObjectSchema Root = {
+                "ScriptVariable",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptVariable* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
+                out->value = JsonSchema::ScriptVariable::valueField.ExtractFrom(jsonObj);
+            }
+
+        }
 
     }
 

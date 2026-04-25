@@ -43,7 +43,11 @@ using OneWireTempGroup_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace OneWireTempGroup { struct Extractors; } } // forward declaration
+
     class OneWireTempGroup : public OneWireTempGroup_DeviceBase {
+        friend struct JsonSchema::OneWireTempGroup::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

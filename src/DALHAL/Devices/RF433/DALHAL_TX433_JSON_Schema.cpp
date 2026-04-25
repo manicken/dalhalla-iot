@@ -31,27 +31,71 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 #include "DALHAL_TX433_UnitTypeRegistry.h"
 
+#include "DALHAL_TX433.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Required, TX433_UnitTypeRegistry, "ROOT.TX433"};
+        namespace TX433 {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group,
-            &CommonPins::OutputPinField,
-            &unitsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Optional, TX433_UnitTypeRegistry, "ROOT.TX433"};
 
-        constexpr JsonObjectSchema TX433 = {
-            "TX433",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group,
+                &CommonPins::OutputPinField,
+                &unitsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "TX433",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::TX433* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
+                out->pin = JsonSchema::CommonPins::OutputPinField.ExtractFrom(jsonObj);
+
+                // as this whole field is optional we first see if it exists
+                if (jsonObj.containsKey(JsonSchema::TX433::unitsField.name) == false) {
+                    return;
+                }
+                // if it exists it's validated that it's a JsonArray so we can safely just do:
+                JsonArray jsonItems = JsonSchema::TX433::unitsField.GetValidatedJsonArray(jsonObj);
+                int jsonItems_count = jsonItems.size();
+
+                int unitCount = 0;
+                // first pass count enabled and non comment items
+                for (int i=0;i<jsonItems_count;i++) {
+                    if (Device::DisabledOrCommentItem(jsonItems[i]) == true) { continue; }
+                    unitCount++;
+                }
+                // second pass create units(devices)
+                out->units = new Device*[unitCount]();
+                uint32_t index = 0;
+                TX433_Unit_CreateFunctionContext createContext(out->pin);
+                for (int i=0;i<jsonItems_count;i++) {
+                    if (Device::DisabledOrCommentItem(jsonItems[i]) == true) { continue; }
+                    const JsonVariant& item = jsonItems[i];
+                    createContext.jsonObjItem = &item;
+                    const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(item);
+                    const Registry::Item& regItem = Registry::GetItem(TX433_UnitTypeRegistry, type_cStr);
+                    // here it's safe to use regItem as JSON validation ensure that device type exists
+                    createContext.deviceType = regItem.typeName;
+                    createContext.ApplyFunction = static_cast<const TX433_UNIT_RegistryDefine*>(regItem.def)->Apply;
+
+                    out->units[index++] = regItem.def->Create_Function(createContext);
+                }
+
+            }
+
+        }
 
     }
 

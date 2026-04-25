@@ -30,54 +30,68 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include <DALHAL/Drivers/RF433.h>
+#include "DALHAL_TX433_Unit.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
-        constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
+        namespace TX433_Unit_TypeLC {
 
-        constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
-        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
+            constexpr SchemaStringSizeConstrained anidField = {"anid", FieldPolicy::ModeDefine, "Id01", 4, 4};
+            constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
-        constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {
-            { &anidField, true },  // group must exist for this mode
-            { &hexidField, false }, // group must NOT exist for this mode
-            { nullptr, false}
-        };
+            constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
+            constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
+            constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
 
-        constexpr ModeConjunctionDefine conjunctions_hexid_Mode[] = {
-            { &anidField, false },  // group must NOT exist for this mode
-            { &hexidField, true }, // group must exist for this mode
-            { nullptr, false}
-        };
+            constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {
+                { &anidField, true },  // group must exist for this mode
+                { &hexidField, false }, // group must NOT exist for this mode
+                { nullptr, false}
+            };
 
-        constexpr const ModeSelector modes[] = {
-            {"AlphaNumeric ID mode", conjunctions_anid_Mode, nullptr}, // mode extract function is not yet used here
-            {"hex ID mode", conjunctions_hexid_Mode, nullptr},  // mode extract function is not yet used here
-            {nullptr, nullptr, nullptr}
-        };
+            constexpr ModeConjunctionDefine conjunctions_hexid_Mode[] = {
+                { &anidField, false },  // group must NOT exist for this mode
+                { &hexidField, true }, // group must exist for this mode
+                { nullptr, false}
+            };
 
-        
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &anidField,
-            &hexidField,
-            &grp_btnField,
-            &btnField,
-            &stateField,
-            nullptr,
-        };
+            constexpr const ModeSelector modes[] = {
+                {"AlphaNumeric ID mode", conjunctions_anid_Mode, nullptr}, // mode extract function is not yet used here
+                {"hex ID mode", conjunctions_hexid_Mode, nullptr},  // mode extract function is not yet used here
+                {nullptr, nullptr, nullptr}
+            };
 
-        constexpr JsonObjectSchema TX433_Unit_TypeLC = {
-            "TX433_Unit_TypeLC",
-            fields,
-            modes, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &anidField,
+                &hexidField,
+                &grp_btnField,
+                &btnField,
+                &stateField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "TX433_Unit_TypeLC",
+                fields,
+                modes, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::TX433_Unit* out) {
+
+                out->staticData = RF433::Get433_LC_Data(*(context.jsonObjItem));
+                out->model = TX433_MODEL::LearningCode;
+                out->fixedState = (*context.jsonObjItem).containsKey(stateField.name);
+            }
+
+        }
 
     }
 

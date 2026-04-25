@@ -45,7 +45,11 @@ using DHTDeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace DHT { struct Extractors; } } // forward declaration
+
     class DHT : public DHTDeviceBase {
+        friend struct JsonSchema::DHT::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

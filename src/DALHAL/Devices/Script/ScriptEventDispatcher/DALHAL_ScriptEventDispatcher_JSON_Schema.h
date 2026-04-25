@@ -23,13 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class ScriptEventDispatcher; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema ScriptEventDispatcher;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace ScriptEventDispatcher {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptEventDispatcher* out);
+            };
+
+        }
 
     }
 

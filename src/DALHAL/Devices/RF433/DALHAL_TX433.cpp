@@ -37,52 +37,18 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase TX433::RegistryDefine = {
         Create,
-        &JsonSchema::TX433,
+        &JsonSchema::TX433::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433)
     };
 
     Device* TX433::Create(DeviceCreateContext& context) {
         return new TX433(context);
     }
+
     TX433::TX433(DeviceCreateContext& context) : TX433_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
-        uid = encodeUID(uidStr);
-        pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
-        GPIO_manager::ReservePin(pin); // in case we forgot to do it somewhere
-        if (jsonObj.containsKey(DALHAL_KEYNAME_TX433_UNITS) && jsonObj[DALHAL_KEYNAME_TX433_UNITS].is<JsonArray>()) {
-            JsonArray _units = jsonObj[DALHAL_KEYNAME_TX433_UNITS].as<JsonArray>();
-            int _unitCount = _units.size();
-            bool* validUnits = new bool[_unitCount];
-            unitCount = 0;
-            // first pass count valid units(devices)
-            for (int i=0;i<_unitCount;i++) {
-                const JsonVariant& unit = _units[i];
-                if (IsConstChar(unit) == true) { validUnits[i] = false;  continue; }  // comment item
-                if (Device::DisabledInJson(unit) == true) { validUnits[i] = false;  continue; } // disabled
-                validUnits[i] = true; // allways valid in strict mode
-                unitCount++;
-            }
-            // second pass create units(devices)
-            units = new Device*[unitCount](); /*TX433unit*/
-            uint32_t index = 0;
-            TX433_Unit_CreateFunctionContext createContext(pin);
-            for (int i=0;i<_unitCount;i++) {
-                if (validUnits[i] == false) continue;
-                const JsonVariant& item = _units[i];
-                createContext.jsonObjItem = &item;
-                const char* type_cStr = item[DALHAL_COMMON_CFG_NAME_TYPE].as<const char*>();
-                const Registry::Item& regItem = Registry::GetItem(TX433_UnitTypeRegistry, type_cStr);
-                // here it's safe to use regItem as JSON validation ensure that device type exists
-                createContext.deviceType = regItem.typeName;
-
-                units[index++] = regItem.def->Create_Function(createContext);
-            }
-            delete[] validUnits;
-        }
-
-
+        JsonSchema::TX433::Extractors::Apply(context, this);
     }
+    
     TX433::~TX433() {
         if (units != nullptr) {
             for (int i=0;i<unitCount;i++) {

@@ -28,48 +28,19 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include "DALHAL_OneWireTempBus_JSON_Schema.h"
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase OneWireTempBusAtRoot::RegistryDefine = {
         Create,
-        &JsonSchema::OneWireTempBusAtRoot,
+        &JsonSchema::OneWireTempBusAtRoot::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
     };
 
     OneWireTempBus::OneWireTempBus(DeviceCreateContext& context) : OneWireTempBus_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
-        uid = encodeUID(uidStr);
-        pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
-        GPIO_manager::ReservePin(pin);
-
-        oneWire = new OneWire(pin);
-        dTemp = new DallasTemperature(oneWire);
-        dTemp->setWaitForConversion(false);
-
-        deviceCount = 0;
-        const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        int itemCount = items.size();
-        // first pass count valid devices
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            deviceCount++;
-        }
-        devices = new (std::nothrow) Device*[static_cast<size_t>(deviceCount)]();
-        uint32_t index = 0;
-        DeviceCreateContext createContext;
-        createContext.deviceType = "OneWireTempDevice";
-
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-
-            createContext.jsonObjItem = &item;
-            devices[index++] = new OneWireTempDevice(createContext);
-        }
+        JsonSchema::OneWireTempBus::Extractors::Apply(context, this);
     }
 
     OneWireTempBus::~OneWireTempBus() {
@@ -224,10 +195,10 @@ namespace DALHAL {
         autoRefresh(
               [this]() { requestTemperatures(); },
               [this]() { readAll(); },
-              ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+              JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
         )
     {
-        
+        JsonSchema::OneWireTempBusAtRoot::Extractors::Apply(context, this);
     }
 
     OneWireTempBusAtRoot::~OneWireTempBusAtRoot() {

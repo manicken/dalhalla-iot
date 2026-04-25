@@ -34,31 +34,30 @@ namespace DALHAL {
     JsonVariant getValueIgnoreCase(const JsonVariant& obj, const char* keyToFind);*/
 
     bool ValidateJsonStringField(const JsonVariant &jsonObj, const char* keyName);
-    const char* GetValidatedJsonStringField(const JsonVariant &jsonObj, const char* keyName, const char* defaultValue);
+    //const char* GetValidatedJsonStringField(const JsonVariant &jsonObj, const char* keyName, const char* defaultValue);
 
     bool ValidateJsonStringField_noContains(const JsonVariant &jsonObj, const char* keyName);
 
-    double ParseRefreshTime(const JsonVariant &jsonObj);
-    uint32_t ParseRefreshTimeMs(const JsonVariant &jsonObj, const uint32_t defaultRefreshTimeMs);
+    //double ParseRefreshTime(const JsonVariant &jsonObj);
+    //uint32_t ParseRefreshTimeMs(const JsonVariant &jsonObj, const uint32_t defaultRefreshTimeMs);
 
-    bool ValidateUINT8(const JsonVariant& jsonObj, const char* keyName);
-    bool ValidateUINT32(const JsonVariant& jsonObj, const char* keyName);
-    bool ValidateFloat(const JsonVariant& jsonObj, const char* keyName);
+    //bool ValidateUINT8(const JsonVariant& jsonObj, const char* keyName);
+    //bool ValidateUINT32(const JsonVariant& jsonObj, const char* keyName);
+    //bool ValidateFloat(const JsonVariant& jsonObj, const char* keyName);
     bool IsUINT32(const JsonVariant& jsonObj, const char* keyName);
     uint32_t GetAsUINT32(const JsonVariant& jsonObj, const char* keyName, uint32_t defaultValue);
     
     uint32_t GetAsUINT32(const JsonVariant& jsonObj, const char* keyName);
-    uint16_t GetAsUINT16(const JsonVariant& jsonObj, const char* keyName);
-    uint8_t GetAsUINT8(const JsonVariant& jsonObj, const char* keyName);
+    //uint16_t GetAsUINT16(const JsonVariant& jsonObj, const char* keyName);
+    //uint8_t GetAsUINT8(const JsonVariant& jsonObj, const char* keyName);
     
-    int32_t GetAsINT32(const JsonVariant& jsonObj, const char* keyName);
-    int16_t GetAsINT16(const JsonVariant& jsonObj, const char* keyName);
-    int8_t GetAsINT8(const JsonVariant& jsonObj, const char* keyName);
-
-    
+    //int32_t GetAsINT32(const JsonVariant& jsonObj, const char* keyName);
+    //int16_t GetAsINT16(const JsonVariant& jsonObj, const char* keyName);
+    //int8_t GetAsINT8(const JsonVariant& jsonObj, const char* keyName);
     inline bool IsConstChar(const JsonVariant& jsonObj) {
         return jsonObj.is<const char*>();
     }
+
     inline bool IsConstChar(const JsonVariant& jsonObj, const char* keyName) {
         return jsonObj[keyName].is<const char*>();
     }

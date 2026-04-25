@@ -23,13 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class ScriptVariableWriteOnlyTest; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema ScriptVariableWriteOnlyTest;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace ScriptVariableWriteOnlyTest {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptVariableWriteOnlyTest* out);
+            };
+
+        }
 
     }
 

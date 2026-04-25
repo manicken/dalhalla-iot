@@ -27,13 +27,14 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include "DALHAL_OneWireTempGroup_JSON_Schema.h"
 
 namespace DALHAL {
 
     constexpr Registry::DefineBase OneWireTempGroup::RegistryDefine = {
         Create,
-        &JsonSchema::OneWireTempGroup,
+        &JsonSchema::OneWireTempGroup::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
     };
 
@@ -45,35 +46,11 @@ namespace DALHAL {
         autoRefresh(
             [this]() { requestTemperatures(); },
             [this]() { readAll(); },
-            ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+            JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
         ), 
         busses(nullptr)
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
-        uid = encodeUID(uidStr);      
-
-        busCount = 0;
-        const JsonArray& items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-        int itemCount = items.size();
-        // first pass count valid busses
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            busCount++;
-        }
-        busses = new Device*[busCount]();
-        // second pass create busses
-        uint32_t index = 0;
-        DeviceCreateContext createContext;
-        createContext.deviceType = "OneWireTempBus";
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-
-            createContext.jsonObjItem = &item;
-            busses[index++] = new OneWireTempBus(createContext);
-        }
+        JsonSchema::OneWireTempGroup::Extractors::Apply(context, this);
     }
     OneWireTempGroup::~OneWireTempGroup() {
         if (busses != nullptr) {

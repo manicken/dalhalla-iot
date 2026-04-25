@@ -133,9 +133,7 @@ namespace DALHAL {
         uint32_t deviceCount = 0;
         
         for (int i=0;i<arraySize;i++) {
-            JsonVariant jsonItem = jsonArray[i];
-            if (IsConstChar(jsonItem) == true) { continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
+            if (Device::DisabledOrCommentItem(jsonArray[i]) == true) { continue; } // disabled
             deviceCount++;
         }
         
@@ -164,8 +162,7 @@ namespace DALHAL {
         uint32_t index = 0;
         for (int i=0;i<arraySize;i++) {
             JsonVariant jsonItem = jsonArray[i];
-            if (IsConstChar(jsonItem) == true) { continue; } // comment item
-            if (Device::DisabledInJson(jsonItem) == true) { continue; } // disabled
+            if (Device::DisabledOrCommentItem(jsonItem) == true) { continue; } // disabled
             devices[index++] = CreateDeviceFromJSON(jsonItem);
         }
         std::string devCountStr = std::to_string(deviceCount);

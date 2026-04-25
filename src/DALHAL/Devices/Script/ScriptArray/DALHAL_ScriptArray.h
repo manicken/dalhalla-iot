@@ -41,7 +41,11 @@ using ScriptArray_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ScriptArray { struct Extractors; } } // forward declaration
+
     class ScriptArray : public ScriptArray_DeviceBase {
+        friend struct JsonSchema::ScriptArray::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

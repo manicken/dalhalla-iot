@@ -36,23 +36,29 @@
 #include "DALHAL_TX433_Unit_TypeAFC_JSON_Schema.h"
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include "DALHAL_TX433_UnitTypeRegistry.h"
+
 namespace DALHAL {
-    constexpr Registry::DefineBase TX433_Unit::LCTypeRegistryDefine = {
-        Create,
-        &JsonSchema::TX433_Unit_TypeLC,
-        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+
+    constexpr TX433_UNIT_RegistryDefine TX433_Unit::LCTypeRegistryDefine = {
+        &Create,
+        &JsonSchema::TX433_Unit_TypeLC::Root,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &JsonSchema::TX433_Unit_TypeLC::Extractors::Apply,
     };
     
-    constexpr Registry::DefineBase TX433_Unit::SFCTypeRegistryDefine = {
-        Create,
-        &JsonSchema::TX433_Unit_TypeSFC,
-        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+    constexpr TX433_UNIT_RegistryDefine TX433_Unit::SFCTypeRegistryDefine = {
+        &Create,
+        &JsonSchema::TX433_Unit_TypeSFC::Root,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &JsonSchema::TX433_Unit_TypeSFC::Extractors::Apply,
     };
     
-    constexpr Registry::DefineBase TX433_Unit::AFCTypeRegistryDefine = {
-        Create,
-        &JsonSchema::TX433_Unit_TypeAFC,
-        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT)
+    constexpr TX433_UNIT_RegistryDefine TX433_Unit::AFCTypeRegistryDefine = {
+        &Create,
+        &JsonSchema::TX433_Unit_TypeAFC::Root,
+        DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &JsonSchema::TX433_Unit_TypeAFC::Extractors::Apply,
     };
 
     Device* TX433_Unit::Create(DeviceCreateContext& context) {
@@ -60,26 +66,8 @@ namespace DALHAL {
     }
     
     TX433_Unit::TX433_Unit(TX433_Unit_CreateFunctionContext& context) : TX433unit_DeviceBase(context.deviceType), pin(context.pin) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = jsonObj[DALHAL_COMMON_CFG_NAME_UID].as<const char*>();
-        uid = encodeUID(uidStr);
-        const char* typeStr = GetAsConstChar(jsonObj, DALHAL_COMMON_CFG_NAME_TYPE);
-        
-        if (strcasecmp(typeStr, "lc") == 0) {
-            staticData = RF433::Get433_LC_Data(jsonObj);
-            model = TX433_MODEL::LearningCode;
-        }
-        else if (strcasecmp(typeStr, "sfc") == 0) {
-            staticData = RF433::Get433_SFC_Data(jsonObj);
-            model = TX433_MODEL::FixedCode;
-        }
-        else if (strcasecmp(typeStr, "afc") == 0) {
-            staticData = RF433::Get433_AFC_Data(jsonObj);
-            model = TX433_MODEL::FixedCode;
-        }
-        //else this will never happen if VerifyJSON is used beforehand
-
-        fixedState = (jsonObj.containsKey(DALHAL_KEYNAME_TX433_STATE) && IsUINT32(jsonObj,DALHAL_KEYNAME_TX433_STATE));
+        uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+        context.ApplyFunction(context, this);
     }
 
     HALOperationResult TX433_Unit::write(const HALValue &val) {

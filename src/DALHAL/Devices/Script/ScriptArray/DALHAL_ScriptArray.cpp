@@ -38,18 +38,12 @@
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptArray::RegistryDefine = {
         Create,
-        &JsonSchema::ScriptArray,
+        &JsonSchema::ScriptArray::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
     };
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
-        readOnly = JsonSchema::readonlyField.ExtractFrom(*(context.jsonObjItem));
-        values = nullptr; // allways set it to nullptr
-        if (JsonSchema::scriptArrayItems.ExtractValues(jsonObj, &values, valueCount) == false) {
-            GlobalLogger.Error(F("Failed to extract script array items"));
-        }
+        JsonSchema::ScriptArray::Extractors::Apply(context, this);
     }
     ScriptArray::~ScriptArray() {
         delete values;

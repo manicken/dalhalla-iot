@@ -35,9 +35,6 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#define DALHAL_KEYNAME_ONE_WIRE_ROMID       "romid"
-#define DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT "format"
-
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_DEVICE)
 #include "DALHAL_OneWireTempDevice_Reactive.h"
@@ -55,6 +52,8 @@ using OneWireTempDevice_ValueBase = DALHAL::HALValue;
 
 namespace DALHAL {
 
+    
+
     enum class OneWireTempDeviceTempFormat {
         Celsius,
         Fahrenheit
@@ -67,7 +66,11 @@ namespace DALHAL {
         };
     } OneWireAddress;
 
+    namespace JsonSchema { namespace OneWireTempDevice { struct Extractors; } } // forward declaration
+
     class OneWireTempDevice : public OneWireTempDevice_DeviceBase {
+        friend struct JsonSchema::OneWireTempDevice::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         //static bool VerifyJSON(const JsonVariant &jsonObj);
     
@@ -88,7 +91,11 @@ namespace DALHAL {
         String ToString() override;
     };
 
+    namespace JsonSchema { namespace OneWireTempDeviceAtRoot { struct Extractors; } } // forward declaration
+
     class OneWireTempDeviceAtRoot : public OneWireTempDevice {
+        friend struct JsonSchema::OneWireTempDeviceAtRoot::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         //static bool VerifyJSON(const JsonVariant &jsonObj);

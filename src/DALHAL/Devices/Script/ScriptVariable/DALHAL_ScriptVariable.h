@@ -49,7 +49,11 @@ using ScriptVariable_ValueBase = DALHAL::HALValue;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace ScriptVariable { struct Extractors; } } // forward declaration
+
     class ScriptVariable : public ScriptVariable_DeviceBase {
+        friend struct JsonSchema::ScriptVariable::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

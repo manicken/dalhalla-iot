@@ -30,43 +30,56 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include <DALHAL/Drivers/RF433.h>
+#include "DALHAL_TX433_Unit.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
-    /* could also use the following functions instead of specifying each possible value
-        surely faster but will see if it also take less space
-        static bool ValidateHex(void* ctx, const char* value) {
-            if (!value || !value[0] || value[1] != '\0') return false; // single char only
-            char c = value[0];
-            return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+
+        namespace TX433_Unit_TypeAFC {
+        /* could also use the following functions instead of specifying each possible value
+            surely faster but will see if it also take less space
+            static bool ValidateHex(void* ctx, const char* value) {
+                if (!value || !value[0] || value[1] != '\0') return false; // single char only
+                char c = value[0];
+                return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+            }
+
+            static std::string DescribeHex(void* ctx) {
+                return R"(["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"])";
+            }
+        */
+            constexpr const char* ids[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", nullptr};
+            constexpr ByArrayConstraints hexNumbersConstraint = {ids, ByArrayConstraints::Policy::IgnoreCase};
+            constexpr SchemaStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
+            constexpr SchemaStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
+            constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
+
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &chField,
+                &btnField,
+                &stateField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "TX433_Unit_TypeAFC",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::TX433_Unit* out) {
+                out->staticData = RF433::Get433_AFC_Data(*(context.jsonObjItem));
+                out->model = TX433_MODEL::FixedCode;
+                out->fixedState = (*context.jsonObjItem).containsKey(stateField.name);
+            }
+
         }
-
-        static std::string DescribeHex(void* ctx) {
-            return R"(["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"])";
-        }
-    */
-        constexpr const char* ids[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", nullptr};
-        constexpr ByArrayConstraints hexNumbersConstraint = {ids, ByArrayConstraints::Policy::IgnoreCase};
-        constexpr SchemaStringAnyOfArrayConstrained chField = {"ch", FieldPolicy::Optional, "0", &hexNumbersConstraint};
-        constexpr SchemaStringAnyOfArrayConstrained btnField = {"btn", FieldPolicy::Optional, "0", &hexNumbersConstraint};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
-
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &chField,
-            &btnField,
-            &stateField,
-            nullptr,
-        };
-
-        constexpr JsonObjectSchema TX433_Unit_TypeAFC = {
-            "TX433_Unit_TypeAFC",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
 
     }
 

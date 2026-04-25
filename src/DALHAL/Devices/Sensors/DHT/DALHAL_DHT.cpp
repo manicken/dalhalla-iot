@@ -37,36 +37,14 @@
 namespace DALHAL {
     
     constexpr Registry::DefineBase DHT::RegistryDefine = {
-        
         Create,
-        &JsonSchema::DHT,
+        &JsonSchema::DHT::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DHT)
     };
 
     DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        //const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
-        //uid = encodeUID(uidStr);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        //pin = jsonObj[DALHAL_KEYNAME_PIN].as<uint8_t>();
-        pin = GetAsUINT32(jsonObj, DALHAL_KEYNAME_PIN);
-        GPIO_manager::ReservePin(pin); // this is in most cases taken care of in VerifyJSON but there are situations where it's needed
-        refreshTimeMs = ParseRefreshTimeMs(jsonObj, DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS);
-        if (refreshTimeMs < DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS) refreshTimeMs = DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS;
-        //const char* modelStr = jsonObj[DALHAL_KEYNAME_DHT_MODEL].as<const char*>();
-        const char* modelStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_DHT_MODEL);
-        DHTesp::DHT_MODEL_t model = DHTesp::DHT_MODEL_t::AUTO_DETECT; // auto detect will not be used but we can use it as a default here;
-        if ((strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_DHT11) == 0))
-            model = DHTesp::DHT_MODEL_t::DHT11;
-        else if ((strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_DHT22) == 0))
-            model = DHTesp::DHT_MODEL_t::DHT22;
-        else if ((strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_AM2302) == 0))
-            model = DHTesp::DHT_MODEL_t::AM2302;
-        else if ((strcasecmp(modelStr, DALHAL_TYPE_DHT_MODEL_RHT03) == 0))
-            model = DHTesp::DHT_MODEL_t::RHT03;
-        dht.setup(pin,model);
+        JsonSchema::DHT::Extractors::Apply(context, this);
         lastUpdateMs = millis()-refreshTimeMs; // direct update
-
     }
 
     Device* DHT::Create(DeviceCreateContext& context) {

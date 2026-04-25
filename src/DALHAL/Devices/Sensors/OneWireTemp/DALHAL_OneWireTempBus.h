@@ -45,7 +45,11 @@ using OneWireTempBus_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace OneWireTempBus { struct Extractors; } } // forward declaration
+
     class OneWireTempBus : public OneWireTempBus_DeviceBase {
+        friend struct JsonSchema::OneWireTempBus::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         //static bool VerifyJSON(const JsonVariant &jsonObj);
 
@@ -72,7 +76,11 @@ namespace DALHAL {
         String ToString() override;
     };
 
+    namespace JsonSchema { namespace OneWireTempBusAtRoot { struct Extractors; } } // forward declaration
+
     class OneWireTempBusAtRoot : public OneWireTempBus {
+        friend struct JsonSchema::OneWireTempBusAtRoot::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

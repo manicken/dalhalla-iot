@@ -28,23 +28,34 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include "DALHAL_ScriptVariableWriteOnlyTest.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            nullptr,
-        };
+        namespace ScriptVariableWriteOnlyTest {
 
-        constexpr JsonObjectSchema ScriptVariableWriteOnlyTest = {
-            "ScriptVariableWriteOnlyTest",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "ScriptVariableWriteOnlyTest",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::ScriptVariableWriteOnlyTest* out) {
+                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
+            }
+
+        }
 
     }
 

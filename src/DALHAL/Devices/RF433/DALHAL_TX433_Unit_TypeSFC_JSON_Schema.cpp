@@ -29,30 +29,43 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+#include <DALHAL/Drivers/RF433.h>
+#include "DALHAL_TX433_Unit.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaUInt chField = {"ch", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
-        constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
-        constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
+        namespace TX433_Unit_TypeSFC {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &chField,
-            &btnField,
-            &stateField,
-            nullptr,
-        };
+            constexpr SchemaUInt chField = {"ch", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
+            constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)1, (unsigned int)4, (unsigned int)0};
+            constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
 
-        constexpr JsonObjectSchema TX433_Unit_TypeSFC = {
-            "TX433_Unit_TypeSFC",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &chField,
+                &btnField,
+                &stateField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "TX433_Unit_TypeSFC",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::TX433_Unit* out) {
+                out->staticData = RF433::Get433_SFC_Data(*(context.jsonObjItem));
+                out->model = TX433_MODEL::FixedCode;
+                out->fixedState = (*context.jsonObjItem).containsKey(stateField.name);
+            }
+
+        }
 
     }
 

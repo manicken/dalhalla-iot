@@ -43,7 +43,11 @@ using TX433_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace TX433 { struct Extractors; } } // forward declaration
+
     class TX433 : public TX433_DeviceBase {
+        friend struct JsonSchema::TX433::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

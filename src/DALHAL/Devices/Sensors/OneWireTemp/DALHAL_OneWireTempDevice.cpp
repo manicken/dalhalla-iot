@@ -30,13 +30,14 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 
+#include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include "DALHAL_OneWireTempDevice_JSON_Schema.h"
 
 namespace DALHAL {
     
     constexpr Registry::DefineBase OneWireTempDeviceAtRoot::RegistryDefine = {
         Create,
-        &JsonSchema::OneWireTempDeviceAtRoot,
+        &JsonSchema::OneWireTempDeviceAtRoot::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
     };
 
@@ -48,20 +49,7 @@ namespace DALHAL {
     //                                                                                                                                                     
 
     OneWireTempDevice::OneWireTempDevice(DeviceCreateContext& context) : OneWireTempDevice_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);//].as<const char*>();
-        uid = encodeUID(uidStr);
-        const char* romIdStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_ONE_WIRE_ROMID);//].as<const char*>();
-        Convert::HexToBytes(romIdStr, romid.bytes, 8);
-        // optional settings
-        if (jsonObj.containsKey(DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT) && ValidateJsonStringField_noContains(jsonObj, DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT)) {
-            const char* tempFormatStr = GetAsConstChar(jsonObj, DALHAL_KEYNAME_ONE_WIRE_TEMPFORMAT);//].as<const char*>();
-            if (tempFormatStr[0] == 'c' || tempFormatStr[0] == 'C')
-                format = OneWireTempDeviceTempFormat::Celsius;
-            else if (tempFormatStr[0] == 'f' || tempFormatStr[0] == 'F')
-                format = OneWireTempDeviceTempFormat::Fahrenheit;
-            // else the default value is used (defined in .h file)
-        }
+        JsonSchema::OneWireTempDevice::Extractors::Apply(context, this);
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
         value.setCallbacks(this, GenericValueCallback<OneWireTempDevice_DeviceBase>, nullptr);
 #endif
@@ -129,13 +117,10 @@ namespace DALHAL {
           autoRefresh(
             [this](){ requestTemperatures(); },
             [this](){ readAll(); },
-            ParseRefreshTimeMs(*(context.jsonObjItem),DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS)
+            JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
         )
     {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        pin = GetAsUINT32(jsonObj,DALHAL_KEYNAME_PIN);//].as<uint8_t>();
-        GPIO_manager::ReservePin(pin);
-
+        JsonSchema::OneWireTempDeviceAtRoot::Extractors::Apply(context, this);
         oneWire = new OneWire(pin);
         dTemp = new DallasTemperature(oneWire);
         dTemp->setWaitForConversion(false);

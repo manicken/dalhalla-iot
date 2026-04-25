@@ -32,14 +32,12 @@
 namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariableReadOnly::RegistryDefine = {
         Create,
-        &JsonSchema::ScriptVariableReadOnly,
+        &JsonSchema::ScriptVariableReadOnly::Root,
         nullptr /* no events available */
     };
     
     ScriptVariableReadOnly::ScriptVariableReadOnly(DeviceCreateContext& context) : Device(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID));
-        value = GetAsUINT32(jsonObj, "val",0);
+        JsonSchema::ScriptVariableReadOnly::Extractors::Apply(context, this);
     }
 
     Device* ScriptVariableReadOnly::Create(DeviceCreateContext& context) {
