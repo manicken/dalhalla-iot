@@ -31,27 +31,36 @@
 
 #include <DALHAL/Drivers/REGO600.h>
 
+#include "DALHAL_REGO600_Register.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
+        namespace REGO600_Register {
         
-        constexpr SchemaStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
+            constexpr SchemaStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &regnameField,
-            nullptr,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &regnameField,
+                nullptr,
+            };
 
-        constexpr JsonObjectSchema REGO600_Register = {
-            "REGO600_Register",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr JsonObjectSchema Root = {
+                "REGO600_Register",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::REGO600_Register* out) {
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+            }
+
+        }
 
     }
 

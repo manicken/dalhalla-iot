@@ -44,16 +44,17 @@ namespace DALHAL {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }
+
+    Device* HA_Button::Create(DeviceCreateContext& context) {
+        return new HA_Button(static_cast<HA_CreateFunctionContext&>(context));
+    }
     
     HA_Button::HA_Button(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
         JsonSchema::HA_Button::Extractors::Apply(context, this);
     }
+
     HA_Button::~HA_Button() {
         delete cda;
-    }
-
-    Device* HA_Button::Create(DeviceCreateContext& context) {
-        return new HA_Button(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String HA_Button::ToString() {

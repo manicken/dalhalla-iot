@@ -34,75 +34,23 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase WS2812::RegistryDefine = {
         Create,
-        &JsonSchema::WS2812,
+        &JsonSchema::WS2812::Root,
         DALHAL_REACTIVE_EVENT_TABLE(WS2812)
     };
+
+    Device* WS2812::Create(DeviceCreateContext& context) {
+        return new WS2812(context);
+    }
     
     WS2812::WS2812(DeviceCreateContext& context) : WS2812_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        pin = GetAsUINT8(jsonObj, "pin");
-
-        int numLeds = GetAsUINT32(jsonObj, "ledcount");
-        if (numLeds == 0) numLeds = 1; // defaults to only one led
-        neoPixelType typeDef = 0; // basically a uint16_t
-        const char* led_c = GetAsConstChar(jsonObj, "format");
-        
-        if (led_c == nullptr || strcasecmp(led_c, "RGB") == 0) typeDef += NEO_RGB;
-        else if (strcasecmp(led_c, "RBG") == 0) typeDef += NEO_RBG;
-        else if (strcasecmp(led_c, "GRB") == 0) typeDef += NEO_GRB;
-        else if (strcasecmp(led_c, "GBR") == 0) typeDef += NEO_GBR;
-        else if (strcasecmp(led_c, "BRG") == 0) typeDef += NEO_BRG;
-        else if (strcasecmp(led_c, "BGR") == 0) typeDef += NEO_BGR;
-
-        else if (strcasecmp(led_c, "WRGB") == 0) typeDef += NEO_WRGB;
-        else if (strcasecmp(led_c, "WRBG") == 0) typeDef += NEO_WRBG;
-        else if (strcasecmp(led_c, "WGRB") == 0) typeDef += NEO_WGRB;
-        else if (strcasecmp(led_c, "WGBR") == 0) typeDef += NEO_WGBR;
-        else if (strcasecmp(led_c, "WBRG") == 0) typeDef += NEO_WBRG;
-        else if (strcasecmp(led_c, "WBGR") == 0) typeDef += NEO_WBGR;
-
-        else if (strcasecmp(led_c, "RWGB") == 0) typeDef += NEO_RWGB;
-        else if (strcasecmp(led_c, "RWBG") == 0) typeDef += NEO_RWBG;
-        else if (strcasecmp(led_c, "GWRB") == 0) typeDef += NEO_GWRB;
-        else if (strcasecmp(led_c, "GWBR") == 0) typeDef += NEO_GWBR;
-        else if (strcasecmp(led_c, "BWRG") == 0) typeDef += NEO_BWRG;
-        else if (strcasecmp(led_c, "BWGR") == 0) typeDef += NEO_BWGR;
-
-        else if (strcasecmp(led_c, "RGWB") == 0) typeDef += NEO_RGWB;
-        else if (strcasecmp(led_c, "RBWG") == 0) typeDef += NEO_RBWG;
-        else if (strcasecmp(led_c, "GRWB") == 0) typeDef += NEO_GRWB;
-        else if (strcasecmp(led_c, "GBWR") == 0) typeDef += NEO_GBWR;
-        else if (strcasecmp(led_c, "BRWG") == 0) typeDef += NEO_BRWG;
-        else if (strcasecmp(led_c, "BGWR") == 0) typeDef += NEO_BGWR;
-
-        else if (strcasecmp(led_c, "RGBW") == 0) typeDef += NEO_RGBW;
-        else if (strcasecmp(led_c, "RBGW") == 0) typeDef += NEO_RBGW;
-        else if (strcasecmp(led_c, "GRBW") == 0) typeDef += NEO_GRBW;
-        else if (strcasecmp(led_c, "GBRW") == 0) typeDef += NEO_GBRW;
-        else if (strcasecmp(led_c, "BRGW") == 0) typeDef += NEO_BRGW;
-        else if (strcasecmp(led_c, "BGRW") == 0) typeDef += NEO_BGRW;
-
-        const char* speedStr = GetAsConstChar(jsonObj, "ifspeed");
-        if (speedStr && strcasecmp(speedStr, "KHZ800"))
-            typeDef += NEO_KHZ800;
-        else
-            typeDef += NEO_KHZ400;
-
-        uint8_t brightness = GetAsUINT8(jsonObj, "brightness");
-        if (brightness == 0) brightness = 127; // default
-        uint8_t mode = GetAsUINT8(jsonObj, "mode");
-        uint16_t fxSpeed = GetAsUINT16(jsonObj, "fxspeed");
-        if (fxSpeed < 2) fxSpeed = 3000;
-
-        ws2812fx = new WS2812FX(numLeds, pin, typeDef);
-        ws2812fx->init();
-        ws2812fx->setBrightness(brightness);
-        ws2812fx->setMode(mode);
-        ws2812fx->setSpeed(fxSpeed);
-        ws2812fx->start();
+        JsonSchema::WS2812::Extractors::Apply(context, this);
     }
+
+    void WS2812::loop() {
+        //if (ws2812fx->getMode() != 0) // only service when non static mode
+        ws2812fx->service();
+    }
+
     HALOperationResult WS2812::writeBrightness(Device* context, const HALValue& val) {
         //printf("\nWS2812::writeBrightness\n");
         WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
@@ -221,15 +169,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    void WS2812::loop() {
-        //if (ws2812fx->getMode() != 0) // only service when non static mode
-            ws2812fx->service();
-    }
-
-    Device* WS2812::Create(DeviceCreateContext& context) {
-        return new WS2812(context);
-    }
-
     String WS2812::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
@@ -239,7 +178,7 @@ namespace DALHAL {
         ret += this->Type;
         ret += ",\"";
         ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
+        ret += std::to_string(ws2812fx->getPin()).c_str();
         return ret;
     }
 

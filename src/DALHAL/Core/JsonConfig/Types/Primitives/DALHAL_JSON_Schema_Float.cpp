@@ -89,12 +89,21 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        HALValue SchemaFloat::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            if (jsonObj.containsKey(fieldSchema.name)) {
-                return HALValue(jsonObj[fieldSchema.name].as<float>());
+        float SchemaFloat::ExtractFrom(const JsonVariant& jsonObj) const {
+            float raw;
+            if (jsonObj.containsKey(this->name)) {
+                raw = jsonObj[this->name].as<float>();
             } else {
-                return HALValue(static_cast<const SchemaFloat&>(fieldSchema).defaultValue);
+                raw = this->defaultValue;
             }
+            if (this->HasConversion() == false) {
+                return raw;
+            }
+            return static_cast<float>(raw * this->conversionFactor);
+        }
+
+        HALValue SchemaFloat::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            return HALValue(static_cast<const SchemaFloat&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
         void SchemaFloat::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

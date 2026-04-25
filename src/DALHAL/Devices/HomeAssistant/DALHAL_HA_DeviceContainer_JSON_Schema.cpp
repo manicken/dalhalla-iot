@@ -58,8 +58,8 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_DeviceContainer* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HA_DeviceContainer::itemsField, *(context.jsonObjItem));
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                const JsonArray& jsonArray = JsonSchema::HA_DeviceContainer::itemsField.GetValidatedJsonArray(*(context.jsonObjItem));
                 
                 uint32_t deviceCountTmp = 0;
                 int arraySize = jsonArray.size();
@@ -94,7 +94,7 @@ namespace DALHAL {
                     const JsonVariant& jsonItem = jsonArray[i];
                     if (Device::DisabledOrCommentItem(jsonItem)) { continue; } // comment or disabled item
 
-                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, jsonItem).asConstChar();
+                    const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(jsonItem);
                     const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                     // reuse the passed context as it also carry other important instances or references
                     context.jsonObjItem = &jsonItem;

@@ -41,12 +41,16 @@ namespace DALHAL {
         struct SchemaUInt : SchemaNumericBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-            
+        public:
+            unsigned int ExtractFrom(const JsonVariant& jsonObj) const;
+        
+        public:
             uint32_t minValue;
             uint32_t maxValue;
             uint32_t defaultValue;
@@ -80,6 +84,7 @@ namespace DALHAL {
 
             constexpr SchemaUInt(const char* name, FieldPolicy policy, uint32_t minValue, uint32_t maxValue, uint32_t defaultValue, float conversionFactor, size_t structOffset)
                 : SchemaNumericBase(name, FieldType::UInt, policy, conversionFactor, structOffset), minValue(minValue), maxValue(maxValue), defaultValue(defaultValue) {}
+        
         };
 
     }

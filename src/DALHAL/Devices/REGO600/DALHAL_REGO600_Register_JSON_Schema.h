@@ -23,15 +23,31 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class REGO600_Register; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema REGO600_Register;
-        extern const SchemaStringAnyOfByFuncConstrained regnameField;
+        // forward declarations
+        struct JsonObjectSchema; 
+        struct SchemaStringAnyOfByFuncConstrained; 
+
+        namespace REGO600_Register {
+
+            extern const JsonObjectSchema Root;
+            extern const SchemaStringAnyOfByFuncConstrained regnameField;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::REGO600_Register* out);
+            };
+
+        }
+
+
     }
 
 }

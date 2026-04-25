@@ -68,12 +68,13 @@ namespace DALHAL {
 
                 // first we need to validate the type field
                 bool anyErrorTemp = false;
-                SchemaString::ValidateJson(JsonSchema::CommonBase::typeField, sourceObjTypeName, jsonItem, anyErrorTemp);
+                JsonSchema::ValidateJson(JsonSchema::CommonBase::typeField, sourceObjTypeName, jsonItem, anyErrorTemp);
+                //SchemaString::ValidateJson(JsonSchema::CommonBase::typeField, sourceObjTypeName, jsonItem, anyErrorTemp);
                 if (anyErrorTemp == true) {
                     anyError = true;
                     continue; // skip the current json device
                 }
-                ;
+                
                 const char* type_cStr = GetValue(JsonSchema::CommonBase::typeField, jsonItem).asConstChar();
                 
                 const Registry::Item& regItem = Registry::GetItem(reg, type_cStr);
@@ -138,8 +139,8 @@ namespace DALHAL {
             )rawliteral";
         }
 
-        const JsonArray SchemaArrayOfRegistryItems::GetValidatedJsonArray(const SchemaArrayOfRegistryItems& saori, const JsonVariant& jsonObj) {
-            return jsonObj[saori.name].as<JsonArray>();
+        const JsonArray SchemaArrayOfRegistryItems::GetValidatedJsonArray(const JsonVariant& jsonObj) const {
+            return jsonObj[this->name].as<JsonArray>();
         }
 
     }

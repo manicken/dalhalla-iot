@@ -91,9 +91,9 @@ namespace DALHAL {
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::ThingSpeak* out) {
                 const JsonVariant& jsonObj = *(context.jsonObjItem);
 
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
 
-                HALValue refreshTimeMsTemp = JsonSchema::GetValue(JsonSchema::CommonTime::refreshTimeGroupFields, context);
+                HALValue refreshTimeMsTemp = JsonSchema::CommonTime::refreshTimeGroupFields.ExtractFrom(*(context.jsonObjItem));
                 if (refreshTimeMsTemp.isSet()) {
                     out->refreshTimeMs = refreshTimeMsTemp.asUInt();
                     out->useOwnTaskLoop = true;
@@ -101,8 +101,8 @@ namespace DALHAL {
                     out->refreshTimeMs = 0;
                     out->useOwnTaskLoop = false;
                 }
-                HALValue testserverEnabled = JsonSchema::GetValue(JsonSchema::ThingSpeak::testserverField, context);
-                if (testserverEnabled.isSet() && testserverEnabled.asBool()) {
+                bool testserverEnabled = JsonSchema::ThingSpeak::testserverField.ExtractFrom(*(context.jsonObjItem));
+                if (testserverEnabled) {
         #ifdef DALHAL_DEVICES_THINGSPEAK_TEST_SERVER
                     out->TS_ROOT_URL = "http://" DALHAL_DEVICES_THINGSPEAK_TEST_SERVER ":8083/update?api_key=";
         #else
@@ -112,7 +112,7 @@ namespace DALHAL {
                     out->ts_root_url = "http://api.thingspeak.com/update?api_key=";
                 }
 
-                const char* keyStr = JsonSchema::GetValue(JsonSchema::ThingSpeak::keyField, context).asConstChar();
+                const char* keyStr = JsonSchema::ThingSpeak::keyField.ExtractFrom(*(context.jsonObjItem));
                 strncpy(out->api_key, keyStr, sizeof(out->api_key) - 1);
                 out->api_key[sizeof(out->api_key) - 1] = '\0'; // ensure null-termination
 
@@ -131,7 +131,7 @@ namespace DALHAL {
                 out->urlApi.reserve(strlen(out->ts_root_url) + strlen(out->api_key) + out->fieldCount*(strlen("&fieldx=")+32));
 
                 if (out->useOwnTaskLoop) {
-                    uint32_t firstUpdateAfterSeconds = JsonSchema::GetValue(JsonSchema::ThingSpeak::firstUpdateAfterSecondsField, context).asUInt();
+                    uint32_t firstUpdateAfterSeconds = JsonSchema::ThingSpeak::firstUpdateAfterSecondsField.ExtractFrom(*(context.jsonObjItem));
                     if (firstUpdateAfterSeconds == 0) {
                         out->lastUpdateMs = millis() - out->refreshTimeMs; // force a first update directly
                     } else {

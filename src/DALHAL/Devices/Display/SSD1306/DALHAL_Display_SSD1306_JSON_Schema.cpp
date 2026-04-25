@@ -79,14 +79,13 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::I2C_Master_CreateFunctionContext& context, DALHAL::Display_SSD1306* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
 
-                uint32_t width = JsonSchema::GetValue(JsonSchema::Display_SSD1306::widthField, context);
-                uint32_t height = JsonSchema::GetValue(JsonSchema::Display_SSD1306::heightField, context);
-                const char* addrStr = JsonSchema::GetValue(JsonSchema::Display_SSD1306::addrField, context).asConstChar();
+                uint32_t width = JsonSchema::Display_SSD1306::widthField.ExtractFrom(*(context.jsonObjItem));
+                uint32_t height = JsonSchema::Display_SSD1306::heightField.ExtractFrom(*(context.jsonObjItem));
+                const char* addrStr = JsonSchema::Display_SSD1306::addrField.ExtractFrom(*(context.jsonObjItem));
                 uint8_t addr = static_cast<uint8_t>(std::strtoul(addrStr, nullptr, 16));
-                uint8_t textSize = JsonSchema::GetValue(JsonSchema::Display_SSD1306::textsizeField, context);
-                //if (textSize == 0) textSize = 1; can never happend as schema defines min 1
+                uint8_t textSize = JsonSchema::Display_SSD1306::textsizeField.ExtractFrom(*(context.jsonObjItem));
 
                 out->display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
 
@@ -101,7 +100,7 @@ namespace DALHAL {
                     out->display->display(); // <--- push buffer to screen
                 }
 
-                const JsonArray& items = JsonSchema::SchemaArrayOfObjects::GetValidatedJsonArray(JsonSchema::Display_SSD1306::itemsField, *(context.jsonObjItem));
+                const JsonArray& items = JsonSchema::Display_SSD1306::itemsField.GetValidatedJsonArray(*(context.jsonObjItem));
 
                 int itemCount = items.size();
                 // first pass count valid items

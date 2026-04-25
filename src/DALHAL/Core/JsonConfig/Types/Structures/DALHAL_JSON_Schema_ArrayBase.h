@@ -39,10 +39,12 @@ namespace DALHAL {
 
         struct SchemaArrayBase : SchemaTypeBase
         {
+
+        protected:
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            
             static const char* GetJavaScriptValidator();
 
+        public:
             EmptyPolicy emptyPolicy;
 
         protected:

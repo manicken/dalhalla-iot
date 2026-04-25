@@ -72,16 +72,16 @@ namespace DALHAL {
                 auto* self = static_cast<ConsumerStruct*>(out);
                 self->mode = DALHAL::Consumer::Mode::TimedRefresh;
                 self->eventSource = nullptr;
-                self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
-                self->refreshtimems = JsonSchema::GetValue(CommonTime::refreshTimeGroupFields, ctx).asUInt();
+                self->source = sourceField.ExtractFrom(*ctx.jsonObjItem);
+                self->refreshtimems = CommonTime::refreshTimeGroupFields.ExtractFrom(*ctx.jsonObjItem).asUInt();
             }
 
             void Apply_EventModeValues(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<ConsumerStruct*>(out);
                 self->mode = DALHAL::Consumer::Mode::Event;
-                self->eventSource = JsonSchema::GetValue(eventSourceField, ctx).asConstChar();;
-                self->source = JsonSchema::GetValue(sourceField, ctx).asConstChar();
+                self->eventSource = eventSourceField.ExtractFrom(*ctx.jsonObjItem);
+                self->source = sourceField.ExtractFrom(*ctx.jsonObjItem);
                 self->refreshtimems = 0;
             }
 

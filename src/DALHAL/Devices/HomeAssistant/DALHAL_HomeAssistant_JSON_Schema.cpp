@@ -126,14 +126,14 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::HomeAssistant* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->deviceID = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::deviceIdField, context).asConstChar());
-                out->host = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::hostField, context).asConstChar());
-                out->port = JsonSchema::GetValue(JsonSchema::HomeAssistant::portField, context).asUInt();
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->deviceID = std::string(JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem)));
+                out->host = std::string(JsonSchema::HomeAssistant::hostField.ExtractFrom(*(context.jsonObjItem)));
+                out->port = JsonSchema::HomeAssistant::portField.ExtractFrom(*(context.jsonObjItem));
                 // note. can only be called after getting host and port
                 out->ConfigureMqttClient();
-                out->username = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::userField, context).asConstChar());
-                out->password = std::string(JsonSchema::GetValue(JsonSchema::HomeAssistant::passField, context).asConstChar());
+                out->username = std::string(JsonSchema::HomeAssistant::userField.ExtractFrom(*(context.jsonObjItem)));
+                out->password = std::string(JsonSchema::HomeAssistant::passField.ExtractFrom(*(context.jsonObjItem)));
                 // note. can only be called after getting username and password
                 out->Connect();
 
@@ -146,7 +146,7 @@ namespace DALHAL {
                     const JsonVariant& item = items[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
-                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                    const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(item);
                     
                     const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                     createFuncContext.jsonObjItem = &item;
@@ -159,7 +159,7 @@ namespace DALHAL {
                 auto* self = static_cast<DALHAL::HomeAssistant*>(out);
 
                 const JsonVariant& jsonObj = *context.jsonObjItem;
-                const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObj);
+                const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObj);
                 int arrayCount = jsonArrayItems.size();
 
                 int validItemCount = 0;
@@ -177,34 +177,38 @@ namespace DALHAL {
                 
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);
                 createFuncContext.jsonGlobal = &groupObj;
-                //createFuncContext.jsonObjRoot = &jsonObj;
-                createFuncContext.deviceId_cStr = JsonSchema::GetValue(JsonSchema::HomeAssistant::deviceIdField, context).asConstChar();
+                createFuncContext.deviceId_cStr = JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem));
                 CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, index);
+                
+                
                 /*for (int i=0;i<arrayCount;i++) {
                     const JsonVariant& item = jsonArrayItems[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
-                    const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                    const char* type_cStr = JsonSchema::CommonBase::typeField, item).asConstChar();
                     
                     const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                     createFuncContext.jsonObjItem = &item;
                     createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
                     self->devices[index++] = regItem.def->Create_Function(createFuncContext);
                 }*/
+
+
+
             }
 
             void Extractors::ExtractIndividualGroupMode(const DALHAL::DeviceCreateContext& context, void* out) {
                 auto* self = static_cast<DALHAL::HomeAssistant*>(out);
 
                 const JsonVariant& jsonObj = *context.jsonObjItem;
-                const JsonArray& jsonArrayGroups = JsonSchema::SchemaArrayOfObjects::GetValidatedJsonArray(JsonSchema::HomeAssistant::individualGroupsField, jsonObj);
+                const JsonArray& jsonArrayGroups = JsonSchema::HomeAssistant::individualGroupsField.GetValidatedJsonArray(jsonObj);
                 int jsonArrayGroupsCount = jsonArrayGroups.size();
                 
                 int activeItemCount = 0;
                 // first pass count enabled/"non comment" items
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
                     const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
-                    const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObjGrpItem);
+                    const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
                     int jsonArrayItemsCount = jsonArrayItems.size();
                     for (int j=0;j<jsonArrayItemsCount;j++) {
                         const JsonVariant& item = jsonArrayItems[j];
@@ -222,22 +226,26 @@ namespace DALHAL {
                 //createFuncContext.jsonObjRoot = &jsonObj;
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
                     const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
-                    const JsonArray& jsonArrayItems = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::HomeAssistant::itemsField, jsonObjGrpItem);
-                    //int jsonArrayItemsCount = jsonArrayItems.size();
+                    const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
+
                     createFuncContext.jsonGlobal = &jsonObjGrpItem;
                     
                     CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, newItemIndex);
+
+
                     /*for (int j=0;j<jsonArrayItemsCount;j++) {
                         const JsonVariant& item = jsonArrayItems[j];
                         if (Device::DisabledOrCommentItem(item)) { continue; }
 
-                        const char* type_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::typeField, item).asConstChar();
+                        const char* type_cStr = JsonSchema::CommonBase::typeField, item).asConstChar();
                 
                         const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                         createFuncContext.jsonObjItem = &item;
                         createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
                         self->devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
                     }*/
+
+                    
                 }
             }
 

@@ -69,14 +69,14 @@ namespace DALHAL {
             void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_Switch* out) {
                 const JsonVariant& jsonObj = *(context.jsonObjItem);
 
-                const char* uid_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar();
+                const char* uid_cStr = JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem));
                 out->uid = encodeUID(uid_cStr);
 
                 const char* deviceId_cStr = context.deviceId_cStr;
         
                 out->topicBasePath.Set(deviceId_cStr, uid_cStr);
 
-                const char* target_cStr = JsonSchema::GetValue(JsonSchema::HA_Switch::targetField, context).asConstChar();
+                const char* target_cStr = JsonSchema::HA_Switch::targetField.ExtractFrom(*(context.jsonObjItem));
                 
                 ZeroCopyString zcSrcDeviceUidStr = target_cStr; // target_cStr cannot be nullptr as that is a required field
                 out->cda = new CachedDeviceAccess();
@@ -85,7 +85,7 @@ namespace DALHAL {
                     out->cda = nullptr;
                 }
 
-                out->momentary = JsonSchema::GetValue(JsonSchema::HA_Switch::momentaryField, context).asBool();
+                out->momentary = JsonSchema::HA_Switch::momentaryField.ExtractFrom(*context.jsonObjItem);
 
                 DALHAL::HA_DeviceDiscovery::SendDiscovery(
                     context.mqttClient, 

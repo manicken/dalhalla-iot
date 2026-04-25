@@ -44,6 +44,7 @@ namespace DALHAL {
         struct SchemaFieldsGroup : SchemaTypeBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
@@ -52,7 +53,8 @@ namespace DALHAL {
             static void CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             
-            const SchemaTypeBase* const* fields;          
+        public:
+            const SchemaTypeBase* const* fields;  
             /*size_t fieldsCount;*/
             
         protected: // used when inherited

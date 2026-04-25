@@ -46,8 +46,12 @@ using ScriptVariable_ValueBase = DALHAL::HALValue;
 #endif
 
 namespace DALHAL {
+
+    namespace JsonSchema { namespace REGO600_Register { struct Extractors; } } // forward declaration
     
     class REGO600_Register : public REGO600register_DeviceBase {
+        friend struct JsonSchema::REGO600_Register::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
 
     public: // member data

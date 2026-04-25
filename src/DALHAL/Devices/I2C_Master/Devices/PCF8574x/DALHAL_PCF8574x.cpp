@@ -36,7 +36,7 @@ namespace DALHAL {
 
     constexpr I2C_RegistryDefine PCF8574x::RegistryDefine = {
         Create,
-        &JsonSchema::PCF8574x,
+        &JsonSchema::PCF8574x::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_DEVICE_PCF8574X),
         HasAddress
     };
@@ -47,12 +47,7 @@ namespace DALHAL {
     }
     
     PCF8574x::PCF8574x(I2C_Master_CreateFunctionContext& context) : PCF8574x_DeviceBase(context.deviceType), wire(context.wire) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-        const char* addrStr = GetAsConstChar(jsonObj, "addr");
-        addr = static_cast<uint8_t>(std::strtoul(addrStr, nullptr, 16));
-
+        JsonSchema::PCF8574x::Extractors::Apply(context, this);
     }
 
     Device* PCF8574x::Create(DeviceCreateContext& context) {

@@ -41,19 +41,24 @@ namespace DALHAL {
         struct SchemaHardwarePinOrVirtualPin : SchemaTypeBase {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 
+        public:
             DALHAL_GPIO_MGR_PINFUNC_TYPE mode;
 
+        public:
             constexpr SchemaHardwarePinOrVirtualPin(const char* name, FieldPolicy policy, DALHAL_GPIO_MGR_PINFUNC_TYPE mode)
                 : SchemaTypeBase(name, FieldType::HardwarePinOrVirtualPin, policy), mode(mode) {} // here pin could use Int but that is not how pins are validated they instead use GPIO_manager for validity
         
+        private:
             static ValidatorResult ValidateHardwarePinJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static ValidatorResult ValidateVirtualPinJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+        
         };
 
     }

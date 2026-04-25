@@ -37,62 +37,19 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase I2C_Master::RegistryDefine = {
         Create,
-        &JsonSchema::I2C_Master,
+        &JsonSchema::I2C_Master::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
     };
+
+    Device* I2C_Master::Create(DeviceCreateContext& context) {
+        return new I2C_Master(context);
+    }
     
     I2C_Master::I2C_Master(DeviceCreateContext& context) : I2C_Master_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        deviceCount = 0;
-        devices = nullptr;
-
-        const char* uidStr = GetAsConstChar(jsonObj,DALHAL_KEYNAME_UID);
-        uid = encodeUID(uidStr);
-
-        sckpin = GetAsUINT8(jsonObj, "sckpin");
-        sdapin = GetAsUINT8(jsonObj, "sdapin");
-        freq = GetAsUINT32(jsonObj, "freq");
-        if (freq < 100000) freq = 100000; // defaults to 100khz
-
-#if defined(ESP32)
-        int busIndex = GetAsUINT8(jsonObj, "busindex");
-        if (busIndex == 1)
-            wire = &Wire1;
-        else
-#endif
-            wire = &Wire;
-
+        JsonSchema::I2C_Master::Extractors::Apply(context, this);
         wire->begin(sdapin, sckpin, freq);
-
-        const JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS].as<JsonArray>();
-
-        int itemCount = items.size();
-        // first pass count valid items
-        size_t validItemCount = 0;
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            validItemCount++;
-        }
-        // second pass actually create the devices
-        deviceCount = validItemCount;
-        devices = new Device*[validItemCount]();
-        int index = 0;
-        I2C_Master_CreateFunctionContext createContext(*wire);
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            
-            const char* type_cStr = GetAsConstChar(item, DALHAL_KEYNAME_TYPE);
-            //const I2C_DeviceRegistryItem& regItem = GetI2C_DeviceTypeDef(type_cStr);
-            const Registry::Item& regItem = Registry::GetItem(I2C_DeviceRegistry, type_cStr);
-             // no nullcheck is needed as ValidateJSON ensures that all types are correct
-            createContext.jsonObjItem = &item;
-            createContext.deviceType = regItem.typeName; // use static/flash string
-            
-            devices[index++] = regItem.def->Create_Function(createContext); // regItem.typeName is a flash const so it's safe to use
-        }
     }
+
     I2C_Master::~I2C_Master() {
         if (devices != nullptr) {
             for (int i=0;i<deviceCount;i++) {
@@ -108,10 +65,6 @@ namespace DALHAL {
 #endif
         pinMode(sckpin, INPUT);
         pinMode(sdapin, INPUT);
-    }
-
-    Device* I2C_Master::Create(DeviceCreateContext& context) {
-        return new I2C_Master(context);
     }
 
     String I2C_Master::ToString() {

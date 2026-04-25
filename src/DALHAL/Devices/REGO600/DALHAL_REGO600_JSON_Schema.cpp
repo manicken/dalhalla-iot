@@ -27,6 +27,7 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfObjects.h>
+#include <DALHAL/Core/JsonConfig/Types/Logical/String/DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_UInt.h>
 #include <DALHAL/Core/JsonConfig/Types/Logical/DALHAL_JSON_Schema_HardwarePin.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
@@ -36,35 +37,98 @@
 
 #include "DALHAL_REGO600_Register_JSON_Schema.h"
 
+#include "DALHAL_REGO600.h"
+#include "DALHAL_REGO600_Register.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
-        constexpr SchemaHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
+        namespace REGO600 {
 
-        constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)10};
+            constexpr SchemaHardwarePin rxpinField = {"rxpin", FieldPolicy::Required, (GPIO_manager::PinFunc::IN)};
+            constexpr SchemaHardwarePin txpinField = {"txpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-        constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::RenderAllAllowedValues, &regnameField, &REGO600_Register, EmptyPolicy::Error};
+            constexpr SchemaUInt requestDelayMsField = {"requestDelayMs", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)10};
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &rxpinField,
-            &txpinField,
-            &requestDelayMsField,
-            &CommonTime::refreshTimeGroupFieldsRequired,
-            &itemsField,
-            nullptr,
-        };
+            constexpr SchemaArrayOfObjects itemsField = {
+                "items", 
+                FieldPolicy::Required,
+                Gui::RenderAllAllowedValues,
+                &REGO600_Register::regnameField,
+                &REGO600_Register::Root,
+                EmptyPolicy::Error
+            };
 
-        constexpr JsonObjectSchema REGO600 = {
-            "REGO600",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &rxpinField,
+                &txpinField,
+                &requestDelayMsField,
+                &CommonTime::refreshTimeGroupFieldsRequired,
+                &itemsField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "REGO600",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::REGO600* out) {
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->rxPin = JsonSchema::REGO600::rxpinField.ExtractFrom(*(context.jsonObjItem));
+                out->txPin = JsonSchema::REGO600::txpinField.ExtractFrom(*(context.jsonObjItem));
+
+                const JsonArray items = JsonSchema::REGO600::itemsField.GetValidatedJsonArray(*(context.jsonObjItem));
+                int itemCount = items.size();
+
+                out->registerItemCount = 0;
+                // first pass count valid items
+                for (int i=0;i<itemCount;i++) {
+                    if (Device::DisabledOrCommentItem(items[i])) { continue; }
+                    out->registerItemCount++;
+                }
+                // second pass
+                out->requestList = new (std::nothrow) Drivers::REGO600::Request*[out->registerItemCount]();
+                out->registerItems = new (std::nothrow) Device*[out->registerItemCount]();
+                int index = 0;
+                DeviceCreateContext createContext;
+                createContext.deviceType = "REGO600reg";
+                for (int i=0;i<itemCount;i++) {
+                    const JsonVariant& item = items[i];
+                    if (Device::DisabledOrCommentItem(item)) { continue; }
+
+                    createContext.jsonObjItem = &item;
+                    DALHAL::REGO600_Register* itemReg = new DALHAL::REGO600_Register(createContext);
+
+                    const char* regName = JsonSchema::REGO600_Register::regnameField.ExtractFrom(item);
+                    // as the cfg is now fully validated this will not return a nullptr
+                    const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
+                    
+                    // here value is passed by ref so that REGO600 driver can access and change the value,
+                    // that makes REGO600register read function can then get the correct value
+                    const Drivers::REGO600::OpCodeInfo& info = Drivers::REGO600::getCmdInfo(0x02); // system registers only
+                    out->requestList[index] = new Drivers::REGO600::Request(
+                        info, 
+                        *entry,
+                        itemReg->value
+                    );
+                    out->registerItems[index] = itemReg;
+                    index++;
+                }
+                out->refreshTimeMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem));
+
+                unsigned long requestDelayMs = JsonSchema::REGO600::requestDelayMsField.ExtractFrom(*(context.jsonObjItem));
+                
+                out->rego600 = new Drivers::REGO600(out->rxPin, out->txPin, out->requestList, out->registerItemCount, out->refreshTimeMs, requestDelayMs);
+            }
+
+        }
 
     }
 

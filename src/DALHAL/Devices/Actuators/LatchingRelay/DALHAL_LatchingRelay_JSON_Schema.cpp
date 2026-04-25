@@ -121,11 +121,9 @@ namespace DALHAL {
             void Extractors::Apply_DataEnable(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
-                self->pins.data_enable.data =
-                    (gpio_num_t)JsonSchema::GetValue(pin_dataenable_data_field, ctx).asUInt();
 
-                self->pins.data_enable.enable =
-                    (gpio_num_t)JsonSchema::GetValue(pin_dataenable_enable_field, ctx).asUInt();
+                self->pins.data_enable.data = (gpio_num_t)pin_dataenable_data_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.data_enable.enable = (gpio_num_t)pin_dataenable_enable_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::DataEnable;
             }
@@ -133,11 +131,9 @@ namespace DALHAL {
             void Extractors::Apply_Direct_a_b(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
-                self->pins.direct.a =
-                    (gpio_num_t)JsonSchema::GetValue(pin_direct_a_field, ctx).asUInt();
 
-                self->pins.direct.b =
-                    (gpio_num_t)JsonSchema::GetValue(pin_direct_b_field, ctx).asUInt();
+                self->pins.direct.a = (gpio_num_t)pin_direct_a_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.b = (gpio_num_t)pin_direct_b_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
@@ -145,17 +141,15 @@ namespace DALHAL {
             void Extractors::Apply_Direct_set_reset(const DALHAL::DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
-                self->pins.direct.a =
-                    (gpio_num_t)JsonSchema::GetValue(pin_direct_set_field, ctx).asUInt();
 
-                self->pins.direct.b =
-                    (gpio_num_t)JsonSchema::GetValue(pin_direct_reset_field, ctx).asUInt();
+                self->pins.direct.a = (gpio_num_t)pin_direct_set_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.b = (gpio_num_t)pin_direct_reset_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::LatchingRelay* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
                 JsonSchema::ModeSelector::Apply(JsonSchema::LatchingRelay::Root.modes, context, out);
 
                 JsonSchema::PinConfig statePinCfg;
@@ -172,7 +166,7 @@ namespace DALHAL {
                     out->pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
                 }
 
-                out->timeoutMs = JsonSchema::GetValue(JsonSchema::LatchingRelay::timeout_ms_field, context).asUInt();
+                out->timeoutMs = JsonSchema::LatchingRelay::timeout_ms_field.ExtractFrom(*(context.jsonObjItem));
             }
 
         }

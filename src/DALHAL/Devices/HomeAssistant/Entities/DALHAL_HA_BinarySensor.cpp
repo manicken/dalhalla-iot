@@ -53,6 +53,10 @@ namespace DALHAL {
         mqtt.write('\n');
         PSC_JsonWriter::kv(mqtt, "platform", "binary_sensor");
     }
+
+    Device* HA_BinarySensor::Create(DeviceCreateContext& context) {
+        return new HA_BinarySensor(static_cast<HA_CreateFunctionContext&>(context));
+    }
     
     HA_BinarySensor::HA_BinarySensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient)  {
         JsonSchema::HA_BinarySensor::Extractors::Apply(context, this);
@@ -63,10 +67,6 @@ namespace DALHAL {
     HA_BinarySensor::~HA_BinarySensor() {
         delete cdr;
         delete eventSource;
-    }
-
-    Device* HA_BinarySensor::Create(DeviceCreateContext& context) {
-        return new HA_BinarySensor(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String HA_BinarySensor::ToString() {

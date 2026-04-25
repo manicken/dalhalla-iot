@@ -58,9 +58,9 @@ namespace DALHAL {
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DeviceContainer* out) {
                 const JsonVariant& jsonObj = *(context.jsonObjItem);
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
 
-                const JsonArray& jsonArray = JsonSchema::SchemaArrayOfRegistryItems::GetValidatedJsonArray(JsonSchema::DeviceContainer::itemsField, jsonObj);
+                const JsonArray& jsonArray = JsonSchema::DeviceContainer::itemsField.GetValidatedJsonArray(jsonObj);
                 
                 uint32_t deviceCountTmp = 0;
                 int arraySize = jsonArray.size();

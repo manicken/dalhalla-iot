@@ -114,23 +114,26 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        HALValue SchemaOneOfFieldsGroup::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            const auto& group = static_cast<const SchemaOneOfFieldsGroup&>(fieldSchema);
+        HALValue SchemaOneOfFieldsGroup::ExtractFrom(const JsonVariant& jsonObj) const {
 
-            for (size_t i = 0; group.fields[i] != nullptr; ++i) {
-                const SchemaTypeBase& f = *group.fields[i];
+            for (size_t i = 0; this->fields[i] != nullptr; ++i) {
+                const SchemaTypeBase& f = *(this->fields[i]);
 
                 if (jsonObj.containsKey(f.name)) {
-                    // Delegate to the actual field type
-                    return JsonSchema::GetValue(f, jsonObj);
+                    // Delegate to the actual field type using the base 
+                    return f.ExtractViaRegistryFrom(jsonObj);
                 }
             }
-            if (group.defaultValueField != nullptr) {
+            if (this->defaultValueField != nullptr) {
                 // utilize the fact that if a field is not found the GetValue return the default value
                 // otherwise it fallbacks to that GetValue returns a unset HALValue if it cannot get the value
-                return JsonSchema::GetValue(*group.defaultValueField, jsonObj); 
+                return this->defaultValueField->ExtractViaRegistryFrom(jsonObj); 
             }
             return HALValue(); // unset / invalid
+        }
+
+        HALValue SchemaOneOfFieldsGroup::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            return HALValue(static_cast<const SchemaOneOfFieldsGroup&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
         void SchemaOneOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

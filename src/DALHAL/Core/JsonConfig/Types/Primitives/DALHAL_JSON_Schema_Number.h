@@ -39,14 +39,19 @@ namespace DALHAL {
         struct SchemaNumber : SchemaTypeBase {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-            
+        public:
+            HALValue ExtractFrom(const JsonVariant& jsonObj) const;
+        
+        public:            
             uint8_t primitiveTypeFlags;
 
+        public:
             constexpr SchemaNumber(const char* name, FieldPolicy policy) 
                 : SchemaTypeBase(name, FieldType::Number, policy), primitiveTypeFlags(PrimitiveTypeFlags::AllowNumbers) {}
 

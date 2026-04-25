@@ -30,26 +30,38 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include "DALHAL_PCF8574x.h"
+
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "38", 1};
+        namespace PCF8574x {
 
-        constexpr const SchemaTypeBase* fields[] = {
-            &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-            &addrField,
-            nullptr,
-        };
+            constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "38", 1};
 
-        constexpr JsonObjectSchema PCF8574x = {
-            "PCF8574x",
-            fields,
-            nullptr, // no modes
-            nullptr,  // no constraints
-            EmptyPolicy::Warn,
-            UnknownFieldPolicy::Warn,
-        };
+            constexpr const SchemaTypeBase* fields[] = {
+                &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &addrField,
+                nullptr,
+            };
+
+            constexpr JsonObjectSchema Root = {
+                "PCF8574x",
+                fields,
+                nullptr, // no modes
+                nullptr,  // no constraints
+                EmptyPolicy::Warn,
+                UnknownFieldPolicy::Warn,
+            };
+
+            void Extractors::Apply(DALHAL::I2C_Master_CreateFunctionContext& context, DALHAL::PCF8574x* out) {
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                const char* hexAddrStr = JsonSchema::PCF8574x::addrField.ExtractFrom(*(context.jsonObjItem));
+                out->addr = static_cast<uint8_t>(std::strtoul(hexAddrStr, nullptr, 16));
+            }
+
+        }
 
     }
 

@@ -46,12 +46,14 @@ namespace DALHAL {
         struct SchemaArrayOfPrimitives : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static bool ExtractValues(const SchemaArrayOfPrimitives& fieldSchema, const JsonVariant& jsonObj, HALValue** outValues, int& valueCount);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 
+        public:
+            bool ExtractValues(const JsonVariant& jsonObj, HALValue** outValues, int& valueCount) const;
             uint8_t primitiveTypeFlags;
 
             // Number-only array

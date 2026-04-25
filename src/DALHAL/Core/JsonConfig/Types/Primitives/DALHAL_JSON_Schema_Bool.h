@@ -37,13 +37,19 @@ namespace DALHAL {
     namespace JsonSchema {
 
         struct SchemaBool : SchemaTypeBase {
+
             static const FieldTypeRegistryDefine RegistryDefine;
+
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-            
+        public:
+            bool ExtractFrom(const JsonVariant& jsonObj) const;
+
+        public:
             bool defaultValue;
 
         protected:
@@ -56,6 +62,8 @@ namespace DALHAL {
 
             constexpr SchemaBool(const char* name, FieldPolicy policy, bool defaultValue, size_t structOffset)
                 : SchemaTypeBase(name, FieldType::Bool, policy, structOffset), defaultValue(defaultValue) {}
+
+            
         };
 
     }

@@ -47,15 +47,18 @@ namespace DALHAL {
         struct SchemaArrayOfObjects : SchemaArrayBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static const JsonArray GetValidatedJsonArray(const SchemaArrayOfObjects& saoo, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 
+        public:
+            const JsonArray GetValidatedJsonArray(const JsonVariant& jsonObj) const;
             const JsonObjectSchema* subtype;
             const SchemaTypeBase* renderAllAllowedValuesFromStringConstraint;
-
+        
+        public:
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonObjectSchema* subtype)
                 : SchemaArrayBase(name, FieldType::ArrayOfObjects, policy, EmptyPolicy::Warn), subtype(subtype), renderAllAllowedValuesFromStringConstraint(nullptr) {}
             constexpr SchemaArrayOfObjects(const char* name, FieldPolicy policy, const JsonObjectSchema* subtype, EmptyPolicy emptyPolicy)

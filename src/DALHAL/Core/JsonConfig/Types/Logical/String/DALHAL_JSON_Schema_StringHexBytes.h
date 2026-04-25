@@ -39,13 +39,16 @@ namespace DALHAL {
         struct SchemaStringHexBytes : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-            
+        
+        public:
             uint8_t byteCount;
-
+            
+        public:
             constexpr SchemaStringHexBytes(const char* name, FieldPolicy policy, const char* defaultValue, uint8_t byteCount)
                 : SchemaString(name, FieldType::StringHexBytes, policy, defaultValue), byteCount(byteCount) {}
 

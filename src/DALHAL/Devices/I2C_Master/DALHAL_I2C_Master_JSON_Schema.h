@@ -23,13 +23,27 @@
 
 #pragma once
 
-#include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
-
 namespace DALHAL {
+
+    // forward declarations
+    class I2C_Master; 
+    struct DeviceCreateContext;
 
     namespace JsonSchema {
 
-        extern const JsonObjectSchema I2C_Master;
+        // forward declaration
+        struct JsonObjectSchema; 
+
+        namespace I2C_Master {
+
+            extern const JsonObjectSchema Root;
+
+            struct Extractors final {
+                /** used by the device class */
+                static void Apply(DALHAL::DeviceCreateContext& context, DALHAL::I2C_Master* out);
+            };
+
+        }
 
     }
 

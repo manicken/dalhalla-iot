@@ -70,15 +70,15 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::ButtonInput* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->pin = JsonSchema::GetValue(JsonSchema::ButtonInput::pinField, context);
-                out->debounceMs = JsonSchema::GetValue(JsonSchema::ButtonInput::debounceMsField, context);
-                out->activeLevel = JsonSchema::GetValue(JsonSchema::ButtonInput::activeLevelField, context);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->pin = JsonSchema::ButtonInput::pinField.ExtractFrom(*(context.jsonObjItem));
+                out->debounceMs = JsonSchema::ButtonInput::debounceMsField.ExtractFrom(*(context.jsonObjItem));
+                out->activeLevel = JsonSchema::ButtonInput::activeLevelField.ExtractFrom(*(context.jsonObjItem));
 
                 // Optional external action target
                 // todo can also use react events
                 // but this allow direct actions
-                const char* on_press_cStr = JsonSchema::GetValue(JsonSchema::ButtonInput::on_pressField, context).asConstChar();
+                const char* on_press_cStr = JsonSchema::ButtonInput::on_pressField.ExtractFrom(*(context.jsonObjItem));
                 if (on_press_cStr != nullptr) {
                     out->toggleTarget = new CachedDeviceAccess();
                     if (out->toggleTarget->Set(on_press_cStr) == false) {

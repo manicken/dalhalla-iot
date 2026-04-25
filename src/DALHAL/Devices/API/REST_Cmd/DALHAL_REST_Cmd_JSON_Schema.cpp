@@ -54,8 +54,8 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::REST_Cmd* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->remoteUrl = JsonSchema::GetValue(JsonSchema::REST_Cmd::urlField, context).asConstChar();
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->remoteUrl = JsonSchema::REST_Cmd::urlField.ExtractFrom(*(context.jsonObjItem));
             }
 
         }

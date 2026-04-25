@@ -45,11 +45,12 @@ namespace DALHAL {
         struct SchemaAllOfFieldsGroup : SchemaFieldsGroup {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-            
+        public:
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, const SchemaTypeBase* const* fields)
                 : SchemaFieldsGroup(outputName, FieldType::AllOfFieldsGroup, policy, fields) {}
             constexpr SchemaAllOfFieldsGroup(const char* outputName, FieldPolicy policy, FieldGuiFlagsType guiFlags, const SchemaTypeBase* const* fields)

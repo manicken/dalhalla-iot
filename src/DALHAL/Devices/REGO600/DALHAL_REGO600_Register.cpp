@@ -29,13 +29,12 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include "DALHAL_REGO600_Register_JSON_Schema.h"
+
 namespace DALHAL {
     
     REGO600_Register::REGO600_Register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
-        uid = encodeUID(uidStr);
-
+        JsonSchema::REGO600_Register::Extractors::Apply(context, this);
 #if HAS_REACTIVE_VALUE_CHANGE(SCRIPT_VARIABLE)
         value.setCallbacks(this, GenericValueCallback<REGO600register_DeviceBase>, nullptr);
 #endif

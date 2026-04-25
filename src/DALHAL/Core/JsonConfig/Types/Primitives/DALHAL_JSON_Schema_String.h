@@ -38,16 +38,21 @@ namespace DALHAL {
         struct SchemaString : SchemaTypeBase {
             
             static const FieldTypeRegistryDefine RegistryDefine;
+            static ValidatorResult ValidateStringField(const char* fieldName, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static HALValue GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
+        public:
+            const char* ExtractFrom(const JsonVariant& jsonObj) const;
             
-
+        public:
             const char* defaultValue;  // flash string default, or more like what to present at GUI
-
+            
         protected:
+                
             constexpr SchemaString(const char* n, FieldType t, FieldPolicy pol, const char* defVal) 
                 : SchemaTypeBase(n, t, pol), defaultValue(defVal) {}
 
@@ -72,6 +77,8 @@ namespace DALHAL {
 
             constexpr SchemaString(const char* n, FieldPolicy pol, FieldGuiFlagsType guiFlags) 
                 : SchemaTypeBase(n, FieldType::String, pol, guiFlags), defaultValue("") {}
+
+            
         };
 
     }

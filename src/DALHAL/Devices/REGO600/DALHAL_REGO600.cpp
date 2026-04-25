@@ -37,65 +37,12 @@ namespace DALHAL {
 
     constexpr Registry::DefineBase REGO600::RegistryDefine = {
         Create,
-        &JsonSchema::REGO600,
+        &JsonSchema::REGO600::Root,
         DALHAL_REACTIVE_EVENT_TABLE(REGO600)
     };
     
     REGO600::REGO600(DeviceCreateContext& context) : REGO600_DeviceBase(context.deviceType) {
-        const JsonVariant& jsonObj = *(context.jsonObjItem);
-        const char* uidStr = jsonObj[DALHAL_KEYNAME_UID].as<const char*>();
-        uid = encodeUID(uidStr);
-
-        rxPin = GetAsUINT8(jsonObj, DALHAL_KEYNAME_RXPIN);
-        txPin = GetAsUINT8(jsonObj, DALHAL_KEYNAME_TXPIN);
-        GPIO_manager::ReservePin(rxPin);
-        GPIO_manager::ReservePin(txPin);
-
-        JsonArray items = jsonObj[DALHAL_KEYNAME_ITEMS];
-        int itemCount = items.size();
-
-        registerItemCount = 0;
-        // first pass count valid items
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-            registerItemCount++;
-        }
-        // second pass
-        requestList = new (std::nothrow) Drivers::REGO600::Request*[registerItemCount]();
-        registerItems = new (std::nothrow) Device*[registerItemCount]();
-        int index = 0;
-        DeviceCreateContext createContext;
-        createContext.deviceType = "REGO600reg";
-        for (int i=0;i<itemCount;i++) {
-            const JsonVariant& item = items[i];
-            if (Device::DisabledOrCommentItem(item)) { continue; }
-
-            createContext.jsonObjItem = &item;
-            REGO600_Register* itemReg = new REGO600_Register(createContext);
-
-            const char* regName = GetAsConstChar(item, "regname");
-            const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
-            if (regName == nullptr) {
-                GlobalLogger.Error(F("regName not found"));
-            }
-            // here value is passed by ref so that REGO600 driver can access and change the value,
-            // that makes REGO600register read function can then get the correct value
-            const Drivers::REGO600::OpCodeInfo& info = Drivers::REGO600::getCmdInfo(0x02); // system registers only
-            requestList[index] = new Drivers::REGO600::Request(
-                info, 
-                (entry != nullptr) ? *entry : Drivers::REGO600::ManualRawEntry, // should not be needed
-                itemReg->value
-            );
-            registerItems[index] = itemReg;
-            index++;
-        }
-        refreshTimeMs = ParseRefreshTimeMs(jsonObj, 0); // default to zero, note here REGO600 constructor will calculate minimum based on registerItemCount
-        unsigned long requestDelayMs = 10;
-        if (jsonObj.containsKey("requestDelayMs") && jsonObj["requestDelayMs"].is<unsigned long>()) {
-            requestDelayMs = jsonObj["requestDelayMs"].as<unsigned long>();
-        }
-        rego600 = new Drivers::REGO600(rxPin, txPin, requestList, registerItemCount, refreshTimeMs, requestDelayMs);
+        JsonSchema::REGO600::Extractors::Apply(context, this);
     }
 
     REGO600::~REGO600() {

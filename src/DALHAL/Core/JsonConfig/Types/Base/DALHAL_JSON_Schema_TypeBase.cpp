@@ -36,6 +36,10 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        HALValue SchemaTypeBase::ExtractViaRegistryFrom(const JsonVariant& jsonObj) const {
+            return JsonSchema::GetValue(*this, jsonObj);
+        }
+
         bool SchemaTypeBase::ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName) {
             if (fieldSchema.name == nullptr) {
                 GlobalLogger.Error(F("invalid schema field - name cannot be nullptr @ "), sourceObjTypeName);

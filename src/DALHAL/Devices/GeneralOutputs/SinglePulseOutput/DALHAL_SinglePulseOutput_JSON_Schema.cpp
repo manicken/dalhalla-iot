@@ -69,10 +69,10 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::SinglePulseOutput* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->pin = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pinField, context);
-                out->activeLevel = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::activeLevelField, context);
-                out->pulseLength = JsonSchema::GetValue(JsonSchema::SinglePulseOutput::pulseLengthField, context);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->pin = JsonSchema::SinglePulseOutput::pinField.ExtractFrom(*(context.jsonObjItem));
+                out->activeLevel = JsonSchema::SinglePulseOutput::activeLevelField.ExtractFrom(*(context.jsonObjItem));
+                out->pulseLength = JsonSchema::SinglePulseOutput::pulseLengthField.ExtractFrom(*(context.jsonObjItem));
         
             }
 

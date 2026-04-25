@@ -109,29 +109,31 @@ namespace DALHAL {
             void Extractors::Apply_RatioValueMode(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::PWM_Servo*>(out);
+
                 self->valueType = DALHAL::PWM_Servo::ServoValueType::Ratio;
-                self->minVal = JsonSchema::GetValue(minValField, ctx).asFloat();
-                self->maxVal = JsonSchema::GetValue(maxValField, ctx).asFloat();
+                self->minVal = minValField.ExtractFrom(*(ctx.jsonObjItem));
+                self->maxVal = maxValField.ExtractFrom(*(ctx.jsonObjItem));
             }
 
             void Extractors::Apply_PulseLengthValueMode(const DeviceCreateContext& ctx, void* out)
             {
                 auto* self = static_cast<DALHAL::PWM_Servo*>(out);
+
                 self->valueType = DALHAL::PWM_Servo::ServoValueType::PulseUS;
                 self->minVal = NAN;
                 self->maxVal = NAN;
             }
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::PWM_Servo* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->pin = JsonSchema::GetValue(JsonSchema::CommonPins::OutputPinField, context);
-                out->pwmChannel = (ledc_channel_t)JsonSchema::GetValue(JsonSchema::PWM_Servo::chField, context).asUInt();
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->pin = JsonSchema::CommonPins::OutputPinField.ExtractFrom(*(context.jsonObjItem));
+                out->pwmChannel = (ledc_channel_t)JsonSchema::PWM_Servo::chField.ExtractFrom(*(context.jsonObjItem));
 
-                out->minPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::minPulseLengthField, context);
-                out->maxPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::maxPulseLengthField, context);
-                out->startPulseLength = JsonSchema::GetValue(JsonSchema::PWM_Servo::startPulseLengthField, context);
-                out->autoOffAfterMs = JsonSchema::GetValue(JsonSchema::PWM_Servo::autoOffAfterMsField, context);
-                out->pulseLengthOffset = JsonSchema::GetValue(JsonSchema::PWM_Servo::pulseLengthOffsetField, context);
+                out->minPulseLength = JsonSchema::PWM_Servo::minPulseLengthField.ExtractFrom(*(context.jsonObjItem));
+                out->maxPulseLength = JsonSchema::PWM_Servo::maxPulseLengthField.ExtractFrom(*(context.jsonObjItem));
+                out->startPulseLength = JsonSchema::PWM_Servo::startPulseLengthField.ExtractFrom(*(context.jsonObjItem));
+                out->autoOffAfterMs = JsonSchema::PWM_Servo::autoOffAfterMsField.ExtractFrom(*(context.jsonObjItem));
+                out->pulseLengthOffset = JsonSchema::PWM_Servo::pulseLengthOffsetField.ExtractFrom(*(context.jsonObjItem));
 
                 JsonSchema::ModeSelector::Apply(JsonSchema::PWM_Servo::Root.modes, context, out);
             }

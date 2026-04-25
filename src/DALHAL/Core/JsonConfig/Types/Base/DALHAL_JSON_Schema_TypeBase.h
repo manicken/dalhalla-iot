@@ -29,6 +29,7 @@
 
 #include <ArduinoJson.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldType.h>
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldPolicy.h>
@@ -45,11 +46,16 @@ namespace DALHAL {
             FieldPolicy policy;
             FieldGuiFlagsType guiFlags;
             size_t structOffset;
+
         protected:
             static bool ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
             static ValidatorResult ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
-
+        public:
+            /** special note about using this, it do internally dispatch to the correct type using the JsonSchema type registry */
+            HALValue ExtractViaRegistryFrom(const JsonVariant& jsonObj) const;
+        
+        protected:
             constexpr SchemaTypeBase(const char* n, FieldType t, FieldPolicy policy)
                 : name(n), type(t), policy(policy), guiFlags(Gui::None), structOffset(0) {}
 

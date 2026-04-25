@@ -41,14 +41,16 @@ namespace DALHAL {
         struct SchemaStringSizeConstrained : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
             
-
+        public:
             uint16_t minLength;
             uint16_t maxLength;
+            
         protected:
             // defining type, maxLength
             constexpr SchemaStringSizeConstrained(const char* n, FieldType t, FieldPolicy pol, const char* defVal, uint16_t maxLength) 

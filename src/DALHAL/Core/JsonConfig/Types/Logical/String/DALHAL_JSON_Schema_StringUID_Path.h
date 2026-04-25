@@ -43,13 +43,16 @@ namespace DALHAL {
         struct SchemaStringUID_Path : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
 
+        public:
             constexpr SchemaStringUID_Path(const char* name, FieldPolicy policy)
                 : SchemaString(name, FieldType::StringUID_Path, policy, nullptr) {}
+                
         };
 
     }

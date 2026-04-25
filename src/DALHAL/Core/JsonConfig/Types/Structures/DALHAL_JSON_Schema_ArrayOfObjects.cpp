@@ -107,8 +107,8 @@ namespace DALHAL {
             )rawliteral";
         }
 
-        const JsonArray SchemaArrayOfObjects::GetValidatedJsonArray(const SchemaArrayOfObjects& saoo, const JsonVariant& jsonObj) {
-            return jsonObj[saoo.name].as<JsonArray>();
+        const JsonArray SchemaArrayOfObjects::GetValidatedJsonArray(const JsonVariant& jsonObj) const {
+            return jsonObj[this->name].as<JsonArray>();
         }
 
     }

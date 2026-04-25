@@ -58,8 +58,8 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::DigitalOutput* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->pin = JsonSchema::GetValue(JsonSchema::DigitalOutput::pinField, context);
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->pin = JsonSchema::DigitalOutput::pinField.ExtractFrom(*(context.jsonObjItem));
             }
 
         }

@@ -41,19 +41,21 @@ namespace DALHAL {
         struct SchemaStringAnyOfByFuncConstrained : SchemaString {
 
             static const FieldTypeRegistryDefine RegistryDefine;
+        protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
-
-            
+        
+        public:            
             using ValidateFunc  = bool(*)(void* ctx, const char* value);
             using DescribeFunc  = std::string(*)(void* ctx);
 
             ValidateFunc validate;
             DescribeFunc describe;
             void* ctx;
-	
+            
+        public:
             constexpr SchemaStringAnyOfByFuncConstrained(
                 const char* n, FieldPolicy pol, const char* defVal, const ValidateFunc validate, const DescribeFunc describe, void* ctx
             )

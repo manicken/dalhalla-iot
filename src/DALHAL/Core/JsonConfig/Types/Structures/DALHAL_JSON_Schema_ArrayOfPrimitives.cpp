@@ -104,12 +104,12 @@ namespace DALHAL {
             )rawliteral";
         }
 
-        bool SchemaArrayOfPrimitives::ExtractValues(const SchemaArrayOfPrimitives& fieldSchema, const JsonVariant& jsonObj, HALValue** outValues, int& valueCount)
+        bool SchemaArrayOfPrimitives::ExtractValues(const JsonVariant& jsonObj, HALValue** outValues, int& valueCount) const
         {
-            if (jsonObj.containsKey(fieldSchema.name) == false) {
+            if (jsonObj.containsKey(this->name) == false) {
                 return false;
             }
-            const JsonVariant& jsonFieldObj = jsonObj[fieldSchema.name];
+            const JsonVariant& jsonFieldObj = jsonObj[this->name];
             if (jsonFieldObj.is<JsonArray>() == false) {
                 return false;
             }

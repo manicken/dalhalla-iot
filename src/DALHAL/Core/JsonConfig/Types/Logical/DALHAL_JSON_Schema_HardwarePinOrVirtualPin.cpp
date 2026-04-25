@@ -109,8 +109,7 @@ namespace DALHAL {
         }
 
         ValidatorResult SchemaHardwarePinOrVirtualPin::ValidateVirtualPinJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            // safe to use SchemaString::ValidateJson as it's basically just a SchemaTypeBase and the string default value is not used in the validation phase
-            ValidatorResult vRes = SchemaString::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
+            ValidatorResult vRes = SchemaString::ValidateStringField(fieldSchema.name, sourceObjTypeName, jsonObj, anyError);
             if (vRes != ValidatorResult::Success) {
                 return vRes;
             }

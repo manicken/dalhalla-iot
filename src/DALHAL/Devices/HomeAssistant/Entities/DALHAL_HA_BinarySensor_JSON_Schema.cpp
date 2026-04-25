@@ -73,7 +73,7 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_BinarySensor* out) {
-                const char* uid_cStr = JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar();
+                const char* uid_cStr = JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem));
                 out->uid = encodeUID(uid_cStr);
 
                 JsonSchema::CommonConsumer::ConsumerStruct consumerData;

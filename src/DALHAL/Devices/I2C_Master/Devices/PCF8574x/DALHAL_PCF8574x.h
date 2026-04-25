@@ -43,7 +43,11 @@ using PCF8574x_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace PCF8574x { struct Extractors; } } // forward declaration
+
     class PCF8574x : public PCF8574x_DeviceBase {
+        friend struct JsonSchema::PCF8574x::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const I2C_RegistryDefine RegistryDefine;
         static Device* Create(DeviceCreateContext& context);

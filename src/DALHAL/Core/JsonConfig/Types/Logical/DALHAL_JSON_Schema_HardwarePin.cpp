@@ -101,12 +101,16 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        HALValue SchemaHardwarePin::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            if (jsonObj.containsKey(fieldSchema.name)) {
-                return HALValue(jsonObj[fieldSchema.name].as<signed int>());
+        int SchemaHardwarePin::ExtractFrom(const JsonVariant& jsonObj) const {
+            if (jsonObj.containsKey(this->name)) {
+                return jsonObj[this->name].as<signed int>();
             } else {
-                return HALValue(-1);
+                return -1;
             }
+        }
+
+        HALValue SchemaHardwarePin::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
+            return HALValue(static_cast<const SchemaHardwarePin&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
         void SchemaHardwarePin::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

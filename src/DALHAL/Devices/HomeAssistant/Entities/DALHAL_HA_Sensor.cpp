@@ -52,6 +52,10 @@ namespace DALHAL {
         mqtt.write('\n');
         PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":"%s"), stateTopicStr);
     }
+
+    Device* HA_Sensor::Create(DeviceCreateContext& context) {
+        return new HA_Sensor(static_cast<HA_CreateFunctionContext&>(context));
+    }
     
     HA_Sensor::HA_Sensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
         JsonSchema::HA_Sensor::Extractors::Apply(context, this);
@@ -62,10 +66,6 @@ namespace DALHAL {
     HA_Sensor::~HA_Sensor() {
         delete eventSource;
         delete cdr;
-    }
-
-    Device* HA_Sensor::Create(DeviceCreateContext& context) {
-        return new HA_Sensor(static_cast<HA_CreateFunctionContext&>(context));
     }
 
     String HA_Sensor::ToString() {

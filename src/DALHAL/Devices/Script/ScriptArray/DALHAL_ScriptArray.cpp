@@ -44,10 +44,10 @@ namespace DALHAL {
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
         const JsonVariant& jsonObj = *(context.jsonObjItem);
-        uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-        readOnly = JsonSchema::GetValue(JsonSchema::readonlyField, context).asBool();
+        uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+        readOnly = JsonSchema::readonlyField.ExtractFrom(*(context.jsonObjItem));
         values = nullptr; // allways set it to nullptr
-        if (JsonSchema::SchemaArrayOfPrimitives::ExtractValues(JsonSchema::scriptArrayItems, jsonObj, &values, valueCount) == false) {
+        if (JsonSchema::scriptArrayItems.ExtractValues(jsonObj, &values, valueCount) == false) {
             GlobalLogger.Error(F("Failed to extract script array items"));
         }
     }

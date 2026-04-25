@@ -35,6 +35,7 @@ namespace DALHAL {
         const char* deviceId_cStr;
 
         PubSubClient& mqttClient;
+        /** this need to be cleaner and whatever fields that are used from this need to be extracted using the schema at the set level */
         const JsonVariant* jsonGlobal;
         //const JsonVariant* jsonObjRoot; // cannot be used anymore as it breaks schema separation
 

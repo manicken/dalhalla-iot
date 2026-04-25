@@ -43,16 +43,19 @@ using I2C_Master_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace I2C_Master { struct Extractors; } } // forward declaration
 
     class I2C_Master : public I2C_Master_DeviceBase {
+        friend struct JsonSchema::I2C_Master::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        TwoWire* wire;
-        Device** devices;
-        int deviceCount;
+        TwoWire* wire = nullptr;
+        Device** devices = nullptr;
+        int deviceCount = 0;
 
         uint8_t sckpin = 0;
         uint8_t sdapin = 0;

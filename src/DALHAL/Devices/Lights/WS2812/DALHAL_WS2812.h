@@ -43,7 +43,11 @@ using WS2812_DeviceBase = DALHAL::Device;
 
 namespace DALHAL {
 
+    namespace JsonSchema { namespace WS2812 { struct Extractors; } } // forward declaration
+
     class WS2812 : public WS2812_DeviceBase {
+        friend struct JsonSchema::WS2812::Extractors; // allow access to private memebers of this class from the schema extractor
+
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
@@ -52,8 +56,6 @@ namespace DALHAL {
         static HALOperationResult writeBrightness(Device* context, const HALValue& val);
         static HALOperationResult writeColor(Device* context, const HALValue& val);
 
-        uint8_t pin = 0; // if pin would be used
-        
     public:
         WS2812FX* ws2812fx; // need to be public
 

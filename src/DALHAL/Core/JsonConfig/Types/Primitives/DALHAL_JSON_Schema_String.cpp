@@ -53,13 +53,36 @@ namespace DALHAL {
             }
         }
 
+        ValidatorResult SchemaString::ValidateStringField(const char* fieldName, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
+            const JsonVariant& value = jsonObj[fieldName];
+            if (!value.is<const char*>()) {
+                std::string errMsg = fieldName;
+                errMsg += " @ "; errMsg += sourceObjTypeName;
+                GlobalLogger.Error(F("Field must be a string:"), errMsg.c_str());
+                anyError = true;
+                return ValidatorResult::FieldTypeMismatch;
+            }
+            ZeroCopyString zcStr = value.as<const char*>(); // wrap in ZeroCopyString for neat functions
+            zcStr.Trim();
+            size_t strLen = zcStr.Length(); // use of lenght here is fast
+            
+            if (strLen == 0) {
+                std::string errMsg = fieldName;
+                errMsg += " @ "; errMsg += sourceObjTypeName;
+                GlobalLogger.Error(F("String is empty: "), errMsg.c_str());
+                anyError = true;
+                return ValidatorResult::FieldEmpty;
+            }
+            return ValidatorResult::Success;
+        }
+
         ValidatorResult SchemaString::ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
             ValidatorResult vRes = SchemaTypeBase::ValidateFieldPresenceAndPolicy(fieldSchema, sourceObjTypeName, jsonObj, anyError);
             if (vRes != ValidatorResult::Success) {
                 return vRes; 
             }
-            
-            const JsonVariant& value = jsonObj[fieldSchema.name];
+            return SchemaString::ValidateStringField(fieldSchema.name, sourceObjTypeName, jsonObj, anyError);
+            /*const JsonVariant& value = jsonObj[fieldSchema.name];
             if (!value.is<const char*>()) {
                 GlobalLogger.Error(F("Field must be a string:"), fieldSchema.name);
                 anyError = true;
@@ -74,15 +97,19 @@ namespace DALHAL {
                 anyError = true;
                 return ValidatorResult::FieldEmpty;
             }
-            return ValidatorResult::Success;
+            return ValidatorResult::Success;*/
+        }
+
+        const char* SchemaString::ExtractFrom(const JsonVariant& jsonObj) const {
+            if (jsonObj.containsKey(this->name)) {
+                return jsonObj[this->name].as<const char*>();
+            } else {
+                return this->defaultValue;
+            }
         }
 
         HALValue SchemaString::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            if (jsonObj.containsKey(fieldSchema.name)) {
-                return HALValue(jsonObj[fieldSchema.name].as<const char*>());
-            } else {
-                return HALValue((const char*)nullptr);
-            }
+            return HALValue(static_cast<const SchemaString&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
         void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {

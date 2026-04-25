@@ -70,12 +70,12 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::Display_SSD1306_Element* out) {
-                out->uid = encodeUID(JsonSchema::GetValue(JsonSchema::CommonBase::uidFieldRequired, context).asConstChar());
-                out->xPos = JsonSchema::GetValue(JsonSchema::Display_SSD1306_Element::xField, context);
-                out->yPos = JsonSchema::GetValue(JsonSchema::Display_SSD1306_Element::yField, context);
-                out->label = std::string(JsonSchema::GetValue(JsonSchema::Display_SSD1306_Element::labelField, context).asConstChar());
+                out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
+                out->xPos = JsonSchema::Display_SSD1306_Element::xField.ExtractFrom(*(context.jsonObjItem));
+                out->yPos = JsonSchema::Display_SSD1306_Element::yField.ExtractFrom(*(context.jsonObjItem));
+                out->label = std::string(JsonSchema::Display_SSD1306_Element::labelField.ExtractFrom(*(context.jsonObjItem)));
 
-                const char* sourceStr = JsonSchema::GetValue(JsonSchema::CommonConsumer::sourceField, context).asConstChar();
+                const char* sourceStr = JsonSchema::CommonConsumer::sourceField.ExtractFrom(*(context.jsonObjItem));
                 if (sourceStr != nullptr) {
                     out->cdaSource = new CachedDeviceAccess();
                     if (out->cdaSource->Set(sourceStr) == false) {
