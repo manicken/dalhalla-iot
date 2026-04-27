@@ -33,6 +33,10 @@
 
 #include "DALHAL_WebSocketAPI_httpFile.h"
 
+#if defined(ESP8266) || defined(ESP32)
+#include <System/System.h> //  defines DALHAL_SYSTEM_H_
+#endif
+
 namespace DALHAL {
 
     AsyncWebServer* WebSocketAPI::asyncWebserver = nullptr;
@@ -68,9 +72,15 @@ namespace DALHAL {
 
             std::string cmd((char*)data, len);
             //Serial.printf("WS RX: %s\n", cmd.c_str());
-
+#if defined(DALHAL_SYSTEM_H_)
+            // absolute failsafe command as WS run througth AsyncWebServer and runs in the BG it's mostly allways available
+            if (strcasecmp(cmd.c_str(), "system/EnterRecoveryMode")==0) {
+                System::EnterRecoveryMode();
+            }
+#endif
             //client->text("ACK");
             uint32_t clientId = client->id();
+
             CommandExecutor_LOCK_QUEUE();
             CommandExecutor::g_pending.push({
                 cmd,

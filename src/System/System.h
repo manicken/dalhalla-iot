@@ -23,6 +23,8 @@
 
 #pragma once
 
+#define DALHAL_SYSTEM_H_
+
 //#include <ESPAsyncWebServer.h>
 
 #define MAIN_URLS_FORMAT_LITTLE_FS      "/formatLittleFs"
@@ -48,6 +50,9 @@ namespace System {
     #endif
 
     void failsafeLoop();
+
+    void EnterRecoveryMode();
+    //void CheckIfRecoveryModeAndStart();
 
     void initWebServerHandlers(AsyncWebServer& webserver);
 

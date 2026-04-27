@@ -47,7 +47,6 @@ namespace DALHAL {
     
     I2C_Master::I2C_Master(DeviceCreateContext& context) : I2C_Master_DeviceBase(context.deviceType) {
         JsonSchema::I2C_Master::Extractors::Apply(context, this);
-        wire->begin(sdapin, sckpin, freq);
     }
 
     I2C_Master::~I2C_Master() {

@@ -76,6 +76,8 @@ void setup() {
         
         System::failsafeLoop();
     }
+    //System::CheckIfRecoveryModeAndStart();
+
     DEBUG_UART.begin(115200);
     DEBUG_UART.setDebugOutput(true);
 
@@ -137,7 +139,7 @@ void setup() {
     Info::startTime = now();
     HeartbeatLed::setup();
 #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
-    System::Start_MDNS();
+    //System::Start_MDNS();
 #endif
     
 #if defined(ESP32) && !defined(esp32c3)

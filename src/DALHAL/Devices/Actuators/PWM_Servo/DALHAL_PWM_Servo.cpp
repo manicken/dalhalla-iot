@@ -48,11 +48,14 @@ namespace DALHAL {
         JsonSchema::PWM_Servo::Extractors::Apply(context, this);
 
         // debug prints
+        /*
         Serial.printf("\r\n MinVal:%f\r\n", minVal);
         Serial.printf("\r\n MaxVal:%f\r\n", maxVal);
         Serial.printf("\r\n minPulseLength:%d\r\n", minPulseLength);
         Serial.printf("\r\n maxPulseLength:%d\r\n", maxPulseLength);
         Serial.printf("\r\n startPulseLength:%d\r\n", startPulseLength);
+
+        */
     }
 
     PWM_Servo::~PWM_Servo() {

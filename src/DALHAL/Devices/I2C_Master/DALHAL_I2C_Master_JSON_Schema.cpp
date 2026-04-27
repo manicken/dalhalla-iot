@@ -85,6 +85,8 @@ namespace DALHAL {
 #endif
                     out->wire = &Wire;
 
+                out->wire->begin(out->sdapin, out->sckpin, out->freq);
+
                 const JsonArray items = JsonSchema::I2C_Master::itemsField.GetValidatedJsonArray(*(context.jsonObjItem));
 
                 int itemCount = items.size();

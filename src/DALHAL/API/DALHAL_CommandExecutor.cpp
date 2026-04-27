@@ -37,6 +37,7 @@
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #if defined(ESP8266) || defined(ESP32)
 #include <System/Info.h>
+
 #endif
 
 #include <DALHAL/Drivers/HearbeatLed.h>
@@ -295,6 +296,7 @@ namespace DALHAL {
                 ESP.restart();
             }
 #endif
+
             else if (zcCommand.EqualsIC("HeartbeatLed")) {
                 std::string resStr;
                 HeartbeatLed::parseCmd(zcStr, resStr);

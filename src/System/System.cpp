@@ -43,6 +43,11 @@
 
 namespace System {
 
+    void EnterRecoveryMode()
+    {
+        esp_system_abort("******** FORCED_RECOVERY ********");
+    }
+
     void Setup()
     {
         if (LITTLEFS_BEGIN_FUNC_CALL == true) FSBrowser::fsOK = true; // this call is needed before all access to internal Flash file system
