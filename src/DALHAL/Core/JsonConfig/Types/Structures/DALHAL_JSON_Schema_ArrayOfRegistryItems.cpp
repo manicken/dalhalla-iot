@@ -41,12 +41,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaArrayOfRegistryItems::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaArrayOfRegistryItems = &DALHAL::JsonSchema::SchemaArrayOfRegistryItems::RegistryDefine;
         
         void SchemaArrayOfRegistryItems::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
 

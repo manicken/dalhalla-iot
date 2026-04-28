@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <DALHAL/Drivers/DALHAL_GPIO.h>
+
 #include <Arduino.h> // Needed for String class
 
 #include <string>

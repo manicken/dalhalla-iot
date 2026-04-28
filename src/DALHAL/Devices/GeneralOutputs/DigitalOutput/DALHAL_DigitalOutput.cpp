@@ -32,11 +32,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase DigitalOutput::RegistryDefine = {
         Create,
         &JsonSchema::DigitalOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
     };
+    //volatile const void* keep_DigitalOutput = &DALHAL::DigitalOutput::RegistryDefine;
     
     Device* DigitalOutput::Create(DeviceCreateContext& context) {
         return new DigitalOutput(context);

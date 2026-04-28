@@ -24,8 +24,10 @@
 
 #include "main.h"
 
+#ifdef DALHAL_H_
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#endif
 
 #if defined(ESP32)
 #include <SD_MMC.h>
@@ -34,7 +36,7 @@
 
 #define BUILD_VER "1.0"
 
-void Timer_SyncTime() {
+/*void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
     NTP::NTPConnect();
     tmElements_t now2;
@@ -65,12 +67,16 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 #endif
 };
 
+*/
+
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
 
 void setup() {
+#ifdef DALHAL_H_
     DALHAL::GPIO_manager::triStateAvailablePins();
+#endif
 
     if (Info::resetReason_is_crash(true)) {
         
@@ -89,7 +95,7 @@ void setup() {
     
     System::Setup();
 
-    MainConfig::begin();
+    //MainConfig::begin();
 
 #if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
     if (InitSD_MMC()) FSBrowser::fsOK = true;
@@ -132,11 +138,13 @@ void setup() {
         delay(2000); // allow user to see result
 #endif
 #endif
+Serial1.println(F("OTA::setup();"));
     OTA::setup();
-
-    Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
-
+Serial1.println(F("Scheduler::setup"));
+    //Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
+Serial1.println(F("Info::startTime = now();"));
     Info::startTime = now();
+Serial1.println(F(" HeartbeatLed::setup()"));    
     HeartbeatLed::setup();
 #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     //System::Start_MDNS();
@@ -147,10 +155,13 @@ void setup() {
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();
 #endif
+Serial1.println(F(" System::initWebServerHandlers"));   
     System::initWebServerHandlers(webserver);
 #ifdef DALHAL_H_
+Serial1.println(F("  DALHAL::begin();"));   
     DALHAL::begin();
 #endif
+Serial1.println(F(" webserver.begin()"));   
     webserver.begin();
 
     // make sure that the following are allways at the end of this function
@@ -162,13 +173,13 @@ void setup() {
 void loop() {
     ArduinoOTA.handle();
     HeartbeatLed::task();
-    Scheduler::HandleAlarms();
+    //Scheduler::HandleAlarms();
 #ifdef DALHAL_H_
     DALHAL::loop();
 #endif
     
 #if defined(ESP8266)
-    MDNS.update(); // this is only required on esp8266
+    //MDNS.update(); // this is only required on esp8266
 #endif
     
 #ifdef WIFI_MANAGER_WRAPPER_H_

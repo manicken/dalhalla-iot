@@ -28,13 +28,15 @@
 #include "DALHAL_AnalogInput_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase AnalogInput::RegistryDefine = {
         Create,
         &JsonSchema::AnalogInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
     };
+    //volatile const void* keep_AnalogInput = &DALHAL::AnalogInput::RegistryDefine;
     
-#if defined(ESP32) || defined(_WIN32)
     Device* AnalogInput::Create(DeviceCreateContext& context) {
         return new AnalogInput(context);
     }
@@ -57,7 +59,10 @@ namespace DALHAL {
 
     HALOperationResult AnalogInput::read(HALValue &val) {
         //val.set((uint32_t)analogRead(pin));
+#if defined(ESP32)
         val = (uint32_t)analogRead(pin);
+#endif
+
 #if HAS_REACTIVE_READ(ANALOG_INPUT)
         triggerRead();
 #endif
@@ -79,6 +84,6 @@ namespace DALHAL {
         ret += std::to_string(analogRead(pin)).c_str();
         return ret;
     }
-#endif
+
 	
 }

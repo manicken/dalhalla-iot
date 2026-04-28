@@ -36,11 +36,13 @@
 
 namespace DALHAL {
     
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase DHT::RegistryDefine = {
         Create,
         &JsonSchema::DHT::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DHT)
     };
+    //volatile const void* keep_DHT = &DALHAL::DHT::RegistryDefine;
 
     DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
         JsonSchema::DHT::Extractors::Apply(context, this);

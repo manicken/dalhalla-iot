@@ -261,16 +261,16 @@ namespace DALHAL {
 
         CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             if (res == CheckPinResult::InUse) {
-                return {"CheckIfPinAvailable error - pin allready reserved: ", std::to_string(pin)};
+                return {BASE_MSG_TYPE_FUNC("CheckIfPinAvailable error - pin allready reserved: "), std::to_string(pin)};
             } else if (res == CheckPinResult::ModeMismatch) {
                 int index = 0;
                 const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
                 std::string errStr = Convert::toBin(pinFuncMask) + " & " + Convert::toBin(pinInfo.func);
-                return {"CheckIfPinAvailable error - pinmode mismatch: ", errStr};
+                return {BASE_MSG_TYPE_FUNC("CheckIfPinAvailable error - pinmode mismatch: "), errStr};
             } else if (res == CheckPinResult::NotFound) {
-                return {"Pin to reserve - not found: ", std::to_string(pin)};
+                return {BASE_MSG_TYPE_FUNC("Pin to reserve - not found: "), std::to_string(pin)};
             }
-            return {"unknown",nullptr};
+            return {BASE_MSG_TYPE_FUNC("unknown"),nullptr};
         }
 
        // void InitReservedPins
@@ -292,7 +292,8 @@ namespace DALHAL {
         }
 
         void triStateAvailablePins() {
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP32)
+
             gpio_config_t io_conf{};
             io_conf.mode = GPIO_MODE_INPUT;
             io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
@@ -304,12 +305,11 @@ namespace DALHAL {
             for (int i = 0; i < (int)available_gpio_list_size; ++i) {
                 const auto& g = available_gpio_list[i];
 
-                // Skip pins reserved for boot, flash, JTAG, etc.
                 if (g.func & (
-                                PinFunc::Reserved |
-                                PinFunc::SpecialAtBoot | 
-                                PinFunc::UARTFLASH 
-                            )) {
+                    PinFunc::Reserved |
+                    PinFunc::SpecialAtBoot |
+                    PinFunc::UARTFLASH
+                )) {
                     continue;
                 }
 
@@ -317,12 +317,30 @@ namespace DALHAL {
             }
 
             io_conf.pin_bit_mask = mask;
+
             esp_err_t res = gpio_config(&io_conf);
             if (res != ESP_OK) {
                 printf("Failed to tri-state GPIO manager pins: %d\n", res);
             }
+
+#elif defined(ESP8266)
+
+            for (int i = 0; i < (int)available_gpio_list_size; ++i) {
+                const auto& g = available_gpio_list[i];
+
+                if (g.func & (
+                    PinFunc::Reserved |
+                    PinFunc::SpecialAtBoot |
+                    PinFunc::UARTFLASH
+                )) {
+                    continue;
+                }
+
+                pinMode(g.pin, INPUT);   // closest equivalent to "tri-state"
+            }
+
 #endif
-        }
+}
 
 
         std::string GetList(ZeroCopyString& zcMode)

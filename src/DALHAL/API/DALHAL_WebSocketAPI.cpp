@@ -25,9 +25,10 @@
 
 
 #include "DALHAL_WebSocketAPI.h"
-
+#if defined(ESP32)
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
+#endif
 
 #include "DALHAL_CommandExecutor.h"
 
@@ -115,17 +116,21 @@ namespace DALHAL {
     }
 
     void WebSocketAPI::GetRootPage_Handler(AsyncWebServerRequest* request) {
-        request->send(200, "text/html", HTML_WS_CONSOLE);
+        request->send_P(200, "text/html", HTML_WS_CONSOLE);
     }
 
     void WebSocketAPI::setup() {
         asyncWebserver = new AsyncWebServer(82);
+//#if defined(ESP32)
         asyncWebSocket = new AsyncWebSocket("/ws");
         asyncWebSocket->onEvent(onWsEvent);
         asyncWebserver->addHandler(asyncWebSocket);
+//#endif
         asyncWebserver->on("/", GetRootPage_Handler);
         asyncWebserver->begin();
+//#if defined(ESP32)
         asyncWebSocket->enable(true);
+//#endif
     }
 
     void WebSocketAPI::Broadcast(std::string &msg) {

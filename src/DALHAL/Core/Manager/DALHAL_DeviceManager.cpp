@@ -43,13 +43,18 @@ namespace DALHAL {
         return deviceCount;
     }
 
-    bool DeviceManager::setupMgr() {
+    bool DeviceManager::init() {
+        Serial1.print(F("DeviceManager::setupMgr() "));
+        Serial1.printf("Heap: %u, Max block: %u\n",
+            ESP.getFreeHeap(),
+            ESP.getMaxFreeBlockSize());
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()+1) == false) { // remove the leading /
 #else
         if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()) == false) {
 #endif
-            Serial.println("error happend while reading and parsing config JSON");
+            Serial1.println(F("error happend while reading and parsing config JSON"));
+            Serial.println(F("error happend while reading and parsing config JSON"));
             GlobalLogger.printAllLogs(Serial, false);
             return false;
         }
@@ -148,7 +153,7 @@ namespace DALHAL {
         printf("\nTrying to allocate for %d devices\n", deviceCount);
         
         // Allocate space for all devices
-        devices = new (std::nothrow) Device*[deviceCount]();
+        devices = new Device*[deviceCount]();
         
         if (devices == nullptr) {
             GlobalLogger.Error(F("Failed to allocate device array"));
@@ -235,16 +240,20 @@ namespace DALHAL {
             return false;
         }
         if (LittleFS.exists(path) == false) {
-            GlobalLogger.Error(F("ReadJSON - cfg file did not exist: "),path);
+            GlobalLogger.Error(F("ReadJSON - cfg file did not exist"));
             return false;
         }
 
         char* jsonBuffer = nullptr;
         size_t fileSize=0;
         const char* filePath = path;
+        
+        
         if (LittleFS_ext::load_text_file(filePath, &jsonBuffer, &fileSize) != LittleFS_ext::FileResult::Success)
         {
-            GlobalLogger.Error(F("ReadJSON - error could not load json file: "),path);
+            
+
+            GlobalLogger.Error(F("ReadJSON - error could not load json file"));//,path!=nullptr?path:"nullptr");
             return false;
         }
 #if defined(ESP8266) || defined(ESP32)
@@ -274,6 +283,8 @@ namespace DALHAL {
         return parseOk;
     }
     void DeviceManager::begin() {
+        //JsonSchema::ForceRegistryLink(); // dummy call to make stupid linker work as it should
+
         for (int i=0;i<deviceCount;i++) {
             Device* device = devices[i];
             if (device == nullptr) continue;

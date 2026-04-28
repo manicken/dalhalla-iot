@@ -51,7 +51,11 @@ namespace DALHAL {
         
     public:
         static void setup();
-        inline static void loop() { asyncWebSocket->cleanupClients(); }
+        inline static void loop() { 
+#if defined(ESP32)
+          asyncWebSocket->cleanupClients();
+#endif
+        }
         static void Broadcast(std::string &msg);
         static void Broadcast(const char* msg);
         /** can be used to combine two messages */ 

@@ -58,8 +58,10 @@
 
 namespace DALHAL {
 
-#if defined(ESP32) || defined(ESP8266)
+#if defined(ESP32)
     portMUX_TYPE CommandExecutor::g_pendingMux = portMUX_INITIALIZER_UNLOCKED;
+#elif defined(ESP8266)
+
 #elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
     std::mutex CommandExecutor::g_pendingMutex;
 #else
@@ -190,12 +192,22 @@ namespace DALHAL {
                     int rssi = WiFi.RSSI(i);
                     const char* enc;
                     switch(WiFi.encryptionType(i)) {
+#if defined(ESP32)
                         case WIFI_AUTH_OPEN: enc = "OPEN"; break;
                         case WIFI_AUTH_WEP: enc = "WEP"; break;
                         case WIFI_AUTH_WPA_PSK: enc = "WPA"; break;
                         case WIFI_AUTH_WPA2_PSK: enc = "WPA2"; break;
                         case WIFI_AUTH_WPA_WPA2_PSK: enc = "WPA/WPA2"; break;
                         case WIFI_AUTH_WPA2_ENTERPRISE: enc = "WPA2-E"; break;
+#elif defined(ESP8266)
+                        case AUTH_OPEN: enc = "OPEN"; break;
+                        case AUTH_WEP: enc = "WEP"; break;
+                        case AUTH_WPA_PSK: enc = "WPA"; break;
+                        case AUTH_WPA2_PSK: enc = "WPA2"; break;
+                        case AUTH_WPA_WPA2_PSK: enc = "WPA/WPA2"; break;
+                        //case AUTH_WPA2_ENTERPRISE: enc = "WPA2-E"; break; // dont exist on esp8266
+
+#endif
                         default: enc = "UNK"; break;
                     }
                     if (cb != nullptr){

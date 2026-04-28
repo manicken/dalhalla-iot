@@ -22,19 +22,24 @@
 */
 
 #include "DALHAL_REST_Value.h"
-
+#if defined(ESP32)
 #include <HTTPClient.h>
+#elif defined(ESP8266)
+#include <ESP8266HTTPClient.h>
+#endif
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include "DALHAL_REST_Value_JSON_Schema.h"
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase REST_Value::RegistryDefine = {
         Create,
         &JsonSchema::REST_Value::Root,
         nullptr /* no events available on obsolete device*/
     };
+    //volatile const void* keep_REST_Value = &DALHAL::REST_Value::RegistryDefine;
 
     Device* REST_Value::Create(DeviceCreateContext& context) {
         return new REST_Value(context);

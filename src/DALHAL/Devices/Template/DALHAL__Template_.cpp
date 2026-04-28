@@ -31,12 +31,15 @@
 #include "DALHAL__Template__JSON_Schema.h"
 
 namespace DALHAL {
+
+        __attribute__((used, externally_visible))
         constexpr Registry::DefineBase _Template_::RegistryDefine = {
                 
                 Create,
                 &JsonSchema::_Template_,
                 DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)
         };
+        //volatile const void* keep__Template_ = &DALHAL::_Template_::RegistryDefine;
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
         //const JsonVariant& jsonObj = *(context.jsonObjItem);

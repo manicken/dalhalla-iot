@@ -35,11 +35,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase REGO600::RegistryDefine = {
         Create,
         &JsonSchema::REGO600::Root,
         DALHAL_REACTIVE_EVENT_TABLE(REGO600)
     };
+    //volatile const void* keep_REGO600 = &DALHAL::REGO600::RegistryDefine;
     
     REGO600::REGO600(DeviceCreateContext& context) : REGO600_DeviceBase(context.deviceType) {
         JsonSchema::REGO600::Extractors::Apply(context, this);

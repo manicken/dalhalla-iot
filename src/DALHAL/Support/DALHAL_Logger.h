@@ -98,7 +98,11 @@ class Logger {
     void setLastEntrySource(const char* src);
 
   private:
+#if defined(ESP32)
     static constexpr size_t LOG_BUFFER_SIZE = 128;
+#elif defined(ESP8266)
+  static constexpr size_t LOG_BUFFER_SIZE = 8;
+#endif
     LogEntry buffer[LOG_BUFFER_SIZE];
     size_t head = 0;
     bool wrapped = false;

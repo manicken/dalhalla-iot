@@ -36,6 +36,8 @@ namespace DALHAL {
 
     namespace JsonSchema {
         
+        
+        //void ForceRegistryLink();
 
         // used to validate the schema itself
         using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);

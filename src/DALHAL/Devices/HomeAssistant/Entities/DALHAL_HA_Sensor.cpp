@@ -38,10 +38,12 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_Sensor::RegistryDefine = {
         Create,
         &JsonSchema::HA_Sensor::Root,
     };
+    //volatile const void* keep_HA_Sensor = &DALHAL::HA_Sensor::RegistryDefine;
 
     void HA_Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         mqtt.write(',');

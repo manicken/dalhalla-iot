@@ -41,6 +41,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaUInt::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
@@ -48,6 +49,7 @@ namespace DALHAL {
             &SchemaToJson,
             &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaUInt = &DALHAL::JsonSchema::SchemaUInt::RegistryDefine;
 
         void SchemaUInt::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             if (SchemaTypeBase::ValidateSchemaNameNotNull(fieldSchema, sourceObjTypeName) == false) {

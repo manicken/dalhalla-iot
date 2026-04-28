@@ -35,10 +35,13 @@
 #include "DALHAL_HA_Button_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_Button::RegistryDefine = {
         Create,
         &JsonSchema::HA_Button::Root,
     };
+    //volatile const void* keep_HA_Button = &DALHAL::HA_Button::RegistryDefine;
 
     void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);

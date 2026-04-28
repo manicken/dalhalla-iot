@@ -32,11 +32,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase OneWireTempGroup::RegistryDefine = {
         Create,
         &JsonSchema::OneWireTempGroup::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
     };
+    //volatile const void* keep_OneWireTempGroup = &DALHAL::OneWireTempGroup::RegistryDefine;
 
     Device* OneWireTempGroup::Create(DeviceCreateContext& context) {
         return new OneWireTempGroup(context);

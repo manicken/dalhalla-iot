@@ -31,11 +31,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ScriptVariable::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariable::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
     };
+    //volatile const void* keep_ScriptVariable = &DALHAL::ScriptVariable::RegistryDefine;
 
     ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariable::Extractors::Apply(context, this);

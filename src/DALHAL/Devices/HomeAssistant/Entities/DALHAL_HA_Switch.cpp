@@ -38,10 +38,12 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_Switch::RegistryDefine = {
         Create,
         &JsonSchema::HA_Switch::Root,
     };
+    //volatile const void* keep_HA_Switch = &DALHAL::HA_Switch::RegistryDefine;
 
     const char* HA_Switch::PAYLOAD_OFF = "OFF";
     const char* HA_Switch::PAYLOAD_ON = "ON";

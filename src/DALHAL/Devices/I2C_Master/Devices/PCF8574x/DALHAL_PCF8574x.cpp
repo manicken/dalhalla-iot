@@ -34,12 +34,14 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr I2C_RegistryDefine PCF8574x::RegistryDefine = {
         Create,
         &JsonSchema::PCF8574x::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_DEVICE_PCF8574X),
         HasAddress
     };
+    //volatile const void* keep_PCF8574x = &DALHAL::PCF8574x::RegistryDefine;
 
     bool PCF8574x::HasAddress(uint8_t addr) {
         return (addr >= 0x20 && addr <= 0x27) || // PCF8574

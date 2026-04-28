@@ -29,11 +29,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase DeviceContainer::RegistryDefine = {
         Create,
         &JsonSchema::DeviceContainer::Root,
         nullptr /* no events available */
     };
+    //volatile const void* keep_DeviceContainer = &DALHAL::DeviceContainer::RegistryDefine;
     
     DeviceContainer::~DeviceContainer() {
         if (devices) {

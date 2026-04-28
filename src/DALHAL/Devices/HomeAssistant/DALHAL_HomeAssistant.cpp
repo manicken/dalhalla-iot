@@ -22,8 +22,11 @@
 */
 
 #include "DALHAL_HomeAssistant.h"
-
+#if defined(ESP32)
 #include <WiFi.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#endif
 #include <Arduino.h>
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
@@ -39,11 +42,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
         Create,
         &JsonSchema::HomeAssistant::Root,
         nullptr /* no events available */
     };
+    //volatile const void* keep_HomeAssistant = &DALHAL::HomeAssistant::RegistryDefine;
 
     Device* HomeAssistant::Create(DeviceCreateContext& context) {
         return new HomeAssistant(context);

@@ -35,11 +35,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase I2C_Master::RegistryDefine = {
         Create,
         &JsonSchema::I2C_Master::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
     };
+    //volatile const void* keep_I2C_Master = &DALHAL::I2C_Master::RegistryDefine;
 
     Device* I2C_Master::Create(DeviceCreateContext& context) {
         return new I2C_Master(context);

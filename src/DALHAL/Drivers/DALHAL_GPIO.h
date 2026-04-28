@@ -23,36 +23,24 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <cstdint> // C Standard Integer Types
+
+namespace DALHAL {
 
 #if defined(ESP8266)
-#define DEBUG_UART Serial1
-#elif defined(ESP32)
-#define DEBUG_UART Serial
+    enum class gpio_num_t : int8_t {
+        GPIO_NUM_NC = -1,
+        GPIO0 = 0,
+        GPIO1 = 1,
+        GPIO2 = 2,
+        GPIO3 = 3,
+        GPIO4 = 4,
+        GPIO5 = 5,
+        GPIO12 = 12,
+        GPIO13 = 13,
+        GPIO14 = 14,
+        GPIO15 = 15,
+        GPIO16 = 16
+    };
 #endif
-#include <cstring>
-#include <string>
-
-namespace Convert
-{
-    std::string floatToString(float value);
-    bool isInteger(const char* str);
-
-    std::string ByteArrayToString(uint8_t* byteArray, size_t arraySize);
-    bool HexToBytes(const char* hexString, uint8_t* byteArray, size_t arraySize);
-
-    uint64_t reverseMACaddress(uint64_t addr);
-
-    /** with padding */
-    String toHex(const char *data, size_t len);
-    String convertISO88591toUTF8(const String &input);
-    bool IsValidHexString(const char* str);
-
-    std::string toHex(uint8_t value);
-    std::string toHex(uint16_t value);
-    std::string toHex(uint32_t value);
-    std::string toHex(uint64_t value);
-    std::string toBin(uint8_t value);
-
-
-} // namespace Convert
+}

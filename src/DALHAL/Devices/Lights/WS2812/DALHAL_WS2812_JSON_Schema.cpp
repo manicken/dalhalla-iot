@@ -99,6 +99,7 @@ namespace DALHAL {
                     out += '"'; out += formatsTable[i].name; out += '"';
                 }
                 out += ']';
+                return out;
             }
 
             constexpr const char* INTERFACE_SPEED_KHZ800 = "KHZ800";

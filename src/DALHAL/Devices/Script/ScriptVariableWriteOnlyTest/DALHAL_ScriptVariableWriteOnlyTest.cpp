@@ -30,11 +30,14 @@
 #include "DALHAL_ScriptVariableWriteOnlyTest_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ScriptVariableWriteOnlyTest::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariableWriteOnlyTest::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR)
     };
+    //volatile const void* keep_ScriptVariableWriteOnlyTest = &DALHAL::ScriptVariableWriteOnlyTest::RegistryDefine;
     
     ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(DeviceCreateContext& context) : ScriptVariableWriteOnlyTest_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariableWriteOnlyTest::Extractors::Apply(context, this);

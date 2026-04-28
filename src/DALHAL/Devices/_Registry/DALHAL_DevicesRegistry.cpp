@@ -48,8 +48,6 @@
 #include <DALHAL/Devices/Sensors/OneWireTemp/DALHAL_OneWireTemp.h>
 #include <DALHAL/Devices/Sensors/DHT/DALHAL_DHT.h>
 
-
-
 #include <DALHAL/Devices/RF433/DALHAL_TX433.h>
 #include <DALHAL/Devices/REGO600/DALHAL_REGO600.h>
 

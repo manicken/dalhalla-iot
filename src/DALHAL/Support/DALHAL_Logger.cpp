@@ -235,45 +235,55 @@ void Logger::Error(uint32_t code) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Error(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, nullptr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Error(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, code, nullptr, text, true) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, code, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
-    Serial.println(entryStr.c_str());
+    Serial.println(entryStr.c_str())
+#endif
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, text, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Error(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Error, 0, msg, zcStr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Error, msg, zcStr);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 
 void Logger::Info(uint32_t code) {
@@ -281,45 +291,55 @@ void Logger::Info(uint32_t code) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Info(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, nullptr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Info(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, code, nullptr, text, true) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, code, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Info(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, text, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Info(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Info, 0, msg, zcStr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Info, msg, zcStr);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 
 void Logger::Warn(uint32_t code) {
@@ -327,45 +347,55 @@ void Logger::Warn(uint32_t code) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Warn(const __FlashStringHelper* msg) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, nullptr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Warn(uint32_t code, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, code, nullptr, text, true) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, code, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Warn(const __FlashStringHelper* msg, const char* text) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, text, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, text);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr) {
     if (UpdateLastEntryIfEqual(Loglevel::Warn, 0, msg, zcStr, false) == false) {
         buffer[head].Set(LOGGER_GET_TIME, Loglevel::Warn, msg, zcStr);
         advance();
     }
+#ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());
+#endif
 }
 
 

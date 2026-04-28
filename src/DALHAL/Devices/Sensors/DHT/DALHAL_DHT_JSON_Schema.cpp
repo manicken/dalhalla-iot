@@ -88,6 +88,7 @@ namespace DALHAL {
                     out += '"'; out += modelsTable[i].name; out += '"';
                 }
                 out += ']';
+                return out;
             }
 
             constexpr SchemaStringAnyOfByFuncConstrained modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, CheckModelType, GetModelStrings, nullptr};

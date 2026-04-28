@@ -31,11 +31,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase DigitalInput::RegistryDefine = {
         Create,
         &JsonSchema::DigitalInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)
     };
+    //volatile const void* keep_DigitalInput = &DALHAL::DigitalInput::RegistryDefine;
     
     Device* DigitalInput::Create(DeviceCreateContext& context) {
         return new DigitalInput(context);

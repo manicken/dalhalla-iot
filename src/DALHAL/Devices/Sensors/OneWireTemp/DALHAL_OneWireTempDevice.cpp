@@ -35,11 +35,13 @@
 
 namespace DALHAL {
     
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase OneWireTempDeviceAtRoot::RegistryDefine = {
         Create,
         &JsonSchema::OneWireTempDeviceAtRoot::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
     };
+    //volatile const void* keep_OneWireTempDeviceAtRoot = &DALHAL::OneWireTempDeviceAtRoot::RegistryDefine;
 
     //   ██████  ███    ██ ███████     ██     ██ ██ ██████  ███████     ████████ ███████ ███    ███ ██████      ██████  ███████ ██    ██ ██  ██████ ███████ 
     //  ██    ██ ████   ██ ██          ██     ██ ██ ██   ██ ██             ██    ██      ████  ████ ██   ██     ██   ██ ██      ██    ██ ██ ██      ██      

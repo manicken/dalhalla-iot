@@ -41,6 +41,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaHardwarePinOrVirtualPin::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
@@ -48,6 +49,7 @@ namespace DALHAL {
               &SchemaToJson,
               &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaHardwarePinOrVirtualPin = &DALHAL::JsonSchema::SchemaHardwarePinOrVirtualPin::RegistryDefine;
         
         void SchemaHardwarePinOrVirtualPin::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             if (SchemaTypeBase::ValidateSchemaNameNotNull(fieldSchema, sourceObjTypeName) == false) {
@@ -100,7 +102,7 @@ namespace DALHAL {
                 GPIO_manager::CheckPinResultError errMsg = GPIO_manager::GetCheckPinResultError(cpRes, pin, fMode);
                 std::string errStr = errMsg.msg + ", fName=" + fieldSchema.name; errStr += " @ ";
                 serializeCollapsed(jsonObj, errStr);
-                GlobalLogger.Error(F(errMsg.baseMsg), errStr.c_str());
+                GlobalLogger.Error(errMsg.baseMsg, errStr.c_str());
                 anyError = true;
                 return ValidatorResult::FieldInvalidValue;
             }

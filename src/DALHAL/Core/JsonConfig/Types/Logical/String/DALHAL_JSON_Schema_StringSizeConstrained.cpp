@@ -41,6 +41,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaStringSizeConstrained::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
@@ -48,6 +49,7 @@ namespace DALHAL {
             &SchemaToJson,
             &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaStringSizeConstrained = &DALHAL::JsonSchema::SchemaStringSizeConstrained::RegistryDefine;
 
         void SchemaStringSizeConstrained::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             SchemaString::ValidateSchema(fieldSchema, sourceObjTypeName, anyError);

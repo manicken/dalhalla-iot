@@ -38,6 +38,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaStringAnyOfByFuncConstrained::RegistryDefine = {
             &ValidateSchema,
             &ValidateJson,
@@ -45,6 +46,7 @@ namespace DALHAL {
             &SchemaToJson,
             &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaStringAnyOfByFuncConstrained = &DALHAL::JsonSchema::SchemaStringAnyOfByFuncConstrained::RegistryDefine;
 
         void SchemaStringAnyOfByFuncConstrained::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             SchemaString::ValidateSchema(fieldSchema, sourceObjTypeName, anyError);

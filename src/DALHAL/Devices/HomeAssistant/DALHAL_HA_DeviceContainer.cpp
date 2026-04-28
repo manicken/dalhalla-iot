@@ -37,10 +37,13 @@
 
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_DeviceContainer::RegistryDefine = {
         Create,
         &JsonSchema::HA_DeviceContainer::Root,
     };
+    //volatile const void* keep_HA_DeviceContainer = &DALHAL::HA_DeviceContainer::RegistryDefine;
 
     Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {
         return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));

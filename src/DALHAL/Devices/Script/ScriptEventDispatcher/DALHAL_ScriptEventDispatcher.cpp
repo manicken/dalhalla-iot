@@ -30,11 +30,14 @@
 #include "DALHAL_ScriptEventDispatcher_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ScriptEventDispatcher::RegistryDefine = {
         Create,
         &JsonSchema::ScriptEventDispatcher::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
     };
+    //volatile const void* keep_ScriptEventDispatcher = &DALHAL::ScriptEventDispatcher::RegistryDefine;
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
         JsonSchema::ScriptEventDispatcher::Extractors::Apply(context, this);

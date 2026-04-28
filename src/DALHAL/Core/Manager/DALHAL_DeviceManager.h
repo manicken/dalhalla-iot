@@ -60,7 +60,7 @@ namespace DALHAL {
         // init
         /** calls the begin function on all loaded hal devices */
         static void begin();
-        static bool setupMgr();
+        static bool init();
         // JSON I/O
         static bool ParseJSON(const JsonVariant& jsonArray);
         static bool ReadJSON(const char* path);

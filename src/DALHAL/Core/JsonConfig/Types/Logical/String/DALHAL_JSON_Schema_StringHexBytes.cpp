@@ -40,6 +40,7 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaStringHexBytes::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
@@ -47,6 +48,7 @@ namespace DALHAL {
               &SchemaToJson,
               &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaStringHexBytes = &DALHAL::JsonSchema::SchemaStringHexBytes::RegistryDefine;
         
         void SchemaStringHexBytes::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             auto fs = static_cast<const SchemaStringHexBytes&>(fieldSchema);

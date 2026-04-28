@@ -40,26 +40,32 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr TX433_UNIT_RegistryDefine TX433_Unit::LCTypeRegistryDefine = {
         &Create,
         &JsonSchema::TX433_Unit_TypeLC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
         &JsonSchema::TX433_Unit_TypeLC::Extractors::Apply,
     };
+    //volatile const void* keep_TX433_Unit_LCTypeRegistryDefine = &DALHAL::TX433_Unit::LCTypeRegistryDefine;
     
+    __attribute__((used, externally_visible))
     constexpr TX433_UNIT_RegistryDefine TX433_Unit::SFCTypeRegistryDefine = {
         &Create,
         &JsonSchema::TX433_Unit_TypeSFC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
         &JsonSchema::TX433_Unit_TypeSFC::Extractors::Apply,
     };
+    //volatile const void* keep_TX433_Unit_SFCTypeRegistryDefine = &DALHAL::TX433_Unit::SFCTypeRegistryDefine;
     
+    __attribute__((used, externally_visible))
     constexpr TX433_UNIT_RegistryDefine TX433_Unit::AFCTypeRegistryDefine = {
         &Create,
         &JsonSchema::TX433_Unit_TypeAFC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
         &JsonSchema::TX433_Unit_TypeAFC::Extractors::Apply,
     };
+    //volatile const void* keep_TX433_Unit_AFCTypeRegistryDefine = &DALHAL::TX433_Unit::AFCTypeRegistryDefine;
 
     Device* TX433_Unit::Create(DeviceCreateContext& context) {
         return new TX433_Unit(static_cast<TX433_Unit_CreateFunctionContext&>(context));

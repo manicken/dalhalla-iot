@@ -42,7 +42,6 @@ namespace DALHAL {
 
     namespace JsonSchema { namespace AnalogInput { struct Extractors; } } // forward declaration
 
-#if defined(ESP32) || defined(_WIN32)
     class AnalogInput : public AnalogInput_DeviceBase {
         friend struct JsonSchema::AnalogInput::Extractors; // allow access to private memebers of this class from the schema extractor
 
@@ -61,7 +60,7 @@ namespace DALHAL {
         HALOperationResult read(HALValue &val) override;
         String ToString() override;
     };
-#endif
+
     // TODO implement Analog Input Config to set resolution, but resolution could be individual as it can be set before each read
 
 }

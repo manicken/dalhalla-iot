@@ -35,11 +35,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase TX433::RegistryDefine = {
         Create,
         &JsonSchema::TX433::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433)
     };
+    //volatile const void* keep_TX433 = &DALHAL::TX433::RegistryDefine;
 
     Device* TX433::Create(DeviceCreateContext& context) {
         return new TX433(context);

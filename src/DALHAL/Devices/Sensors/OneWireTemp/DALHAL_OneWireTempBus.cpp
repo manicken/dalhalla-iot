@@ -33,11 +33,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase OneWireTempBusAtRoot::RegistryDefine = {
         Create,
         &JsonSchema::OneWireTempBusAtRoot::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_BUS)
     };
+    //volatile const void* keep_OneWireTempBusAtRoot = &DALHAL::OneWireTempBusAtRoot::RegistryDefine;
 
     OneWireTempBus::OneWireTempBus(DeviceCreateContext& context) : OneWireTempBus_DeviceBase(context.deviceType) {
         JsonSchema::OneWireTempBus::Extractors::Apply(context, this);

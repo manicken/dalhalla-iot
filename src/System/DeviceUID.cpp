@@ -25,7 +25,8 @@
 #include <cstdint>
 
 #if defined(ESP8266)
-#include <esp8266.h>
+
+//#include <esp8266.h>
 extern "C" {
 #include <user_interface.h>
 }

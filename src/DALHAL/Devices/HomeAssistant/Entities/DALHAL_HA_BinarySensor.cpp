@@ -36,10 +36,13 @@
 #include "DALHAL_HA_BinarySensor_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_BinarySensor::RegistryDefine = {
         Create,
         &JsonSchema::HA_BinarySensor::Root,
     };
+    //volatile const void* keep_HA_BinarySensor = &DALHAL::HA_BinarySensor::RegistryDefine;
 
     void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         mqtt.write(',');

@@ -31,12 +31,14 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr I2C_RegistryDefine Display_SSD1306::RegistryDefine = {
         Create,
         &JsonSchema::Display_SSD1306::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DISPLAY_SSD1306),
         HasAddress
     };
+    //volatile const void* keep_Display_SSD1306 = &DALHAL::Display_SSD1306::RegistryDefine;
 
     bool Display_SSD1306::HasAddress(uint8_t addr) {
         return addr == 0x3C || addr == 0x3D; 

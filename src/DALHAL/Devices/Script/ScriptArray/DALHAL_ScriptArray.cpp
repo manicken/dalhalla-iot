@@ -36,11 +36,14 @@
 #include "DALHAL_ScriptArray_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ScriptArray::RegistryDefine = {
         Create,
         &JsonSchema::ScriptArray::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
     };
+    //volatile const void* keep_ScriptArray = &DALHAL::ScriptArray::RegistryDefine;
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
         JsonSchema::ScriptArray::Extractors::Apply(context, this);

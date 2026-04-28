@@ -45,7 +45,11 @@ namespace System {
 
     void EnterRecoveryMode()
     {
+#if defined(ESP32)
         esp_system_abort("******** FORCED_RECOVERY ********");
+#elif defined(ESP8266)
+        abort();
+#endif
     }
 
     void Setup()
@@ -134,7 +138,7 @@ namespace System {
             CommandExecutor_UNLOCK_QUEUE();
 
             DALHAL::ZeroCopyString zcCmd(pr.command.c_str());
-            bool ok = DALHAL::CommandExecutor::execute(zcCmd, pr.cb);
+            DALHAL::CommandExecutor::execute(zcCmd, pr.cb);
         }
     }
 

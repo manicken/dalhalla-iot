@@ -23,7 +23,10 @@
 
 #include "DALHAL_JSON_Schema_TypesRegistry.h"
 
-#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldType.h>
+/** this is the most important as it defines the types available */
+#include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldType.h> // DALHAL_JsonSchema_FIELD_TYPE_LIST
+
+
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
@@ -62,6 +65,16 @@ namespace DALHAL {
             DALHAL_JsonSchema_FIELD_TYPE_LIST
         #undef X
         };
+
+        /*void ForceRegistryLink()
+        {
+#define X(name) \
+            volatile auto force_##name = &Schema##name::RegistryDefine; \
+            (void)force_##name;
+
+            DALHAL_JsonSchema_FIELD_TYPE_LIST
+#undef X
+        }*/
 
         const FieldTypeRegistryItem& GetFieldTypeRegistryItem(FieldType type) {
             size_t idx = static_cast<size_t>(type);

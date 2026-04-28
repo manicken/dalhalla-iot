@@ -26,6 +26,10 @@
 #include "System.h"
 #include <DALHAL/Support/ConvertHelper.h>
 
+#if defined(ESP8266)
+#include <user_interface.h>
+#endif
+
 namespace Info
 {
 
@@ -72,8 +76,18 @@ namespace Info
     }
 
     void PrintHeapInfo() {
+#if defined(ESP32)
         std::string ret = GetHeapInfo();
         printf("\n%s\n", ret.c_str());
+
+#elif defined(ESP8266)
+        Serial.printf("Heap: %u, Max block: %u\n",
+            ESP.getFreeHeap(),
+            ESP.getMaxFreeBlockSize());
+        Serial1.printf("Heap: %u, Max block: %u\n",
+            ESP.getFreeHeap(),
+            ESP.getMaxFreeBlockSize());
+#endif
         //heap_caps_print_heap_info(MALLOC_CAP_INTERNAL);
     }
 /*
@@ -160,7 +174,7 @@ namespace Info
             default: return "Unknown reset reason";
         }
 #endif
-            
+        return "undefined reset cause"; 
     }
 
     uint64_t reverseBytes(uint64_t value) {
@@ -200,7 +214,7 @@ namespace Info
 
 #if defined(ESP8266)
         infoMsg.append("\"flash_real_id\":");
-        infoMsg.append(ESP.getFlashChipId());
+        infoMsg += ESP.getFlashChipId();
         infoMsg.append(",");
 #else
         infoMsg.append("\"flash_real_id\":\"unsupported\",");
@@ -243,7 +257,7 @@ namespace Info
 
 #if defined(ESP8266)
         infoMsg.append("\"esp_chip_id\":");
-        infoMsg.append(ESP.getChipId());
+        infoMsg += ESP.getChipId();
         infoMsg.append(",");
 #endif
 
@@ -259,27 +273,27 @@ namespace Info
             if (LittleFS.info(fsi)) {
 
                 infoMsg.append("\"block_size\":");
-                infoMsg.append(fsi.blockSize);
+                infoMsg += fsi.blockSize;
                 infoMsg.append(",");
 
                 infoMsg.append("\"max_open_files\":");
-                infoMsg.append(fsi.maxOpenFiles);
+                infoMsg += fsi.maxOpenFiles;
                 infoMsg.append(",");
 
                 infoMsg.append("\"max_path_length\":");
-                infoMsg.append(fsi.maxPathLength);
+                infoMsg += fsi.maxPathLength;
                 infoMsg.append(",");
 
                 infoMsg.append("\"page_size\":");
-                infoMsg.append(fsi.pageSize);
+                infoMsg += fsi.pageSize;
                 infoMsg.append(",");
 
                 infoMsg.append("\"total_bytes\":");
-                infoMsg.append(fsi.totalBytes);
+                infoMsg += fsi.totalBytes;
                 infoMsg.append(",");
 
                 infoMsg.append("\"used_bytes\":");
-                infoMsg.append(fsi.usedBytes);
+                infoMsg += fsi.usedBytes;
                 infoMsg.append(",");
             }
 

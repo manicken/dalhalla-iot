@@ -32,11 +32,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase WS2812::RegistryDefine = {
         Create,
         &JsonSchema::WS2812::Root,
         DALHAL_REACTIVE_EVENT_TABLE(WS2812)
     };
+    //volatile const void* keep_WS2812 = &DALHAL::WS2812::RegistryDefine;
 
     Device* WS2812::Create(DeviceCreateContext& context) {
         return new WS2812(context);

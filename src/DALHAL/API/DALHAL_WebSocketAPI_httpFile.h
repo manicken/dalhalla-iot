@@ -25,7 +25,8 @@
 
 namespace DALHAL {
 
-static inline constexpr char HTML_WS_CONSOLE[] __attribute__((section(".rodata"))) = R"rawliteral(
+
+static const char HTML_WS_CONSOLE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
   <style>

@@ -32,11 +32,14 @@
 #include "DALHAL_ButtonInput_JSON_Schema.h"
 
 namespace DALHAL {
+
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {
         Create,
         &JsonSchema::ButtonInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
     };
+    //volatile const void* keep_ButtonInput = &DALHAL::ButtonInput::RegistryDefine;
 
     // Factory method
     Device* ButtonInput::Create(DeviceCreateContext& context) {
@@ -54,7 +57,7 @@ namespace DALHAL {
     ButtonInput::ButtonInput(DeviceCreateContext& context) : ButtonInput_DeviceBase(context.deviceType)
     {
         JsonSchema::ButtonInput::Extractors::Apply(context, this);
-        pinMode(pin, activeLevel ? INPUT_PULLDOWN : INPUT_PULLUP);
+        pinMode(pin, INPUT);
 
         // Initial states
         stableState = digitalRead(pin);

@@ -75,9 +75,11 @@ namespace DALHAL {
   #define CommandExecutor_LOCK_QUEUE()   CommandExecutor::g_pendingMutex.lock()
   #define CommandExecutor_UNLOCK_QUEUE() CommandExecutor::g_pendingMutex.unlock()
 #elif defined(ESP8266)
-  static portMUX_TYPE g_pendingMux;
-  #define CommandExecutor_LOCK_QUEUE()   noInterrupts()
-  #define CommandExecutor_UNLOCK_QUEUE() interrupts()
+  //static portMUX_TYPE g_pendingMux; not used on esp8266
+  //#define CommandExecutor_LOCK_QUEUE()   noInterrupts()
+  //#define CommandExecutor_UNLOCK_QUEUE() interrupts()
+  #define CommandExecutor_LOCK_QUEUE()   ETS_INTR_LOCK()
+  #define CommandExecutor_UNLOCK_QUEUE() ETS_INTR_UNLOCK()
 #endif
 
         struct Result {

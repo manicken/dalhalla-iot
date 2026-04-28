@@ -22,8 +22,11 @@
 */
 
 #include "DALHAL_REST_Cmd.h"
-
+#if defined(ESP32)
 #include <HTTPClient.h>
+#elif defined(ESP8266)
+#include <ESP8266HTTPClient.h>
+#endif
 #include <WiFiClient.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -35,11 +38,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase REST_Cmd::RegistryDefine = {
         Create,
         &JsonSchema::REST_Cmd::Root,
         nullptr // no events available on obsolete device
     };
+    //volatile const void* keep_REST_Cmd = &DALHAL::REST_Cmd::RegistryDefine;
 
     Device* REST_Cmd::Create(DeviceCreateContext& context) {
         return new REST_Cmd(context);

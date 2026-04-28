@@ -22,6 +22,11 @@
 */
 
 #include "DALHAL_ThingSpeak.h"
+#if defined (ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined (ESP32)
+#include <WiFi.h>
+#endif
 
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
@@ -31,13 +36,16 @@
 
 #include "DALHAL_ThingSpeak_JSON_Schema.h"
 
+
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase ThingSpeak::RegistryDefine = {
         Create,
         &JsonSchema::ThingSpeak::Root,
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
     };
+    //volatile const void* keep_ThingSpeak = &DALHAL::ThingSpeak::RegistryDefine;
 
     Device* ThingSpeak::Create(DeviceCreateContext& context) {
         return new ThingSpeak(context);

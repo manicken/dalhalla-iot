@@ -1,4 +1,6 @@
+#if defined(ESP32)
 #include "mimetable.h"
+
 //#include "pgmspace.h"
 //#include "WString.h"
 #include <string>
@@ -108,3 +110,4 @@ const Entry mimeTable[maxType]  =
     }
 
 }
+#endif

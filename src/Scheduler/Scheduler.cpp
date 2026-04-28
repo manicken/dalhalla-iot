@@ -122,11 +122,15 @@ namespace Scheduler
 
         // sync time with NTP server
         NTP::NTPConnect();
+        Serial.println(F("LoadJson - tmElements_t now2"));
         tmElements_t now2;
+         Serial.println(F("LoadJson - breakTime"));
         breakTime(time(nullptr), now2);
+        Serial.println(F("LoadJson - int year ="));
         int year = (int)now2.Year + 1970;
+        Serial.println(F("LoadJson - setTime"));
         setTime(now2.Hour+1, now2.Minute, now2.Second, now2.Day, now2.Month, year);
-
+        Serial.println(F("LoadJson - parse items"));
         for (uint8_t i = 0; i < itemCount; i++) {
             ParseItem(jsonDoc[i]);
         }
@@ -323,12 +327,16 @@ namespace Scheduler
         FuncCount = funcDefListCount;
         nameToFuncList = funcDefList;
         NTP::NTPConnect();
+        
+        Serial.println(F("setup - tmElements_t now2"));
         tmElements_t now2;
+        Serial.println(F("setup - breakTime"));
         breakTime(time(nullptr), now2);
+        Serial.println(F("setup - int year ="));
         int year = (int)now2.Year + 1970;
+        Serial.println(F("setup - setTime"));
         setTime(now2.Hour+1, now2.Minute, now2.Second, now2.Day, now2.Month, year);
-        
-        
+        Serial.println(F("setup - LoadJson"));
         LoadJson(SCHEDULER_CFG_FILE_PATH);
     }
 }

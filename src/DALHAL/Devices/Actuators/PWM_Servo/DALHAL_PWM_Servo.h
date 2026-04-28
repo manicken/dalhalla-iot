@@ -24,8 +24,10 @@
 #pragma once
 
 #include <Arduino.h> // TODO remove depend
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP32)
 #include <driver/ledc.h> // esp-idf
+#elif defined(ESP8266)
+#include <../pc_simulation/stubs/ESP-IDF/ledc_types.h>
 #else
 #include <ledc_types.h> // PC stub
 #endif
@@ -69,7 +71,9 @@ private:
     float minVal;  // min for ratio type
     float maxVal;  // max for ratio type
     uint8_t pin = 0;
+
     ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
+
 
     HALValue lastValue = 0.0f;
     uint32_t minPulseLength = 1000;

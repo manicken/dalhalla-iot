@@ -37,12 +37,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
+        __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaAllOfFieldsGroup::RegistryDefine = {
               &ValidateSchema,
               &ValidateJson,
               &SchemaToJson,
               &GetJavaScriptValidator
         };
+        //volatile const void* keep_SchemaAllOfFieldsGroup = &DALHAL::JsonSchema::SchemaAllOfFieldsGroup::RegistryDefine;
         
         void SchemaAllOfFieldsGroup::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
             auto group = static_cast<const SchemaAllOfFieldsGroup&>(fieldSchema);

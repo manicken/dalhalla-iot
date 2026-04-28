@@ -25,6 +25,7 @@
 
 
 
+
 #include <ArduinoJson.h>
 #include <stdlib.h>
 
@@ -51,6 +52,8 @@
 #define DALHAL_CMD_EXEC_GPIO_LIST_MODE_HEX      "hex"
 #define DALHAL_CMD_EXEC_GPIO_LIST_MODE_BINARY   "binary"
 #define DALHAL_GPIO_MGR_PINFUNC_TYPE             uint16_t
+
+
 
 namespace DALHAL {
     namespace GPIO_manager
@@ -91,10 +94,19 @@ namespace DALHAL {
             ModeMismatch
         };
 
+#if defined(ESP32)
+        using BASE_MSG_TYPE = char;
+        #define BASE_MSG_TYPE_FUNC(msg) msg
+#elif defined(ESP8266)
+        using BASE_MSG_TYPE = __FlashStringHelper;
+        #define BASE_MSG_TYPE_FUNC(msg) F(msg)
+#endif
+
         struct CheckPinResultError {
-            const char* baseMsg;
+            const BASE_MSG_TYPE* baseMsg;
+
             std::string msg;
-            CheckPinResultError(const char* baseMsg, std::string msg) : baseMsg(baseMsg), msg(msg) {}
+            CheckPinResultError(const BASE_MSG_TYPE* baseMsg, std::string msg) : baseMsg(baseMsg), msg(msg) {}
         };
 
         typedef struct {

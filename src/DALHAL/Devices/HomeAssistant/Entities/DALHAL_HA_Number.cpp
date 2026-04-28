@@ -36,10 +36,12 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HA_Number::RegistryDefine = {
         Create,
         &JsonSchema::HA_Number::Root,
     };
+    //volatile const void* keep_HA_Number = &DALHAL::HA_Number::RegistryDefine;
 
     void HA_Number::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);

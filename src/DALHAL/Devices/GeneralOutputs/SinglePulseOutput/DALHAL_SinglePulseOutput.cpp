@@ -31,11 +31,13 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
     constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
         Create,
         &JsonSchema::SinglePulseOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
     };
+    //volatile const void* keep_SinglePulseOutput = &DALHAL::SinglePulseOutput::RegistryDefine;
     
     Device* SinglePulseOutput::Create(DeviceCreateContext& context) {
         return new SinglePulseOutput(context);
