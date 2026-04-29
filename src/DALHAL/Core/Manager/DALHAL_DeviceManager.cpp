@@ -44,7 +44,7 @@ namespace DALHAL {
     }
 
     bool DeviceManager::init() {
-        Serial1.print(F("DeviceManager::setupMgr() "));
+        //Serial1.print(F("DeviceManager::setupMgr() "));
         Serial1.printf("Heap: %u, Max block: %u\n",
             ESP.getFreeHeap(),
             ESP.getMaxFreeBlockSize());
@@ -53,8 +53,8 @@ namespace DALHAL {
 #else
         if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()) == false) {
 #endif
-            Serial1.println(F("error happend while reading and parsing config JSON"));
-            Serial.println(F("error happend while reading and parsing config JSON"));
+            //Serial1.println(F("error happend while reading and parsing config JSON"));
+            //Serial.println(F("error happend while reading and parsing config JSON"));
             GlobalLogger.printAllLogs(Serial, false);
             return false;
         }

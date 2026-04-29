@@ -63,8 +63,9 @@ namespace DALHAL {
             constexpr SchemaAllOfFieldsGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};
 
             constexpr SchemaString groupNameField = {"name", FieldPolicy::Required};
+            constexpr SchemaString groupUIDField = {"uid", FieldPolicy::Required};
 
-            constexpr const SchemaTypeBase* globalGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, nullptr};
+            constexpr const SchemaTypeBase* globalGroupFields[] = {&groupUIDField, &groupNameField, nullptr};
             constexpr JsonObjectSchema globalGroupSchema = {
                 "GlobalGroup",
                 globalGroupFields,

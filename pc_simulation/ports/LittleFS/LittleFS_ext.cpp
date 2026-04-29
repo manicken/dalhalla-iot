@@ -54,7 +54,7 @@ namespace LittleFS_ext {
         }
         file.seekg(0);
 
-        char* buffer = new (std::nothrow) char[size + 1];
+        char* buffer = new char[size + 1];
         if (!buffer) {
             return FileResult::AllocFail;
         }
@@ -110,7 +110,7 @@ namespace LittleFS_ext {
         }
         file.seekg(0);
 
-        uint8_t* buffer = new (std::nothrow) uint8_t[size];
+        uint8_t* buffer = new uint8_t[size];
         if (!buffer) {
             return FileResult::AllocFail;
         }

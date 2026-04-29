@@ -61,14 +61,20 @@ namespace DALHAL {
         ret += this->Type;
         ret += "\",";
         ret += DeviceConstStrings::value;//StartWithComma;
-        if (value.getType() == HALValue::Type::FLOAT)
-            ret += std::to_string(value.asFloat()).c_str();
-        else if (value.getType() == HALValue::Type::UINT)
-            ret += std::to_string(value.asUInt()).c_str();
-        else if (value.getType() == HALValue::Type::INT)
-            ret += std::to_string(value.asInt()).c_str();
-        else
+        ret += value.toString().c_str();
+        /*if (value.getType() == HALValue::Type::FLOAT) {
+            ret += std::to_string(value.asRawFloat()).c_str();
+        } else if (value.getType() == HALValue::Type::UINT) {
+            ret += std::to_string(value.asRawUInt()).c_str();
+        } else if (value.getType() == HALValue::Type::INT) {
+            ret += std::to_string(value.asRawInt()).c_str();
+        } else if (value.getType() == HALValue::Type::BOOL) {
+            ret += std::to_string(value.asRawBool()).c_str();
+        } else if (value.getType() == HALValue::Type::CSTRING) {
+            ret += value.toConstChar();
+        } else {
             ret += "\"not set\"";
+        }*/
         return ret;
     }
 

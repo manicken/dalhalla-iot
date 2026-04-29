@@ -59,6 +59,7 @@ namespace DALHAL {
         return HALValue::asFloat();
     }
 */
+/*
     ReactiveHALValue::operator int32_t() const {
         return asInt();
     }
@@ -75,7 +76,7 @@ namespace DALHAL {
 
     ReactiveHALValue::operator float() const {
         return asFloat();
-    }
+    }*/
 
     ReactiveHALValue& ReactiveHALValue::operator=(int32_t v)   { set(v); return *this; }
     ReactiveHALValue& ReactiveHALValue::operator=(uint32_t v)  { set(v); return *this; }

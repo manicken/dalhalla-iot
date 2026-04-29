@@ -594,7 +594,7 @@ namespace DALHAL {
 
             readResult = outDevice->read(halValue);
             if (readResult == HALOperationResult::Success) {
-                valueStr = std::to_string(halValue.asUInt());
+                valueStr = std::to_string(halValue.toUInt());
             }
         } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_UINT32_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
@@ -603,7 +603,7 @@ namespace DALHAL {
 
             readResult = outDevice->read(halValue);
             if (readResult == HALOperationResult::Success) {
-                valueStr = std::to_string(halValue.asUInt());
+                valueStr = std::to_string(halValue.toUInt());
             }
         } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_FLOAT_TYPE)) {
             //UIDPath uidPath(params.zcUid); // obsolete
@@ -613,7 +613,7 @@ namespace DALHAL {
 
                 readResult = outDevice->read(halValue);
                 if (readResult == HALOperationResult::Success) {
-                    valueStr = std::to_string(halValue.asFloat());
+                    valueStr = std::to_string(halValue.toFloat());
                 }
             }
             else {
@@ -623,7 +623,7 @@ namespace DALHAL {
 
                 readResult = outDevice->read(valByCmd);
                 if (readResult == HALOperationResult::Success) {
-                    valueStr = std::to_string(halValue.asFloat());
+                    valueStr = std::to_string(halValue.toFloat());
                 }
             }
         } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_STRING_TYPE)) {

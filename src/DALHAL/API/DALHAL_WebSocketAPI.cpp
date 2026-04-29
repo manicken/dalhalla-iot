@@ -120,6 +120,15 @@ namespace DALHAL {
     }
 
     void WebSocketAPI::setup() {
+        if (asyncWebserver != nullptr) {
+            // just restart server
+            if (asyncWebSocket != nullptr) {
+                asyncWebSocket->cleanupClients();
+            }
+            asyncWebserver->end();
+            asyncWebserver->begin();
+            return;
+        }
         asyncWebserver = new AsyncWebServer(82);
 //#if defined(ESP32)
         asyncWebSocket = new AsyncWebSocket("/ws");

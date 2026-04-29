@@ -93,7 +93,7 @@ namespace DALHAL {
 
 
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        if (val.asUInt() == 0) {
+        if (val.toUInt() == 0) {
             mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_OFF);
         } else {
             mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_ON);
@@ -119,7 +119,7 @@ namespace DALHAL {
             res = cda->WriteSimple(valState);
             if (res == HALOperationResult::Success) {
                 Serial.println("switch exec OK");
-                if (valState.asUInt() == 0)
+                if (valState.toUInt() == 0)
                     mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_OFF);
                 else
                     mqttClient.publish(stateTopicStr, HA_Switch::PAYLOAD_ON);

@@ -77,7 +77,7 @@ namespace DALHAL {
                     continue; // skip the current json device
                 }
                 
-                const char* type_cStr = GetValue(JsonSchema::CommonBase::typeField, jsonItem).asConstChar();
+                const char* type_cStr = GetValue(JsonSchema::CommonBase::typeField, jsonItem).toConstChar(); // this only return the "value" if the type is const char otherwise it returns a empty string ""
                 
                 const Registry::Item& regItem = Registry::GetItem(reg, type_cStr);
                 if (regItem.typeName == nullptr) {

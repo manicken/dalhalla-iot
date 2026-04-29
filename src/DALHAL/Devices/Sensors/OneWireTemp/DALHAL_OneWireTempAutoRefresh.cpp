@@ -28,9 +28,8 @@
 
 namespace DALHAL {
 
-    OneWireTempAutoRefresh::OneWireTempAutoRefresh(std::function<void()> _requestTemperatures, std::function<void()> _readAll, uint32_t _refreshTimeMs)
+    OneWireTempAutoRefresh::OneWireTempAutoRefresh(std::function<void()> _requestTemperatures, std::function<void()> _readAll)
         : requestTemperatures(_requestTemperatures), readAll(_readAll) {
-            SetRefreshTimeMs(_refreshTimeMs); // to include "convertion"
             if (!requestTemperatures || !readAll) {
                 Serial.println(F("ERR@OWTAR")); // short error that can be searched for in code
                 //abort();  // or throw if exceptions are enabled

@@ -59,7 +59,7 @@ namespace DALHAL {
             return;
         }
         itemCount = uidzcStr.CountChar(':') + 1;
-        items = new (std::nothrow) HAL_UID[itemCount];
+        items = new HAL_UID[itemCount];
         if (items == nullptr) {
             GlobalLogger.Error(F("new UIDPath - Allocation for items failed, count: "), std::to_string(itemCount).c_str());
             itemCount = 0; // allways used at reads so setting it to zero would make reads impossible

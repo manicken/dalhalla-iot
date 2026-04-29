@@ -73,7 +73,7 @@ namespace DALHAL {
                 self->mode = DALHAL::Consumer::Mode::TimedRefresh;
                 self->eventSource = nullptr;
                 self->source = sourceField.ExtractFrom(*ctx.jsonObjItem);
-                self->refreshtimems = CommonTime::refreshTimeGroupFields.ExtractFrom(*ctx.jsonObjItem).asUInt();
+                self->refreshtimems = CommonTime::refreshTimeGroupFields.ExtractFrom(*ctx.jsonObjItem).toUInt();
             }
 
             void Apply_EventModeValues(const DeviceCreateContext& ctx, void* out)

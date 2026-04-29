@@ -118,11 +118,12 @@ namespace DALHAL {
         : OneWireTempDevice(context), 
           autoRefresh(
             [this](){ requestTemperatures(); },
-            [this](){ readAll(); },
-            JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
+            [this](){ readAll(); }
         )
     {
         JsonSchema::OneWireTempDeviceAtRoot::Extractors::Apply(context, this);
+        uint32_t refreshMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).toUInt();
+        autoRefresh.SetRefreshTimeMs(refreshMs);
         oneWire = new OneWire(pin);
         dTemp = new DallasTemperature(oneWire);
         dTemp->setWaitForConversion(false);

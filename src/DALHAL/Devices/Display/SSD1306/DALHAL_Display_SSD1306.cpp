@@ -125,13 +125,20 @@ namespace DALHAL {
             if (el.cdaSource != nullptr) {
                 el.cdaSource->ReadSimple(el.val);
             }
+            // as we do actually check the halvalue type explicit
+            // we can use the raw getters
             HALValue::Type t = el.val.getType();
-            if (t == HALValue::Type::FLOAT)
-                display->print(el.val.asFloat());
-            else if (t == HALValue::Type::UINT)
-                display->print(el.val.asUInt());
-            else if (t == HALValue::Type::INT)
-                display->print(el.val.asInt());
+            if (t == HALValue::Type::FLOAT) {
+                display->print(el.val.asRawFloat());
+            } else if (t == HALValue::Type::UINT) {
+                display->print(el.val.asRawUInt());
+            } else if (t == HALValue::Type::INT) {
+                display->print(el.val.asRawInt());
+            } else if (t == HALValue::Type::BOOL) {
+                display->print(el.val.asRawBool());
+            } else if (t == HALValue::Type::CSTRING) {
+                display->print(el.val.toConstChar());
+            }
         }
         display->display(); // update all in one go
     }

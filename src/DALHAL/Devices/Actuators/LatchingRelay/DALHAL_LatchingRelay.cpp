@@ -354,7 +354,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             return HALOperationResult::WriteValueNotUintOrInt;
         }
 
-        int32_t v = val.asInt();
+        int32_t v = val.toInt();
         if (v != 0 && v != 1) {
             return HALOperationResult::InvalidArgument;
         }

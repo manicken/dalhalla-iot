@@ -78,7 +78,7 @@ namespace DALHAL {
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     out->deviceCount++;
                 }
-                out->devices = new (std::nothrow) Device*[static_cast<size_t>(out->deviceCount)]();
+                out->devices = new Device*[static_cast<size_t>(out->deviceCount)]();
                 uint32_t index = 0;
                 DeviceCreateContext createContext;
                 createContext.deviceType = "OneWireTempDevice";

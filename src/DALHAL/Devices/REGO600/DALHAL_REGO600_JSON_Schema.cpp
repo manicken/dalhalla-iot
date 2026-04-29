@@ -94,8 +94,8 @@ namespace DALHAL {
                     out->registerItemCount++;
                 }
                 // second pass
-                out->requestList = new (std::nothrow) Drivers::REGO600::Request*[out->registerItemCount]();
-                out->registerItems = new (std::nothrow) Device*[out->registerItemCount]();
+                out->requestList = new Drivers::REGO600::Request*[out->registerItemCount]();
+                out->registerItems = new Device*[out->registerItemCount]();
                 int index = 0;
                 DeviceCreateContext createContext;
                 createContext.deviceType = "REGO600reg";
@@ -121,7 +121,7 @@ namespace DALHAL {
                     out->registerItems[index] = itemReg;
                     index++;
                 }
-                out->refreshTimeMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem));
+                out->refreshTimeMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).toUInt();
 
                 unsigned long requestDelayMs = JsonSchema::REGO600::requestDelayMsField.ExtractFrom(*(context.jsonObjItem));
                 

@@ -27,23 +27,15 @@ namespace DALHAL {
     HALValue::HALValue() : type(Type::UNSET) {}
     HALValue::HALValue(Type type) : type(type) {}
 
-    /*HALValue::HALValue(const HALValue& other) {
-        type = other.type;
-        if (type == Type::STRING && other.str) {
-            str = strdup(other.str);
-        } else {
-            uval = other.uval;
-        }
-    }*/
     HALValue::HALValue(int32_t v) : type(Type::INT), ival(v) {}
-
     HALValue::HALValue(uint32_t v) : type(Type::UINT), uval(v) {}
-
     HALValue::HALValue(float v) : type(Type::FLOAT), fval(v) {}
-
     HALValue::HALValue(bool v) : type(Type::BOOL), bval(v) {}
-
     HALValue::HALValue(const char* cStr) : type(Type::CSTRING), cStr(cStr) {}
+
+    // ============================================================================
+    // QUERY FUNCTIONS - Inquire about type without conversion
+    // ============================================================================
 
     HALValue::Type HALValue::getType() const {
         return type;
@@ -52,84 +44,186 @@ namespace DALHAL {
     bool HALValue::isNumber() const {
         return type == Type::UINT || type == Type::FLOAT || type == Type::INT;
     }
-    bool HALValue::isUintOrInt() const  {
+
+    bool HALValue::isUintOrInt() const {
         return type == Type::UINT || type == Type::INT;
     }
+
     bool HALValue::isNaN() const {
         return !isNumber();
     }
+
     bool HALValue::isSet() const {
         return type != Type::UNSET;
     }
 
-    uint32_t HALValue::asUInt() const {
-        return uval;
-    }
+    // ============================================================================
+    // RAW ACCESS - Get the raw value without type conversion
+    // Use when you know the type already or want the underlying storage
+    // ============================================================================
 
-    bool HALValue::asBool() const {
-        if (type == Type::BOOL)
-            return bval;
-        else if (type == Type::UINT)
-            return uval != 0;
-        else if (type == Type::INT)
-            return ival != 0;
-        else if (type == Type::FLOAT)
-            return fval != 0.0f;
-        else if (type == Type::CSTRING)
-            return cStr != nullptr && cStr[0] != '\0';
-        else
-            return false;
-    }
-
-    int32_t HALValue::asInt() const {
+    int32_t HALValue::asRawInt() const {
         return ival;
     }
 
-    float HALValue::asFloat() const {
-        if (type == Type::FLOAT)
-            return fval;
-        else if (type == Type::INT)
-            return static_cast<float>(ival);
-        else if (type == Type::UINT)
-            return static_cast<float>(uval);
-        else
-            return 0.0f;
+    uint32_t HALValue::asRawUInt() const {
+        return uval;
     }
 
-    const char* HALValue::asConstChar() const {
-        if (type != Type::CSTRING) {
-            return "(value)";
-        } else {
-            return cStr;
+    float HALValue::asRawFloat() const {
+        return fval;
+    }
+
+    bool HALValue::asRawBool() const {
+        return bval;
+    }
+
+    const char* HALValue::asRawConstChar() const {
+        return cStr;
+    }
+
+    // ============================================================================
+    // CONVERSION FUNCTIONS - Convert to target type intelligently
+    // Use when you need a specific type regardless of current storage
+    // ============================================================================
+
+    int32_t HALValue::toInt() const {
+        switch (type) {
+            case Type::INT:
+                return ival;
+            case Type::UINT:
+                return static_cast<int32_t>(uval);
+            case Type::FLOAT:
+                return static_cast<int32_t>(fval);
+            case Type::BOOL:
+                return bval ? 1 : 0;
+            case Type::CSTRING:
+                // Try to parse string as int, return 0 if fail
+                return (cStr != nullptr) ? atoi(cStr) : 0;
+            default:
+                return 0;
+        }
+    }
+
+    uint32_t HALValue::toUInt() const {
+        switch (type) {
+            case Type::UINT:
+                return uval;
+            case Type::INT:
+                return static_cast<uint32_t>(ival);
+            case Type::FLOAT:
+                return static_cast<uint32_t>(fval);
+            case Type::BOOL:
+                return bval ? 1U : 0U;
+            case Type::CSTRING:
+                // Try to parse string as uint, return 0 if fail
+                return (cStr != nullptr) ? static_cast<uint32_t>(strtoul(cStr, nullptr, 10)) : 0U;
+            default:
+                return 0U;
+        }
+    }
+
+    float HALValue::toFloat() const {
+        switch (type) {
+            case Type::FLOAT:
+                return fval;
+            case Type::INT:
+                return static_cast<float>(ival);
+            case Type::UINT:
+                return static_cast<float>(uval);
+            case Type::BOOL:
+                return bval ? 1.0f : 0.0f;
+            case Type::CSTRING:
+                // Try to parse string as float, return 0 if fail
+                return (cStr != nullptr) ? strtof(cStr, nullptr) : 0.0f;
+            default:
+                return 0.0f;
+        }
+    }
+
+    bool HALValue::toBool() const {
+        switch (type) {
+            case Type::BOOL:
+                return bval;
+            case Type::UINT:
+                return uval != 0;
+            case Type::INT:
+                return ival != 0;
+            case Type::FLOAT:
+                return fval != 0.0f;
+            case Type::CSTRING:
+                return cStr != nullptr && cStr[0] != '\0';
+            default:
+                return false;
         }
     }
 
     std::string HALValue::toString() const {
         switch (type) {
-            case Type::INT: return std::to_string(ival);
-            case Type::UINT: return std::to_string(uval);
-            case Type::FLOAT: return std::to_string(fval);
-            case Type::CSTRING: return std::string(cStr);
-            default: return "";
+            case Type::INT:
+                return std::to_string(ival);
+            case Type::UINT:
+                return std::to_string(uval);
+            case Type::FLOAT:
+                return std::to_string(fval);
+            case Type::CSTRING:
+                return std::string(cStr != nullptr ? cStr : "");
+            case Type::BOOL:
+                return bval ? "true" : "false";
+            default:
+                return "";
         }
     }
 
+    const char* HALValue::toConstChar() const {
+        if (type == Type::CSTRING && cStr != nullptr) {
+            return cStr;
+        }
+        return "";
+    }
+
+    // ============================================================================
+    // STRING BUILDING - Append value to existing string
+    // ============================================================================
+
     void HALValue::appendToString(std::string& target) const {
-        char buf[20]; // allocated on the stack 
+        char buf[20]; // allocated on the stack
         switch (type) {
-            case Type::INT:   snprintf(buf, sizeof(buf), "%d", ival); break;
-            case Type::UINT:  snprintf(buf, sizeof(buf), "%u", uval); break;
-            case Type::FLOAT: snprintf(buf, sizeof(buf), "%f", fval); break;
-            case Type::CSTRING: snprintf(buf, sizeof(buf), "%s", cStr); break;
-            default:          buf[0] = '\0'; break;
+            case Type::INT:
+                snprintf(buf, sizeof(buf), "%d", ival);
+                break;
+            case Type::UINT:
+                snprintf(buf, sizeof(buf), "%u", uval);
+                break;
+            case Type::FLOAT:
+                snprintf(buf, sizeof(buf), "%f", fval);
+                break;
+            case Type::BOOL:
+                snprintf(buf, sizeof(buf), "%s", bval ? "true" : "false");
+                break;
+            case Type::CSTRING:
+                if (cStr != nullptr) {
+                    snprintf(buf, sizeof(buf), "%s", cStr);
+                } else {
+                    buf[0] = '\0';
+                }
+                break;
+            default:
+                buf[0] = '\0';
+                break;
         }
         target += buf;
     }
+
+    // ============================================================================
+    // ASSIGNMENT OPERATORS
+    // ============================================================================
 
     HALValue& HALValue::operator=(uint32_t v) {
         set(v);
         return *this;
     }
+
     HALValue& HALValue::operator=(int32_t v) {
         set(v);
         return *this;
@@ -140,20 +234,33 @@ namespace DALHAL {
         return *this;
     }
 
+    // ============================================================================
+    // CONVERSION OPERATORS - Implicit conversion (for backwards compatibility)
+    // ============================================================================
+
     HALValue::operator int32_t() const {
-        return ival;
+        return toInt();
     }
 
     HALValue::operator uint32_t() const {
-        return uval;
+        return toUInt();
     }
+
     HALValue::operator uint8_t() const {
-        return uval;
+        return static_cast<uint8_t>(toUInt());
     }
 
     HALValue::operator float() const {
-        return fval;
+        return toFloat();
     }
+
+    HALValue::operator bool() const {
+        return toBool();
+    }
+
+    // ============================================================================
+    // SET FUNCTIONS
+    // ============================================================================
 
     void HALValue::set(uint32_t v) {
         type = Type::UINT;
@@ -162,7 +269,7 @@ namespace DALHAL {
 
     void HALValue::set(int32_t v) {
         type = Type::INT;
-        uval = v;
+        ival = v;
     }
 
     void HALValue::set(float v) {
@@ -180,10 +287,26 @@ namespace DALHAL {
         cStr = v;
     }
 
-
+    // ============================================================================
+    // COMPARISON OPERATORS - Use conversion for consistent behavior
+    // ============================================================================
 
     bool operator==(const HALValue& lhs, const HALValue& rhs) {
-        return lhs.asFloat() == rhs.asFloat();
+        // If both are numeric types, compare as floats
+        if (lhs.isNumber() && rhs.isNumber()) {
+            return lhs.toFloat() == rhs.toFloat();
+        }
+        // If both are strings, compare string content
+        if (lhs.getType() == HALValue::Type::CSTRING && rhs.getType() == HALValue::Type::CSTRING) {
+            const char* lstr = lhs.toConstChar();
+            const char* rstr = rhs.toConstChar();
+            if (lstr == nullptr || rstr == nullptr) {
+                return lstr == rstr;
+            }
+            return std::strcmp(lstr, rstr) == 0;
+        }
+        // Mixed types: convert to float
+        return lhs.toFloat() == rhs.toFloat();
     }
 
     bool operator!=(const HALValue& lhs, const HALValue& rhs) {
@@ -191,77 +314,109 @@ namespace DALHAL {
     }
 
     bool operator<(const HALValue& lhs, const HALValue& rhs) {
-        return lhs.asFloat() < rhs.asFloat();
+        return lhs.toFloat() < rhs.toFloat();
     }
 
     bool operator>(const HALValue& lhs, const HALValue& rhs) {
-        return lhs.asFloat() > rhs.asFloat();
+        return lhs.toFloat() > rhs.toFloat();
     }
 
     bool operator<=(const HALValue& lhs, const HALValue& rhs) {
-        return lhs.asFloat() <= rhs.asFloat();
+        return lhs.toFloat() <= rhs.toFloat();
     }
 
     bool operator>=(const HALValue& lhs, const HALValue& rhs) {
-        return lhs.asFloat() >= rhs.asFloat();
+        return lhs.toFloat() >= rhs.toFloat();
     }
+
+    // ============================================================================
+    // ARITHMETIC OPERATORS - Type promotion logic
+    // ============================================================================
 
     HALValue HALValue::operator+(const HALValue& other) const {
+        // Float promotion: if either is float, result is float
         if (type == Type::FLOAT || other.type == Type::FLOAT) {
-            return asFloat() + other.asFloat();
-        } else if (type == Type::INT || other.type == Type::INT) {
-            return ival + other.ival;
-        } else {
-            return uval + other.uval;
+            return toFloat() + other.toFloat();
         }
-    }
-    HALValue HALValue::operator-(const HALValue& other) const {
-        if (type == Type::FLOAT || other.type == Type::FLOAT) {
-            return asFloat() - other.asFloat();
-        } else if (type == Type::INT || other.type == Type::INT) {
-            return ival - other.ival;
-        } else {
-            if (other.uval <= uval)
-                return uval - other.uval;
-            else
-                return ival - other.ival;
+        // Int promotion: if either is signed int, result is signed int
+        if (type == Type::INT || other.type == Type::INT) {
+            return toInt() + other.toInt();
         }
-    }
-    HALValue HALValue::operator*(const HALValue& other) const {
-        if (type == Type::FLOAT || other.type == Type::FLOAT) {
-            return asFloat() * other.asFloat();
-        } else if (type == Type::INT || other.type == Type::INT) {
-            return ival * other.ival;
-        } else {
-            return uval * other.uval;
-        }
-    }
-    HALValue HALValue::operator/(const HALValue& other) const {
-        if (type == Type::FLOAT || other.type == Type::FLOAT) {
-            return asFloat() / other.asFloat();
-        } else if (type == Type::INT || other.type == Type::INT) {
-            return ival / other.ival;
-        } else {
-            return uval / other.uval;
-        }
-    }
-    HALValue HALValue::operator%(const HALValue& other) const {
-        return uval % other.uval;
-    }
-    HALValue HALValue::operator&(const HALValue& other) const {
-        return uval & other.uval;
-    }
-    HALValue HALValue::operator|(const HALValue& other) const {
-        return uval | other.uval;
-    }
-    HALValue HALValue::operator^(const HALValue& other) const {
-        return uval ^ other.uval;
-    }
-    HALValue HALValue::operator<<(const HALValue& other) const {
-        return uval << other.uval;
-    }
-    HALValue HALValue::operator>>(const HALValue& other) const {
-        return uval >> other.uval;
+        // Both unsigned
+        return toUInt() + other.toUInt();
     }
 
-}
+    HALValue HALValue::operator-(const HALValue& other) const {
+        // Float promotion
+        if (type == Type::FLOAT || other.type == Type::FLOAT) {
+            return toFloat() - other.toFloat();
+        }
+        // Int promotion
+        if (type == Type::INT || other.type == Type::INT) {
+            return toInt() - other.toInt();
+        }
+        // Both unsigned - avoid underflow
+        uint32_t lhs_val = toUInt();
+        uint32_t rhs_val = other.toUInt();
+        if (rhs_val <= lhs_val) {
+            return lhs_val - rhs_val;
+        } else {
+            return static_cast<int32_t>(lhs_val) - static_cast<int32_t>(rhs_val);
+        }
+    }
+
+    HALValue HALValue::operator*(const HALValue& other) const {
+        // Float promotion
+        if (type == Type::FLOAT || other.type == Type::FLOAT) {
+            return toFloat() * other.toFloat();
+        }
+        // Int promotion
+        if (type == Type::INT || other.type == Type::INT) {
+            return toInt() * other.toInt();
+        }
+        // Both unsigned
+        return toUInt() * other.toUInt();
+    }
+
+    HALValue HALValue::operator/(const HALValue& other) const {
+        // Float promotion
+        if (type == Type::FLOAT || other.type == Type::FLOAT) {
+            return toFloat() / other.toFloat();
+        }
+        // Int promotion
+        if (type == Type::INT || other.type == Type::INT) {
+            return toInt() / other.toInt();
+        }
+        // Both unsigned
+        return toUInt() / other.toUInt();
+    }
+
+    // ============================================================================
+    // BITWISE OPERATORS - Operate on integer representation
+    // ============================================================================
+
+    HALValue HALValue::operator%(const HALValue& other) const {
+        return toUInt() % other.toUInt();
+    }
+
+    HALValue HALValue::operator&(const HALValue& other) const {
+        return toUInt() & other.toUInt();
+    }
+
+    HALValue HALValue::operator|(const HALValue& other) const {
+        return toUInt() | other.toUInt();
+    }
+
+    HALValue HALValue::operator^(const HALValue& other) const {
+        return toUInt() ^ other.toUInt();
+    }
+
+    HALValue HALValue::operator<<(const HALValue& other) const {
+        return toUInt() << other.toUInt();
+    }
+
+    HALValue HALValue::operator>>(const HALValue& other) const {
+        return toUInt() >> other.toUInt();
+    }
+
+} // namespace DALHAL

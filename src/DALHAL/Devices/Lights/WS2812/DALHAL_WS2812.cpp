@@ -57,7 +57,7 @@ namespace DALHAL {
         //printf("\nWS2812::writeBrightness\n");
         WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
         
-        ws2812_hal_device->ws2812fx->setBrightness(val.asUInt());
+        ws2812_hal_device->ws2812fx->setBrightness(val.toUInt());
 #if HAS_REACTIVE_WRITE(WS2812)
         ws2812_hal_device->triggerWrite();
 #endif
@@ -67,7 +67,7 @@ namespace DALHAL {
         //printf("\nWS2812::writeColor\n");
         WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
         ws2812_hal_device->ws2812fx->pause();
-        ws2812_hal_device->ws2812fx->setPixelColor(0,val.asUInt());
+        ws2812_hal_device->ws2812fx->setPixelColor(0, val.toUInt());
         ws2812_hal_device->ws2812fx->execShow();
 #if HAS_REACTIVE_WRITE(WS2812)
         ws2812_hal_device->triggerWrite();
@@ -86,11 +86,11 @@ namespace DALHAL {
 
     HALOperationResult WS2812::write(const HALWriteValueByCmd& val) {
         if (val.cmd == "brightness")
-            ws2812fx->setBrightness(val.value.asUInt());
+            ws2812fx->setBrightness(val.value.toUInt());
         else if (val.cmd == "mode")
-            ws2812fx->setMode(val.value.asUInt());
+            ws2812fx->setMode(val.value.toUInt());
         else if (val.cmd == "fxspeed")
-            ws2812fx->setSpeed(val.value.asUInt());
+            ws2812fx->setSpeed(val.value.toUInt());
         else if (val.cmd == "color")
             WS2812::writeColor(this, val.value);
         else

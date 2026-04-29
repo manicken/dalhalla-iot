@@ -146,14 +146,14 @@ namespace DALHAL {
 
         uint32_t pulseUs = 0;
         if (valueType == ServoValueType::Ratio) {
-            float fVal = val.asFloat();
+            float fVal = val.toFloat();
             if (fVal < minVal || fVal > maxVal) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
             printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
             pulseUs = ratioValueTypeToPulse(fVal, true);
         } else if (valueType == ServoValueType::PulseUS) {
-            uint32_t uiVal = val.asUInt();
+            uint32_t uiVal = val.toUInt();
             if (uiVal < minPulseLength || uiVal > maxPulseLength) {
                 return HALOperationResult::WriteValueOutOfRange;
             }

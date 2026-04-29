@@ -75,7 +75,7 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
-        uint32_t t = val;
+        uint32_t t = val.toUInt();
         if (t != 0) {// only change if not zero
             
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, VALUE_CHANGE)

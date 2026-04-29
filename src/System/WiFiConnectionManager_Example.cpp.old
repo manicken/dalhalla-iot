@@ -1,0 +1,144 @@
+// ============================================================================
+// EXAMPLE SETUP & USAGE
+// ============================================================================
+
+#include "WiFiConnectionManager.h"
+//#include "WebSocketServer.h"  // Your WS API
+
+// Optional: Event handler
+void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
+    switch (event) {
+        case WiFiConnectionManager::Event::STA_CONNECT_SUCCESS:
+            Serial.printf("✓ WiFi connected: %s\n", info);
+            // You could trigger WS API initialization here
+            //WebSocketServer::init();
+            break;
+
+        case WiFiConnectionManager::Event::STA_CONNECT_FAILED:
+            Serial.printf("✗ WiFi failed: %s\n", info);
+            // Fallback to local AP configuration
+            break;
+
+        case WiFiConnectionManager::Event::AP_STARTED:
+            Serial.printf("★ AP mode active: %s\n", info);
+            // Start your configuration web server here
+            break;
+
+        case WiFiConnectionManager::Event::AP_TO_STA_SUCCESS:
+            Serial.printf("✓ Reconnected from AP: %s\n", info);
+            break;
+
+        case WiFiConnectionManager::Event::RECONNECT_ATTEMPT:
+            Serial.println("↻ Attempting WiFi reconnection from AP...");
+            break;
+    }
+}
+
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+
+    // Initialize WiFi manager with custom timeouts
+    WiFiConnectionManager::init(
+        "MyDevice-Failsafe",           // AP SSID
+        "12345678",                    // AP Password (min 8 chars)
+        8000,                          // STA connection timeout: 8 seconds
+        60000,                         // AP timeout before reconnect attempts: 60 seconds
+        30000                          // Reconnect interval: 30 seconds
+    );
+
+    // Set event callback (optional but recommended)
+    WiFiConnectionManager::setEventCallback(onWiFiEvent);
+
+    Serial.println(F("Setup complete - WiFi manager initialized"));
+}
+
+void loop() {
+    // IMPORTANT: Call this every loop iteration
+    // Non-blocking, safe, manages all WiFi state transitions
+    WiFiConnectionManager::task();
+
+    // Your WS API runs here and continues even if WiFi drops
+    //WebSocketServer::task();
+
+    // Other tasks...
+    //otherSystemTask();
+
+    // Optional: Monitor WiFi status
+    if (WiFiConnectionManager::isConnected()) {
+        // Connected to WiFi - can use network features
+        //handleNetworkRequests();
+    } else if (WiFiConnectionManager::isAPActive()) {
+        // In AP mode - can receive configuration via AP
+        //handleAPConfiguration();
+    }
+}
+
+// ============================================================================
+// OPTIONAL: Query functions for diagnostics
+// ============================================================================
+
+void printWiFiStatus() {
+    Serial.println(F("\n=== WiFi Status ==="));
+    
+    switch (WiFiConnectionManager::getState()) {
+        case WiFiConnectionManager::State::IDLE:
+            Serial.println(F("State: IDLE"));
+            break;
+        case WiFiConnectionManager::State::STA_CONNECTING:
+            Serial.println(F("State: STA_CONNECTING"));
+            break;
+        case WiFiConnectionManager::State::STA_CONNECTED:
+            Serial.println(F("State: STA_CONNECTED"));
+            Serial.printf("  SSID: %s\n", WiFiConnectionManager::getSSID());
+            Serial.printf("  IP: %s\n", WiFiConnectionManager::getLocalIP().toString().c_str());
+            Serial.printf("  Signal: %d dBm\n", WiFiConnectionManager::getSignalStrength());
+            Serial.printf("  Connected for: %lu seconds\n", 
+                         WiFiConnectionManager::getTimeSinceLastConnection());
+            break;
+        case WiFiConnectionManager::State::AP_RUNNING:
+            Serial.println(F("State: AP_RUNNING"));
+            Serial.print(F("  SSID: MyDevice-Failsafe\n"));
+            Serial.printf("  IP: %s\n", WiFiConnectionManager::getAPIP().toString().c_str());
+            Serial.printf("  Next reconnect: %lu ms\n", 
+                         WiFiConnectionManager::getNextReconnectAttemptTime() - millis());
+            break;
+        case WiFiConnectionManager::State::RECONNECTING:
+            Serial.println(F("State: RECONNECTING"));
+            break;
+    }
+    Serial.println(F("==================\n"));
+}
+
+// Optional: WS API command to trigger reconnection
+void handleWSCommand_ForceReconnect(const char* command) {
+    Serial.println("WS Command: Force WiFi reconnection");
+    WiFiConnectionManager::forceReconnect();
+}
+
+// Optional: WS API command to switch to AP mode for configuration
+void handleWSCommand_EnableAP(const char* command) {
+    Serial.println("WS Command: Enable AP mode");
+    WiFiConnectionManager::forceAPMode();
+}
+
+// ============================================================================
+// BACKOFF BEHAVIOR EXPLANATION
+// ============================================================================
+
+/*
+ * When WiFi fails initial connection, device switches to AP mode.
+ * After AP_TIMEOUT (default 60s), it starts trying to reconnect with exponential backoff:
+ *
+ * Attempt #1: Wait 1s   (2^0 = 1)
+ * Attempt #2: Wait 2s   (2^1 = 2)
+ * Attempt #3: Wait 4s   (2^2 = 4)
+ * Attempt #4: Wait 8s   (2^3 = 8)
+ * Attempt #5: Wait 16s  (2^4 = 16)
+ * Attempt #6: Wait 32s  (2^5 = 32)
+ * ...continues capped at RECONNECT_INTERVAL (default 30s)
+ *
+ * This prevents WiFi radio spam while still being responsive.
+ * If WiFi appears, it immediately connects (no AP fallback needed).
+ * If still failing, AP remains active for user configuration.
+ */

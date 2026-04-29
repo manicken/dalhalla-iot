@@ -55,7 +55,7 @@ namespace DALHAL {
             if (res != HALOperationResult::Success) return res;
             HALValue val;
             if (halValueStack.GetFinalResult(val) == false) return HALOperationResult::ResultGetFail;
-            if (val.asUInt() == 0) return HALOperationResult::IfConditionFalse;
+            if (val.toUInt() == 0) return HALOperationResult::IfConditionFalse;
             return HALOperationResult::IfConditionTrue;
         }
 

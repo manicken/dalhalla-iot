@@ -94,9 +94,9 @@ namespace DALHAL {
                         WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
                         return;
                     } 
-                    HALValue newVal = (currValue.asUInt() == 1) ? (uint32_t)0 : (uint32_t)1;
+                    HALValue newVal = currValue.toBool() ? false : true;
                     toggleTarget->WriteSimple(newVal);
-                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState=" + newVal.asUInt());
+                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState=", newVal.toString().c_str());
                 } else {
                     WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
                 }

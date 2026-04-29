@@ -71,11 +71,11 @@ namespace DALHAL {
             HALValue val;
             halValueStack.GetFinalResult(val);
             if (val.getType() == HALValue::Type::FLOAT)
-                printf(" result: float(%.6f)\n", val.asFloat());
+                printf(" result: float(%.6f)\n", val.asRawFloat());
             else if (val.getType() == HALValue::Type::INT)
-                printf(" result: int(%d)\n", val.asInt());
+                printf(" result: int(%d)\n", val.asRawInt());
             else if (val.getType() == HALValue::Type::UINT)
-                printf(" result: uint:(%u)\n", val.asUInt());
+                printf(" result: uint:(%u)\n", val.asRawUInt());
 #endif
             return HALOperationResult::Success;
         }

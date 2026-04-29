@@ -60,27 +60,17 @@ namespace DALHAL {
 
         
 
-        const FieldTypeRegistryItem g_fieldTypeTable[] = {
-        #define X(name) { #name, Schema##name::RegistryDefine },
+        constexpr FieldTypeRegistryItem g_fieldTypeTable[] = {
+        #define X(name) { #name, &Schema##name::RegistryDefine },
             DALHAL_JsonSchema_FIELD_TYPE_LIST
         #undef X
         };
-
-        /*void ForceRegistryLink()
-        {
-#define X(name) \
-            volatile auto force_##name = &Schema##name::RegistryDefine; \
-            (void)force_##name;
-
-            DALHAL_JsonSchema_FIELD_TYPE_LIST
-#undef X
-        }*/
 
         const FieldTypeRegistryItem& GetFieldTypeRegistryItem(FieldType type) {
             size_t idx = static_cast<size_t>(type);
             if (idx >= static_cast<size_t>(FieldType::_Count_)) {
                 static const FieldTypeRegistryItem unknown = {
-                    nullptr, {nullptr, nullptr, nullptr, nullptr}
+                    nullptr, nullptr //{nullptr, nullptr, nullptr, nullptr}
                 };
                 return unknown;
             }
@@ -97,7 +87,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("schema error - could not find schema type @ ValidateSchema"));
                 return;
             }
-            return regDefItem.define.ValidateSchema(stb, sourceObjTypeName, anyError);
+            return regDefItem.define->ValidateSchema(stb, sourceObjTypeName, anyError);
         }
 
         ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
@@ -106,7 +96,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("schema error - could not find schema type @ ValidateJson"));
                 return ValidatorResult::SchemaTypeNotFound;
             }
-            return regDefItem.define.ValidateJson(stb, sourceObjTypeName, jsonObj, anyError);
+            return regDefItem.define->ValidateJson(stb, sourceObjTypeName, jsonObj, anyError);
         }
 
         HALValue GetValue(const SchemaTypeBase& stb, const DeviceCreateContext& context) {
@@ -119,7 +109,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("schema error - could not find schema type @ GetValue"));
                 return 0;
             }
-            return regDefItem.define.GetValue(stb, jsonObj);
+            return regDefItem.define->GetValue(stb, jsonObj);
         }
 
         void SchemaToJson(const SchemaTypeBase& stb, std::string& jsonStr) {
@@ -129,7 +119,7 @@ namespace DALHAL {
                 jsonStr += "{}";
                 return;
             }
-            regDefItem.define.ToJson(stb, jsonStr);
+            regDefItem.define->ToJson(stb, jsonStr);
         }
 
         const char* GetJavaScriptValidator(const SchemaTypeBase& stb) {
@@ -138,7 +128,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("schema error - could not find schema type @ GetJavaScriptValidator"));
                 return "";
             }
-            return regDefItem.define.GetJavaScriptValidator();
+            return regDefItem.define->GetJavaScriptValidator();
         }
 
     }

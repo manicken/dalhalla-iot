@@ -47,12 +47,13 @@ namespace DALHAL {
     OneWireTempGroup::OneWireTempGroup(DeviceCreateContext& context) : OneWireTempGroup_DeviceBase(context.deviceType),
         autoRefresh(
             [this]() { requestTemperatures(); },
-            [this]() { readAll(); },
-            JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
+            [this]() { readAll(); }
         ), 
         busses(nullptr)
     {
         JsonSchema::OneWireTempGroup::Extractors::Apply(context, this);
+        uint32_t refreshMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).toUInt();
+        autoRefresh.SetRefreshTimeMs(refreshMs);
     }
     OneWireTempGroup::~OneWireTempGroup() {
         if (busses != nullptr) {

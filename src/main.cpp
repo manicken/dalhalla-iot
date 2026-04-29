@@ -33,6 +33,8 @@
 #include <SD_MMC.h>
 #endif
 
+#include <System/WiFiConnectionManager.h>
+#include <DALHAL/API/DALHAL_WebSocketAPI.h>
 
 #define BUILD_VER "1.0"
 
@@ -68,22 +70,85 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 };
 
 */
+#ifdef WIFI_CONNECTION_MANAGER_H
+void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
+    switch (event) {
+        case WiFiConnectionManager::Event::STA_CONNECT_SUCCESS:
+            Serial.print(F("✓ WiFi connected: ")); Serial.println(info);
+            Serial.println(F("wifi/status/ok/connect"));
+#if defined(USE_DISPLAY)
+            display.setCursor(0, 9);
+            display.println(F("WiFi connected"));
+            display.setCursor(0, 17);
+            display.println(WiFi.localIP());
+            display.display();
+            delay(2000); // allow user to see result
+#endif
+            // You could trigger WS API initialization here
+            DALHAL::WebSocketAPI::setup();
+            break;
+
+        case WiFiConnectionManager::Event::STA_CONNECT_FAILED:
+            Serial.print(F("✗ WiFi failed: ")); Serial.println(info);
+            Serial.println(F("wifi/status/error/connect"));
+#if defined(USE_DISPLAY)
+            display.setCursor(0, 9);
+            display.println(F("WiFi FAIL"));
+            display.display();
+            delay(2000); // allow user to see result
+#endif
+            // Fallback to local AP configuration
+            break;
+
+        case WiFiConnectionManager::Event::AP_STARTED:
+            Serial.print(F("★ AP mode active: ")); Serial.println(info);
+#if defined(USE_DISPLAY)
+            display.setCursor(0, 9);
+            display.println(F("AP mode active"));
+            display.display();
+            delay(2000); // allow user to see result
+#endif
+            // Start your configuration web server here
+            break;
+
+        case WiFiConnectionManager::Event::AP_TO_STA_SUCCESS:
+            Serial.print(F("✓ Reconnected from AP:")); Serial.println(info);
+#if defined(USE_DISPLAY)
+            display.setCursor(0, 9);
+            display.println(F("Reconnected from AP"));
+            display.display();
+            delay(2000); // allow user to see result
+#endif
+            break;
+
+        case WiFiConnectionManager::Event::RECONNECT_ATTEMPT:
+            Serial.println(F("↻ Attempting WiFi reconnection from AP..."));
+#if defined(USE_DISPLAY)
+            display.setCursor(0, 9);
+            display.println(F("Attempting WiFi reconnection from AP"));
+            display.display();
+            delay(2000); // allow user to see result
+#endif
+            break;
+    }
+}
+#endif
 
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
 
 void setup() {
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
+    WiFi.setSleep(false);
 #ifdef DALHAL_H_
     DALHAL::GPIO_manager::triStateAvailablePins();
 #endif
 
     if (Info::resetReason_is_crash(true)) {
-        
         System::failsafeLoop();
     }
-    //System::CheckIfRecoveryModeAndStart();
-
     DEBUG_UART.begin(115200);
     DEBUG_UART.setDebugOutput(true);
 
@@ -92,59 +157,40 @@ void setup() {
 
     DEBUG_UART.println(Info::getResetReasonStr());
 
-    
-    System::Setup();
+    System::Setup(); // only littlefs init
 
-    //MainConfig::begin();
+#ifdef WIFI_CONNECTION_MANAGER_H
+    WiFiConnectionManager::init(
+        "DALHAL-Failsafe",             // AP SSID
+        "",                            // AP Password (min 8 chars)
+        8000,                          // STA connection timeout: 8 seconds
+        60000,                         // AP timeout before reconnect attempts: 60 seconds
+        30000                          // Reconnect interval: 30 seconds
+    );
+    // Set event callback (optional but recommended)
+    WiFiConnectionManager::setEventCallback(onWiFiEvent);
+#endif
+    Serial.println(F("Setup complete - WiFi manager initialized"));
+#if defined(USE_DISPLAY)
+    init_display();
+#endif
+#if defined(USE_DISPLAY)
+    display.setCursor(0, 0);
+    display.println(F("WiFi connecting..."));
+    display.display();
+#endif
 
 #if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
     if (InitSD_MMC()) FSBrowser::fsOK = true;
 #endif
-#if defined(USE_DISPLAY)
-    init_display();
-#endif
-    WiFi.setSleep(false);
 
-#ifdef WIFI_MANAGER_WRAPPER_H_
-#if defined(USE_DISPLAY)
-    bool connected = WiFiManagerWrapper::Setup(display);
-#else
-    bool connected = WiFiManagerWrapper::Setup();
-#endif
-#else
-#if defined(USE_DISPLAY)
-        display.setCursor(0, 0);
-        display.println(F("WiFi connecting..."));
-        display.display();
-#endif
-    wl_status_t wifiState = WiFi.begin();
-    bool wifiConnected = false;
-    if (wifiState == wl_status_t::WL_CONNECTED) {
-        Serial.println(F("wifi/status/ok/connect"));
-        wifiConnected = true;
-    } else {
-        Serial.println(F("wifi/status/error/connect"));
-    }
-#if defined(USE_DISPLAY)
-        display.setCursor(0, 9);
-        if (wifiConnected) {
-            display.println(F("OK"));
-            display.setCursor(0, 17);
-            display.println(WiFi.localIP());
-        } else {
-            display.println(F("FAIL"));
-        }
-        display.display();
-        delay(2000); // allow user to see result
-#endif
-#endif
-Serial1.println(F("OTA::setup();"));
+//Serial1.println(F("OTA::setup();"));
     OTA::setup();
-Serial1.println(F("Scheduler::setup"));
+//Serial1.println(F("Scheduler::setup"));
     //Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
-Serial1.println(F("Info::startTime = now();"));
+//Serial1.println(F("Info::startTime = now();"));
     Info::startTime = now();
-Serial1.println(F(" HeartbeatLed::setup()"));    
+//Serial1.println(F(" HeartbeatLed::setup()"));    
     HeartbeatLed::setup();
 #if defined(ESP32) && !defined(seeed_xiao_esp32c3)
     //System::Start_MDNS();
@@ -155,17 +201,17 @@ Serial1.println(F(" HeartbeatLed::setup()"));
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();
 #endif
-Serial1.println(F(" System::initWebServerHandlers"));   
+//Serial1.println(F(" System::initWebServerHandlers"));   
     System::initWebServerHandlers(webserver);
 #ifdef DALHAL_H_
-Serial1.println(F("  DALHAL::begin();"));   
+//Serial1.println(F("  DALHAL::begin();"));   
     DALHAL::begin();
 #endif
-Serial1.println(F(" webserver.begin()"));   
+//Serial1.println(F(" webserver.begin()"));   
     webserver.begin();
 
     // make sure that the following are allways at the end of this function
-    //Info::PrintHeapInfo();
+    Info::PrintHeapInfo();
     DEBUG_UART.println(F("\r\n!!!!!End of MAIN Setup!!!!!\r\n"));
     delay(0);
 }
@@ -177,7 +223,9 @@ void loop() {
 #ifdef DALHAL_H_
     DALHAL::loop();
 #endif
-    
+#ifdef WIFI_CONNECTION_MANAGER_H
+    WiFiConnectionManager::task();
+#endif
 #if defined(ESP8266)
     //MDNS.update(); // this is only required on esp8266
 #endif
@@ -191,7 +239,11 @@ void loop() {
 void init_display(void)
 {
     delay(1000);
+#if defined(ESP32)
     Wire.begin(21, 22, 100000); // SDA=21, SCL=22
+#elif defined(ESP8266)
+    Wire.begin(4, 5); // SDA=21, SCL=22
+#endif
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         DEBUG_UART.println(F("OLED init fail"));
         return;

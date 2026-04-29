@@ -69,7 +69,7 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         wire.beginTransmission(addr);
-        wire.write(val.asUInt());
+        wire.write(val.toUInt());
         uint8_t res = wire.endTransmission(true);
         if (res != 0) {
             // todo maybe log to global logger

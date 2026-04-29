@@ -53,7 +53,7 @@ namespace DALHAL {
     public:
         OneWireTempAutoRefresh() = delete;
         OneWireTempAutoRefresh(OneWireTempAutoRefresh&) = delete;
-        OneWireTempAutoRefresh(std::function<void()> _requestTemperatures, std::function<void()> _readAll, uint32_t _refreshTimeMs);
+        OneWireTempAutoRefresh(std::function<void()> _requestTemperatures, std::function<void()> _readAll);
         void SetRefreshTimeMs(uint32_t _refreshTimeMs);
         
         void loop();

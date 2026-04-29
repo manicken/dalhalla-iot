@@ -146,7 +146,7 @@ namespace DALHAL {
             }
             mqttClient.publish(
                 topicBasePath.SetAndGet(TopicBasePathMode::State), 
-                (val.asBool())?"ON":"OFF"
+                (val.toBool())?"ON":"OFF"
             );
         }
         else

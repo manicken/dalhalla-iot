@@ -115,7 +115,7 @@ namespace DALHAL {
                 
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
                 out->pin = JsonSchema::CommonPins::InputOutputPinField.ExtractFrom(jsonObj);
-                out->refreshTimeMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(jsonObj).asUInt();
+                out->refreshTimeMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(jsonObj).toUInt();
                 
                 const char* modelStr = JsonSchema::DHT::modelField.ExtractFrom(jsonObj);
                 const ModelItem& def = GetModel(modelStr);

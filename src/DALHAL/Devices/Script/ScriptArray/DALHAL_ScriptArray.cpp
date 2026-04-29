@@ -106,7 +106,7 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptArray::read(const HALValue& bracketSubscriptVal, HALValue& val) {
-        int index = bracketSubscriptVal.asInt();
+        int index = bracketSubscriptVal.toInt();
         if (index < 0 || index >= valueCount) {
             printf("\nScriptArray::read BracketOpSubscriptOutOffRange:%d\n", index);
             return HALOperationResult::BracketOpSubscriptOutOffRange;
@@ -121,7 +121,7 @@ namespace DALHAL {
     HALOperationResult ScriptArray::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
         if (readOnly) return HALOperationResult::UnsupportedOperation;
 
-        int index = bracketSubscriptVal.asInt();
+        int index = bracketSubscriptVal.toInt();
         if (index < 0 || index >= valueCount) {
             printf("\nScriptArray::write BracketOpSubscriptOutOffRange:%d\n", index);
             return HALOperationResult::BracketOpSubscriptOutOffRange;

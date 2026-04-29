@@ -38,19 +38,19 @@
 namespace DALHAL {
     void begin() {
         //DALHAL::REST::setupRest();
-        Serial1.println(F("WebSocketAPI::setup();"));
+       // Serial1.println(F("WebSocketAPI::setup();"));
         DALHAL::WebSocketAPI::setup();
         
         Info::PrintHeapInfo();
         
         if (DeviceManager::init() == false) {
-            Serial1.println(F("[KO]"));
+            //Serial1.println(F("[KO]"));
             return;
         }
-        Serial1.println(F("[OK]"));
+        //Serial1.println(F("[OK]"));
         //printf("\nBefore ScriptEngine::ValidateAndLoadAllActiveScripts\n");
         //Info::PrintHeapInfo();
-        Serial1.println(F(" ScriptEngine::Validate"));
+        //Serial1.println(F(" ScriptEngine::Validate"));
         ScriptEngine::ValidateAndLoadAllActiveScripts(); 
         
         //printf("\nAfter ScriptEngine::ValidateAndLoadAllActiveScripts\n");

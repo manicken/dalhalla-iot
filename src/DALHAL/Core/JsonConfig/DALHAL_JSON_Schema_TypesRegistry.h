@@ -47,11 +47,11 @@ namespace DALHAL {
         using GetJavaScriptValidatorFn = const char* (*)();
 
         struct FieldTypeRegistryDefine {
-            SchemaValidatorFn ValidateSchema = nullptr;
-            JsonValidatorFn ValidateJson = nullptr;
-            JsonValueExtractFn GetValue = nullptr;
-            SchemaToJsonFn ToJson = nullptr;
-            GetJavaScriptValidatorFn GetJavaScriptValidator = nullptr;
+            SchemaValidatorFn ValidateSchema;
+            JsonValidatorFn ValidateJson;
+            JsonValueExtractFn GetValue;
+            SchemaToJsonFn ToJson;
+            GetJavaScriptValidatorFn GetJavaScriptValidator;
 
             constexpr FieldTypeRegistryDefine(
                 SchemaValidatorFn ValidateSchema, 
@@ -61,7 +61,8 @@ namespace DALHAL {
             ) 
                 : 
                 ValidateSchema(ValidateSchema), 
-                ValidateJson(ValidateJson), 
+                ValidateJson(ValidateJson),
+                GetValue(nullptr),
                 ToJson(ToJson), 
                 GetJavaScriptValidator(GetJavaScriptValidator)
                 {}
@@ -85,7 +86,7 @@ namespace DALHAL {
 
         struct FieldTypeRegistryItem {
             const char* name;
-            FieldTypeRegistryDefine define;
+            const FieldTypeRegistryDefine* define;
         };
 
         extern const FieldTypeRegistryItem g_fieldTypeTable[

@@ -99,25 +99,27 @@ namespace DALHAL {
             uint8_t* base = static_cast<uint8_t*>(outStruct);
             void* target = base + structOffset;
 
+            // as we do actually check the halvalue type explicit
+            // we can use the raw getters
             switch (val.getType()) {
                 case HALValue::Type::UINT:
-                    *static_cast<uint32_t*>(target) = val.asUInt();
+                    *static_cast<uint32_t*>(target) = val.asRawUInt();
                     break;
 
                 case HALValue::Type::INT:
-                    *static_cast<int32_t*>(target) = val.asInt();
+                    *static_cast<int32_t*>(target) = val.asRawInt();
                     break;
 
                 case HALValue::Type::BOOL:
-                    *static_cast<bool*>(target) = val.asBool();
+                    *static_cast<bool*>(target) = val.asRawBool();
                     break;
 
                 case HALValue::Type::FLOAT:
-                    *static_cast<float*>(target) = val.asFloat();
+                    *static_cast<float*>(target) = val.asRawFloat();
                     break;
 
                 case HALValue::Type::CSTRING:
-                    *static_cast<const char**>(target) = val.asConstChar();
+                    *static_cast<const char**>(target) = val.asRawConstChar();
                     break;
 
                 default:

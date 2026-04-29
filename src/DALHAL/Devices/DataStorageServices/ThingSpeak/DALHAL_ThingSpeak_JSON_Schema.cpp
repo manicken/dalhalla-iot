@@ -95,7 +95,7 @@ namespace DALHAL {
 
                 HALValue refreshTimeMsTemp = JsonSchema::CommonTime::refreshTimeGroupFields.ExtractFrom(*(context.jsonObjItem));
                 if (refreshTimeMsTemp.isSet()) {
-                    out->refreshTimeMs = refreshTimeMsTemp.asUInt();
+                    out->refreshTimeMs = refreshTimeMsTemp.toUInt();
                     out->useOwnTaskLoop = true;
                 } else {
                     out->refreshTimeMs = 0;

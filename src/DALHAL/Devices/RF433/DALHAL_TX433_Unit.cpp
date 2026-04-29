@@ -82,14 +82,14 @@ namespace DALHAL {
         RF433::init(pin); // ensure that the correct pin is used and that it's set to a output
         if (model == TX433_MODEL::FixedCode) {
             if (fixedState == false) {
-                RF433::SendTo433_FC(staticData, val.asUInt());
+                RF433::SendTo433_FC(staticData, val.toUInt());
             } else {
                 RF433::SendTo433_FC(staticData);
             }
         }
         else if (model == TX433_MODEL::LearningCode) {
             if (fixedState == false) {
-                RF433::SendTo433_LC(staticData, val.asUInt());
+                RF433::SendTo433_LC(staticData, val.toUInt());
             } else {
                 RF433::SendTo433_LC(staticData);
             }

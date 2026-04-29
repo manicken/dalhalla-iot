@@ -196,11 +196,13 @@ namespace DALHAL {
     : OneWireTempBus(context),
         autoRefresh(
               [this]() { requestTemperatures(); },
-              [this]() { readAll(); },
-              JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).asUInt()
+              [this]() { readAll(); }
         )
     {
         JsonSchema::OneWireTempBusAtRoot::Extractors::Apply(context, this);
+        uint32_t refreshMs = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem)).toUInt();
+        Serial1.printf("\r\nrefreshtimeMs:%" PRIu32 "\r\n", refreshMs);
+        autoRefresh.SetRefreshTimeMs(refreshMs);
     }
 
     OneWireTempBusAtRoot::~OneWireTempBusAtRoot() {

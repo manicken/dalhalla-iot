@@ -69,7 +69,7 @@ namespace DALHAL {
 #endif
             HALValue* itemPtr = &halValueStack.items[sp];
             HALValue b = *--itemPtr;
-            if (b.asInt() == 0) {
+            if (b.toInt() == 0) {
                 // Log to GlobalLogger about divide by zero
                 return HALOperationResult::DivideByZero;
             }
