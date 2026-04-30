@@ -24,6 +24,7 @@
 #include "DALHAL_HA_Switch.h"
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
@@ -48,7 +49,7 @@ namespace DALHAL {
     const char* HA_Switch::PAYLOAD_OFF = "OFF";
     const char* HA_Switch::PAYLOAD_ON = "ON";
 
-    void HA_Switch::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_Switch::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"payload_on":"%s"), HA_Switch::PAYLOAD_ON);

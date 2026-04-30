@@ -50,7 +50,7 @@ namespace DALHAL {
     private:
         static const char* PAYLOAD_ON;
         static const char* PAYLOAD_OFF;
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;

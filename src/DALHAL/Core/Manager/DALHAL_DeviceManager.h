@@ -40,13 +40,20 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
 
-
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+// uses no leading / as the program usualy runs from in a folder where the hal is just a subfolder
+#define DALHAL_ROOT_URL                    "hal"
+#else
 #define DALHAL_ROOT_URL                    "/hal"
+#endif
 #define DALHAL_FILES_PATH                  F(DALHAL_ROOT_URL)
-#define DALHAL_CONFIG_JSON_FILE            F(DALHAL_ROOT_URL "/cfg.json")
+//#define DALHAL_CONFIG_JSON_FILE            F(DALHAL_ROOT_URL "/cfg.json")
 
 namespace DALHAL {
     class DeviceManager {
+    public:
+        static void begin();
+        static bool init();
     private:
         static Device** devices;
         static int deviceCount;
@@ -59,11 +66,10 @@ namespace DALHAL {
         static int DeviceCount();
         // init
         /** calls the begin function on all loaded hal devices */
-        static void begin();
-        static bool init();
+        
         // JSON I/O
         static bool ParseJSON(const JsonVariant& jsonArray);
-        static bool ReadJSON(const char* path);
+        static bool ReadJSON(const char* path=nullptr); // nullptr resolve to default file
         static void CleanUp();
 
         // Device operations
@@ -80,6 +86,6 @@ namespace DALHAL {
         static std::string ToString();
 
         // Debug / Testing
-        static void TEST();
+        //static void TEST();
     };
 }

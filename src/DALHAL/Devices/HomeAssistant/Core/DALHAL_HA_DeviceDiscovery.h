@@ -21,6 +21,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
@@ -34,34 +36,63 @@ namespace DALHAL
 {
     typedef void (*HADiscoveryWriteFn)(
         PubSubClient& mqtt,
-        const JsonVariant& obj,
         TopicBasePath& topicBasePath
     );
 
+    struct HA_DD_Context {
+        /** the UID of the virtual/logical device */
+        const char* cStr_entity_uid = nullptr;
+        /** the ID of the MCU */
+        const char* cStr_deviceId = nullptr;
+        /** the type of the HASS entity */
+        const char* cStr_type = nullptr;
+        /** the displayed name of the HASS entity */
+        const char* cStr_name = nullptr;
+        /** the group UID */
+        const char* cStr_groupID = nullptr;
+        /** the displayed name of the group */
+        const char* cStr_groupName = nullptr;
+        /** the resolved/extracted discovery object */
+        const JsonObject& jsonObj_discovery;
+
+        HA_DD_Context(
+            /** the UID of the virtual/logical device */
+            const char* cStr_entity_uid,
+            /** the ID of the MCU */
+            const char* cStr_deviceId,
+            /** the type of the HASS entity */
+            const char* cStr_type,
+            /** the displayed name of the HASS entity */
+            const char* cStr_name,
+            /** the group UID */
+            const char* cStr_groupID,
+            /** the displayed name of the group */
+            const char* cStr_groupName,
+            /** the resolved/extracted discovery object */
+            const JsonObject& jsonObj_discovery
+        ) : 
+            cStr_entity_uid(cStr_entity_uid),
+            cStr_deviceId(cStr_deviceId),
+            cStr_type(cStr_type),
+            cStr_name(cStr_name),
+            cStr_groupID(cStr_groupID),
+            cStr_groupName(cStr_groupName),
+            jsonObj_discovery(jsonObj_discovery)
+            {}
+
+    };
+
     class HA_DeviceDiscovery {
     public:
-        static void SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter = nullptr);
+        static void SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter); //const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter = nullptr);
         static void SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath);
         /** note this return a owned ptr so it need delete[] when done with */
         static const char* GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr);
         
     private:
-        static void SendBaseData(PubSubClient& mqtt, const char* deviceId_cStr, const JsonVariant& jsonObj);
-        static void SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup);
+        static void SendBaseData(PubSubClient& mqtt, const HA_DD_Context& ctx);//, const char* deviceId_cStr, const JsonVariant& jsonObj);
+        static void SendDeviceGroupData(PubSubClient& mqtt, const HA_DD_Context& ctx);//, const JsonVariant& jsonObjDeviceGroup);
     };
 
-    class PSC_JsonWriter {
-    public:
-        static void key(PubSubClient& mqtt, const char* key);
-        static void kv(PubSubClient& mqtt, const char* key, const char* value);
-        static void kv(PubSubClient& mqtt, const JsonPair& kv);
-        static void val(PubSubClient& mqtt, const JsonVariant& valueObj);
-        static void copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last = false);
-        static void SendAllItems(PubSubClient& mqtt, const JsonVariant &jsonObj);
-        static void printf_str(PubSubClient& mqtt, const char* fmt, ...)
-                __attribute__((format(printf, 2, 3)));
-        static void printf_zcstr(PubSubClient& mqtt, const char* fmt, ...)
-                __attribute__((format(printf, 2, 3)));
-        static void printf_str_indexed(PubSubClient& mqtt, const char* fmt, const char* args[], int argCount=0);
-    };
+    
 } // namespace DALHAL

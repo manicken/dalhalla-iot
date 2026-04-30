@@ -117,7 +117,7 @@ namespace DALHAL {
                 out->api_key[sizeof(out->api_key) - 1] = '\0'; // ensure null-termination
 
 
-                const JsonObject& items = JsonSchema::SchemaObject::GetValidatedJsonObject(JsonSchema::ThingSpeak::itemsField, jsonObj);
+                const JsonObject& items = JsonSchema::ThingSpeak::itemsField.GetValidatedJsonObject(jsonObj);
                 out->fieldCount = items.size();
                 out->fields = new ThingSpeakField[out->fieldCount];
                 int index = 0;

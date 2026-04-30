@@ -23,6 +23,8 @@
 
 #include "DALHAL_HA_DeviceDiscovery.h"
 
+#include "DALHAL_PubSubClient_JsonWriter.h"
+
 #include <cstdarg> // variadic
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
@@ -39,7 +41,7 @@ namespace DALHAL
 
     const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
         const char* cfgFormatStr = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
-        uint64_t deviceUID = getDeviceUID();
+        uint64_t deviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
         int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
         ddTopicLength++;
         char* topicStr = new char[ddTopicLength];
@@ -47,34 +49,39 @@ namespace DALHAL
         return topicStr;
     }
 
-    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
+    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {//, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
         dryRunPSC.write('{'); // start of json object
         dryRunPSC.write('\n'); // easier debug prints
-        if (jsonObjGlobal.isNull() == false)
-            HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(dryRunPSC, deviceId_cStr, jsonObj);
+        //if (jsonObjGlobal.isNull() == false)
+        HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, ctx);
+        
+        HA_DeviceDiscovery::SendBaseData(dryRunPSC, ctx);
         if (entityWriter)
-            entityWriter(dryRunPSC, jsonObj, topicBasePath);
+            entityWriter(dryRunPSC, topicBasePath);
         dryRunPSC.write('}'); // end of json object
 
         // second real send 
-        const char* cfgTopic_cStr = GetDiscoveryCfgTopic(deviceId_cStr, type_cStr, uid_cStr);
+        const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
         mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
-        GlobalLogger.Info(F("sent discovery:"), cfgTopic_cStr);
-        delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
+        
+        
 
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
-        if (jsonObjGlobal.isNull() == false)
-            HA_DeviceDiscovery::SendDeviceGroupData(mqtt, jsonObjGlobal);
-        HA_DeviceDiscovery::SendBaseData(mqtt, deviceId_cStr, jsonObj);
+        HA_DeviceDiscovery::SendDeviceGroupData(mqtt, ctx);
+        HA_DeviceDiscovery::SendBaseData(mqtt, ctx);
         if (entityWriter)
-            entityWriter(mqtt, jsonObj, topicBasePath);
+            entityWriter(mqtt, topicBasePath);
         mqtt.write('}'); // end of json object
-        mqtt.endPublish();
+        if (mqtt.endPublish()) {
+            GlobalLogger.Info(F("sent discovery:"), cfgTopic_cStr);
+        } else {
+            GlobalLogger.Error(F("while trying to send discovery:"), cfgTopic_cStr);
+        }
+        delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
     }
 
     void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
@@ -84,244 +91,28 @@ namespace DALHAL
         PSC_JsonWriter::kv(mqtt, "payload_not_available", DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
     }
 
-    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const char* deviceId_cStr, const JsonVariant& jsonObj) {
-        
+    void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+
         // optional parameters
-        if (jsonObj.containsKey("discovery")) {
-            PSC_JsonWriter::SendAllItems(mqtt, jsonObj["discovery"]);
+        if (ctx.jsonObj_discovery.size() != 0) {
+            PSC_JsonWriter::SendAllItems(mqtt, ctx.jsonObj_discovery);
             mqtt.write(',');
             mqtt.write('\n');
         }
         
         const char* rootName_cStr = DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME;
-        const char* uid_cStr = GetAsConstChar(jsonObj,"uid");
-        const char* name_cStr = GetAsConstChar(jsonObj, "name");
-
-        PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, deviceId_cStr, uid_cStr);
-        PSC_JsonWriter::kv(mqtt, "name", name_cStr);
+        
+        PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, ctx.cStr_deviceId, ctx.cStr_entity_uid);
+        PSC_JsonWriter::kv(mqtt, "name", ctx.cStr_name);
     }
 
-    void HA_DeviceDiscovery::SendDeviceGroupData(PubSubClient& mqtt, const JsonVariant& jsonObjDeviceGroup) {
-        const char* deviceGroupUIDstr = GetAsConstChar(jsonObjDeviceGroup,"uid");
-        const char* nameStr = GetAsConstChar(jsonObjDeviceGroup, "name");
-        
+    void HA_DeviceDiscovery::SendDeviceGroupData(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         const char* jsonFmt = JSON(
             "device": {\n
             "identifiers": ["%s"],\n
-            "name": "%s"
+            "name": "%s"},\n
         );
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, deviceGroupUIDstr, nameStr);
-
-        const char* manufacturer_cStr = GetAsConstChar(jsonObjDeviceGroup, "manufacturer");
-        if (manufacturer_cStr != nullptr) {
-            PSC_JsonWriter::printf_str(mqtt, JSON(,\n"manufacturer": "%s"), manufacturer_cStr);
-        }
-        const char* model_cStr = GetAsConstChar(jsonObjDeviceGroup, "model");
-        if (model_cStr != nullptr) {
-            PSC_JsonWriter::printf_str(mqtt, JSON(,\n"model": "%s"), model_cStr);
-        }
-        mqtt.write('\n');
-        mqtt.write('}');
-        mqtt.write(',');
-        mqtt.write('\n');
+        PSC_JsonWriter::printf_str(mqtt, jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
     }
-
-    void PSC_JsonWriter::key(PubSubClient& mqtt, const char* key) {
-        mqtt.write('"');
-        mqtt.write((uint8_t*)key, strlen(key));
-        mqtt.write('"');
-        mqtt.write(':');
-    }
-
-    void PSC_JsonWriter::copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last/* = false*/) {
-        mqtt.write('"');
-        mqtt.write((uint8_t*)key, strlen(key));
-        mqtt.write('"');
-        mqtt.write(':');
-        mqtt.write('"');
-        const char* value = GetAsConstChar(jsonObj, key);
-        mqtt.write((uint8_t*)value, strlen(value));
-        mqtt.write('"');
-        if (false == last) {
-            mqtt.write(',');
-            mqtt.write('\n');
-        }
-    }
-
-    void PSC_JsonWriter::SendAllItems(PubSubClient& mqtt, const JsonVariant &jsonObj) {
-        if (jsonObj.is<JsonObject>() == false) return;
-        JsonObject jsonObjItems = jsonObj.as<JsonObject>();
-        int itemCount = jsonObjItems.size();
-        if (itemCount == 0) return;
-        int index = 0;
-        for (const JsonPair& keyValue : jsonObjItems) {
-            PSC_JsonWriter::kv(mqtt, keyValue);
-            if (index < itemCount-1) {
-                mqtt.write(',');
-                mqtt.write('\n');
-            }
-            index++;
-        }
-    }
-
-    void PSC_JsonWriter::kv(PubSubClient& mqtt, const JsonPair& keyValue) {
-        const char* keyStr = keyValue.key().c_str();
-        mqtt.write('"');
-        mqtt.write((uint8_t*)keyStr, keyValue.key().size());
-        mqtt.write('"');
-        mqtt.write(':');
-        PSC_JsonWriter::val(mqtt, keyValue.value());
-    }
-
-    void PSC_JsonWriter::val(PubSubClient& mqtt, const JsonVariant& valueObj) {
-        if (valueObj.is<const char*>()) {
-            const char* valStr = valueObj.as<const char*>();
-            mqtt.write('"');
-            mqtt.write((uint8_t*)valStr, strlen(valStr));
-            mqtt.write('"');
-        } else if (valueObj.is<bool>()) {
-            bool valBool = valueObj.as<bool>();
-            if (valBool)
-                mqtt.write((uint8_t*)"true", 4);
-            else
-                mqtt.write((uint8_t*)"false", 5);
-        } else if (valueObj.is<JsonArray>()) {
-            // finalize object
-            mqtt.write('[');
-            const JsonArray& items = valueObj.as<JsonArray>();
-            int itemCount = items.size();
-            for (int i=0;i<itemCount;i++) {
-                PSC_JsonWriter::val(mqtt, items[i]);
-                if (i<itemCount-1) {
-                    mqtt.write(',');
-                    mqtt.write('\n');
-                }
-            }
-            mqtt.write(']');
-        } else if (valueObj.is<JsonObject>()) {
-            mqtt.write('{');
-            PSC_JsonWriter::SendAllItems(mqtt, valueObj);
-            mqtt.write('}');
-        } else if (valueObj.isNull()) {
-            mqtt.write((uint8_t*)"null", 4);
-        } else {
-            String tmp;
-            serializeJson(valueObj, tmp);
-            mqtt.write((uint8_t*)tmp.c_str(), tmp.length());
-        }
-    }
-
-    void PSC_JsonWriter::kv(PubSubClient& mqtt, const char* key, const char* value) {
-        mqtt.write('"');
-        mqtt.write((uint8_t*)key, strlen(key));
-        mqtt.write('"');
-        mqtt.write(':');
-        mqtt.write('"');
-        mqtt.write((uint8_t*)value, strlen(value));
-        mqtt.write('"');
-    }
-
-    void PSC_JsonWriter::printf_str(PubSubClient& mqtt, const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        const char* segmentStart = fmt;
-        while (*fmt) {
-            if (*fmt == '%' && *(fmt+1) == 's') {
-
-                // Write literal segment before %s
-                int len = fmt-segmentStart;
-                if (len > 0) {
-                    mqtt.write((const uint8_t*)segmentStart, len);
-                }
-
-                // Write argument
-                const char* s = va_arg(args, const char*);
-                mqtt.write((const uint8_t*)s, strlen(s));
-
-                fmt += 2;              // skip "%s"
-                segmentStart = fmt;    // start next literal
-            } else {
-                fmt++;
-            }
-        }
-        // Write remaining literal text
-        int len = fmt-segmentStart;
-        if (len > 0) {
-            mqtt.write((const uint8_t*)segmentStart, len);
-        }
-
-        va_end(args);
-    }
-
-    void PSC_JsonWriter::printf_zcstr(PubSubClient& mqtt, const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        const char* segmentStart = fmt;
-        while (*fmt) {
-            if (*fmt == '%' && *(fmt+1) == 's') {
-
-                // Write literal segment before %s
-                int len = fmt-segmentStart;
-                if (len > 0) {
-                    mqtt.write((const uint8_t*)segmentStart, len);
-                }
-
-                // Write argument
-                ZeroCopyString* s = va_arg(args, ZeroCopyString*);
-                mqtt.write((const uint8_t*)s->start, s->Length());
-
-                fmt += 2;              // skip "%s"
-                segmentStart = fmt;    // start next literal
-            } else {
-                fmt++;
-            }
-        }
-        // Write remaining literal text
-        int len = fmt-segmentStart;
-        if (len > 0) {
-            mqtt.write((const uint8_t*)segmentStart, len);
-        }
-
-        va_end(args);
-    }
-
-    void PSC_JsonWriter::printf_str_indexed(PubSubClient& mqtt, const char* fmt, const char* args[], int argCount) {
-        const char* p = fmt;
-        const char* segmentStart = fmt;
-        if (argCount == 0) {
-            for (; args[argCount]; argCount++);
-            // no point to continue if there is no parameters
-            if (argCount == 0) return;
-        }
-                
-        while (*p) {
-            if (*p == '%' && *(p+1) >= '0' && *(p+1) <= '9') {
-                // Write literal segment before %s
-                int len = p-segmentStart;
-                if (len > 0) {
-                    mqtt.write((const uint8_t*)segmentStart, len);
-                }
-                
-
-                int idx = *(p+1) - '0';
-                if (idx < argCount) {
-                    const char* s = args[idx];
-                    mqtt.write((const uint8_t*)s, strlen(s));
-                }
-                p += 2;
-                segmentStart = p;
-            } else {
-                //mqtt.write((uint8_t)*p);
-                p++;
-            }
-        }
-        // Write remaining literal text
-        int len = p-segmentStart;
-        if (len > 0) {
-            mqtt.write((const uint8_t*)segmentStart, len);
-        }
-    }
-
-
 
 } // namespace DALHAL

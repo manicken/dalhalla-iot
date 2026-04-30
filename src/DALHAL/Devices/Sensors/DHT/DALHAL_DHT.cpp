@@ -98,7 +98,9 @@ namespace DALHAL {
             return DHT::readHumidity;
         }
         else {
-            GlobalLogger.Warn(F("DHT::read - cmd not found: "), zcFuncName.ToString().c_str()); // this can then be read by getting the last entry from logger
+            if (zcFuncName.Length() != 0) {
+                GlobalLogger.Warn(F("DHT::read - cmd not found: "), zcFuncName.ToString().c_str()); // this can then be read by getting the last entry from logger
+            }
             return nullptr;
         }
     }

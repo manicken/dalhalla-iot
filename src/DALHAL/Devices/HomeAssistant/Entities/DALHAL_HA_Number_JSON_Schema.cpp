@@ -34,6 +34,7 @@
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 
 #include "DALHAL_HA_Number.h"
 
@@ -65,7 +66,6 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_Number* out) {
-                const JsonVariant& jsonObj = *(context.jsonObjItem);
 
                 const char* uid_cStr = JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem));
                 out->uid = encodeUID(uid_cStr);
@@ -83,16 +83,11 @@ namespace DALHAL {
                     out->cda = nullptr;
                 }
 
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(
-                    context.mqttClient, 
-                    deviceId_cStr, 
-                    context.deviceType, 
-                    uid_cStr, 
-                    jsonObj, 
-                    *(context.jsonGlobal), 
-                    out->topicBasePath, 
-                    DALHAL::HA_Number::SendDeviceDiscovery
-                );
+                const char* deviceName_cStr = JsonSchema::HA_Number::nameField.ExtractFrom(*context.jsonObjItem);
+                const JsonObject& jsonObj_discovery = JsonSchema::HA_Number::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
+                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_Number::SendDeviceDiscovery);
+
             }
 
         }

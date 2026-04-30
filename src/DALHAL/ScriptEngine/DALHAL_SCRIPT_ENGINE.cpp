@@ -118,7 +118,7 @@ namespace DALHAL {
                     InitScriptList(scriptCount);
                     if (false == ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
                         useDefaultFile = true;
-                        Serial.print("\ntokenize scripts list file fail!\n");
+                        GlobalLogger.Error(F("\ntokenize scripts list file fail!\n"));
                     } else {
                         //for (int i=0;i<scriptCount;i++) {
                         //    std::string s = scriptsToLoad.scriptFileList[i].ToString();
@@ -132,7 +132,7 @@ namespace DALHAL {
                 useDefaultFile = true;
             }
             if (useDefaultFile) {
-                Serial.print("\nUsing default script file: script.txt\n");
+                GlobalLogger.Error(F("\nUsing default script file: script.txt\n"));
                 InitScriptList(1);
                 scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
             }
@@ -204,14 +204,14 @@ namespace DALHAL {
             ScriptsBlock::running = false;
             ScriptEngine::Expressions::CalcStackSizesInit();
             if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
-                printf("\nValidateAllActiveScripts fail!\n");
+                GlobalLogger.Error(F("\nValidateAllActiveScripts fail!\n"));
                 GlobalLogger.printAllLogs(Serial, false);
                 return false;
             }
             
             ScriptEngine::Expressions::InitStacks();
             if (ScriptsBlock::LoadAllActiveScripts(scriptsToLoad) == false) {
-                printf("\nSERIOUS problem could not load scripts!\"n");
+                GlobalLogger.Error(F("\nSERIOUS problem could not load scripts!\"n"));
                 return false;
             }
             ScriptsBlock::running = true;

@@ -125,19 +125,13 @@ namespace DALHAL {
                 }
 
                 const char* deviceId_cStr = context.deviceId_cStr;
-        
+                
                 out->topicBasePath.Set(deviceId_cStr, uid_cStr);
 
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(
-                    context.mqttClient, 
-                    deviceId_cStr, 
-                    context.deviceType, 
-                    uid_cStr, 
-                    *context.jsonObjItem, 
-                    *(context.jsonGlobal), 
-                    out->topicBasePath, 
-                    DALHAL::HA_BinarySensor::SendDeviceDiscovery
-                );
+                const char* deviceName_cStr = JsonSchema::HA_BinarySensor::nameField.ExtractFrom(*context.jsonObjItem);
+                const JsonObject& jsonObj_discovery = JsonSchema::HA_BinarySensor::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
+                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_BinarySensor::SendDeviceDiscovery);
 
             }
 

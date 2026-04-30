@@ -78,7 +78,7 @@ namespace DALHAL {
 
             constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
-            constexpr const SchemaTypeBase* individualGroupFields[] = {&CommonBase::uidFieldRequired, &groupNameField, &itemsField, nullptr};
+            constexpr const SchemaTypeBase* individualGroupFields[] = {&groupUIDField, &groupNameField, &itemsField, nullptr};
             constexpr JsonObjectSchema individualGroupSchema = {
                 "IndividualGroup",
                 individualGroupFields,
@@ -178,10 +178,11 @@ namespace DALHAL {
                 self->devices = new Device*[validItemCount](); // create array and initialize all to nullptr
                 int index = 0;
                 // second pass create devices
-                const JsonVariant& groupObj = JsonSchema::SchemaObject::GetValidatedJsonObject(JsonSchema::HomeAssistant::globalGroupField, jsonObj);
+                const JsonVariant& groupObj = JsonSchema::HomeAssistant::globalGroupField.GetValidatedJsonObject(jsonObj);
                 
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);
-                createFuncContext.jsonGlobal = &groupObj;
+                createFuncContext.groupID_cStr = JsonSchema::HomeAssistant::groupUIDField.ExtractFrom(groupObj);
+                createFuncContext.groupName_cStr = JsonSchema::HomeAssistant::groupNameField.ExtractFrom(groupObj);
                 createFuncContext.deviceId_cStr = JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem));
                 CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, index);
                 
@@ -228,12 +229,13 @@ namespace DALHAL {
 
                 int newItemIndex = 0;
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);
-                //createFuncContext.jsonObjRoot = &jsonObj;
+
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
                     const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
                     const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
 
-                    createFuncContext.jsonGlobal = &jsonObjGrpItem;
+                    createFuncContext.groupID_cStr = JsonSchema::HomeAssistant::groupUIDField.ExtractFrom(jsonObjGrpItem);
+                    createFuncContext.groupName_cStr = JsonSchema::HomeAssistant::groupNameField.ExtractFrom(jsonObjGrpItem);
                     
                     CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, newItemIndex);
 

@@ -44,21 +44,11 @@ namespace DALHAL {
     }
 
     bool DeviceManager::init() {
-        //Serial1.print(F("DeviceManager::setupMgr() "));
-        Serial1.printf("Heap: %u, Max block: %u\n",
-            ESP.getFreeHeap(),
-            ESP.getMaxFreeBlockSize());
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-        if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()+1) == false) { // remove the leading /
-#else
-        if (ReadJSON(String(DALHAL_CONFIG_JSON_FILE).c_str()) == false) {
-#endif
-            //Serial1.println(F("error happend while reading and parsing config JSON"));
-            //Serial.println(F("error happend while reading and parsing config JSON"));
+        if (DeviceManager::ReadJSON() == false) {
             GlobalLogger.printAllLogs(Serial, false);
             return false;
         }
-        begin(); // call the begin function on all loaded hal devices
+        DeviceManager::begin(); // call the begin function on all loaded hal devices
         return true;
     }
 
@@ -234,22 +224,30 @@ namespace DALHAL {
         return GetDeviceEvent(zcStrUidPathAndFuncName, nullptr);
     }
 
-    bool DeviceManager::ReadJSON(const char* path) {
-        if (path == nullptr) {
+    bool DeviceManager::ReadJSON(const char* cStr_path) {
+        const char* cStr_resolvedPath = cStr_path;
+        // this need to be here to ensure the lifetime of the temp string is valid
+        // until the end of this function
+        String strPath;
+        if (cStr_resolvedPath == nullptr) {
+            strPath = String(F(DALHAL_ROOT_URL "/cfg.json")); // wrap in String as 
+            cStr_resolvedPath = strPath.c_str();
+        }
+
+        if (*cStr_resolvedPath == '\0') {
             GlobalLogger.Error(F("ReadJSON - path cannot be empty "));
             return false;
         }
-        if (LittleFS.exists(path) == false) {
+
+        if (LittleFS.exists(cStr_resolvedPath) == false) {
             GlobalLogger.Error(F("ReadJSON - cfg file did not exist"));
             return false;
         }
 
         char* jsonBuffer = nullptr;
-        size_t fileSize=0;
-        const char* filePath = path;
+        size_t fileSize=0;        
         
-        
-        if (LittleFS_ext::load_text_file(filePath, &jsonBuffer, &fileSize) != LittleFS_ext::FileResult::Success)
+        if (LittleFS_ext::load_text_file(cStr_resolvedPath, &jsonBuffer, &fileSize) != LittleFS_ext::FileResult::Success)
         {
             
 
@@ -282,9 +280,8 @@ namespace DALHAL {
 
         return parseOk;
     }
-    void DeviceManager::begin() {
-        //JsonSchema::ForceRegistryLink(); // dummy call to make stupid linker work as it should
 
+    void DeviceManager::begin() {
         for (int i=0;i<deviceCount;i++) {
             Device* device = devices[i];
             if (device == nullptr) continue;

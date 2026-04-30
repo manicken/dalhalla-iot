@@ -23,6 +23,7 @@
 
 #include "DALHAL_HA_Button.h"
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
@@ -43,7 +44,7 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_Button = &DALHAL::HA_Button::RegistryDefine;
 
-    void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
         const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
         PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
     }

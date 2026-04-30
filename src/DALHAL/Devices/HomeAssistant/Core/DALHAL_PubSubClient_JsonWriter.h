@@ -23,21 +23,24 @@
 
 #pragma once
 
-#include <PubSubClient.h>
 #include <ArduinoJson.h>
-
-#include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
+#include <PubSubClient.h>
 
 namespace DALHAL {
 
-    struct HA_CreateFunctionContext : DeviceCreateContext {
-
-        PubSubClient& mqttClient;
-        
-        const char* deviceId_cStr;
-        const char* groupID_cStr;
-        const char* groupName_cStr;
-
-        HA_CreateFunctionContext(PubSubClient& mqttClient) : DeviceCreateContext(), mqttClient(mqttClient), groupID_cStr(nullptr), groupName_cStr(nullptr) {}
+    class PSC_JsonWriter {
+    public:
+        static void key(PubSubClient& mqtt, const char* key);
+        static void kv(PubSubClient& mqtt, const char* key, const char* value);
+        static void kv(PubSubClient& mqtt, const JsonPair& kv);
+        static void val(PubSubClient& mqtt, const JsonVariant& valueObj);
+        static void copyFromJsonObj(PubSubClient& mqtt, const JsonVariant &jsonObj, const char* key, bool last = false);
+        static void SendAllItems(PubSubClient& mqtt, const JsonVariant &jsonObj);
+        static void printf_str(PubSubClient& mqtt, const char* fmt, ...)
+                __attribute__((format(printf, 2, 3)));
+        static void printf_zcstr(PubSubClient& mqtt, const char* fmt, ...)
+                __attribute__((format(printf, 2, 3)));
+        static void printf_str_indexed(PubSubClient& mqtt, const char* fmt, const char* args[], int argCount=0);
     };
+    
 }

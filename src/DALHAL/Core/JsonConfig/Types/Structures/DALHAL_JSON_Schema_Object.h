@@ -52,7 +52,7 @@ namespace DALHAL {
         public:
             static bool ExtractValues(const SchemaObject& schemaField, const JsonVariant& jsonObj, void* outStruct);
             /** please note that this is should only be used on validated json, or when the the usage is safe */
-            static const JsonObject GetValidatedJsonObject(const SchemaObject& schemaField, const JsonVariant& jsonObj);
+            const JsonObject GetValidatedJsonObject(const JsonVariant& jsonObj) const;
             const JsonSchema::JsonObjectSchema* subtype;
             
             constexpr SchemaObject(const char* name, FieldPolicy policy, const JsonSchema::JsonObjectSchema* subtype)

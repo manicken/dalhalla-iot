@@ -184,30 +184,20 @@ void setup() {
     if (InitSD_MMC()) FSBrowser::fsOK = true;
 #endif
 
-//Serial1.println(F("OTA::setup();"));
     OTA::setup();
-//Serial1.println(F("Scheduler::setup"));
     //Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
-//Serial1.println(F("Info::startTime = now();"));
     Info::startTime = now();
-//Serial1.println(F(" HeartbeatLed::setup()"));    
     HeartbeatLed::setup();
-#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
-    //System::Start_MDNS();
-#endif
     
 #if defined(ESP32) && !defined(esp32c3)
     File test = SD_MMC.open("/StartTimes.log", "a", true);
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();
 #endif
-//Serial1.println(F(" System::initWebServerHandlers"));   
     System::initWebServerHandlers(webserver);
 #ifdef DALHAL_H_
-//Serial1.println(F("  DALHAL::begin();"));   
     DALHAL::begin();
 #endif
-//Serial1.println(F(" webserver.begin()"));   
     webserver.begin();
 
     // make sure that the following are allways at the end of this function
@@ -226,13 +216,7 @@ void loop() {
 #ifdef WIFI_CONNECTION_MANAGER_H
     WiFiConnectionManager::task();
 #endif
-#if defined(ESP8266)
-    //MDNS.update(); // this is only required on esp8266
-#endif
-    
-#ifdef WIFI_MANAGER_WRAPPER_H_
-    WiFiManagerWrapper::Task();
-#endif
+
 }
 
 #if defined(USE_DISPLAY)

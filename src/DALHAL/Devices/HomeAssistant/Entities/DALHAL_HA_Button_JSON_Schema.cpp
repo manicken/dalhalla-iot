@@ -66,8 +66,6 @@ namespace DALHAL {
 
             void Extractors::Apply(DALHAL::HA_CreateFunctionContext& context, DALHAL::HA_Button* out) {
 
-                const JsonVariant& jsonObj = *(context.jsonObjItem);
-
                 const char* uid_cStr = JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem));
                 out->uid = encodeUID(uid_cStr);
 
@@ -84,16 +82,11 @@ namespace DALHAL {
                     out->cda = nullptr;
                 }
 
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(
-                    context.mqttClient, 
-                    deviceId_cStr, 
-                    context.deviceType, 
-                    uid_cStr, 
-                    jsonObj, 
-                    *(context.jsonGlobal), 
-                    out->topicBasePath, 
-                    DALHAL::HA_Button::SendDeviceDiscovery
-                );
+                const char* deviceName_cStr = JsonSchema::HA_Button::nameField.ExtractFrom(*context.jsonObjItem);
+                const JsonObject& jsonObj_discovery = JsonSchema::HA_Button::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
+                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_Button::SendDeviceDiscovery);
+
             }
 
         }

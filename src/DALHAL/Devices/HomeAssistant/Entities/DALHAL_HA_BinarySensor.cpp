@@ -24,6 +24,7 @@
 #include "DALHAL_HA_BinarySensor.h"
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
@@ -44,7 +45,7 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_BinarySensor = &DALHAL::HA_BinarySensor::RegistryDefine;
 
-    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath) {
+    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
         mqtt.write(',');
         mqtt.write('\n');
         HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, topicBasePath);

@@ -149,8 +149,8 @@ namespace DALHAL {
             return true;
         }
 
-        const JsonObject SchemaObject::GetValidatedJsonObject(const SchemaObject& schemaField, const JsonVariant& jsonObj) {
-            return jsonObj[schemaField.name].as<JsonObject>();
+        const JsonObject SchemaObject::GetValidatedJsonObject(const JsonVariant& jsonObj) const {
+            return jsonObj[this->name].as<JsonObject>();
         }
 
     }

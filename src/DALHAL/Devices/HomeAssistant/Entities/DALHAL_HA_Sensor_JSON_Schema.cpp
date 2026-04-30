@@ -34,6 +34,7 @@
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Core/Types/DALHAL_Consumer.h>
@@ -125,16 +126,10 @@ namespace DALHAL {
         
                 out->topicBasePath.Set(deviceId_cStr, uid_cStr);
 
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(
-                    context.mqttClient, 
-                    deviceId_cStr, 
-                    context.deviceType, 
-                    uid_cStr, 
-                    *context.jsonObjItem, 
-                    *(context.jsonGlobal), 
-                    out->topicBasePath, 
-                    DALHAL::HA_Sensor::SendDeviceDiscovery
-                );
+                const char* deviceName_cStr = JsonSchema::HA_Sensor::nameField.ExtractFrom(*context.jsonObjItem);
+                const JsonObject& jsonObj_discovery = JsonSchema::HA_Sensor::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
+                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_Sensor::SendDeviceDiscovery);
 
             }
 

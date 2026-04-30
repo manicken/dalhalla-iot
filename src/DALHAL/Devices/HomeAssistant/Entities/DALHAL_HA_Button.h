@@ -49,7 +49,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, const JsonVariant& jsonObj, TopicBasePath& topicBasePath);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;

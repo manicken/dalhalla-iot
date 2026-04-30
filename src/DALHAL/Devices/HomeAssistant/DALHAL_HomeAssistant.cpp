@@ -62,6 +62,7 @@ namespace DALHAL {
         });
         // temporary subscribe to config topic to begin of cleanup of stale devices
         const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
+        GlobalLogger.Info(F("subscribed to 'cleanup' topic:"), cfgTopic_cStr);
         mqttClient.subscribe(cfgTopic_cStr);
         delete[] cfgTopic_cStr;
     }
@@ -119,7 +120,11 @@ namespace DALHAL {
     }
 
     void HomeAssistant::mqttCallback(char* topic, byte* payload, unsigned int length) {
+#if defined(ESP32)
         Serial.printf("\r\nmqttCallback\r\ntopic:%s\r\n payload:%.*s\r\n", topic, (int)length, (char*)payload);
+#elif defined(ESP8266)
+        Serial1.printf("\r\nmqttCallback\r\ntopic:%s\r\n payload:%.*s\r\n", topic, (int)length, (char*)payload);
+#endif
 
         // wrap in a ZeroCopyString for neat functions
         ZeroCopyString zcTopic(topic);
@@ -134,25 +139,38 @@ namespace DALHAL {
             // see DALHAL_HA_DD_CFG_TOPIC_FORMAT for the formatstr
             //const char* format = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
             zcTopic.start = zcStartFirstDelimiter+1;
-            if (zcTopic.IsEmpty()) { return; } // error incorrect topic string
+            if (zcTopic.IsEmpty()) {
+                GlobalLogger.Error(F("zcTopic.IsEmpty()"));
+                return;
+            } // error incorrect topic string
             ZeroCopyString zcType = zcTopic.SplitOffHead('/');
-            if (zcTopic.IsEmpty() || zcType.IsEmpty()) { return; } // error incorrect topic string
+            if (zcTopic.IsEmpty() || zcType.IsEmpty()) {
+                GlobalLogger.Error(F("zcTopic.IsEmpty() || zcType.IsEmpty()"));
+                return;
+            } // error incorrect topic string
             ZeroCopyString zcUID = zcTopic.SplitOffHead('/');
-            if (zcUID.IsEmpty()) { return; } // error incorrect topic string
+            if (zcUID.IsEmpty()) {
+                GlobalLogger.Error(F("zcUID.IsEmpty() - incorrect topic string"));
+                return;
+            } // error incorrect topic string
             if (zcUID.MoveStartAfter('_') == false) { // immutable framework id (DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME)
+                GlobalLogger.Error(F("immutable framework id - incorrect topic string"));
                 return; // error incorrect topic string
             } 
             if (zcUID.MoveStartAfter('_') == false) { // immutable device UID
+                GlobalLogger.Error(F("immutable device UID - incorrect topic string"));
                 return; // error incorrect topic string
             } 
             ZeroCopyString zcDeviceID = zcUID.SplitOffHead('_'); // mutable device ID, used to sort IDENTIFY entities in HA
             if (zcDeviceID.IsEmpty() || zcUID.IsEmpty()) {
+                GlobalLogger.Error(F("incorrect topic string"));
                 return; // error incorrect topic string
             }
             if (zcDeviceID.Equals(deviceID.c_str()) == false) {
                 // deviceID have changed remove item
                 GlobalLogger.Info(F("removed stale device bc deviceID change/removed"), topic);
                 mqttClient.publish(topic, "");  // empty retained
+                GlobalLogger.Error(F("empty retained"));
                 return;
             }
 
@@ -166,6 +184,7 @@ namespace DALHAL {
                 if (uid != dev->uid) continue;
                 if (zcType != dev->Type) continue;
                 // found device just return
+                GlobalLogger.Info(F("found device just return"));
                 return;
                 
             }
