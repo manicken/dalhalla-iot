@@ -90,7 +90,7 @@ namespace DALHAL {
             }
             DALHAL_GPIO_MGR_PINFUNC_TYPE fMode = static_cast<const SchemaHardwarePin&>(fieldSchema).mode;
             
-            GPIO_manager::CheckPinResult cpRes = GPIO_manager::CheckIfPinAvailableAndIsFree_ThenReserve(pin, fMode);
+            GPIO_manager::CheckPinResult cpRes = GPIO_manager::TryReservePin(pin, fMode);
             if (cpRes != GPIO_manager::CheckPinResult::Success) {
                 GPIO_manager::CheckPinResultError errMsg = GPIO_manager::GetCheckPinResultError(cpRes, pin, fMode);
                 std::string errStr = errMsg.msg + ", fName=" + fieldSchema.name; errStr += " @ ";

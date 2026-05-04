@@ -207,7 +207,7 @@ namespace DALHAL {
         };
         constexpr size_t PinModeStrings_size = sizeof(PinModeStrings) / sizeof(PinModeStrings[0]);
         
-        uint8_t reservedPins[available_gpio_list_size];
+        PinReservationType reservedPins[available_gpio_list_size];
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             std::string result;
@@ -219,7 +219,6 @@ namespace DALHAL {
                     if (!result.empty()) result += "|";
                     result += pinModeDef.Name;
                 }
-                i++;
             }
             return result.empty() ? "None" : result;
         }
@@ -236,27 +235,34 @@ namespace DALHAL {
            return NA_PIN;
         }
 
-        CheckPinResult CheckIfPinAvailableAndIsFree(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
+        void ClearAllReservations() {
+            for (int i=0;i<(int)available_gpio_list_size;i++) {
+                if (reservedPins[i] == PinReservationType::DYNAMIC) {
+                    reservedPins[i] = PinReservationType::FREE;
+                }
+            }
+        }
+
+        CheckPinResult TryReservePin(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             int index = 0;
-            const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
-            if (pinInfo.pin == -1) {
+            const gpio_pin& pinInfo = GetPinInfo(pin, index);
+
+            if (index == -1) {
                 return CheckPinResult::NotFound;
             }
-            if (reservedPins[index] == 1) {
+
+            if (reservedPins[index] != PinReservationType::FREE) {
                 return CheckPinResult::InUse;
             }
+
             if ((pinFuncMask & pinInfo.func) != pinFuncMask) {
                 return CheckPinResult::ModeMismatch;
             }
-            return CheckPinResult::Success;
-        }
 
-        CheckPinResult CheckIfPinAvailableAndIsFree_ThenReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
-            CheckPinResult res = CheckIfPinAvailableAndIsFree(pin, pinFuncMask);
-            if (res == CheckPinResult::Success) {
-                ReservePin(pin);
-            }
-            return res;
+            // state change happens ONLY here
+            reservedPins[index] = PinReservationType::DYNAMIC;
+
+            return CheckPinResult::Success;
         }
 
         CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
@@ -271,24 +277,6 @@ namespace DALHAL {
                 return {BASE_MSG_TYPE_FUNC("Pin to reserve - not found: "), std::to_string(pin)};
             }
             return {BASE_MSG_TYPE_FUNC("unknown"),nullptr};
-        }
-
-       // void InitReservedPins
-
-        void ClearAllReservations() {
-            for (int i=0;i<(int)available_gpio_list_size;i++) {
-                reservedPins[i] = 0;
-            }
-        }
-        /** it's recommended to call CheckIfPinAvailable prior to using this function,
-         * this function is very basic and do only set the actual pin to reserved state, 
-         * so calling it many times on the same pin have no effect */
-        void ReservePin(uint8_t pin) {
-            int index = 0;
-            const gpio_pin& pinInfo = GetPinInfo(pin, index); // index is passed by ref
-            if (pinInfo.pin != -1) {
-                reservedPins[index] = 1;
-            }
         }
 
         void triStateAvailablePins() {
@@ -338,10 +326,8 @@ namespace DALHAL {
 
                 pinMode(g.pin, INPUT);   // closest equivalent to "tri-state"
             }
-
 #endif
-}
-
+        }
 
         std::string GetList(ZeroCopyString& zcMode)
         {

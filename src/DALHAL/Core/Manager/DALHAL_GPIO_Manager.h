@@ -72,6 +72,13 @@ namespace DALHAL {
            constexpr DALHAL_GPIO_MGR_PINFUNC_TYPE JTAG = 0x400;
         }
 
+        enum PinReservationType {
+            FREE,
+            DYNAMIC,
+            STATIC,
+            SYSTEM_RESERVED
+        };
+
         /*enum class PinFunc : DALHAL_GPIO_MGR_PINFUNC_TYPE {
             
         };*/
@@ -116,15 +123,17 @@ namespace DALHAL {
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         
-        CheckPinResult CheckIfPinAvailableAndIsFree_ThenReserve(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
-        /** this is a nice function that can be used */
-        CheckPinResult CheckIfPinAvailableAndIsFree(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
-        CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
         void ClearAllReservations();
-        /** it's recommended to call CheckIfPinAvailable prior to using this function,
-         * this function is very basic and do only set the actual pin to reserved state, 
-         * so calling it many times on the same pin do not matter */
-        void ReservePin(uint8_t pin);
+        /**
+         * Validates and reserves a pin during configuration load/reload phase.
+         *
+         * This function is only used while building system state from config.
+         * It assumes that dynamic reservations have been cleared prior to use.
+         *
+         * Not intended for incremental runtime allocation.
+         */
+        CheckPinResult TryReservePin(uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
+        CheckPinResultError GetCheckPinResultError(CheckPinResult res, uint8_t pin, DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
 
         void triStateAvailablePins();
 
