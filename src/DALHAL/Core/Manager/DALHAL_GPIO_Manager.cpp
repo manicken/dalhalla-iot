@@ -211,7 +211,7 @@ namespace DALHAL {
 
         std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
             std::string result;
-            for (int i=0; i < PinModeStrings_size; ++i) {
+            for (int i=0; i < (int)PinModeStrings_size; ++i) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
                 if (pinModeDef.Name == nullptr) continue; // failsafe
 
