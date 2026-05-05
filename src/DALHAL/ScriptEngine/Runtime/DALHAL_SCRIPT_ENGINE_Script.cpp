@@ -56,7 +56,7 @@ namespace DALHAL {
            // printf("see if we come here\n");
             for (int i=0;i<_itemsCount;i++) {
                 if (tokens.SkipIgnoresAndEndIf() == false) {
-                    printf("SERIOUS ERROR - reached end\n");
+                    Serial.print(F("SERIOUS ERROR - reached end\n"));
                     break;
                 }
                 
@@ -130,7 +130,7 @@ namespace DALHAL {
             for (int i=0;i<itemsCount;i++) {
                 StatementBlock& statementItem = items[i];
                 if (statementItem.handler == nullptr) {
-                    printf("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n");
+                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
                     break;
                 }
                 HALOperationResult res = statementItem.handler(statementItem.context);

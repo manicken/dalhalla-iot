@@ -48,6 +48,7 @@ namespace FSBrowser {
     File uploadFile;
 
     const char TEXT_PLAIN[] PROGMEM = "text/plain";
+    const char APPLICATION_JSON[] PROGMEM = "application/json";
     const char FS_INIT_ERROR[] PROGMEM = "FS INIT ERROR";
     const char FILE_NOT_FOUND[] PROGMEM = "FileNotFound";
 
@@ -120,11 +121,11 @@ namespace FSBrowser {
             String filePath = dir + "/" + filename;
             fsUploadFile = LittleFS.open(filePath, "w");
             if (!fsUploadFile) {
-                Serial.println("Failed to open file for writing");
-                request->send(500, "text/plain", "500: couldn't create file");
+                Serial.println(F("Failed to open file for writing"));
+                request->send(500, FPSTR(TEXT_PLAIN), "500: couldn't create file");
                 return;
             }
-            Serial.print("Upload Start: "); Serial.println(filePath);
+            Serial.print(F("Upload Start: ")); Serial.println(filePath);
         }
 
         // Write chunk
@@ -161,7 +162,7 @@ namespace FSBrowser {
             if (path.length() == 0) path = "/";
             return true;
         }
-        Serial.println("selectFileSystemAndFixPath error: invalid FS " + path);
+        Serial.println(F("selectFileSystemAndFixPath error: invalid FS ")); Serial.println(path);
         return false;
     }
 
@@ -179,7 +180,7 @@ namespace FSBrowser {
             json += "\"false\"";
         }
         json += ",\"unsupportedFiles\":\"" + unsupportedFiles + "\"}";
-        request->send(200, "application/json", json);
+        request->send(200, FPSTR(APPLICATION_JSON), json);
     }
 
     void handleFileList(AsyncWebServerRequest *request) {
@@ -187,9 +188,9 @@ namespace FSBrowser {
         if (!request->hasParam("dir")) return replyBadRequest(request, "DIR ARG MISSING");
 
         String path = request->getParam("dir")->value();
-        printf("\nhandleFileList path:%s\n", path.c_str());
+        Serial.print(F("\nhandleFileList path:")); Serial.println(path.c_str());
         if (!selectFileSystemAndFixPath(path)) {
-            request->send(200, "application/json",
+            request->send(200, FPSTR(APPLICATION_JSON),
                 "[{\"type\":\"dir\",\"name\":\"sdcard\"},{\"type\":\"dir\",\"name\":\"LittleFS\"}]");
             return;
         }
@@ -230,13 +231,13 @@ namespace FSBrowser {
         }
     #endif
         output += "]";
-        request->send(200, "application/json", output);
+        request->send(200, FPSTR(APPLICATION_JSON), output);
     }
 
 
     void handleFileRead(AsyncWebServerRequest *request) {
         String path = request->url();
-        printf("\nhandleFileRead path:%s\n", path.c_str());
+        Serial.print(F("\nhandleFileRead path:")); Serial.println(path.c_str());
         if (!fsOK) { replyServerError(request, FPSTR(FS_INIT_ERROR)); return; }
         if (!selectFileSystemAndFixPath(path)) { replyNotFound(request, "FS NOT FOUND"); return; }
         if (!fileSystem->exists(path)) { replyNotFound(request, FPSTR(FILE_NOT_FOUND)); return; }
@@ -249,11 +250,12 @@ namespace FSBrowser {
     void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
         if (!fsOK) return;
         if (index == 0) {
-            printf("\nhandleFileUpload path:%s\n", filename.c_str());
+            
+            Serial.print(F("\nhandleFileUpload:")); Serial.println(filename.c_str());
             if (!filename.startsWith("/")) filename = "/" + filename;
             if (!selectFileSystemAndFixPath(filename)) { replyNotFound(request, "FS NOT FOUND"); return; }
             uploadFile = fileSystem->open(filename, "w");
-            if (!uploadFile) { request->send(500, "text/plain", "CREATE FAILED"); return; }
+            if (!uploadFile) { request->send(500, FPSTR(TEXT_PLAIN), "CREATE FAILED"); return; }
         }
         if (len && uploadFile) uploadFile.write(data, len);
         if (final && uploadFile) uploadFile.close();
@@ -264,7 +266,7 @@ namespace FSBrowser {
         if (!request->hasParam("path", true)) return replyBadRequest(request, "PATH ARG MISSING");
 
         String path = request->getParam("path", true)->value();
-        printf("\nhandleFileCreate path:%s\n", path.c_str());
+        Serial.print(F("\nhandleFileCreate path:")); Serial.println(path.c_str());
 
         if (!selectFileSystemAndFixPath(path)) return;
 
@@ -273,7 +275,7 @@ namespace FSBrowser {
         String src = request->arg("src");
         if (src.isEmpty()) {
             // No source specified: creation
-            printf("\nhandleFileCreate: %s\n", path);
+            Serial.print(F("\nhandleFileCreate path:")); Serial.println(path.c_str());
             if (path.endsWith("/")) {
                 // Create a folder
                 path.remove(path.length() - 1);
@@ -291,7 +293,7 @@ namespace FSBrowser {
             if (src == "/") { return replyBadRequest(request, "BAD SRC"); }
             if (!fileSystem->exists(src)) { return replyBadRequest(request, "SRC FILE NOT FOUND"); }
 
-            printf("\nhandleFileCreate: %s from %s\n", path, src);
+            Serial.print(F("\nhandleFileCreate:")); Serial.print(path.c_str()); Serial.print(F(" from ")); Serial.println(src.c_str());
 
             if (path.endsWith("/")) { path.remove(path.length() - 1); }
             if (src.endsWith("/")) { src.remove(src.length() - 1); }
@@ -305,7 +307,7 @@ namespace FSBrowser {
         if (!request->hasParam("path", true)) return replyBadRequest(request, "PATH ARG MISSING");
 
         String path = request->getParam("path", true)->value();
-        printf("\nhandleFileDelete path:%s\n", path.c_str());
+        Serial.print(F("\nhandleFileDelete path:")); Serial.println(path.c_str());
         if (!selectFileSystemAndFixPath(path)) return;
         if (path.isEmpty() || path == "/") return replyBadRequest(request, "BAD PATH");
         if (!fileSystem->exists(path)) return replyNotFound(request, FPSTR(FILE_NOT_FOUND));
@@ -321,13 +323,13 @@ namespace FSBrowser {
         srv.on("/status", HTTP_GET, handleStatus);
         srv.on("/list", HTTP_GET, handleFileList);
         srv.on("/edit/upload", HTTP_GET, handleFailsafeUploadPage);           // if the client requests the upload page
-        srv.on("/edit/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println("send OK"); r->send(200); }, handleFileUploadFailsafe);
+        srv.on("/edit/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println(F("send OK")); r->send(200); }, handleFileUploadFailsafe);
 
         srv.on("/edit", HTTP_GET, [](AsyncWebServerRequest *r){ r->send(LittleFS, "/edit/index.htm", "text/html"); });
         srv.on("/edit", HTTP_PUT, handleFileCreate);
         srv.on("/edit", HTTP_DELETE, handleFileDelete);
         srv.on("/upload", HTTP_GET, handleFailsafeUploadPage);
-        srv.on("/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println("send OK"); r->send(200); }, handleFileUploadFailsafe);
+        srv.on("/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println(F("send OK")); r->send(200); }, handleFileUploadFailsafe);
         srv.on("/edit", HTTP_POST, [](AsyncWebServerRequest *r){ r->send(200); }, handleFileUpload);
 
         srv.serveStatic("/", LittleFS, "/").setDefaultFile("index.htm");

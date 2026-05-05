@@ -72,11 +72,11 @@ namespace OTA
 
             if (ArduinoOTA.getCommand() == U_FLASH) {
 
-            type = "sketch";
+            type = F("sketch");
 
             } else { // U_SPIFFS
 
-            type = "filesystem";
+            type = F("filesystem");
 
             }
 
@@ -90,7 +90,7 @@ namespace OTA
 
         ArduinoOTA.onEnd([]() {
 
-            DEBUG_UART.println("\n100%\nOTA End");
+            DEBUG_UART.println(F("\n100%\nOTA End"));
 
         });
 /*
@@ -110,7 +110,7 @@ namespace OTA
         */
 
         ArduinoOTA.onError([](ota_error_t error) {
-            DEBUG_UART.printf("OTA Error");
+            DEBUG_UART.print(F("OTA Error"));
             DEBUG_UART.printf("[%u]: ", error);
             if (error == OTA_AUTH_ERROR) DEBUG_UART.println(F("Auth Failed"));
             else if (error == OTA_BEGIN_ERROR) DEBUG_UART.println(F("Begin Failed"));
@@ -122,9 +122,9 @@ namespace OTA
         ArduinoOTA.begin();
         //WiFi.setHostname("test");
 
-        DEBUG_UART.println("Ready");
+        DEBUG_UART.println(F("Ready"));
 
-        DEBUG_UART.print("IP address: ");
+        DEBUG_UART.print(F("IP address: "));
 
         DEBUG_UART.println(WiFi.localIP());
     }

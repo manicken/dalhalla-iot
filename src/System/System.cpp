@@ -148,7 +148,7 @@ namespace System {
         HeartbeatLed::setup(500, 500);
         
         Serial.begin(115200);
-        Serial.println("\r\n******** FAILSAFE MODE ********");
+        Serial.println(F("\r\n******** FAILSAFE MODE ********"));
 
         // --- STEP 1: Auto-connect to last WiFi ---
         WiFi.mode(WIFI_STA);
@@ -161,20 +161,20 @@ namespace System {
         }
 
         if (WiFi.status() == WL_CONNECTED) {
-            Serial.printf("Failsafe WiFi connected: %s\n", WiFi.localIP().toString().c_str());
+            Serial.print(F("Failsafe WiFi connected: ")); Serial.println(WiFi.localIP().toString().c_str());
         } else {
-            Serial.println("Failsafe WiFi FAILED → Starting AP");
+            Serial.println(F("Failsafe WiFi FAILED → Starting AP"));
             WiFi.mode(WIFI_AP);
             WiFi.softAP("Failsafe-Device", "12345678");
-            Serial.print("AP IP: ");
+            Serial.print(F("AP IP: "));
             Serial.println(WiFi.softAPIP());
         }
 
         // --- STEP 2: Setup OTA ---
-        ArduinoOTA.onStart([](){ Serial.println("OTA Start"); });
-        ArduinoOTA.onEnd([](){ Serial.println("OTA End"); });
+        ArduinoOTA.onStart([](){ Serial.println(F("OTA Start")); });
+        ArduinoOTA.onEnd([](){ Serial.println(F("OTA End")); });
         ArduinoOTA.onError([](ota_error_t err){
-            Serial.printf("OTA Error %u\n", err);
+            Serial.print(F("OTA Error ")); Serial.println(err);
         });
         ArduinoOTA.begin();
 
@@ -182,12 +182,15 @@ namespace System {
         AsyncWebServer* server = new AsyncWebServer(80);
 
         server->on("/", HTTP_GET, [](AsyncWebServerRequest *req){
-            req->send(200, "text/plain", 
-                    "Device is in FAILSAFE mode.\nUse OTA or /reset");
+            String msg = F("Device is in FAILSAFE mode.\nUse OTA or /reset");
+            String type = F("text/plain");
+            req->send(200, type, msg);
         });
 
         server->on("/reset", HTTP_GET, [](AsyncWebServerRequest *req){
-            req->send(200, "text/plain", "Restarting...");
+            String type = F("text/plain");
+            String msg = F("Restarting...");
+            req->send(200, type, msg);
             delay(200);
             ESP.restart();
         });
@@ -196,7 +199,7 @@ namespace System {
         DALHAL::WebSocketAPI::setup();
 
         server->begin();
-        Serial.println("\r\nFailsafe HTTP server started");
+        Serial.println(F("\r\nFailsafe HTTP server started"));
         unsigned long long failsafeLoopTimeoutMs = 1000*60*10; // 10 Min timeout to avoid stuck in this state in case of a error
         unsigned long long failsafeLoopTimeoutMs_Start = millis();
         unsigned long long failsafeLoopTimeoutMs_MaxEnd = failsafeLoopTimeoutMs_Start + failsafeLoopTimeoutMs;
@@ -206,9 +209,9 @@ namespace System {
             HeartbeatLed::task();   // Non-blocking
 
             if (millis() >= failsafeLoopTimeoutMs_MaxEnd) {
-                Serial.println("\r\n***************************************\r\n");
-                Serial.println("\r\n***  Failsafe loop timeout reached  ***\r\n");
-                Serial.println("\r\n***************************************\r\n");
+                Serial.println(F("\r\n***************************************\r\n"));
+                Serial.println(F("\r\n***  Failsafe loop timeout reached  ***\r\n"));
+                Serial.println(F("\r\n***************************************\r\n"));
                 ESP.restart();
             }
             failsafeLoop_API_exec_cmd();           
@@ -220,7 +223,7 @@ namespace System {
     void initWebServerHandlers(AsyncWebServer& webserver)
     {
         FSBrowser::setup(webserver);
-        webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
+        /*webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
             
             if (LittleFS.format()) {
                 if (!LITTLEFS_BEGIN_FUNC_CALL) {
@@ -248,7 +251,7 @@ namespace System {
 
             }
 
-        });
+        });*/
 #if defined(ESP32) && !defined(esp32c3)
         webserver.on("/sdcard_listfiles", [](AsyncWebServerRequest* req) {
             
@@ -272,15 +275,15 @@ namespace System {
         // }else {webserver.send(200, CONSTSTR::htmlContentType_TextPlain, "could not open sd card a second time");}
         });
 #endif
-        webserver.on("/crashTest", [](AsyncWebServerRequest* req) {
-            req->send(200, "text/plain", "The system will now crash!!!, and luckily go into failsafe OTA upload mode.");
+        /*webserver.on("/crashTest", [](AsyncWebServerRequest* req) {
+            req->send_P(200, F("text/plain"), F("The system will now crash!!!, and luckily go into failsafe OTA upload mode."));
             int *ptr = nullptr; // Null pointer
             *ptr = 42;          // Dereference the null pointer (causes a crash)
-        });
-        webserver.on("/enableOTA", [](AsyncWebServerRequest* req) {
+        });*/
+        /*webserver.on("/enableOTA", [](AsyncWebServerRequest* req) {
             req->send(200, "text/plain", "ArduinoOTA is now guarranteed to work");
             ArduinoOTA.begin();
-        });
+        });*/
         /*
         webserver.onNotFound([](AsyncWebServerRequest* req) {                              // If the client requests any URI
             String uri = req->uri();

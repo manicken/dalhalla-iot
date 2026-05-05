@@ -30,7 +30,7 @@
 
 
 #define DALHAL_HA_DD_CFG_ROOT_TOPIC "homeassistant"
-#define DALHAL_HA_DD_CFG_TOPIC_FORMAT DALHAL_HA_DD_CFG_ROOT_TOPIC "/%s/" DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME "_%012llX_%s_%s/config"
+//#define DALHAL_HA_DD_CFG_TOPIC_FORMAT DALHAL_HA_DD_CFG_ROOT_TOPIC "/%s/" DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME "_%012llX/%s_%s/config"
 
 namespace DALHAL
 {
@@ -88,6 +88,7 @@ namespace DALHAL
         static void SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath);
         /** note this return a owned ptr so it need delete[] when done with */
         static const char* GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr);
+        static const char* GetDiscoveryCfgCleanupTopic(const char* deviceId_cStr);
         
     private:
         static void SendBaseData(PubSubClient& mqtt, const HA_DD_Context& ctx);//, const char* deviceId_cStr, const JsonVariant& jsonObj);

@@ -198,7 +198,7 @@ namespace Info
     }
 */
     std::string getESP_info() {
-        std::string infoMsg = "{";  
+   /*     std::string infoMsg = "{";  
 #if defined(ESP8266) || defined(ESP32)
         uint32_t ideSize = ESP.getFlashChipSize();
 
@@ -327,9 +327,12 @@ namespace Info
 #endif
         infoMsg.append("}");
         return infoMsg;
+        */
+       return "";
     }
     const char* getESPVariant()
     {
+        /*
 #if defined(CONFIG_IDF_TARGET_ESP32)
         return "ESP32";
 
@@ -354,6 +357,7 @@ namespace Info
 #else
         return "UNKNOWN";
 #endif
+*/      return "";
     }
 
 }

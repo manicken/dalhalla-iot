@@ -64,6 +64,7 @@ namespace DALHAL {
         const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
         GlobalLogger.Info(F("subscribed to 'cleanup' topic:"), cfgTopic_cStr);
         mqttClient.subscribe(cfgTopic_cStr);
+        
         delete[] cfgTopic_cStr;
     }
 

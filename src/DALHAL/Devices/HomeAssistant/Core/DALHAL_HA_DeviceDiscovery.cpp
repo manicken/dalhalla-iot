@@ -39,13 +39,25 @@
 namespace DALHAL
 {
 
+#define DALHAL_HA_DD_CFG_TOPIC_FORMAT DALHAL_HA_DD_CFG_ROOT_TOPIC "/%s/dalhal_%012llX/%s_%s/config"
+    
     const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
         const char* cfgFormatStr = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
-        uint64_t deviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
-        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
+        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
         ddTopicLength++;
         char* topicStr = new char[ddTopicLength];
-        snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, deviceUID, deviceId_cStr, uid_cStr);
+        snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
+        return topicStr;
+    }
+
+    const char* HA_DeviceDiscovery::GetDiscoveryCfgCleanupTopic(const char* deviceId_cStr) {
+        const char* cfgFormatStr = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
+        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, "+", unitDeviceUID, deviceId_cStr, "+");
+        ddTopicLength++;
+        char* topicStr = new char[ddTopicLength];
+        snprintf(topicStr, ddTopicLength, cfgFormatStr, "+", unitDeviceUID, deviceId_cStr, "+");
         return topicStr;
     }
 
