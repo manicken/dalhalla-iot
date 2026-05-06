@@ -301,6 +301,17 @@ namespace DALHAL {
                 }
             } 
 #if defined(ESP8266) || defined(ESP32)
+            else if (zcCommand.EqualsIC("heap")) {
+                if (cb != nullptr) {
+#define SYSTEM_HEAP_FORMAT_STR "Heap: %u, Max block: %u"
+#define SYSTEM_HEAP_STRING_MAX_SIZE sizeof(SYSTEM_HEAP_FORMAT_STR)-4+7*2
+                    char temp[SYSTEM_HEAP_STRING_MAX_SIZE];
+                    snprintf_P(temp, SYSTEM_HEAP_STRING_MAX_SIZE, SYSTEM_HEAP_FORMAT_STR,
+                        ESP.getFreeHeap(),
+                        ESP.getMaxFreeBlockSize());
+                    cb(temp);
+                }
+            }
             else if (zcCommand.EqualsIC("reset") || zcCommand.EqualsIC("restart")) {
                 if (cb != nullptr) {
                     cb("the system will now restart");

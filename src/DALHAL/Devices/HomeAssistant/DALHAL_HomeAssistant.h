@@ -66,6 +66,9 @@ namespace DALHAL {
         const unsigned long reconnectInterval = 10000; // 10 seconds
 
         void mqttCallback(char* topic, byte* payload, unsigned int length);
+        static PubSubClientPacketReceiver MqttOnPublishHeaderCallback(void* ctx, char* t, uint16_t tl, uint32_t pl, PSC_PublishFlags f);
+        static void MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type);
+        static void MqttOnPubishCompleteCallback(void* ctx, char* topic, uint16_t topicLength, uint8_t* payloadData, uint32_t payload_len);
 
         void SubscribeToCommandTopic();
         void ConfigureMqttClient();

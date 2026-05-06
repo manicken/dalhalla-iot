@@ -29,6 +29,9 @@
 #endif
 #include <Arduino.h>
 
+#include <PubSubClient.h>
+#include <PubSubClient_ErrorStrings.h>
+
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
@@ -57,9 +60,10 @@ namespace DALHAL {
     HomeAssistant::HomeAssistant(DeviceCreateContext& context) : Device(context.deviceType) {
         mqttClient.setClient(wifiClient);
         JsonSchema::HomeAssistant::Extractors::Apply(context, this);
-        mqttClient.setCallback([this](char* t, byte* p, unsigned int l){
-            this->mqttCallback(t, p, l);
-        });
+        
+        mqttClient.setOnPublishHeaderCallback(this, MqttOnPublishHeaderCallback);
+        mqttClient.setOnErrorCallback(this, MqttOnErrorCallback);
+
         // temporary subscribe to config topic to begin of cleanup of stale devices
         const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
         GlobalLogger.Info(F("subscribed to 'cleanup' topic:"), cfgTopic_cStr);
@@ -67,6 +71,8 @@ namespace DALHAL {
         
         delete[] cfgTopic_cStr;
     }
+
+    
 
     void HomeAssistant::ConfigureMqttClient() {
         if (WiFi.hostByName(host.c_str(), ip)) {
@@ -118,6 +124,33 @@ namespace DALHAL {
         snprintf(commandTopicStr, commandTopicStrLength, cmdTopicFormat_cStr, rootName_cStr, deviceID_cStr, cmdName_cStr);
         mqttClient.subscribe(commandTopicStr);
         delete[] commandTopicStr;
+    }
+
+    void MqttOnPubishCompleteCallback(void* context, char* topic, uint16_t topicLength, uint8_t* payloadData, uint32_t payload_len) {
+        //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
+        ZeroCopyString zcTopic(topic, topic + topicLength);
+
+    }
+
+    PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback(void* context, char* topic, uint16_t topicLength, uint32_t payloadLength, PSC_PublishFlags flags) {
+        //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
+        ZeroCopyString zcTopic(topic, topic + topicLength);
+        ZeroCopyString zcRoot = zcTopic.SplitOffHead('/');
+        ZeroCopyString zcTail = zcTopic.SplitOffTail('/');
+        if (zcRoot.EqualsIC("homeassistant") && zcTail.EqualsIC("config") && flags.RETAIN()) {
+            return PubSubClientPacketReceiver(PubSubClientPayloadSink::Discard, nullptr);
+        }
+        // reset topic string to handle other topic data
+        zcTopic.start = topic; zcTopic.end = topic+ topicLength;
+
+        return PubSubClientPacketReceiver(PubSubClientPayloadSink::Buffer, MqttOnPubishCompleteCallback);
+    }
+
+    void HomeAssistant::MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type) {
+        if (type == PubSubClientErrorType::FramingError) {
+            static_cast<HomeAssistant*>(context)->Connect();
+        } 
+        GlobalLogger.Error(PubSubClientErrorToString(error));
     }
 
     void HomeAssistant::mqttCallback(char* topic, byte* payload, unsigned int length) {
