@@ -69,6 +69,10 @@ namespace DALHAL {
          */
         char* ToCharString() const;
         ZeroCopyString();
+        /** 
+         * Create a ZeroCopyString directly from start and end ptrs, 
+         * note. endptr is non inclusive and must allway point to after the last char in the string 
+         */
         ZeroCopyString(const char* start, const char* end);
         /**
          * Create a ZeroCopyString from a null-terminated C string.

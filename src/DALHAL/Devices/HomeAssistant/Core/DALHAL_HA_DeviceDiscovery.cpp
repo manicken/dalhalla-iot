@@ -34,30 +34,27 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-#include <System/DeviceUID.h>
+#include <System/DeviceUID.h> // getDeviceUID
 
 namespace DALHAL
 {
 
-#define DALHAL_HA_DD_CFG_TOPIC_FORMAT DALHAL_HA_DD_CFG_ROOT_TOPIC "/%s/dalhal_%012llX/%s_%s/config"
+    void HA_DeviceDiscovery::SubscribeToCleanupTopic(PubSubClient& mqtt) {
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
+        mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, unitDeviceUID);
+    }
+
+    void HA_DeviceDiscovery::SubscribeToCommandTopic(PubSubClient& mqtt, const char* deviceID_cStr) {
+        mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_COMMAND_SUBSCRIBE_TOPIC_FMT,/*QoS*/0, deviceID_cStr);
+    }
     
     const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
-        const char* cfgFormatStr = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
-        uint64_t unitDeviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
+        const char* cfgFormatStr = DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT;
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
         int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
         ddTopicLength++;
         char* topicStr = new char[ddTopicLength];
         snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
-        return topicStr;
-    }
-
-    const char* HA_DeviceDiscovery::GetDiscoveryCfgCleanupTopic(const char* deviceId_cStr) {
-        const char* cfgFormatStr = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
-        uint64_t unitDeviceUID = getDeviceUID(); // this is from System.h and usually returns the MAC-adress
-        int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, "+", unitDeviceUID, deviceId_cStr, "+");
-        ddTopicLength++;
-        char* topicStr = new char[ddTopicLength];
-        snprintf(topicStr, ddTopicLength, cfgFormatStr, "+", unitDeviceUID, deviceId_cStr, "+");
         return topicStr;
     }
 
@@ -69,7 +66,6 @@ namespace DALHAL
         dryRunPSC.write('\n'); // easier debug prints
         //if (jsonObjGlobal.isNull() == false)
         HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, ctx);
-        
         HA_DeviceDiscovery::SendBaseData(dryRunPSC, ctx);
         if (entityWriter)
             entityWriter(dryRunPSC, topicBasePath);
@@ -79,7 +75,6 @@ namespace DALHAL
         const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
         mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
         
-        
 
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
@@ -88,6 +83,7 @@ namespace DALHAL
         if (entityWriter)
             entityWriter(mqtt, topicBasePath);
         mqtt.write('}'); // end of json object
+        // one big issue right now is that endPublish allways returns 1
         if (mqtt.endPublish()) {
             GlobalLogger.Info(F("sent discovery:"), cfgTopic_cStr);
         } else {
@@ -99,8 +95,8 @@ namespace DALHAL
     void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
         const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
         PSC_JsonWriter::kv(mqtt, "availability_topic", availabilityTopicStr); mqtt.write(','); mqtt.write('\n');
-        PSC_JsonWriter::kv(mqtt, "payload_available", DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE); mqtt.write(','); mqtt.write('\n');
-        PSC_JsonWriter::kv(mqtt, "payload_not_available", DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
+        PSC_JsonWriter::kv(mqtt, "payload_available", DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE); mqtt.write(','); mqtt.write('\n');
+        PSC_JsonWriter::kv(mqtt, "payload_not_available", DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE);
     }
 
     void HA_DeviceDiscovery::SendBaseData(PubSubClient& mqtt, const HA_DD_Context& ctx) {
@@ -112,7 +108,7 @@ namespace DALHAL
             mqtt.write('\n');
         }
         
-        const char* rootName_cStr = DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        const char* rootName_cStr = DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME;
         
         PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, ctx.cStr_deviceId, ctx.cStr_entity_uid);
         PSC_JsonWriter::kv(mqtt, "name", ctx.cStr_name);
@@ -124,6 +120,8 @@ namespace DALHAL
             "identifiers": ["%s"],\n
             "name": "%s"},\n
         );
+        //mqtt.printf(jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
+        // vs
         PSC_JsonWriter::printf_str(mqtt, jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
     }
 

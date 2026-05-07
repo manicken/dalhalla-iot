@@ -33,9 +33,9 @@ namespace DALHAL {
     
     static const TopicSuffix suffixTable[] = {
         { TopicBasePathMode::BaseRoot,     "", 0},
-        { TopicBasePathMode::State,       DALHAL_HOME_ASSISTANT_TOPICBASEPATH_STATE, sizeof(DALHAL_HOME_ASSISTANT_TOPICBASEPATH_STATE)-1 },
-        { TopicBasePathMode::Status,      DALHAL_HOME_ASSISTANT_TOPICBASEPATH_STATUS, sizeof(DALHAL_HOME_ASSISTANT_TOPICBASEPATH_STATUS)-1 },
-        { TopicBasePathMode::Command,     DALHAL_HOME_ASSISTANT_TOPICBASEPATH_COMMAND, sizeof(DALHAL_HOME_ASSISTANT_TOPICBASEPATH_COMMAND)-1}
+        { TopicBasePathMode::State,       DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL, sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL)-1 },
+        { TopicBasePathMode::Status,      DALHAL_DEV_HOME_ASSISTANT_DD_STATUS_TOPIC_TAIL, sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_STATUS_TOPIC_TAIL)-1 },
+        { TopicBasePathMode::Command,     DALHAL_DEV_HOME_ASSISTANT_DD_COMMAND_TOPIC_TAIL, sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_COMMAND_TOPIC_TAIL)-1}
         
     };
 
@@ -53,9 +53,9 @@ namespace DALHAL {
     void TopicBasePath::Set(const char* deviceIdStr, const char* uidStr) {
         if (pathStr != nullptr) return; // can/should only be set once
 
-        // Compute <DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME>/<device>/<uid>/ length
+        // Compute <DALHAL_DEV_HOME_ASSISTANT_BASENAME>/<device>/<uid>/ length
         int baseLen = snprintf(nullptr, 0,
-                            DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME "/%s/%s/", deviceIdStr, uidStr);
+                            DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME "/%s/%s/", deviceIdStr, uidStr);
 
         // Compute longest suffix
         size_t maxSuffixLen = 0;
@@ -69,7 +69,7 @@ namespace DALHAL {
 
         // Write the base only
         snprintf(pathStr, allocatedSize,
-                DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME "/%s/%s/", deviceIdStr, uidStr);
+                DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME "/%s/%s/", deviceIdStr, uidStr);
 
         // Dynamic part begins here
         pathStrDynamicStart = pathStr + baseLen;

@@ -70,7 +70,6 @@ namespace DALHAL {
         static void MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type);
         static void MqttOnPubishCompleteCallback(void* ctx, char* topic, uint16_t topicLength, uint8_t* payloadData, uint32_t payload_len);
 
-        void SubscribeToCommandTopic();
         void ConfigureMqttClient();
         void Connect();
         

@@ -41,6 +41,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <System/DeviceUID.h> // getDeviceUID
+
 #include "DALHAL_HomeAssistant_JSON_Schema.h"
 
 namespace DALHAL {
@@ -64,15 +66,9 @@ namespace DALHAL {
         mqttClient.setOnPublishHeaderCallback(this, MqttOnPublishHeaderCallback);
         mqttClient.setOnErrorCallback(this, MqttOnErrorCallback);
 
-        // temporary subscribe to config topic to begin of cleanup of stale devices
-        const char* cfgTopic_cStr = HA_DeviceDiscovery::GetDiscoveryCfgTopic("+", "+", "+");
-        GlobalLogger.Info(F("subscribed to 'cleanup' topic:"), cfgTopic_cStr);
-        mqttClient.subscribe(cfgTopic_cStr);
-        
-        delete[] cfgTopic_cStr;
+        // only do this once
+        HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
     }
-
-    
 
     void HomeAssistant::ConfigureMqttClient() {
         if (WiFi.hostByName(host.c_str(), ip)) {
@@ -87,15 +83,14 @@ namespace DALHAL {
     }
 
     void HomeAssistant::Connect() {
-        const char* clientIdFormat_cStr = "%s_%s_%s";
-        const char* rootName_cStr = DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME;
+        const char* clientIdFormat_cStr = DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME "_%s_%s";
         std::string uidStr = decodeUID(uid);
         const char* uid_cStr = uidStr.c_str();
         const char* deviceID_cStr = deviceID.c_str();
 
-        int commandTopicStrLength = snprintf(nullptr, 0, clientIdFormat_cStr, rootName_cStr, deviceID_cStr, uid_cStr) + 1;
+        int commandTopicStrLength = snprintf(nullptr, 0, clientIdFormat_cStr, deviceID_cStr, uid_cStr) + 1;
         char* clientIdStr = new char[commandTopicStrLength];
-        snprintf(clientIdStr, commandTopicStrLength, clientIdFormat_cStr, rootName_cStr, deviceID_cStr, uid_cStr);
+        snprintf(clientIdStr, commandTopicStrLength, clientIdFormat_cStr, deviceID_cStr, uid_cStr);
         Serial.printf("connecting using clientId:%s\n", clientIdStr);
         if (username.length() != 0 && password.length() != 0) { // the default connect is using CleanSession = true
             if (mqttClient.connect(clientIdStr, username.c_str(), password.c_str()) == false) {
@@ -109,24 +104,14 @@ namespace DALHAL {
         delete[] clientIdStr;
         if (mqttClient.connected()) {
             Serial.println("HASS - MQTT connected to brooker");
-            SubscribeToCommandTopic();
+            HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient, deviceID_cStr);
+            
         }
     }
 
-    void HomeAssistant::SubscribeToCommandTopic() {
-        
-        const char* cmdTopicFormat_cStr = "%s/%s/+/%s";
-        const char* rootName_cStr = DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME;
-        const char* cmdName_cStr = DALHAL_HOME_ASSISTANT_TOPICBASEPATH_COMMAND;
-        const char* deviceID_cStr = deviceID.c_str();
-        int commandTopicStrLength = snprintf(nullptr, 0, cmdTopicFormat_cStr, rootName_cStr, deviceID_cStr, cmdName_cStr) + 1;
-        char* commandTopicStr = new char[commandTopicStrLength];
-        snprintf(commandTopicStr, commandTopicStrLength, cmdTopicFormat_cStr, rootName_cStr, deviceID_cStr, cmdName_cStr);
-        mqttClient.subscribe(commandTopicStr);
-        delete[] commandTopicStr;
-    }
+    
 
-    void MqttOnPubishCompleteCallback(void* context, char* topic, uint16_t topicLength, uint8_t* payloadData, uint32_t payload_len) {
+    void HomeAssistant::MqttOnPubishCompleteCallback(void* context, char* topic, uint16_t topicLength, uint8_t* payloadData, uint32_t payload_len) {
         //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
         ZeroCopyString zcTopic(topic, topic + topicLength);
 
@@ -134,16 +119,32 @@ namespace DALHAL {
 
     PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback(void* context, char* topic, uint16_t topicLength, uint32_t payloadLength, PSC_PublishFlags flags) {
         //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
+        // topic length is already provided by the MQTT protocol
         ZeroCopyString zcTopic(topic, topic + topicLength);
-        ZeroCopyString zcRoot = zcTopic.SplitOffHead('/');
-        ZeroCopyString zcTail = zcTopic.SplitOffTail('/');
-        if (zcRoot.EqualsIC("homeassistant") && zcTail.EqualsIC("config") && flags.RETAIN()) {
-            return PubSubClientPacketReceiver(PubSubClientPayloadSink::Discard, nullptr);
-        }
-        // reset topic string to handle other topic data
-        zcTopic.start = topic; zcTopic.end = topic+ topicLength;
+        // preserve original topic view for later logging
+        ZeroCopyString zcTmp = zcTopic;
+        ZeroCopyString zcHead = zcTmp.SplitOffHead('/');
+        ZeroCopyString zcTail = zcTmp.SplitOffTail('/');
+        if (zcHead.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME)) {
+            return PubSubClientPacketReceiver(PubSubClientPayloadSink::Buffer, MqttOnPubishCompleteCallback);
+        } else if (zcHead.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD) &&
+                   zcTail.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_TAIL) && flags.RETAIN())
+        {
+            // Expected topic format:
+            // <homeassistant>/<type>/<deviceID>/<entityID>/config
+            // Subscribed topic:
+            // <homeassistant_const_string>/+/<deviceID>/+/config
+            // 
+            // The structure of <deviceID> is defined by DALHAL_HA_DeviceDiscovery 
+            ZeroCopyString zcEntityID = zcTmp.SplitOffTail('/');
 
-        return PubSubClientPacketReceiver(PubSubClientPayloadSink::Buffer, MqttOnPubishCompleteCallback);
+
+        } else {
+            // failsafe warning, this will likely never happend
+            GlobalLogger.Warn(F("ignoring message of HA MQTT topic: "), zcTopic);
+        }
+        // default if not specified above
+        return PubSubClientPacketReceiver(PubSubClientPayloadSink::Discard, nullptr);
     }
 
     void HomeAssistant::MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type) {
@@ -169,7 +170,7 @@ namespace DALHAL {
             return;
         }
         ZeroCopyString zcStart = zcTopic.GetHead(zcStartFirstDelimiter);
-        if (zcStart.NotEmpty() && zcStart == DALHAL_HA_DD_CFG_ROOT_TOPIC) {
+        if (zcStart.NotEmpty() && zcStart == DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD) {
             // see DALHAL_HA_DD_CFG_TOPIC_FORMAT for the formatstr
             //const char* format = DALHAL_HA_DD_CFG_TOPIC_FORMAT;
             zcTopic.start = zcStartFirstDelimiter+1;
@@ -187,7 +188,7 @@ namespace DALHAL {
                 GlobalLogger.Error(F("zcUID.IsEmpty() - incorrect topic string"));
                 return;
             } // error incorrect topic string
-            if (zcUID.MoveStartAfter('_') == false) { // immutable framework id (DALHAL_DEVICES_HOME_ASSISTANT_ROOTNAME)
+            if (zcUID.MoveStartAfter('_') == false) { // immutable framework id (DALHAL_DEV_HOME_ASSISTANT_BASENAME)
                 GlobalLogger.Error(F("immutable framework id - incorrect topic string"));
                 return; // error incorrect topic string
             } 

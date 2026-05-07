@@ -100,8 +100,8 @@ namespace DALHAL {
         const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
         bool success = mqttClient.publish(
             topic,
-            online ? DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE
-                : DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE
+            online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
+                : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE
         );
 
         if (success) {
@@ -172,7 +172,7 @@ namespace DALHAL {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
             const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            wasOnline = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE);
+            wasOnline = mqttClient.publish(availabilityTopicStr, DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE);
         }
         const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
         mqttClient.publish(stateTopicStr, val.toString().c_str());
