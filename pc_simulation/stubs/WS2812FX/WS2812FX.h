@@ -82,6 +82,7 @@ public:
     uint32_t getColor();
     uint8_t getBrightness();
     uint8_t getSpeed();
+    uint8_t getPin();
 
 private:
     uint16_t numLEDs;

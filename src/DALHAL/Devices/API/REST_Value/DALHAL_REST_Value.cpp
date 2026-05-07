@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_REST_Value.h"
-#if defined(ESP32)
+#if defined(ESP32) || (defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
 #include <HTTPClient.h>
 #elif defined(ESP8266)
 #include <ESP8266HTTPClient.h>

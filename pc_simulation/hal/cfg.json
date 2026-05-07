@@ -100,7 +100,7 @@
   {"uid":"arr1","type":"ARRAY","readonly":true,"items":[2,3.14,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67]},
   {"uid":"arr2","type":"ARRAY","readonly":true,"items":[3.1415,1.4142,1.732,2.236]},
   {"disabled":true,"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
-    "group":{"uid":"ha_grp1", "name":"Development Test"}, 
+    "group":{"uid":"ha_grp1", "name":"PC Development Test"}, 
     "items": [
 	{"uid":"temp", "type":"CONTAINER", "items":[
 	    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
@@ -111,14 +111,14 @@
     ]
   },
   {"disabled":true,"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
-    "group":{"uid":"ha_grp2", "name":"Development Test2"}, 
+    "group":{"uid":"ha_grp2", "name":"PC Development Test2"}, 
     "items": [
 	  {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
     ]
   },
   {"disabled":true,"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
     "groups":[
-	  {"uid":"ha_grp1", "name":"Development Test",
+	  {"uid":"ha_grp1", "name":"PC Development Test1",
 	    "items": [
 		  {"uid":"temp", "type":"CONTAINER", "items":[
 		    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
@@ -127,7 +127,7 @@
 		  {"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
 		  ]
 	  },
-	  {"uid":"ha_grp2", "name":"Development Test2",
+	  {"uid":"ha_grp2", "name":"PC Development Test2",
         "items": [
 	      {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
         ]

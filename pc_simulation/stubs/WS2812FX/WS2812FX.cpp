@@ -80,6 +80,7 @@ uint8_t WS2812FX::getMode() { return mode; }
 uint32_t WS2812FX::getColor() { return color; }
 uint8_t WS2812FX::getBrightness() { return brightness; }
 uint8_t WS2812FX::getSpeed() { return speed; }
+uint8_t WS2812FX::getPin() { return pin; } 
 
 void WS2812FX::setPixelColor(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 

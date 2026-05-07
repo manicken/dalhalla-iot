@@ -72,9 +72,12 @@ namespace DALHAL
         dryRunPSC.write('}'); // end of json object
 
         // second real send 
-        const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
-        mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
-        
+        //const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
+        //mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
+
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
+        mqtt.beginPublish_fmt(dryRunPSC.count, /*retained*/true,
+            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT, ctx.cStr_deviceId, unitDeviceUID, ctx.cStr_type, ctx.cStr_entity_uid);
 
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
@@ -83,13 +86,17 @@ namespace DALHAL
         if (entityWriter)
             entityWriter(mqtt, topicBasePath);
         mqtt.write('}'); // end of json object
+        
+        const char* cfgTopicOut_cStrStart = mqtt.lastTxTopic();
+        const char* cfgTopicOut_cStrEnd = cfgTopicOut_cStrStart + mqtt.lastTxTopicLength();
+        ZeroCopyString zcCfgTopic(cfgTopicOut_cStrStart, cfgTopicOut_cStrEnd);
         // one big issue right now is that endPublish allways returns 1
         if (mqtt.endPublish()) {
-            GlobalLogger.Info(F("sent discovery:"), cfgTopic_cStr);
+            GlobalLogger.Info(F("sent discovery:"), zcCfgTopic);
         } else {
-            GlobalLogger.Error(F("while trying to send discovery:"), cfgTopic_cStr);
+            GlobalLogger.Error(F("while trying to send discovery:"), zcCfgTopic);
         }
-        delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
+        //delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
     }
 
     void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {

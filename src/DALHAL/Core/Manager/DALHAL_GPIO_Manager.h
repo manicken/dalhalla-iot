@@ -101,7 +101,7 @@ namespace DALHAL {
             ModeMismatch
         };
 
-#if defined(ESP32)
+#if defined(ESP32) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         using BASE_MSG_TYPE = char;
         #define BASE_MSG_TYPE_FUNC(msg) msg
 #elif defined(ESP8266)

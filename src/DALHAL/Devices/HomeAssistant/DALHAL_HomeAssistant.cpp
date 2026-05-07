@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_HomeAssistant.h"
-#if defined(ESP32)
+#if defined(ESP32) || (defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
 #include <WiFi.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
