@@ -100,18 +100,18 @@ namespace DALHAL {
 #endif
         //bool addLastLogEntryToMessage = false;
         bool anyErrors = false;
-        if (zcCommand.EqualsIC("hal")) {
+        if (zcCommand.EqualsIC(F("hal"))) {
             zcCommand = zcStr.SplitOffHead('/');
-            if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_WRITE_CMD)) {
+            if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_WRITE_CMD))) {
                 anyErrors = writeCmd(zcStr, message) == false;
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_READ_CMD)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_READ_CMD))) {
                 anyErrors = readCmd(zcStr, message) == false;
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_CMD)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_CMD))) {
                 anyErrors = execCmd(zcStr, message) == false;
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_RELOAD_CFG_JSON)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_RELOAD_CFG_JSON))) {
                 //long startMillis = millis();
                 anyErrors = reloadJSON(zcStr, message) == false;
                 
@@ -123,15 +123,15 @@ namespace DALHAL {
                 }
                 //printf("\n ValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
             }
-            else if (zcCommand.EqualsIC("scripts")) {
+            else if (zcCommand.EqualsIC(F("scripts"))) {
                 ZeroCopyString zcSubCmd = zcStr.SplitOffHead('/');
-                if (zcSubCmd.EqualsIC("reload")) {
+                if (zcSubCmd.EqualsIC(F("reload"))) {
                     //long startMillis = millis();
                     anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
                     //printf("\nValidateAndLoadAllActiveScripts time:%ld ms\n", millis() - startMillis);
-                } else if (zcSubCmd.EqualsIC("stop")) {
+                } else if (zcSubCmd.EqualsIC(F("stop"))) {
                     ScriptEngine::ScriptsBlock::running = false;
-                } else if (zcSubCmd.EqualsIC("start")) {
+                } else if (zcSubCmd.EqualsIC(F("start"))) {
                     ScriptEngine::ScriptsBlock::running = true;
                 } else {
                     anyErrors = true;
@@ -140,15 +140,15 @@ namespace DALHAL {
                     //message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
                 }
                 if (anyErrors == false)
-                    message += "\"info\":\"OK\"";
+                    message += String(F("\"info\":\"OK\"")).c_str();
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_GET_AVAILABLE_GPIO_LIST)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_GET_AVAILABLE_GPIO_LIST))) {
                 message += GPIO_manager::GetList(zcStr);
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_PRINT_DEVICES)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_PRINT_DEVICES))) {
                 message += DeviceManager::ToString();
             }
-            else if (zcCommand.EqualsIC(DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS)) {
+            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS))) {
 
                 if (cb != nullptr) {
                     GlobalLogger.printAllLogs([cb](const std::string& msg){
@@ -157,13 +157,13 @@ namespace DALHAL {
                 }
 
             }
-            else if (zcCommand.EqualsIC("printRegistry")) {
+            else if (zcCommand.EqualsIC(F("printRegistry"))) {
                 if (cb != nullptr) {
                     std::string ret = Registry::ToString(RootDevicesRegistry);
                     cb(ret);
                 }
             }
-            else if (zcCommand.EqualsIC("printJsonSchemas")) {
+            else if (zcCommand.EqualsIC(F("printJsonSchemas"))) {
                 if (cb != nullptr) {
                     std::string ret;
                     JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, ret);
@@ -177,12 +177,12 @@ namespace DALHAL {
             }
         } 
 #if defined(ESP8266) || defined(ESP32)
-        else if (zcCommand.EqualsIC("wifi")) {
+        else if (zcCommand.EqualsIC(F("wifi"))) {
             zcCommand = zcStr.SplitOffHead('/');
 
-            if (zcCommand.EqualsIC("scan")) {
+            if (zcCommand.EqualsIC(F("scan"))) {
                 if (cb != nullptr) {
-                    cb("wifi/scanstart\r\n");
+                    cb(String(F("wifi/scanstart\r\n")).c_str());
                 }
                 
                 int n = WiFi.scanNetworks();
@@ -221,9 +221,9 @@ namespace DALHAL {
                     }
                 }
                 if (cb != nullptr){
-                    cb("wifi/scanend\r\n");
+                    cb(String(F("wifi/scanend\r\n")).c_str());
                 }
-            } else if (zcCommand.EqualsIC("set_b64")) {
+            } else if (zcCommand.EqualsIC(F("set_b64"))) {
                 if (zcStr.CountChar(':') >= 1) {
                     DALHAL::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
                     char ssid[33] = {0};
@@ -235,24 +235,24 @@ namespace DALHAL {
                         if (cb != nullptr) {
 
                             if (ssidLen == 0) {
-                                cb("wifi/set_b64/error/ssid/empty\r\n");
+                                cb(String(F("wifi/set_b64/error/ssid/empty\r\n")).c_str());
                             } else if (ssidLen == -1) {
-                                cb("wifi/set_b64/error/ssid/invalidchar\r\n");
+                                cb(String(F("wifi/set_b64/error/ssid/invalidchar\r\n")).c_str());
                             } else if (ssidLen == -2) {
-                                cb("wifi/set_b64/error/ssid/long\r\n");
+                                cb(String(F("wifi/set_b64/error/ssid/long\r\n")).c_str());
                             }
 
                             if (passLen == -1) {
-                                cb("wifi/set_b64/error/pass/invalidchar\r\n");
+                                cb(String(F("wifi/set_b64/error/pass/invalidchar\r\n")).c_str());
                             } else if (passLen == -2) {
-                                cb("wifi/set_b64/error/pass/long\r\n");
+                                cb(String(F("wifi/set_b64/error/pass/long\r\n")).c_str());
                             }
                         }
                         return false;
                     }
 
                     if (cb != nullptr) {
-                        cb("wifi/set_b64/OK\r\n");
+                        cb(String(F("wifi/set_b64/OK\r\n")).c_str());
                         delay(50);
                     }
                     
@@ -260,15 +260,15 @@ namespace DALHAL {
 
                 } else {
                     if (cb != nullptr) {
-                        cb("wifi/set_b64/error/missingparams\r\n");
+                        cb(String(F("wifi/set_b64/error/missingparams\r\n")).c_str());
                     }
                 }
-            } else if (zcCommand.EqualsIC("set_json")) {
+            } else if (zcCommand.EqualsIC(F("set_json"))) {
                 
                 DynamicJsonDocument doc(256);
                 DeserializationError err = deserializeJson(doc, zcStr.start); // safe to use start here as that string is null terminated
                 if(err) {
-                    if(cb) cb("wifi/set_json/error/invalidjson\r\n");
+                    if(cb) cb(String(F("wifi/set_json/error/invalidjson\r\n")).c_str());
                     return false;
                 }
 
@@ -276,21 +276,21 @@ namespace DALHAL {
                 const char* pass = doc["pass"];
 
                 if(ssid == nullptr || ssid[0] == '\0') {
-                    if(cb) { cb("wifi/set_json/error/ssid/empty\r\n"); }
+                    if(cb) { cb(String(F("wifi/set_json/error/ssid/empty\r\n")).c_str()); }
                     return false;
                 }
 
                 if(pass == nullptr) pass = ""; // allow empty password if desired
 
-                if(cb) { cb("wifi/set_json/OK\r\n"); }
+                if(cb) { cb(String(F("wifi/set_json/OK\r\n")).c_str()); }
 
                 SetWifiCredentialsAndRestart(ssid, pass);
             }
         } 
 #endif
-        else if (zcCommand.EqualsIC("system")) {
+        else if (zcCommand.EqualsIC(F("system"))) {
             zcCommand = zcStr.SplitOffHead('/');
-            if (zcCommand.EqualsIC("info")) {
+            if (zcCommand.EqualsIC(F("info"))) {
                 if (cb != nullptr) {
 #if defined(ESP8266) || defined(ESP32)
                     std::string infoMsg = Info::getESP_info();
@@ -301,7 +301,7 @@ namespace DALHAL {
                 }
             } 
 #if defined(ESP8266) || defined(ESP32)
-            else if (zcCommand.EqualsIC("heap")) {
+            else if (zcCommand.EqualsIC(F("heap"))) {
                 if (cb != nullptr) {
 #define SYSTEM_HEAP_FORMAT_STR "Heap: %u, Max block: %u"
 #define SYSTEM_HEAP_STRING_MAX_SIZE sizeof(SYSTEM_HEAP_FORMAT_STR)-4+7*2
@@ -312,15 +312,15 @@ namespace DALHAL {
                     cb(temp);
                 }
             }
-            else if (zcCommand.EqualsIC("reset") || zcCommand.EqualsIC("restart")) {
+            else if (zcCommand.EqualsIC(F("reset")) || zcCommand.EqualsIC(F("restart"))) {
                 if (cb != nullptr) {
-                    cb("the system will now restart");
+                    cb(String(F("the system will now restart")).c_str());
                 }
                 ESP.restart();
             }
 #endif
 
-            else if (zcCommand.EqualsIC("HeartbeatLed")) {
+            else if (zcCommand.EqualsIC(F("HeartbeatLed"))) {
                 std::string resStr;
                 HeartbeatLed::parseCmd(zcStr, resStr);
                 if (cb != nullptr) {
@@ -329,35 +329,35 @@ namespace DALHAL {
             }
             else {
                 if (cb != nullptr) {
-                    cb("error system sub command not found");
+                    cb(String(F("error system sub command not found")).c_str());
                 }
             }
-        } else if (zcCommand.EqualsIC("schedule")) {
+        } else if (zcCommand.EqualsIC(F("schedule"))) {
             std::string resStr;
             Scheduler::parseCmd(zcStr, resStr);
             if (cb != nullptr) {
                 cb(resStr);
             }
-        } else if (zcCommand.EqualsIC("ver")) {
-            message += "\"build_version\":\"";
+        } else if (zcCommand.EqualsIC(F("ver"))) {
+            message += String(F("\"build_version\":\"")).c_str();
             message += BUILD_VER_STR;
             message += '"';
-        } else if (zcCommand.EqualsIC("help")) {
+        } else if (zcCommand.EqualsIC(F("help"))) {
             if (zcStr.IsEmpty()) {
-                message += "\"available_root_cmds\":[";
-                message += "\"help\",\"ver\",\"hal\",\"wifi\"";
+                message += String(F("\"available_root_cmds\":[")).c_str();
+                message += String(F("\"help\",\"ver\",\"hal\",\"wifi\"")).c_str();
                 message += ']';
             } else {
                 zcCommand = zcStr.SplitOffHead('/');
-                message += "\"info\":\"";
-                if (zcCommand.EqualsIC("ver")) {
-                    message += "shows build version, can be used to determine what specific ver a device runs";
-                } else if (zcCommand.EqualsIC("hal")) {
-                    message += "write read exec reloadcfg printdevices scripts printlog getavailablegpios";
-                } else if (zcCommand.EqualsIC("wifi")) {
-                    message += "scan set";
+                message += String(F("\"info\":\"")).c_str();
+                if (zcCommand.EqualsIC(F("ver"))) {
+                    message += String(F("shows build version, can be used to determine what specific ver a device runs")).c_str();
+                } else if (zcCommand.EqualsIC(F("hal"))) {
+                    message += String(F("write read exec reloadcfg printdevices scripts printlog getavailablegpios")).c_str();
+                } else if (zcCommand.EqualsIC(F("wifi"))) {
+                    message += String(F("scan set")).c_str();
                 } else {
-                    message += "!!!! ERROR NO HELP !!!!";
+                    message += String(F("!!!! ERROR NO HELP !!!!")).c_str();
                 }
 
                 message += '"';
@@ -373,14 +373,14 @@ namespace DALHAL {
             const LogEntry& lastEntry = GlobalLogger.getLastEntry();
             if (lastEntry.level == Loglevel::Error) {
                 String lastEntryStr = lastEntry.MessageToString();
-                message += "\"error\":\"";
+                message += String(F("\"error\":\"")).c_str();
                 message += lastEntryStr.c_str();
                 message += '"';
             }
         }
         if (message.length() != 0) { // this lets the command exec print it's own format
-            message = "{" + message;
-            message += "}";
+            message = '{' + message;
+            message += '}';
             if (cb != nullptr) 
                 cb(message);
         }
@@ -394,12 +394,12 @@ namespace DALHAL {
 #endif
         std::string filePath;
 #if defined(ESP32) || defined(ESP8266)
-        filePath = "/";
+        filePath = '/';
 #endif
         if (zcOptionalFileName.Length() == 0) {
-            filePath += "hal/cfg.json";
+            filePath += String(F("hal/cfg.json")).c_str();
         } else {
-            filePath += "hal/" + zcOptionalFileName.ToString();
+            filePath += String(F("hal/")).c_str() + zcOptionalFileName.ToString();
         }
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -407,12 +407,12 @@ namespace DALHAL {
 #endif
     
         if (DeviceManager::ReadJSON(filePath.c_str())) {
-            message += "\"info\":\"OK\"";
+            message += String(F("\"info\":\"OK\"")).c_str();
             DeviceManager::begin();
             
             return true;
         } else {
-            message += "\"info\":\"FAIL\",";
+            message += String(F("\"info\":\"FAIL\",")).c_str();
             return false;
         }
     }
@@ -458,9 +458,9 @@ namespace DALHAL {
         if (params.zcType == DALHAL_CMD_EXEC_BOOL_TYPE) {
             uint32_t uintValue = 0;
 
-            if ((params.zcValue.EqualsIC("true")) || (params.zcValue == "1")) {
+            if (params.zcValue.EqualsIC(F("true")) || params.zcValue.Equals('1')) {
                 uintValue = 1;
-            } else if ((params.zcValue.EqualsIC("false")) || (params.zcValue == "0")) {
+            } else if (params.zcValue.EqualsIC(F("false")) || params.zcValue.Equals('0')) {
                 uintValue = 0;
             } else {
 
@@ -475,12 +475,12 @@ namespace DALHAL {
 
             writeResult = outDevice->write(halValue);
             if (writeResult == HALOperationResult::Success) {
-                message += "\"info\":{\"Value written\":\"";
+                message += String(F("\"info\":{\"Value written\":\"")).c_str();
                 message += std::to_string(uintValue);
-                message += "\"}";
+                message += '"'; message += '}';
             }
         }
-        else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_UINT32_TYPE)) {
+        else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
             // Convert value to integer
             uint32_t uintValue = 0;
             if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
@@ -493,13 +493,13 @@ namespace DALHAL {
 
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    message += "\"info\":{\"Value written\":\"";
+                    message += String(F("\"info\":{\"Value written\":\"")).c_str();
                     message += std::to_string(uintValue);
-                    message += "\"}";
+                    message += '"'; message += '}';
                 }
             }
 
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_FLOAT_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
             // Convert value to integer
             float floatValue = 0.0f;
             if (params.zcValue.ConvertTo_float(floatValue) == false) {
@@ -515,13 +515,13 @@ namespace DALHAL {
 
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    message += "\"info\":{\"Value written\":\"";
+                    message += String(F("\"info\":{\"Value written\":\"")).c_str();
                     message += std::to_string(floatValue);
-                    message += "\"}";
+                    message += '"'; message += '}';
                 }
             }
 
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_STRING_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
             //UIDPath uidPath(params.zcUid);  // obsolete
             std::string result;
             HALWriteStringRequestValue strHalValue(params.zcValue, result);
@@ -530,12 +530,12 @@ namespace DALHAL {
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                message += "\"info\":{\"String written\":\"OK\"}";
+                message += String(F("\"info\":{\"String written\":\"OK\"}")).c_str();
                 //message += stdString.c_str();
                 //message += "\"}";
             }
 
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_JSON_STR_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
             //UIDPath uidPath(params.zcUid);  // obsolete
             std::string result;
             HALWriteStringRequestValue strHalValue(params.zcValue, result);
@@ -543,7 +543,7 @@ namespace DALHAL {
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                message += "\"info\":{\"Json written\":\"OK\"}";
+                message += String(F("\"info\":{\"Json written\":\"OK\"}")).c_str();
                 //message += stdString.c_str();
                 //message += "}";
             }
@@ -598,7 +598,7 @@ namespace DALHAL {
         }
         HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
 
-        if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_BOOL_TYPE)) {
+        if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_BOOL_TYPE))) {
             //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
@@ -607,7 +607,7 @@ namespace DALHAL {
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.toUInt());
             }
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_UINT32_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
             //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
             //HALReadRequest req(uidPath, halValue); // obsolete
@@ -616,7 +616,7 @@ namespace DALHAL {
             if (readResult == HALOperationResult::Success) {
                 valueStr = std::to_string(halValue.toUInt());
             }
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_FLOAT_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
             //UIDPath uidPath(params.zcUid); // obsolete
             if (params.zcValue.Length() == 0) {
                 HALValue halValue;
@@ -637,7 +637,7 @@ namespace DALHAL {
                     valueStr = std::to_string(halValue.toFloat());
                 }
             }
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_STRING_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
             //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);
@@ -645,11 +645,11 @@ namespace DALHAL {
 
             readResult = outDevice->read(strHalValue);
             if (readResult == HALOperationResult::Success) {
-                valueStr = "\"";
+                valueStr = '"';
                 valueStr += result;
-                valueStr += "\"";
+                valueStr += '"';
             }
-        } else if (params.zcType.EqualsIC(DALHAL_CMD_EXEC_JSON_STR_TYPE)) {
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
             //UIDPath uidPath(params.zcUid); // obsolete
             std::string result;
             HALReadStringRequestValue strHalValue(params.zcValue, result);

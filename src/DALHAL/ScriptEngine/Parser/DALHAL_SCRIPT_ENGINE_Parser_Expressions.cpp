@@ -25,7 +25,7 @@
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE_Reports.h>
 //#include "../Runtime/DALHAL_SCRIPT_ENGINE_CalcRPN.h"
 #include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h> //contains the instance of halValueStack
-#include <unordered_map>
+//#include <unordered_map>
 #include <cctype>  // for isspace, isdigit, isalpha
 
 #include <DALHAL/Core/Types/DALHAL_UID_Path.h>
@@ -101,7 +101,7 @@ namespace DALHAL {
             delete[] logicRPNNodeStackPool;            
         }
         // precedence map
-        static const std::unordered_map<ExpTokenType, int> precedence = {
+        /*static const std::unordered_map<ExpTokenType, int> precedence = {
             // calc
             {ExpTokenType::CalcMultiply, 8}, {ExpTokenType::CalcDivide, 8}, {ExpTokenType::CalcModulus, 8},
             {ExpTokenType::CalcPlus, 7}, {ExpTokenType::CalcMinus, 7},
@@ -123,6 +123,47 @@ namespace DALHAL {
         inline int getPrecedence(ExpTokenType t) {
             auto it = precedence.find(t);
             return (it != precedence.end()) ? it->second : -1;
+        }*/
+
+        inline int getPrecedence(ExpTokenType t) {
+            switch (t) {
+                case ExpTokenType::CalcMultiply:
+                case ExpTokenType::CalcDivide:
+                case ExpTokenType::CalcModulus:
+                    return 8;
+
+                case ExpTokenType::CalcPlus:
+                case ExpTokenType::CalcMinus:
+                    return 7;
+
+                case ExpTokenType::CalcBitwiseLeftShift:
+                case ExpTokenType::CalcBitwiseRightShift:
+                    return 6;
+
+                case ExpTokenType::CalcBitwiseAnd:
+                case ExpTokenType::CalcBitwiseExOr:
+                case ExpTokenType::CalcBitwiseOr:
+                    return 5;
+
+                case ExpTokenType::CompareGreaterThan:
+                case ExpTokenType::CompareLessThan:
+                case ExpTokenType::CompareGreaterThanOrEqual:
+                case ExpTokenType::CompareLessThanOrEqual:
+                    return 4;
+
+                case ExpTokenType::CompareEqualsTo:
+                case ExpTokenType::CompareNotEqualsTo:
+                    return 3;
+
+                case ExpTokenType::LogicalAnd:
+                    return 2;
+
+                case ExpTokenType::LogicalOr:
+                    return 1;
+
+                default:
+                    return -1;
+            }
         }
 
         const char* Expressions::SingleOperatorList = "+-*/%|&^><";
@@ -139,10 +180,10 @@ namespace DALHAL {
 
         bool Expressions::IsDoubleOperator(const char* c) {
             if (c == nullptr) {
-                ReportError("IsDoubleOperator c - was nullptr");
+                ReportError(String(F("IsDoubleOperator c - was nullptr")).c_str());
                 return false;
             } else if (*c == '\n') {
-                ReportError("IsDoubleOperator *c - was empty str");
+                ReportError(String(F("IsDoubleOperator *c - was empty str")).c_str());
                 return false;
             } else if (*(c+1) == '\n') {
                 // not really a error
@@ -199,7 +240,7 @@ namespace DALHAL {
                     else if (ch == ')') {
                         rightParen++;
                         if (rightParen > leftParen) {
-                            ReportError("unexpected ')' without matching '('");
+                            ReportError(String(F("unexpected ')' without matching '('")).c_str());
                             anyError = true;
                         }
                         prevWasOperator = false;
@@ -208,10 +249,10 @@ namespace DALHAL {
                     // --- Brackets for [] accessor ---
                     else if (ch == '[') {
                         if (p == token.start) {
-                            ReportError("'[' cannot start an expression");
+                            ReportError(String(F("'[' cannot start an expression")).c_str());
                             anyError = true;
                         } else if (!token.ContainsPtr(p - 1)) {
-                            ReportError("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)");
+                            ReportError(String(F("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)")).c_str());
                             anyError = true;
                         }
                         leftBracket++;
@@ -220,7 +261,7 @@ namespace DALHAL {
                     else if (ch == ']') {
                         rightBracket++;
                         if (rightBracket > leftBracket) {
-                            ReportError("unexpected ']' without matching '['");
+                            ReportError(String(F("unexpected ']' without matching '['")).c_str());
                             anyError = true;
                         }
                         prevWasOperator = false;
@@ -229,7 +270,7 @@ namespace DALHAL {
                     // --- Operators ---
                     else if (IsDoubleOperator(p)) {
                         if (prevWasOperator) {
-                            ReportError("double operator detected");
+                            ReportError(String(F("double operator detected")).c_str());
                             anyError = true;
                         }
                         p++; // skip next char since it's part of a double op
@@ -237,7 +278,7 @@ namespace DALHAL {
                     }
                     else if (IsSingleOperator(ch)) {
                         if (prevWasOperator) {
-                            ReportError("double operator detected");
+                            ReportError(String(F("double operator detected")).c_str());
                             anyError = true;
                         }
                         prevWasOperator = true;
@@ -252,11 +293,11 @@ namespace DALHAL {
 
             // --- Final structural checks ---
             if (leftParen != rightParen) {
-                ReportError("mismatched parentheses detected");
+                ReportError(String(F("mismatched parentheses detected")).c_str());
                 anyError = true;
             }
             if (leftBracket != rightBracket) {
-                ReportError("mismatched brackets detected");
+                ReportError(String(F("mismatched brackets detected")).c_str());
                 anyError = true;
             }
         }
@@ -276,7 +317,7 @@ namespace DALHAL {
         bool Expressions::IsExpressionEmpty(const ScriptTokens& tokens) {
             // Check for null pointer or invalid structure
             if (tokens.items == nullptr || tokens.count <= 0) {
-                ReportError("ExpressionEmpty: tokens are null or count == 0");
+                ReportError(String(F("ExpressionEmpty: tokens are null or count == 0")).c_str());
                 return true; // Consider null/zero count as empty
             }
 
@@ -284,7 +325,7 @@ namespace DALHAL {
             if (tokens.currIndex >= tokens.count ||
                 tokens.currentEndIndex > tokens.count ||
                 tokens.currIndex >= tokens.currentEndIndex) {
-                ReportError("ExpressionEmpty: invalid range");
+                ReportError(String(F("ExpressionEmpty: invalid range")).c_str());
                 return true;
             }
             int startIndex = tokens.currIndex;
@@ -309,12 +350,12 @@ namespace DALHAL {
 
             // early checks
             if (tokens.count == 0) {
-                ReportError("tokens.count == 0");
+                ReportError(String(F("tokens.count == 0")).c_str());
                 return false;
             }
 
             if (tokens.currIndex == tokens.currentEndIndex) {
-                ReportError("tokens.currIndex == tokens.currentEndIndex");
+                ReportError(String(F("tokens.currIndex == tokens.currentEndIndex")).c_str());
                 return false;
             }
 
@@ -325,7 +366,7 @@ namespace DALHAL {
                 firstTokenStart = tokens.Current().start;
 
             if(IsDoubleOperator(firstTokenStart) || IsSingleOperator(*firstTokenStart)) { // this only checks the two first characters in the Expression
-                ReportError("expr. cannot start with a operator");
+                ReportError(String(F("expr. cannot start with a operator")).c_str());
                 anyError = true;
             }
             //printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
@@ -424,11 +465,11 @@ namespace DALHAL {
 
             const char* invalidChar = ValidOperandVariableName(operandToken);
             if (invalidChar) {
-                std::string msg = "Invalid character <";
+                std::string msg = String(F("Invalid character <")).c_str();
                 msg += (*invalidChar);
                 msg += "> (";
                 msg += std::to_string(*invalidChar);
-                msg += ") in operand: ";
+                msg += String(F(") in operand: ")).c_str();
                 msg += operandToken.ToString();
                 operandToken.ReportTokenWarning(msg.c_str());
                 anyError = true;
@@ -447,7 +488,7 @@ namespace DALHAL {
                 // Only support one token inside brackets for now
                 if (*(varOperand.end-1) != ']' ) { // actually not needed as ValidateStructure do it beforehand
                     anyError = true;
-                    operandToken.ReportTokenError("bracket operator missing closing ]");
+                    operandToken.ReportTokenError(String(F("bracket operator missing closing ]")).c_str());
                 }
                 ScriptToken bracketVarOperand(bracketPos+1, varOperand.end-1);
                 ValidateOperand(bracketVarOperand, anyError, ValidateOperandMode::Read);
@@ -476,7 +517,7 @@ namespace DALHAL {
 #endif
 
             if (UIDPath::Validate(varOperand) == false) {
-                operandToken.ReportTokenError("Operand name invalid");
+                operandToken.ReportTokenError(String(F("Operand name invalid")).c_str());
                 anyError = true;
             }
 
@@ -485,7 +526,7 @@ namespace DALHAL {
             if (devFindRes != DeviceFindResult::Success) {
                 std::string msg = varOperand.ToString();
                 msg += " because: " + std::string(DeviceFindResultToString(devFindRes));
-                operandToken.ReportTokenError("Could not find device: ", msg.c_str());
+                operandToken.ReportTokenError(String(F("Could not find device: ")).c_str(), msg.c_str());
                 anyError = true;
                 return OperandTargetInfoResult::DeviceNotFound;
             }
@@ -505,7 +546,7 @@ namespace DALHAL {
                     HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
                     if (funcName.NotEmpty()) {
                         if (device->GetBracketOpRead_Function(funcName) == nullptr) {
-                            operandToken.ReportTokenError("GetBracketOpRead_Function not found: ", funcName.ToString().c_str());
+                            operandToken.ReportTokenError(String(F("GetBracketOpRead_Function not found: ")).c_str(), funcName.ToString().c_str());
                             anyError = true;
                         }
                     } else {
@@ -513,7 +554,7 @@ namespace DALHAL {
                         HALValue halValue;
                         readResult = device->read(halBracketSubscriptValue, halValue);
                         if (readResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), ": bracket op read");
+                            operandToken.ReportTokenError(HALOperationResultToString(readResult), String(F(": bracket op read")).c_str());
                             anyError = true;
                         }
                     }
@@ -522,7 +563,7 @@ namespace DALHAL {
                     HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
                     if (funcName.NotEmpty()) {
                         if (device->GetBracketOpWrite_Function(funcName) == nullptr) {
-                            operandToken.ReportTokenError("GetBracketOpWrite_Function not found: ", funcName.ToString().c_str());
+                            operandToken.ReportTokenError(String(F("GetBracketOpWrite_Function not found: ")).c_str(), funcName.ToString().c_str());
                             anyError = true;
                         }
                     } else {
@@ -530,7 +571,7 @@ namespace DALHAL {
                         HALValue halValue(HALValue::Type::TEST); // unset type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": bracket op write");
+                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), String(F(": bracket op write")).c_str());
                             anyError = true;
                         }
                     }
@@ -540,7 +581,7 @@ namespace DALHAL {
 
             if (mode == ValidateOperandMode::Exec) {
                 if (device->GetExec_Function(funcName) == nullptr) {
-                    operandToken.ReportTokenError("GetExec_Function not found: ", funcName.ToString().c_str());
+                    operandToken.ReportTokenError(String(F("GetExec_Function not found: ")).c_str(), funcName.ToString().c_str());
                     anyError = true;
                 }
                 return;
@@ -550,7 +591,7 @@ namespace DALHAL {
                 HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.NotEmpty()) {
                     if (device->GetReadToHALValue_Function(funcName) == nullptr) {
-                        operandToken.ReportTokenError("GetReadToHALValue_Function not found: ", funcName.ToString().c_str());
+                        operandToken.ReportTokenError(String(F("GetReadToHALValue_Function not found: ")).c_str(), funcName.ToString().c_str());
                         anyError = true;
                     }
                 } else {
@@ -566,7 +607,7 @@ namespace DALHAL {
                 HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.NotEmpty()) {
                     if (device->GetWriteFromHALValue_Function(funcName) == nullptr) {
-                        operandToken.ReportTokenError("GetWriteFromHALValue_Function not found: ", funcName.ToString().c_str());
+                        operandToken.ReportTokenError(String(F("GetWriteFromHALValue_Function not found: ")).c_str(), funcName.ToString().c_str());
                         anyError = true;
                     }
                 } else {
@@ -813,7 +854,7 @@ namespace DALHAL {
             const int startindex = tokens.currIndex;
             const int endIndex = tokens.currentEndIndex;
             if (endIndex > tokens.count) {
-                printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MASTER ERROR: endIndex >= tokens.count @ GenerateRPNTokens\n");
+                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MASTER ERROR: endIndex >= tokens.count @ GenerateRPNTokens\n")).c_str());
                 return nullptr;
             }
             //printf("\nGenerateRPNTokens - startindex:%d, endIndex:%d\n\n",startindex,endIndex);
@@ -856,7 +897,7 @@ namespace DALHAL {
                         if (opStackIndex != 0)
                             opStackIndex--; // discard the LeftParenthesis
                         else
-                            ReportError("Mismatched parenthesis"); // should never happend
+                            ReportError(String(F("Mismatched parenthesis")).c_str()); // should never happend
                     }
                     else {
                         ExpTokenType twoCharOpType = ExpTokenType::NotSet;
@@ -932,8 +973,8 @@ namespace DALHAL {
             while (opStackIndex != 0)
                 outTokenItems[outTokensIndex++] = opStack[--opStackIndex];
 
-            ReportInfo("GenerateRPNTokens used: " + std::to_string(outTokensIndex) + " of " + std::to_string(rpnOutputStackNeededSize) + "\n");
-            ReportInfo("GenerateRPNTokens used op: " + std::to_string(maxOperatorUsage) + " of " + std::to_string(opStackSizeNeededSize) + "\n");
+            ReportInfo(String(F("GenerateRPNTokens used: ")).c_str() + std::to_string(outTokensIndex) + " of " + std::to_string(rpnOutputStackNeededSize) + "\n");
+            ReportInfo(String(F("GenerateRPNTokens used op: ")).c_str() + std::to_string(maxOperatorUsage) + " of " + std::to_string(opStackSizeNeededSize) + "\n");
 
             rpnOutputStack->currentCount = outTokensIndex;
 
@@ -977,13 +1018,15 @@ namespace DALHAL {
                     
                         if (stackIndex > stackMaxUsed) stackMaxUsed = stackIndex;
                     }
-                    ReportInfo("BuildLogicTree stack size:" + std::to_string(stackIndex) + "\n");
+                    ReportInfo(String(F("BuildLogicTree stack size:")).c_str() + std::to_string(stackIndex) + "\n");
                     // This should never happen under normal use.
                     // It can occur if logical and arithmetic expressions are improperly combined,
                     // e.g., (a == 0 || b == 1) + 2, which is invalid.
-                    if (stackIndex < 2)
-                        throw std::runtime_error("LogicRPN: not enough operands for logic op");
-
+                    if (stackIndex < 2) {
+                        GlobalLogger.Error(F("LogicRPN: not enough operands for logic op"));
+                        continue;
+                        //throw std::runtime_error("LogicRPN: not enough operands for logic op");
+                    }
                     LogicRPNNode* rhs = logicRPNNodeStack[--stackIndex];
                     LogicRPNNode* lhs = logicRPNNodeStack[--stackIndex];
                     LogicRPNNode& newNode = logicRPNNodeStackPool[stackPoolIndex++]; //  get next item from the pool
@@ -1013,10 +1056,12 @@ namespace DALHAL {
                 currentCalcStartIndex = -1; // clear
             }
 
-            ReportInfo("BuildLogicTree - used " + std::to_string(stackMaxUsed) + " of " + std::to_string(finalOutputStackNeededSize) + "\n");
+            ReportInfo(String(F("BuildLogicTree - used ")).c_str() + std::to_string(stackMaxUsed) + " of " + std::to_string(finalOutputStackNeededSize) + "\n");
             if (stackIndex != 1) {
                 std::string msg = PrintExpressionTokensOneRow(*tokens, 0, tokens->currentCount);
-                throw std::runtime_error("LogicRPN - unbalanced tree: " + std::to_string(stackIndex) + msg);
+                msg = std::to_string(stackIndex) + msg;
+                GlobalLogger.Error(F("LogicRPN - unbalanced tree: "), msg.c_str());
+                //throw std::runtime_error("LogicRPN - unbalanced tree: " + std::to_string(stackIndex) + msg);
             }
 
             // note. logicRPNNodeStackPool is not owned and cannot be deleted here

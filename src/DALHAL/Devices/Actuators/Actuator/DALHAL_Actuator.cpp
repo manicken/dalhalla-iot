@@ -306,13 +306,13 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE) || zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN)) {
+        if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
             return exec_drive_to_min;
-        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_OPEN) || zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX)) {
+        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
             return exec_drive_to_max;
-        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_STOP)) {
+        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_STOP))) {
             return exec_stop;
-        } else if (zcFuncName.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_RESET)) {
+        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_RESET))) {
             return exec_reset;
         } else {
             return nullptr;
@@ -320,13 +320,13 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE) || cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN)) {
+        if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
             driveToMin();
-        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_OPEN) || cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX)) {
+        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
             driveToMax();
-        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_STOP)) {
+        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_STOP))) {
             stopDrive();
-        } else if (cmd.EqualsIC(DALHAL_DEVICE_ACTUATOR_CMD_RESET)) {
+        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_RESET))) {
             reset();
             stopDrive();   
         } else {

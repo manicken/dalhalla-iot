@@ -284,7 +284,7 @@ namespace Scheduler
     }
     bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res) {
         DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.EqualsIC(SCHEDULER_URL_REFRESH)) {
+        if (zcCmd.EqualsIC(F(SCHEDULER_URL_REFRESH))) {
             if (LoadJson(SCHEDULER_CFG_FILE_PATH)) {
                 res = "\"info\":\"schedule ld OK\"";
                 return true;
@@ -293,10 +293,10 @@ namespace Scheduler
                 res = "\"error\":\"schedule ld err\"";
                 return false;
             }
-        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS)) {
+        } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS))) {
             res = "\"count\":\"" + std::to_string(dtNBR_ALARMS) + "\"";
             return true;
-        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_FUNCTION_NAMES)) {
+        } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_FUNCTION_NAMES))) {
             std::string jsonStr = "{";
 
             for (int i=0;i<FuncCount;i++) {
@@ -307,10 +307,10 @@ namespace Scheduler
             jsonStr += "}";
             res = jsonStr;
             return true;
-        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_SHORT_DOWS)) {
+        } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_SHORT_DOWS))) {
             res = GetShortFormDowListAsJson();
             return true;
-        } else if (zcCmd.EqualsIC(SCHEDULER_URL_GET_TIME)) {
+        } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_TIME))) {
             std::string nowstr = "{\n\"now\":\"" + Time_ext::GetTimeAsString(now()) + "\",\n";
             nowstr += "\"next trigger\":\"" + Time_ext::GetTimeAsString(Scheduler->getNextTrigger()) + "\"\n}";
             res = nowstr;

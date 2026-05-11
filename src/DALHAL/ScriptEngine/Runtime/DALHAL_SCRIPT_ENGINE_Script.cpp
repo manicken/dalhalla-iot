@@ -91,7 +91,7 @@ namespace DALHAL {
                     tokens.currIndex++; // consume the On token as it dont have any important data
                     
                     ScriptToken& triggerSourceToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
-                    if (triggerSourceToken.EqualsIC("eachloop")) {
+                    if (triggerSourceToken.EqualsIC(F("eachloop"))) {
                         triggerBlock.event = new ReactiveEvent(TriggerBlock::AllwaysRun); // using special case of ReactiveEvent
                     }
                     else

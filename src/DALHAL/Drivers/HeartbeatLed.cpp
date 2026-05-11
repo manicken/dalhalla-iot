@@ -37,7 +37,7 @@ namespace HeartbeatLed
     bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res)
     {
         DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.EqualsIC("set")) {
+        if (zcCmd.EqualsIC(F("set"))) {
             zcCmd = zcStr.SplitOffHead('/');
             DALHAL::ZeroCopyString zcValue = zcStr.SplitOffHead('/');
             if (zcValue.Length() == 0) {
@@ -49,9 +49,9 @@ namespace HeartbeatLed
                 res = "Error - 'set' cmd value is not a unsigned integer: >>>" + zcValue.ToString() + "<<<";
                 return false;
             }
-            if (zcCmd.EqualsIC("on")) {
+            if (zcCmd.EqualsIC(F("on"))) {
                 HeartbeatLed::HEARTBEATLED_ON_INTERVAL = numRes.u32;
-            } else if (zcCmd.EqualsIC("off")) {
+            } else if (zcCmd.EqualsIC(F("off"))) {
                 HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = numRes.u32;
             } else {
                 res = "Error - 'set' cmd not found: >>>" + zcCmd.ToString() + "<<< (possible cmds: on, off)";

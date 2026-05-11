@@ -125,10 +125,10 @@ namespace DALHAL {
         ZeroCopyString zcTmp = zcTopic;
         ZeroCopyString zcHead = zcTmp.SplitOffHead('/');
         ZeroCopyString zcTail = zcTmp.SplitOffTail('/');
-        if (zcHead.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME)) {
+        if (zcHead.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME))) {
             return PubSubClientPacketReceiver(PubSubClientPayloadSink::Buffer, MqttOnPubishCompleteCallback);
-        } else if (zcHead.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD) &&
-                   zcTail.Equals(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_TAIL) && flags.RETAIN())
+        } else if (zcHead.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD)) &&
+                   zcTail.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_TAIL)) && flags.RETAIN())
         {
             // Expected topic format:
             // <homeassistant>/<type>/<deviceID>/<entityID>/config

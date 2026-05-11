@@ -189,12 +189,12 @@ namespace DALHAL {
         if (zcCmd.IsEmpty() || zcStr.IsEmpty() || (zcStr.ValidNumber() == false)) return HALOperationResult::InvalidArgument;
 
 
-        if (zcCmd.EqualsIC("ratio")) {
+        if (zcCmd.EqualsIC(F("ratio"))) {
             float fVal = 0.0f;
             zcStr.ConvertTo_float(fVal);
             //Serial.printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
             pulseUs = ratioValueTypeToPulse(fVal, false);
-        } else if (zcCmd.EqualsIC("pulse")) {
+        } else if (zcCmd.EqualsIC(F("pulse"))) {
             uint32_t uiVal = 0;
             zcStr.ConvertTo_uint32(uiVal);
             pulseUs = uiVal;

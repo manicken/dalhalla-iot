@@ -28,6 +28,9 @@
 #include <cstring>
 #include <cstdint>
 
+#include <pgmspace.h>
+#include <WString.h> // __FlashStringHelper
+
 namespace DALHAL {
 
     enum class NumberType { UINT32, INT32, FLOAT, INVALID };
@@ -156,11 +159,22 @@ namespace DALHAL {
         /* trims leading and trailing whitespace from the string*/
         void Trim();
 
+        bool Equals(char c) const;
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;
+        bool Equals(const __FlashStringHelper* fstr) const;
+        bool Equals_P(PGM_P pstr) const;
+
+        bool EqualsIC(char c) const;
         bool EqualsIC(const ZeroCopyString& other) const;
         bool EqualsIC(const char* cstr) const;
+        bool EqualsIC(const __FlashStringHelper* fstr) const;
+        bool EqualsIC_P(PGM_P pstr) const;
+
         bool EqualsICAny(const char* const* candidates) const;
+
+        
+
         /** returns true if any valid number: float, integer or unsigned integer */
         bool ValidNumber() const;
         bool ValidUINT() const;

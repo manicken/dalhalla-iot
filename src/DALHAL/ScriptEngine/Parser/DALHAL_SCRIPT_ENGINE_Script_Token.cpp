@@ -43,33 +43,33 @@ namespace DALHAL {
             // using a length based lockup for faster compare/lockup
             switch (zcStrLength) {
                 case 1:  // ";" or "\"
-                    if (zcStrType.EqualsIC(";")) return ScriptTokenType::ActionSeparator;
-                    if (zcStrType.EqualsIC("\\")) return ScriptTokenType::ActionJoiner;
+                    if (zcStrType.EqualsIC(';')) return ScriptTokenType::ActionSeparator;
+                    if (zcStrType.EqualsIC('\\')) return ScriptTokenType::ActionJoiner;
                     break;
 
                 case 2:  // "if", "do", "on", "or"
-                    if (zcStrType.EqualsIC("if")) return ScriptTokenType::If;
-                    if (zcStrType.EqualsIC("do")) return ScriptTokenType::Then;
-                    if (zcStrType.EqualsIC("on")) return ScriptTokenType::On;
-                    if (zcStrType.EqualsIC("or")) return ScriptTokenType::Or;
+                    if (zcStrType.EqualsIC(F("if"))) return ScriptTokenType::If;
+                    if (zcStrType.EqualsIC(F("do"))) return ScriptTokenType::Then;
+                    if (zcStrType.EqualsIC(F("on"))) return ScriptTokenType::On;
+                    if (zcStrType.EqualsIC(F("or"))) return ScriptTokenType::Or;
                     break;
 
                 case 3:  // "and"
-                    if (zcStrType.EqualsIC("and")) return ScriptTokenType::And;
+                    if (zcStrType.EqualsIC(F("and"))) return ScriptTokenType::And;
                     break;
 
                 case 4:  // "else", "then"
-                    if (zcStrType.EqualsIC("else")) return ScriptTokenType::Else;
-                    if (zcStrType.EqualsIC("then")) return ScriptTokenType::Then;
+                    if (zcStrType.EqualsIC(F("else"))) return ScriptTokenType::Else;
+                    if (zcStrType.EqualsIC(F("then"))) return ScriptTokenType::Then;
                     break;
 
                 case 5:  // "endif", "endon"
-                    if (zcStrType.EqualsIC("endif")) return ScriptTokenType::EndIf;
-                    if (zcStrType.EqualsIC("endon"))  return ScriptTokenType::EndOn;
+                    if (zcStrType.EqualsIC(F("endif"))) return ScriptTokenType::EndIf;
+                    if (zcStrType.EqualsIC(F("endon")))  return ScriptTokenType::EndOn;
                     break;
 
                 case 6:  // "elseif"
-                    if (zcStrType.EqualsIC("elseif")) return ScriptTokenType::ElseIf;
+                    if (zcStrType.EqualsIC(F("elseif"))) return ScriptTokenType::ElseIf;
                     break;
                 default:
                     return ScriptTokenType::NotSet;
@@ -167,7 +167,7 @@ namespace DALHAL {
 
         ScriptToken& ScriptTokens::GetNextAndConsume() {
             if (currIndex >= count) {
-                printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token GetNextAndConsume() EXTREME ERROR out of bounds\n");
+                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token GetNextAndConsume() EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -176,7 +176,7 @@ namespace DALHAL {
 
         ScriptToken& ScriptTokens::Current() {
             if (currIndex >= count) {
-                printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() EXTREME ERROR out of bounds\n");
+                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -184,7 +184,7 @@ namespace DALHAL {
         }
         const ScriptToken& ScriptTokens::Current() const {
             if (currIndex >= count) {
-                printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() const EXTREME ERROR out of bounds\n");
+                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() const EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -196,12 +196,12 @@ namespace DALHAL {
                 ScriptToken& token = Current();
                 if (token.type != ScriptTokenType::Ignore && token.type != ScriptTokenType::EndIf)
                     break;
-                token.ReportTokenInfo("--------- skipping token:");
+                token.ReportTokenInfo(String(F("--------- skipping token:")).c_str());
                 currIndex++;
             }
 
             if (currIndex >= count) {
-                ReportError("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unexpected end of tokens while building items");
+                ReportError(String(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unexpected end of tokens while building items")).c_str());
                 return false;
             }
             return true;
@@ -267,10 +267,10 @@ namespace DALHAL {
             int tokenCount = _tokens.count;
             std::string msg;
             if (subTokenIndexOffset == 0)
-                msg += "rootLevelBlockCount: " + std::to_string(_tokens.rootBlockCount) + "\n";
+                msg += String(F("rootLevelBlockCount: ")).c_str() + std::to_string(_tokens.rootBlockCount) + "\n";
 
             if (_tokens.firstTokenStartOffset != nullptr) {
-                msg += "firstTokenStartOffset set, ";
+                msg += String(F("firstTokenStartOffset set, ")).c_str();
             }
             bool lastWasBlock = false;
             for (int i=0;i<tokenCount;i++) {
@@ -288,7 +288,7 @@ namespace DALHAL {
                 if (subTokenIndexOffset == 0 && tok.itemsInBlock > 1 && (tok.type == ScriptTokenType::Action || tok.type == ScriptTokenType::IfCondition)) {
                     if (lastWasBlock == false)
                         msgLine += "\n";
-                    msgLine += "Tokens block:\n";
+                    msgLine += String(F("Tokens block:\n")).c_str();
                     ScriptTokens tokens;
                     tokens.items = &tok;
                     tokens.count = tok.itemsInBlock;
@@ -296,12 +296,12 @@ namespace DALHAL {
                     lastWasBlock = true;
                 } else {
                     msgLine +=
-                    "Token(" + std::to_string(i+subTokenIndexOffset) + "): " +
-                    "(line:" + std::to_string(tok.line) + 
-                    ", col:" + std::to_string(tok.column) + 
-                    ", count:" + std::to_string(tok.itemsInBlock) + 
-                    ", type:" + ScriptTokenTypeToString(tok.type) +
-                    ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?", hasElse:true":", hasElse:false"):"")+
+                    String(F("Token(")).c_str() + std::to_string(i+subTokenIndexOffset) + "): " +
+                    String(F("(line:")).c_str() + std::to_string(tok.line) + 
+                    String(F(", col:")).c_str() + std::to_string(tok.column) + 
+                    String(F(", count:")).c_str() + std::to_string(tok.itemsInBlock) + 
+                    String(F(", type:")).c_str() + ScriptTokenTypeToString(tok.type) +
+                    ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?String(F(", hasElse:true")).c_str():String(F(", hasElse:false")).c_str()):"")+
                     "): ";
 
                     lastWasBlock = false;

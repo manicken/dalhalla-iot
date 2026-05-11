@@ -79,24 +79,24 @@ namespace DALHAL {
 
                             // check that no Else has already been found
                             if (currentIf->hasElse) {
-                                token.ReportTokenError("'elseif' cannot appear after 'else'");
+                                token.ReportTokenError(String(F("'elseif' cannot appear after 'else'")).c_str());
                                 otherErrors = true;
                             }
                         }
                         else if (token.type == ScriptTokenType::Then) {
                             if (!expecting_do_then) {
-                                token.ReportTokenError("'do/then' without preceding 'if' or 'on'");
+                                token.ReportTokenError(String(F("'do/then' without preceding 'if' or 'on'")).c_str());
                                 otherErrors = true;
                             }
                             else if (last_If_or_On_Index + 1 == i) {
-                                token.ReportTokenError("Missing condition between 'if/on/elseif' and 'then/do'");
+                                token.ReportTokenError(String(F("Missing condition between 'if/on/elseif' and 'then/do'")).c_str());
                                 otherErrors = true;
                             }
                             expecting_do_then = false;
                         }
                         else if (token.type == ScriptTokenType::EndIf) {
                             if (ifLevel == 0) {
-                                token.ReportTokenError("'endif' without matching 'if'");
+                                token.ReportTokenError(String(F("'endif' without matching 'if'")).c_str());
                                 otherErrors = true;
                             }
                             else {
@@ -106,7 +106,7 @@ namespace DALHAL {
                             }
 
                             if (expecting_do_then) {
-                                token.ReportTokenError("missing 'do/then' after last 'if'");
+                                token.ReportTokenError(String(F("missing 'do/then' after last 'if'")).c_str());
                                 otherErrors = true;
                             }
                         }
@@ -115,7 +115,7 @@ namespace DALHAL {
 
                             // check for multiple Else
                             if (currentIf->hasElse) {
-                                token.ReportTokenError("Multiple 'else' blocks in the same 'if'");
+                                token.ReportTokenError(String(F("Multiple 'else' blocks in the same 'if'")).c_str());
                                 otherErrors = true;
                             } else {
                                 currentIf->hasElse = 1;
@@ -123,7 +123,7 @@ namespace DALHAL {
                         } 
                         else if (token.type == ScriptTokenType::On) {
                             if (ifLevel != 0 || onLevel != 0) {
-                                token.ReportTokenError("'on' block cannot be nested");
+                                token.ReportTokenError(String(F("'on' block cannot be nested")).c_str());
                                 otherErrors = true;
                             } else {
                                 lastOn = &token;
@@ -134,33 +134,33 @@ namespace DALHAL {
                         }
                         else if (token.type == ScriptTokenType::EndOn) {
                             if (onLevel == 0) {
-                                token.ReportTokenError("'endon' without matching 'on'");
+                                token.ReportTokenError(String(F("'endon' without matching 'on'")).c_str());
                                 otherErrors = true;
                             } else
                                 onLevel--;
 
                             if (expecting_do_then) {
-                                token.ReportTokenError("missing 'do' after last 'on'");
+                                token.ReportTokenError(String(F("missing 'do' after last 'on'")).c_str());
                                 otherErrors = true;
                             }
                         }
                         else if (onLevel == 0 && ifLevel == 0) {
-                            token.ReportTokenError("action/assigment expression tokens cannot be outside root blocks");
+                            token.ReportTokenError(String(F("action/assigment expression tokens cannot be outside root blocks")).c_str());
                             otherErrors = true;
                         }
                     }
 
                     if (ifLevel != 0) {
                         for (int i=0;i<ifStackIndex;i++) { // only print last 'errors'
-                            ifStack[i]->ReportTokenError("Unmatched 'if' block");
+                            ifStack[i]->ReportTokenError(String(F("Unmatched 'if' block")).c_str());
                         }
                         
                     }
                     if (onLevel != 0) {
                         if (lastOn)
-                            lastOn->ReportTokenError("Unmatched 'on' block: ");
+                            lastOn->ReportTokenError(String(F("Unmatched 'on' block: ")).c_str());
                         else
-                            ReportError("Unmatched 'on' block: <null>");
+                            ReportError(String(F("Unmatched 'on' block: <null>")).c_str());
                     }
                     delete[] ifStack;
                     return (ifLevel == 0) && (onLevel == 0) && (otherErrors == false);
@@ -256,7 +256,7 @@ namespace DALHAL {
                         const ScriptToken& token = tokens[i];
                         if (((token.type == ScriptTokenType::Then) || (token.type == ScriptTokenType::Else)) == false) continue;
                         if (token.itemsInBlock == 0) {
-                            token.ReportTokenError("EnsureActionBlocksContainItems - empty action(s) block detected");
+                            token.ReportTokenError(String(F("EnsureActionBlocksContainItems - empty action(s) block detected")).c_str());
                             anyError = true;
                         }
                     }

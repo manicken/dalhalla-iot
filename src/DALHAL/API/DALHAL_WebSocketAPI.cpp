@@ -102,15 +102,15 @@ namespace DALHAL {
         }
 
         case WS_EVT_ERROR:
-            Serial.println("WS error");
+            Serial.println(F("WS error"));
             break;
 
         case WS_EVT_PONG:
-            Serial.println("WS_EVT_PONG");
+            Serial.println(F("WS_EVT_PONG"));
             break;
 
         default:
-            Serial.println("WS unknown type");
+            Serial.println(F("WS unknown type"));
             break;
         }
     }

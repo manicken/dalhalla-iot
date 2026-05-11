@@ -50,64 +50,64 @@ namespace DALHAL {
             bool ValidateParseScript(ScriptTokens& _tokens, bool validateOnly) {
 
                 if (validateOnly) {
-                    ReportInfo("**********************************************************************************\n");
-                    ReportInfo("*                            RAW TOKEN LIST                                      *\n");
-                    ReportInfo("**********************************************************************************\n");
+                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                    ReportInfo(String(F("*                            RAW TOKEN LIST                                      *\n")).c_str());
+                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                     ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
     #endif
-                    ReportInfo("\n VerifyBlocks (BetterError): ");
+                    ReportInfo(String(F("\n VerifyBlocks (BetterError): ")).c_str());
                     //MEASURE_TIME(" VerifyBlocks time: ",
                     if (validateOnly && Conditions::VerifyBlocks(_tokens) == false) {
-                        ReportInfo("[FAIL]\n");
+                        ReportInfo(String(F("[FAIL]\n")).c_str());
                         return false;
                     }
                     //);
-                    ReportInfo("[OK]\n");
+                    ReportInfo(String(F("[OK]\n")).c_str());
                 }
                 // if here then we can safely parse all blocks
                 //MEASURE_TIME("\n MergeConditions time: ",
-                ReportInfo("\n MergeConditions: ");
+                ReportInfo(String(F("\n MergeConditions: ")).c_str());
                 Conditions::MergeConditions(_tokens);
-                ReportInfo("[OK]\n");
+                ReportInfo(String(F("[OK]\n")).c_str());
                 //);
                 //MEASURE_TIME("\n MergeActions time: ",
-                ReportInfo("\n MergeActions: ");
+                ReportInfo(String(F("\n MergeActions: ")).c_str());
                 Actions::MergeActions(_tokens);
-                ReportInfo("[OK]\n");
+                ReportInfo(String(F("[OK]\n")).c_str());
                 //);
                 //MEASURE_TIME("\n CountBlockItems time: ",
-                ReportInfo("\n CountBlockItems: ");
+                ReportInfo(String(F("\n CountBlockItems: ")).c_str());
                 Conditions::CountBlockItems(_tokens); // sets the metadata itemsInBlock
-                ReportInfo("[OK]\n");
+                ReportInfo(String(F("[OK]\n")).c_str());
                 //);
-                ReportInfo("**********************************************************************************\n");
-                ReportInfo("*                            PARSED TOKEN LIST                                   *\n");
-                ReportInfo("**********************************************************************************\n");
+                ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                ReportInfo(String(F("*                            PARSED TOKEN LIST                                   *\n")).c_str());
+                ReportInfo(String(F("**********************************************************************************\n")).c_str());
     #if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(DEBUG_PRINT_SCRIPT_ENGINE) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
                 ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
     #endif
                 if (validateOnly) {
                     //MEASURE_TIME("\n Conditions::EnsureActionBlocksContainItems time: ",
-                    ReportInfo("\n Conditions::EnsureBlocksContainItems: ");
+                    ReportInfo(String(F("\n Conditions::EnsureBlocksContainItems: ")).c_str());
                     if (validateOnly && Conditions::EnsureBlocksContainItems(_tokens) == false) { // uses the metadata itemsInBlock to determine if there are invalid
-                        ReportInfo("[FAIL]\n");
+                        ReportInfo(String(F("[FAIL]\n")).c_str());
                         return false;
                     }
-                    ReportInfo("[OK]\n");
+                    ReportInfo(String(F("[OK]\n")).c_str());
                 //);
                     
                 // MEASURE_TIME("\n VerifyConditionBlocks time: ",
-                    ReportInfo("\n VerifyConditionBlocks: \n");
+                    ReportInfo(String(F("\n VerifyConditionBlocks: \n")).c_str());
                     if (Conditions::VerifyConditionBlocks(_tokens) == false) {
-                        ReportInfo("[FAIL @ VerifyConditionBlocks]\n");
+                        ReportInfo(String(F("[FAIL @ VerifyConditionBlocks]\n")).c_str());
                         return false;
                     }
                 //);
                 //MEASURE_TIME("\n VerifyActionBlocks time: ",
-                    ReportInfo("\n VerifyActionBlocks: \n");
+                    ReportInfo(String(F("\n VerifyActionBlocks: \n")).c_str());
                     if (Actions::VerifyActionBlocks(_tokens) == false) {
-                        ReportInfo("[FAIL @ VerifyActionBlocks]\n");
+                        ReportInfo(String(F("[FAIL @ VerifyActionBlocks]\n")).c_str());
                         return false;
                     }
                 //);
@@ -117,10 +117,10 @@ namespace DALHAL {
 
             bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
                 char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
-                MEASURE_TIME("ReadAndParseScriptFile - load_text_file time: ",
+                MEASURE_TIME(String(F("ReadAndParseScriptFile - load_text_file time: ")).c_str(),
                 LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
                 if (fileResult != LittleFS_ext::FileResult::Success) {
-                    ReportInfo("Error: file could not be read/or is empty\n");
+                    ReportInfo(String(F("Error: file could not be read/or is empty\n")).c_str());
                     return false;
                 }
                 );
@@ -129,29 +129,29 @@ namespace DALHAL {
             //MEASURE_TIME("CountTokens time: ",
                 tokenCount = ParseAndTokenize<ScriptToken>(fileContents, nullptr, -1); // count in the same function
             //);
-                ReportInfo("Token count: " + std::to_string(tokenCount) + "\n");
+                ReportInfo(String(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
                 ScriptTokens tokens(tokenCount);
                 
                 //MEASURE_TIME("Tokenize time: ",
                 if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == -1)
                 {
-                    ReportInfo("Error: could not Tokenize\n");
+                    ReportInfo(String(F("Error: could not Tokenize\n")).c_str());
                     delete[] fileContents;
                     return false;
                 }
                 //);
                 bool anyError = false;
-                MEASURE_TIME("ValidateParseScript time: ",
+                MEASURE_TIME(String(F("ValidateParseScript time: ")).c_str(),
                 if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
-                    ReportInfo("ParseScript [OK]\n");
+                    ReportInfo(String(F("ParseScript [OK]\n")).c_str());
                     
                     if (parsedOKcallback) {
-                        MEASURE_TIME("loadscript time: ",
+                        MEASURE_TIME(String(F("loadscript time: ")).c_str(),
                         parsedOKcallback(tokens);
                         );
                     }
                 } else {
-                    ReportInfo("ParseScript [FAIL]\n");
+                    ReportInfo(String(F("ParseScript [FAIL]\n")).c_str());
                     anyError = true;
                 }
                 );

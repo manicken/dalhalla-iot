@@ -396,6 +396,10 @@ namespace DALHAL {
         }
     }
 
+    bool ZeroCopyString::Equals(char c) const {
+        return Length() == 1 && start[0] == c;
+    }
+
     bool ZeroCopyString::Equals(const ZeroCopyString& other) const {
         size_t len1 = Length();
         size_t len2 = other.Length();
@@ -412,6 +416,23 @@ namespace DALHAL {
 
         size_t len = Length();
         return std::strlen(cstr) == len && std::memcmp(start, cstr, len) == 0;
+    }
+    bool ZeroCopyString::Equals(const __FlashStringHelper* fstr) const {
+        return Equals_P(reinterpret_cast<PGM_P>(fstr));
+    }
+    bool ZeroCopyString::Equals_P(PGM_P pstr) const {
+        if (!pstr)
+            return false;
+
+        size_t len = Length();
+
+        return strlen_P(pstr) == len &&
+            memcmp_P(start, pstr, len) == 0;
+    }
+    bool ZeroCopyString::EqualsIC(char c) const {
+        return Length() == 1 &&
+            std::tolower((unsigned char)start[0]) ==
+            std::tolower((unsigned char)c);
     }
     bool ZeroCopyString::EqualsIC(const ZeroCopyString& other) const {
         int thisLen = Length();
@@ -459,6 +480,30 @@ namespace DALHAL {
             cstr++;
         }
         return true; // lengths already checked, all characters matched
+    }
+    bool ZeroCopyString::EqualsIC(const __FlashStringHelper* fstr) const {
+        return EqualsIC_P(reinterpret_cast<PGM_P>(fstr));
+    }
+    bool ZeroCopyString::EqualsIC_P(PGM_P pstr) const {
+        if (!pstr)
+            return false;
+
+        size_t len = Length();
+
+        if (strlen_P(pstr) != len)
+            return false;
+
+        const char* a = start;
+
+        for (size_t i = 0; i < len; i++) {
+            char b = pgm_read_byte(pstr + i);
+
+            if (std::tolower((unsigned char)a[i]) !=
+                std::tolower((unsigned char)b))
+                return false;
+        }
+
+        return true;
     }
     bool ZeroCopyString::EqualsICAny(const char* const* candidates) const {
         for (int i = 0; candidates[i] != nullptr; ++i) {
