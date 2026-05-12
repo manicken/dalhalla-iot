@@ -29,14 +29,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* EmptyPolicyToString(EmptyPolicy policy) {
+        const __FlashStringHelper* EmptyPolicyToString(EmptyPolicy policy) {
             switch (policy)
             {
-                case EmptyPolicy::Error: return "Error";
-                case EmptyPolicy::Ignore: return "Ignore";
-                case EmptyPolicy::Warn: return "Warn";
-                //case CanBeEmptyPolicy: return "";
-                default: return "Unknown";
+                case EmptyPolicy::Error: return F("Error");
+                case EmptyPolicy::Ignore: return F("Ignore");
+                case EmptyPolicy::Warn: return F("Warn");
+                //case CanBeEmptyPolicy: return F("");
+                default: return F("Unknown");
             }
         }
 

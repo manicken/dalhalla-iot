@@ -45,7 +45,7 @@ namespace DALHAL {
             HALOperationResult res = DeviceManager::GetDeviceEvent(zcStrUidPathAndFuncName, &reactiveEvent);
             if (res != HALOperationResult::Success) {
                 reactiveEvent = nullptr;
-                GlobalLogger.Error(F("error while GetDeviceEvent:"), HALOperationResultToString(res));
+                GlobalLogger.Error(F("error while GetDeviceEvent:"), String(HALOperationResultToString(res)).c_str());
             }
         }
         

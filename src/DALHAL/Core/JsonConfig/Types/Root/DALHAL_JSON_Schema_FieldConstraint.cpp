@@ -47,7 +47,9 @@ namespace DALHAL {
                 case FieldConstraint::Type::LessThanOrEqual: return "<=";
                 case FieldConstraint::Type::Void: return "Void";
                 //case FieldConstraint::Type: return "";
-                default: return "Unknown";
+                default:
+                Serial.print("");
+                return "Unknown";
             }
         }
 

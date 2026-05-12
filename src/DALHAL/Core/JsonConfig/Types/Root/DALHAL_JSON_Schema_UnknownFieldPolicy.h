@@ -24,6 +24,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <WString.h>
 
 namespace DALHAL {
 
@@ -34,7 +35,7 @@ namespace DALHAL {
             Warn,
             Error
         };
-        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy);
+        const __FlashStringHelper* UnknownFieldPolicyToString(UnknownFieldPolicy policy);
 
     }
 

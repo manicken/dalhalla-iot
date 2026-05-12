@@ -81,16 +81,16 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
-        if (val.cmd == "getAllNewDevices") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
+        if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
             val.out_value += getAllDevices(false, true);
         }
-        else if (val.cmd == "getAllNewDevicesWithTemp") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
+        else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
             val.out_value += getAllDevices(true, true);
         }
-        else if (val.cmd == "getAllDevices") { // (as json) return a complete list of all devices found for all busses
+        else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
             val.out_value += getAllDevices(false, false);
         }
-        else if (val.cmd == "getAllTemperatures") { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
+        else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
             val.out_value += getAllDevices(true, false);
         } else {
             std::string stdStrCmd = val.cmd.ToString();
@@ -178,17 +178,17 @@ namespace DALHAL {
         String ret;
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
-        ret += "\"";
+        ret += '"';
         ret += DeviceConstStrings::pin;
         ret += std::to_string(pin).c_str();
-        ret += ",\"devices\":[";
+        ret += F(",\"devices\":[");
         for (int i=0;i<deviceCount;i++) {
-            ret += "{";
+            ret += '{';
             ret += devices[i]->ToString();
-            ret += "}"; 
-            if (i<deviceCount-1) ret += ",";
+            ret += '}'; 
+            if (i<deviceCount-1) ret += ',';
         }
-        ret += "]";
+        ret += ']';
         return ret;
     }
 

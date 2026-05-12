@@ -24,6 +24,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <WString.h>
 
 namespace DALHAL {
 
@@ -39,7 +40,7 @@ namespace DALHAL {
             FieldMissing,  // not a error and can be used when the type is inherited
             FieldInvalidValue
         };
-        const char* ValidatorResultToString(ValidatorResult res);
+        const __FlashStringHelper* ValidatorResultToString(ValidatorResult res);
 
     }
 

@@ -25,7 +25,6 @@
 
 namespace DALHAL {
 
-
 static const char HTML_WS_CONSOLE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
@@ -76,10 +75,6 @@ function connect() {
         console.log("WebSocket connected");
         document.getElementById('log').textContent += "Connected\n";
     };
-
-    /*ws.onmessage = (evt) => {
-        document.getElementById('log').textContent += evt.data + '\n';
-    };*/
 
     ws.onmessage = (evt) => {
         const log = document.getElementById('log');

@@ -73,7 +73,7 @@ namespace DALHAL {
 
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
 
-        if (val.cmd == "valuelist") {
+        if (val.cmd.EqualsIC(F("valuelist"))) {
             std::string ret;
             ret += '[';
             for (int i=0;i<valueCount;i++) {

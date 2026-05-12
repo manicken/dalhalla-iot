@@ -192,4 +192,9 @@ namespace DALHAL {
     bool operator!=(const char* lhs, const ZeroCopyString& rhs);
     bool operator==(const ZeroCopyString& lhs, const char* rhs);
     bool operator!=(const ZeroCopyString& lhs, const char* rhs);
+
+    bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
+    bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
+    bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs);
+    bool operator!=(const ZeroCopyString& lhs, const __FlashStringHelper* rhs);
 }

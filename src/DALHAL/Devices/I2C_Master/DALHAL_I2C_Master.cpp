@@ -105,7 +105,7 @@ namespace DALHAL {
     HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
         ZeroCopyString zcStr = val.cmd; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd == "raw") { // this is more likely to be called
+        if (zcCmd.EqualsIC(F("raw"))) { // this is more likely to be called
             if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
             ZeroCopyString zcAddr = zcStr.SplitOffHead('/');
             if (zcAddr.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
@@ -136,7 +136,7 @@ namespace DALHAL {
             }
             val.out_value += ']';
         }
-        else if (zcCmd == "list") {
+        else if (zcCmd.EqualsIC(F("list"))) {
             val.out_value = '{';
             bool first = true;
             for (uint8_t addr=1; addr<127; ++addr) {
@@ -165,7 +165,7 @@ namespace DALHAL {
     HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
         ZeroCopyString zcStr = val.value; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd == "raw") {
+        if (zcCmd.EqualsIC(F("raw"))) {
             if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
             ZeroCopyString zcAddr = zcStr.SplitOffHead('/');
             if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError; // simple early check
@@ -202,7 +202,7 @@ namespace DALHAL {
                 // currently a TODO feature
                 // and the read function need to be DRY first
             }
-        } else if (zcCmd == "speed") {
+        } else if (zcCmd.EqualsIC(F("speed"))) {
             if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
             ZeroCopyString zcSpeed = zcStr.SplitOffHead('/');
             if (zcSpeed.IsEmpty()) return HALOperationResult::StringRequestParameterError;

@@ -366,7 +366,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
-        if (val.cmd == "endstops") {
+        if (val.cmd.EqualsIC(F("endstops"))) {
             val.out_value += "\"min\":";
             val.out_value += endMinActive() ? "true":"false";
             val.out_value += ',';

@@ -38,7 +38,7 @@ namespace DALHAL {
 
         struct SchemaBool : SchemaTypeBase {
 
-            //static const FieldTypeRegistryDefine RegistryDefine;
+            static const FieldTypeRegistryDefine RegistryDefine;
 
             
 
@@ -49,13 +49,13 @@ namespace DALHAL {
             static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
             static const char* GetJavaScriptValidator();
         public:
-            static constexpr FieldTypeRegistryDefine RegistryDefine = {
+            /*static constexpr FieldTypeRegistryDefine RegistryDefine = {
                 &ValidateSchema,
                 &ValidateJson,
                 &GetValue,
                 &SchemaToJson,
                 &GetJavaScriptValidator
-            };
+            };*/
             bool ExtractFrom(const JsonVariant& jsonObj) const;
 
         public:

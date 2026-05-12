@@ -308,7 +308,11 @@ namespace DALHAL {
                     char temp[SYSTEM_HEAP_STRING_MAX_SIZE];
                     snprintf_P(temp, SYSTEM_HEAP_STRING_MAX_SIZE, SYSTEM_HEAP_FORMAT_STR,
                         ESP.getFreeHeap(),
+#if defined(ESP8266)
                         ESP.getMaxFreeBlockSize());
+#elif defined(ESP32)
+                        ESP.getMaxAllocHeap());
+#endif
                     cb(temp);
                 }
             }
@@ -554,7 +558,7 @@ namespace DALHAL {
             return false;
         }
         if (writeResult != HALOperationResult::Success) {
-            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(writeResult));
+            GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(writeResult)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(writeResult);
@@ -665,7 +669,7 @@ namespace DALHAL {
             return false;
         }
         if (readResult != HALOperationResult::Success) {
-            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(readResult));
+            GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(readResult)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(readResult);
@@ -709,7 +713,7 @@ namespace DALHAL {
             res = outDevice->exec();
         }
         if (res != HALOperationResult::Success) {
-            GlobalLogger.Error(F("HALOperationResult: "), HALOperationResultToString(res));
+            GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(res)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
             /*message += "\"error\":\"";
             message += HALOperationResultToString(res);

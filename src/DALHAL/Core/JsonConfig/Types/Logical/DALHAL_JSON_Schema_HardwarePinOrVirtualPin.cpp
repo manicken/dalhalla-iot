@@ -102,7 +102,7 @@ namespace DALHAL {
                 GPIO_manager::CheckPinResultError errMsg = GPIO_manager::GetCheckPinResultError(cpRes, pin, fMode);
                 std::string errStr = errMsg.msg + ", fName=" + fieldSchema.name; errStr += " @ ";
                 serializeCollapsed(jsonObj, errStr);
-                GlobalLogger.Error(errMsg.baseMsg, errStr.c_str());
+                GlobalLogger.Error(BASE_MSG_TYPE_GET_FUNC(errMsg.baseMsg), errStr.c_str());
                 anyError = true;
                 return ValidatorResult::FieldInvalidValue;
             }
@@ -138,7 +138,7 @@ namespace DALHAL {
             std::string modeStr = GPIO_manager::describePinFunctions(fs.mode); // this is the most describable version, use this for development test only
             //std::string modeStr = Convert::toHex(fs.mode); // this is the most compact version
             //std::string modeStr = Convert::toBin(fs.mode)
-            out += ','; ToJsonString::appendString(out, "mode", modeStr.c_str());
+            out += ','; ToJsonString::appendString(out, F("mode"), modeStr.c_str());
             
             
             if (fieldSchema.type == FieldType::HardwarePinOrVirtualPin) { 

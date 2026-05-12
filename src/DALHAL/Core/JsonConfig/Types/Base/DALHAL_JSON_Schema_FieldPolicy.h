@@ -24,6 +24,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <WString.h>
 
 namespace DALHAL {
 
@@ -37,7 +38,7 @@ namespace DALHAL {
             FieldsGroup, // a explicit Optional choice that is used on FieldsGroup as a FieldsGroup never decide what policy the contained fields have
             ModeDefine // a explicit Optional choice where the Mode defines the policy
         };
-        const char* FieldPolicyToString(FieldPolicy flag);
+        const __FlashStringHelper* FieldPolicyToString(FieldPolicy flag);
 
     }
 

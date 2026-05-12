@@ -24,39 +24,40 @@
 #include <cstdio>
 
 #include "DALHAL_OperationResult.h"
-
+#include <Arduino.h>
 
 namespace DALHAL {
-    const char* HALOperationResultToString(HALOperationResult result) {
+
+    const __FlashStringHelper* HALOperationResultToString(HALOperationResult result) {
         switch (result) {
-            case HALOperationResult::Success: return "Success";
-            case HALOperationResult::DeviceNotFound: return "DeviceNotFound";
-            case HALOperationResult::UnsupportedOperation: return "UnsupportedOperation";
-            case HALOperationResult::UnsupportedCommand: return "UnsupportedCommand";
-            case HALOperationResult::ExecutionFailed: return "ExecutionFailed";
-            case HALOperationResult::IfConditionTrue: return "IfConditionTrue";
-            case HALOperationResult::IfConditionFalse: return "IfConditionFalse";
-            case HALOperationResult::StackUnderflow: return "StackUnderflow";
-            case HALOperationResult::DivideByZero: return "DivideByZero";
-            case HALOperationResult::StackOverflow: return "StackOverflow";
-            case HALOperationResult::ResultGetFail: return "ResultGetFail";
-            case HALOperationResult::HandlerWasNullPtr: return "HandlerWasNullPtr";
-            case HALOperationResult::ContextWasNullPtr: return "ContextWasNullPtr";
-            case HALOperationResult::BracketOpSubscriptOutOffRange: return "BracketOpSubscriptOutOffRange";
-            case HALOperationResult::StringRequestParameterError: return "StringRequestParameterError";
-            case HALOperationResult::WriteValueNaN: return "WriteValueNaN";
-            case HALOperationResult::WriteValueNotUintOrInt: return "WriteValueNotUintOrInt";
-            case HALOperationResult::WriteValueOutOfRange: return "WriteValueOutOfRange";
-            case HALOperationResult::InvalidArgument: return "InvalidArgument";
-            case HALOperationResult::HardwareFault: return "HardwareFault";
-            case HALOperationResult::Timeout: return "Timeout";
-            case HALOperationResult::NotSet: return "NotSet";
-            case HALOperationResult::ReactiveEventsNotSupported: return "ReactiveEventsNotSupported";
-            case HALOperationResult::ReactiveEventByNameNotFound: return "ReactiveEventByNameNotFound";
+            case HALOperationResult::Success: return F("Success");
+            case HALOperationResult::DeviceNotFound: return F("DeviceNotFound");
+            case HALOperationResult::UnsupportedOperation: return F("UnsupportedOperation");
+            case HALOperationResult::UnsupportedCommand: return F("UnsupportedCommand");
+            case HALOperationResult::ExecutionFailed: return F("ExecutionFailed");
+            case HALOperationResult::IfConditionTrue: return F("IfConditionTrue");
+            case HALOperationResult::IfConditionFalse: return F("IfConditionFalse");
+            case HALOperationResult::StackUnderflow: return F("StackUnderflow");
+            case HALOperationResult::DivideByZero: return F("DivideByZero");
+            case HALOperationResult::StackOverflow: return F("StackOverflow");
+            case HALOperationResult::ResultGetFail: return F("ResultGetFail");
+            case HALOperationResult::HandlerWasNullPtr: return F("HandlerWasNullPtr");
+            case HALOperationResult::ContextWasNullPtr: return F("ContextWasNullPtr");
+            case HALOperationResult::BracketOpSubscriptOutOffRange: return F("BracketOpSubscriptOutOffRange");
+            case HALOperationResult::StringRequestParameterError: return F("StringRequestParameterError");
+            case HALOperationResult::WriteValueNaN: return F("WriteValueNaN");
+            case HALOperationResult::WriteValueNotUintOrInt: return F("WriteValueNotUintOrInt");
+            case HALOperationResult::WriteValueOutOfRange: return F("WriteValueOutOfRange");
+            case HALOperationResult::InvalidArgument: return F("InvalidArgument");
+            case HALOperationResult::HardwareFault: return F("HardwareFault");
+            case HALOperationResult::Timeout: return F("Timeout");
+            case HALOperationResult::NotSet: return F("NotSet");
+            case HALOperationResult::ReactiveEventsNotSupported: return F("ReactiveEventsNotSupported");
+            case HALOperationResult::ReactiveEventByNameNotFound: return F("ReactiveEventByNameNotFound");
             
             default:
-                printf("unknown HALOperationResult: %d\n", (int)result);
-                return "Unknown";
+                Serial.print("");// force the compiler to not use lockup table which consume 400 bytes ram
+                return F("Unknown");
         }
     }
 }

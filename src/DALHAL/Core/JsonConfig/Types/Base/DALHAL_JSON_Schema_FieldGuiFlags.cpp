@@ -47,28 +47,28 @@ namespace DALHAL {
                 out += '[';
                 if (hasFlag(flags, DisableByDefault)) {
                     first = false;
-                    ToJsonString::appendQuoted(out, "DisableByDefault");
+                    ToJsonString::appendQuoted(out, F("DisableByDefault"));
                 }
                 
                 if (hasFlag(flags, HideLabel)) {
                     if (first == false) { out += ','; }
                     first = false;
-                    ToJsonString::appendQuoted(out, "HideLabel");
+                    ToJsonString::appendQuoted(out, F("HideLabel"));
                 }
                 if (hasFlag(flags, ReadOnly)) {
                     if (first == false) { out += ','; }
                     first = false;
-                    ToJsonString::appendQuoted(out, "ReadOnly");
+                    ToJsonString::appendQuoted(out, F("ReadOnly"));
                 }
                 if (hasFlag(flags, RenderAllAllowedValues)) {
                     if (first == false) { out += ','; }
                     first = false;
-                    ToJsonString::appendQuoted(out, "RenderAllAllowedValues");
+                    ToJsonString::appendQuoted(out, F("RenderAllAllowedValues"));
                 }
                 if (hasFlag(flags, UseInline)) {
                     if (first == false) { out += ','; }
                     first = false;
-                    ToJsonString::appendQuoted(out, "UseInline");
+                    ToJsonString::appendQuoted(out, F("UseInline"));
                 }
                 out += ']';
             }

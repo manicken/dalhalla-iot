@@ -79,7 +79,7 @@ namespace DALHAL {
         void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaObject&>(fieldSchema);
-            out += ','; ToJsonString::appendKey(out, "subtype");
+            out += ','; ToJsonString::appendKey(out, F("subtype"));
             //out += '{'; SchemaToJson adds it
             JsonObjectSchema::SchemaToJson(fs.subtype, out);
             //out += '}'; SchemaToJson adds it

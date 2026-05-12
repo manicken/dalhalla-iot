@@ -67,11 +67,11 @@ namespace DALHAL {
             out += '{'; // this is allways added
             const char* type_cStr = FieldTypeToString(schema.type);
             //const char* type_cStr = "test";
-            ToJsonString::appendString(out, "type", type_cStr?type_cStr:"nullptr unknown");
-            out += ','; ToJsonString::appendString(out, "name", schema.name);
-            out += ','; ToJsonString::appendBool(out, "required", (schema.policy == FieldPolicy::Required));
+            ToJsonString::appendString(out, F("type"), type_cStr?type_cStr:"nullptr unknown");
+            out += ','; ToJsonString::appendString(out, F("name"), schema.name);
+            out += ','; ToJsonString::appendBool(out, F("required"), (schema.policy == FieldPolicy::Required));
             if (Gui::HaveAnyNotIncludingInline(schema.guiFlags)) {
-                out += ','; ToJsonString::appendKey(out, "gui"); Gui::ToJson(schema.guiFlags, out);
+                out += ','; ToJsonString::appendKey(out, F("gui")); Gui::ToJson(schema.guiFlags, out);
             }
         }
     }

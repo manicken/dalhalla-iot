@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <WString.h>
+
 namespace DALHAL {
 
     enum class HALOperationResult {
@@ -69,6 +71,6 @@ namespace DALHAL {
 
         NotSet = 99,
     };
-    const char* HALOperationResultToString(HALOperationResult result);
+    const __FlashStringHelper* HALOperationResultToString(HALOperationResult result);
 
   }

@@ -120,7 +120,7 @@ namespace DALHAL {
         //JsonSchema::validateFromRegister(jsonArray, RootDevicesRegistry, anyError);
         if (anyError) {
             GlobalLogger.Error(F("The loaded JSON cfg contains errors"));
-            GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
+            //GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
             return false;
         }
 
@@ -134,13 +134,13 @@ namespace DALHAL {
         
         if (deviceCount == 0) {
             GlobalLogger.Error(F("The loaded JSON cfg does not contain any enabled/(non comment) items!"));
-            GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
+            //GlobalLogger.setLastEntrySource("DeviceManager::ParseJSON");
             return false;
         }
         
         // delete/cleanup prev configuration if any
         CleanUp();
-        printf("\nTrying to allocate for %d devices\n", deviceCount);
+        //printf("\nTrying to allocate for %d devices\n", deviceCount);
         
         // Allocate space for all devices
         devices = new Device*[deviceCount]();
@@ -149,7 +149,7 @@ namespace DALHAL {
             GlobalLogger.Error(F("Failed to allocate device array"));
             return false;
         }
-        printf("\nOK\n");
+        //printf("\nOK\n");
         DALHAL::DeviceManager::deviceCount = deviceCount;
 
         GPIO_manager::ClearAllReservations(); 

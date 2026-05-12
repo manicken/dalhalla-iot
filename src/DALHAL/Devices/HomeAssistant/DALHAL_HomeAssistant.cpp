@@ -91,21 +91,21 @@ namespace DALHAL {
         int commandTopicStrLength = snprintf(nullptr, 0, clientIdFormat_cStr, deviceID_cStr, uid_cStr) + 1;
         char* clientIdStr = new char[commandTopicStrLength];
         snprintf(clientIdStr, commandTopicStrLength, clientIdFormat_cStr, deviceID_cStr, uid_cStr);
-        Serial.printf("connecting using clientId:%s\n", clientIdStr);
+        Serial.print(F("\r\nHASS MQTT - connecting using clientId:")); Serial.println(clientIdStr);
         if (username.length() != 0 && password.length() != 0) { // the default connect is using CleanSession = true
             if (mqttClient.connect(clientIdStr, username.c_str(), password.c_str()) == false) {
-                //Serial.println("ERR - HA MQTT nocould not connect using credentials");
+                Serial.println(F("\r\nERROR - HASS MQTT - could not connect using credentials\r\n"));
             }
         } else {
             if (mqttClient.connect(clientIdStr) == false) { // the default connect is using CleanSession = true
-                //Serial.println("ERROR - HASS MQTT could not connect without credentials");
+                Serial.println(F("\r\nERROR - HASS MQTT - could not connect without credentials\r\n"));
             } 
         }
         delete[] clientIdStr;
         if (mqttClient.connected()) {
-            Serial.println("HASS - MQTT connected to brooker");
+            Serial.println(F("HASS MQTT - connected to brooker"));
             HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient, deviceID_cStr);
-            
+            HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
         }
     }
 
@@ -118,6 +118,7 @@ namespace DALHAL {
     }
 
     PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback(void* context, char* topic, uint16_t topicLength, uint32_t payloadLength, PSC_PublishFlags flags) {
+        Serial.println(F("PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback"));
         //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
         // topic length is already provided by the MQTT protocol
         ZeroCopyString zcTopic(topic, topic + topicLength);
@@ -137,7 +138,8 @@ namespace DALHAL {
             // 
             // The structure of <deviceID> is defined by DALHAL_HA_DeviceDiscovery 
             ZeroCopyString zcEntityID = zcTmp.SplitOffTail('/');
-
+            
+            Serial1.println("rx cleanup topic:");
 
         } else {
             // failsafe warning, this will likely never happend

@@ -131,7 +131,18 @@ namespace DALHAL {
                 out += '"';
             }
 
+            void appendQuoted(std::string& out, const __FlashStringHelper* str) {
+                out += '"';
+                out += String(str).c_str();
+                out += '"';
+            }
+
             void appendKey(std::string& out, const char* key) {
+                appendQuoted(out, key);
+                out += ':';
+            }
+
+            void appendKey(std::string& out, const __FlashStringHelper* key) {
                 appendQuoted(out, key);
                 out += ':';
             }
@@ -167,6 +178,38 @@ namespace DALHAL {
             void appendString(std::string& out, const char* key, const char* cStr) {
                 appendKey(out, key);
                 appendQuoted(out, cStr);
+            }
+            void appendString(std::string& out, const __FlashStringHelper* key, const char* cStr) {
+                appendKey(out, key);
+                appendQuoted(out, cStr);
+            }
+            void appendString(std::string& out, const __FlashStringHelper* key, const __FlashStringHelper* cStr) {
+                appendKey(out, key);
+                appendQuoted(out, cStr);
+            }
+
+            void appendBool(std::string& out, const __FlashStringHelper* key, bool v) {
+                appendKey(out, key);
+                appendBool(out, v);
+            }
+
+            void appendNumber(std::string& out, const __FlashStringHelper* key, unsigned int v) {
+                appendKey(out, key);
+                out += std::to_string(v);
+            }
+
+            void appendNumber(std::string& out, const __FlashStringHelper* key, int v) {
+                appendKey(out, key);
+                out += std::to_string(v);
+            }
+            
+            void appendNumber(std::string& out, const __FlashStringHelper* key, float v) {
+                appendKey(out, key);
+                if (isnan(v)) {
+                    out += "null"; // otherwise it will print nan which is a invalid json type
+                } else {
+                    out += std::to_string(v);
+                }
             }
 
         }

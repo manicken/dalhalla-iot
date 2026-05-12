@@ -108,8 +108,8 @@ namespace FSBrowser {
                                 uint8_t *data,
                                 size_t len,
                                 bool final) {
-        String dir = "/edit";   // your upload directory
-        String dest = "/edit/upload"; // redirect after upload
+        String dir = F("/edit");   // your upload directory
+        String dest = F("/edit/upload"); // redirect after upload
 
         // Ensure the directory exists
         if (!LittleFS.exists(dir)) {
@@ -122,7 +122,7 @@ namespace FSBrowser {
             fsUploadFile = LittleFS.open(filePath, "w");
             if (!fsUploadFile) {
                 Serial.println(F("Failed to open file for writing"));
-                request->send(500, FPSTR(TEXT_PLAIN), "500: couldn't create file");
+                request->send(500, FPSTR(TEXT_PLAIN), F("500: couldn't create file"));
                 return;
             }
             Serial.print(F("Upload Start: ")); Serial.println(filePath);
@@ -137,7 +137,7 @@ namespace FSBrowser {
         if (final) {
             if (fsUploadFile) {
                 fsUploadFile.close();
-                Serial.printf("Upload End: %s, total bytes: %u\n", filename.c_str(), index + len);
+                Serial.printf_P(PSTR("Upload End: %s, total bytes: %u\n"), filename.c_str(), index + len);
 
                 // Redirect client
                 AsyncWebServerResponse *response = request->beginResponse(303, "text/plain", "");
@@ -156,10 +156,10 @@ namespace FSBrowser {
             return true;
         }
 #endif
-        if (path.startsWith("/LittleFS")) {
+        if (path.startsWith(F("/LittleFS"))) {
             fileSystem = &LittleFS;
             path = path.substring(sizeof("/LittleFS")-1);
-            if (path.length() == 0) path = "/";
+            if (path.length() == 0) path = '/';
             return true;
         }
         Serial.println(F("selectFileSystemAndFixPath error: invalid FS ")); Serial.println(path);
@@ -167,36 +167,36 @@ namespace FSBrowser {
     }
 
     void handleStatus(AsyncWebServerRequest *request) {
-        String json = "{\"type\":\"" + String(fsName) + "\", \"isOk\":";
+        String json = F("{\"type\":\""); json += String(fsName); json += F("\", \"isOk\":");
         if (fsOK) {
 #if defined(ESP8266)
             FSInfo fs_info;
             LittleFS.info(fs_info);
-            json += "\"true\", \"totalBytes\":\"" + String(fs_info.totalBytes) + "\", \"usedBytes\":\"" + String(fs_info.usedBytes) + "\"";
+            json += F("\"true\", \"totalBytes\":\"") + String(fs_info.totalBytes) + F("\", \"usedBytes\":\"") + String(fs_info.usedBytes) + '"';
 #elif defined(ESP32)
             json += "\"true\", \"totalBytes\":\"" + String(LittleFS.totalBytes()) + "\", \"usedBytes\":\"" + String(LittleFS.usedBytes()) + "\"";
 #endif
         } else {
-            json += "\"false\"";
+            json += F("\"false\"");
         }
-        json += ",\"unsupportedFiles\":\"" + unsupportedFiles + "\"}";
+        json += F(",\"unsupportedFiles\":\""); json += unsupportedFiles; json += "\"}";
         request->send(200, FPSTR(APPLICATION_JSON), json);
     }
 
     void handleFileList(AsyncWebServerRequest *request) {
         if (!fsOK) return replyServerError(request, FPSTR(FS_INIT_ERROR));
-        if (!request->hasParam("dir")) return replyBadRequest(request, "DIR ARG MISSING");
+        if (!request->hasParam("dir")) return replyBadRequest(request, F("DIR ARG MISSING"));
 
         String path = request->getParam("dir")->value();
         Serial.print(F("\nhandleFileList path:")); Serial.println(path.c_str());
         if (!selectFileSystemAndFixPath(path)) {
             request->send(200, FPSTR(APPLICATION_JSON),
-                "[{\"type\":\"dir\",\"name\":\"sdcard\"},{\"type\":\"dir\",\"name\":\"LittleFS\"}]");
+                F("[{\"type\":\"dir\",\"name\":\"sdcard\"},{\"type\":\"dir\",\"name\":\"LittleFS\"}]"));
             return;
         }
         
 
-        if (path != "/" && !fileSystem->exists(path)) return replyBadRequest(request, "BAD PATH");
+        if (path != "/" && !fileSystem->exists(path)) return replyBadRequest(request, F("BAD PATH"));
 
         String output = "[";
     #if defined(ESP8266)
@@ -204,12 +204,12 @@ namespace FSBrowser {
         while (dir.next()) {
             File f = dir.openFile("r");
             if (output.length() > 1) output += ",";
-            output += "{\"type\":\"";
+            output += F("{\"type\":\"");
             output += (f.isDirectory()) ? "dir" : "file";
-            if (!f.isDirectory()) output += "\",\"size\":\"" + String(f.size());
-            output += "\",\"name\":\"";
+            if (!f.isDirectory()) output += F("\",\"size\":\"") + String(f.size());
+            output += F("\",\"name\":\"");
             output += (f.name()[0] == '/') ? &(f.name()[1]) : f.name();
-            output += "\"}";
+            output += F("\"}");
             f.close();
         }
     #elif defined(ESP32)
@@ -239,7 +239,26 @@ namespace FSBrowser {
         String path = request->url();
         Serial.print(F("\nhandleFileRead path:")); Serial.println(path.c_str());
         if (!fsOK) { replyServerError(request, FPSTR(FS_INIT_ERROR)); return; }
-        if (!selectFileSystemAndFixPath(path)) { replyNotFound(request, "FS NOT FOUND"); return; }
+        if (!selectFileSystemAndFixPath(path)) {
+            IPAddress clientIP = request->client()->remoteIP();
+            Serial.println(F("\r\n=== DEBUG: /json request ==="));
+            Serial.print(F("From IP: "));
+            Serial.println(clientIP.toString());
+            Serial.print(F("Timestamp: "));
+            Serial.println(millis());
+            
+            // Logga HTTP headers
+            Serial.println(F("Headers:"));
+            for (int i = 0; i < request->headers(); i++) {
+                AsyncWebHeader* h = request->getHeader(i);
+                Serial.print("  ");
+                Serial.print(h->name());
+                Serial.print(": ");
+                Serial.println(h->value());
+            }
+            replyNotFound(request, F("FS NOT FOUND"));
+            return;
+        }
         if (!fileSystem->exists(path)) { replyNotFound(request, FPSTR(FILE_NOT_FOUND)); return; }
         
         AsyncWebServerResponse *response = request->beginResponse(
@@ -253,9 +272,9 @@ namespace FSBrowser {
             
             Serial.print(F("\nhandleFileUpload:")); Serial.println(filename.c_str());
             if (!filename.startsWith("/")) filename = "/" + filename;
-            if (!selectFileSystemAndFixPath(filename)) { replyNotFound(request, "FS NOT FOUND"); return; }
+            if (!selectFileSystemAndFixPath(filename)) { replyNotFound(request, F("FS NOT FOUND")); return; }
             uploadFile = fileSystem->open(filename, "w");
-            if (!uploadFile) { request->send(500, FPSTR(TEXT_PLAIN), "CREATE FAILED"); return; }
+            if (!uploadFile) { request->send(500, FPSTR(TEXT_PLAIN), F("CREATE FAILED")); return; }
         }
         if (len && uploadFile) uploadFile.write(data, len);
         if (final && uploadFile) uploadFile.close();
@@ -263,15 +282,15 @@ namespace FSBrowser {
 
     void handleFileCreate(AsyncWebServerRequest *request) {
         if (!fsOK) return replyServerError(request, FPSTR(FS_INIT_ERROR));
-        if (!request->hasParam("path", true)) return replyBadRequest(request, "PATH ARG MISSING");
+        if (!request->hasParam("path", true)) return replyBadRequest(request, F("PATH ARG MISSING"));
 
         String path = request->getParam("path", true)->value();
         Serial.print(F("\nhandleFileCreate path:")); Serial.println(path.c_str());
 
         if (!selectFileSystemAndFixPath(path)) return;
-
         
-        if (path == "/" || fileSystem->exists(path)) return replyBadRequest(request, "BAD PATH");
+        
+        if (path == "/" || fileSystem->exists(path)) return replyBadRequest(request, F("BAD PATH"));
         String src = request->arg("src");
         if (src.isEmpty()) {
             // No source specified: creation
@@ -279,37 +298,37 @@ namespace FSBrowser {
             if (path.endsWith("/")) {
                 // Create a folder
                 path.remove(path.length() - 1);
-                if (!fileSystem->mkdir(path)) { return replyServerError(request, "MKDIR FAILED"); }
+                if (!fileSystem->mkdir(path)) { return replyServerError(request, F("MKDIR FAILED")); }
                 replyOKWithMsg(request, path);
             } else {
             
                 File file = fileSystem->open(path, "w");
-                if (!file) return replyServerError(request, "CREATE FAILED");
+                if (!file) return replyServerError(request, F("CREATE FAILED"));
                 file.close();
                 replyOKWithMsg(request, path.substring(0, path.lastIndexOf('/')));
             }
         } else {
             // Source specified: rename
-            if (src == "/") { return replyBadRequest(request, "BAD SRC"); }
-            if (!fileSystem->exists(src)) { return replyBadRequest(request, "SRC FILE NOT FOUND"); }
+            if (src == "/") { return replyBadRequest(request, F("BAD SRC")); }
+            if (!fileSystem->exists(src)) { return replyBadRequest(request, F("SRC FILE NOT FOUND")); }
 
             Serial.print(F("\nhandleFileCreate:")); Serial.print(path.c_str()); Serial.print(F(" from ")); Serial.println(src.c_str());
 
             if (path.endsWith("/")) { path.remove(path.length() - 1); }
             if (src.endsWith("/")) { src.remove(src.length() - 1); }
-            if (!fileSystem->rename(src, path)) { return replyServerError(request, "RENAME FAILED"); }
+            if (!fileSystem->rename(src, path)) { return replyServerError(request, F("RENAME FAILED")); }
             replyOKWithMsg(request, src.substring(0, src.lastIndexOf('/')));
         }
     }
 
     void handleFileDelete(AsyncWebServerRequest *request) {
         if (!fsOK) return replyServerError(request, FPSTR(FS_INIT_ERROR));
-        if (!request->hasParam("path", true)) return replyBadRequest(request, "PATH ARG MISSING");
+        if (!request->hasParam("path", true)) return replyBadRequest(request, F("PATH ARG MISSING"));
 
         String path = request->getParam("path", true)->value();
         Serial.print(F("\nhandleFileDelete path:")); Serial.println(path.c_str());
         if (!selectFileSystemAndFixPath(path)) return;
-        if (path.isEmpty() || path == "/") return replyBadRequest(request, "BAD PATH");
+        if (path.isEmpty() || path == "/") return replyBadRequest(request, F("BAD PATH"));
         if (!fileSystem->exists(path)) return replyNotFound(request, FPSTR(FILE_NOT_FOUND));
         
         fileSystem->remove(path);

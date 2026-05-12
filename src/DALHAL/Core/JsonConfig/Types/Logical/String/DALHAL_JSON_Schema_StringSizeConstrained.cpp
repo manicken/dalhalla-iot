@@ -97,8 +97,8 @@ namespace DALHAL {
         void SchemaStringSizeConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaString::SchemaToJson(fieldSchema, out);
             const SchemaStringSizeConstrained& strSchema = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
-            out += ','; ToJsonString::appendNumber(out, "minLength", strSchema.minLength);
-            out += ','; ToJsonString::appendNumber(out, "maxLength", strSchema.maxLength);
+            out += ','; ToJsonString::appendNumber(out, F("minLength"), strSchema.minLength);
+            out += ','; ToJsonString::appendNumber(out, F("maxLength"), strSchema.maxLength);
             
             if (fieldSchema.type == FieldType::StringSizeConstrained) {
                 out += '}'; // this is complete object

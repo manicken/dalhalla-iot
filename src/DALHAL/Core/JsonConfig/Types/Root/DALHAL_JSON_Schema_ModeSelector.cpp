@@ -97,7 +97,7 @@ namespace DALHAL {
 
         void ModeSelector::ToJson(const ModeSelector* modes, std::string& out)
         {
-            ToJsonString::appendKey(out, "modes");
+            ToJsonString::appendKey(out, F("modes"));
             out += '[';
             bool firstMode = true;
             for (size_t i = 0; modes[i].name; ++i) {
@@ -106,10 +106,10 @@ namespace DALHAL {
                 else { firstMode = false; }
                 out += '{';
                 // mode name
-                ToJsonString::appendString(out, "name", mode.name ? mode.name : "null");
+                ToJsonString::appendString(out, F("name"), mode.name ? mode.name : "null");
                 // conjunctions
                 out += ',';
-                ToJsonString::appendKey(out, "conjunctions");
+                ToJsonString::appendKey(out, F("conjunctions"));
                 const auto* conj = mode.conjunctions;
                 if (conj == nullptr) {
                     out += "null"; // a empty array mean something different
@@ -125,9 +125,9 @@ namespace DALHAL {
                     if (!firstConj) { out += ','; }
                     else { firstConj = false; }
                     out += '{';
-                    ToJsonString::appendString(out, "name", c.fieldRef->name);
+                    ToJsonString::appendString(out, F("name"), c.fieldRef->name);
                     out += ',';
-                    ToJsonString::appendBool(out, "required", c.required);
+                    ToJsonString::appendBool(out, F("required"), c.required);
                     out += '}';
                 }
                 out += ']';

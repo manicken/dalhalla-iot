@@ -59,10 +59,10 @@ namespace DALHAL {
                     }
                 }
                 ret += ']';
-
                 ret += '}';
             }
-            ret += "]}";
+            ret += ']';
+            ret += '}';
             return ret;
         }
 

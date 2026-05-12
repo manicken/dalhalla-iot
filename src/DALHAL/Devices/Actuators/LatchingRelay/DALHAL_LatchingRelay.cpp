@@ -374,7 +374,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     HALOperationResult LatchingRelay::read(const HALReadStringRequestValue& val) {
-        if (val.cmd == "endstops") {
+        if (val.cmd.EqualsIC(F("endstops"))) {
             val.out_value += "\"min\":";
             val.out_value += resetActive() ? "true":"false";
             val.out_value += ',';

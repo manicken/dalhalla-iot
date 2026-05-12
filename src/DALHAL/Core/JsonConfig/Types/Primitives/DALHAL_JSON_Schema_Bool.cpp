@@ -40,7 +40,7 @@
 namespace DALHAL {
 
     namespace JsonSchema {
-/*
+
         __attribute__((used, externally_visible))
         constexpr FieldTypeRegistryDefine SchemaBool::RegistryDefine = {
             &ValidateSchema,
@@ -48,7 +48,7 @@ namespace DALHAL {
             &GetValue,
             &SchemaToJson,
             &GetJavaScriptValidator
-        };*/
+        };
         //volatile const void* keep_SchemaBool = &DALHAL::JsonSchema::SchemaBool::RegistryDefine;
 
         void SchemaBool::ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError) {
@@ -90,7 +90,7 @@ namespace DALHAL {
         void SchemaBool::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaBool&>(fieldSchema);
-            out += ','; ToJsonString::appendNumber(out, "default", fs.defaultValue);
+            out += ','; ToJsonString::appendNumber(out, F("default"), fs.defaultValue);
             
             if (fieldSchema.type == FieldType::Bool) {
                 out += '}'; // add the object finalizer if this is the actual object

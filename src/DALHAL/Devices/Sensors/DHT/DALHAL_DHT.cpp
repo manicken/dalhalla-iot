@@ -92,9 +92,9 @@ namespace DALHAL {
     }
 
     Device::ReadToHALValue_FuncType DHT::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName == "temp") {
+        if (zcFuncName.EqualsIC(F("temp"))) {
             return DHT::readTemperature;
-        } else if (zcFuncName == "humidity") {
+        } else if (zcFuncName.EqualsIC(F("humidity"))) {
             return DHT::readHumidity;
         }
         else {
@@ -117,10 +117,10 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(const HALReadValueByCmd &val) {
-        if (val.cmd == "temp") {
+        if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = data.temperature;
             return HALOperationResult::Success;
-        } else if (val.cmd == "humidity") {
+        } else if (val.cmd.EqualsIC(F("humidity"))) {
             val.out_value = data.humidity;
             return HALOperationResult::Success;
         }
@@ -132,10 +132,10 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
-        if (val.cmd == "temp") {
+        if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = "{\"temp\":" + std::to_string(data.temperature) + "}";
             return HALOperationResult::Success;
-        } else if (val.cmd == "humidity") {
+        } else if (val.cmd.EqualsIC(F("humidity"))) {
             val.out_value = "{\"humidity\":" + std::to_string(data.humidity) + "}";
             return HALOperationResult::Success;
         }

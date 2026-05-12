@@ -214,16 +214,19 @@ namespace DALHAL {
 
         void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, std::string& out) {
 
-            if (schema == nullptr) {
-                out += "{}";
-                return;
-            }
             out += '{';
 
-            out += "\"type\":\"object\"";
-            out += ','; ToJsonString::appendString(out, "name", (schema->typeName!=nullptr)?schema->typeName:"nullptr");
-            out += ','; ToJsonString::appendString(out, "unknownPolicy", UnknownFieldPolicyToString(schema->unknownFieldPolicy));
-            out += ','; ToJsonString::appendString(out, "emptyPolicy", EmptyPolicyToString(schema->emptyPolicy));
+            if (schema == nullptr) {
+                out += '}';
+                return;
+            }
+            
+
+            //out += "\"type\":\"object\"";
+            ToJsonString::appendString(out, F("type"), F("object"));
+            out += ','; ToJsonString::appendString(out, F("name"), (schema->typeName!=nullptr)?schema->typeName:"nullptr");
+            out += ','; ToJsonString::appendString(out, F("unknownPolicy"), UnknownFieldPolicyToString(schema->unknownFieldPolicy));
+            out += ','; ToJsonString::appendString(out, F("emptyPolicy"), EmptyPolicyToString(schema->emptyPolicy));
 
             if (schema->modes != nullptr) {
                 out += ','; ModeSelector::ToJson(schema->modes, out);
@@ -231,7 +234,7 @@ namespace DALHAL {
             if (schema->constraints != nullptr) {
                 out += ','; FieldConstraint::ToJson(schema->constraints, out);
             }
-            out += ','; ToJsonString::appendKey(out, "fields");
+            out += ','; ToJsonString::appendKey(out, F("fields"));
             out += '[';
 
             for (int i = 0; schema->fields[i] != nullptr; ++i) {

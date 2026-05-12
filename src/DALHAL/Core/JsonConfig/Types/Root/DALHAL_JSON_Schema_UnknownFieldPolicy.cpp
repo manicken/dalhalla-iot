@@ -29,14 +29,14 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* UnknownFieldPolicyToString(UnknownFieldPolicy policy) {
+        const __FlashStringHelper* UnknownFieldPolicyToString(UnknownFieldPolicy policy) {
             switch (policy)
             {
-                case UnknownFieldPolicy::Error: return "Error";
-                case UnknownFieldPolicy::Ignore: return "Ignore";
-                case UnknownFieldPolicy::Warn: return "Warn";
-                //case UnknownFieldPolicy: return "";
-                default: return "Unknown";
+                case UnknownFieldPolicy::Error: return F("Error");
+                case UnknownFieldPolicy::Ignore: return F("Ignore");
+                case UnknownFieldPolicy::Warn: return F("Warn");
+                //case UnknownFieldPolicy: return F("");
+                default: return F("Unknown");
             }
         }
 

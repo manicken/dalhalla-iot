@@ -104,15 +104,18 @@ namespace DALHAL {
 #if defined(ESP32) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         using BASE_MSG_TYPE = char;
         #define BASE_MSG_TYPE_FUNC(msg) msg
+        #define BASE_MSG_TYPE_GET_FUNC(msg) F(msg)
 #elif defined(ESP8266)
         using BASE_MSG_TYPE = __FlashStringHelper;
         #define BASE_MSG_TYPE_FUNC(msg) F(msg)
+        #define BASE_MSG_TYPE_GET_FUNC(msg) msg
 #endif
 
         struct CheckPinResultError {
             const BASE_MSG_TYPE* baseMsg;
 
             std::string msg;
+
             CheckPinResultError(const BASE_MSG_TYPE* baseMsg, std::string msg) : baseMsg(baseMsg), msg(msg) {}
         };
 

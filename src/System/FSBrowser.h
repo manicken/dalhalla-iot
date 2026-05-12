@@ -327,7 +327,7 @@ namespace FSBrowser {
             contentType = F("application/octet-stream");
         } else {
             std::string stdStr = path.c_str();
-            contentType = mime::getContentType(stdStr);
+            contentType = mime::getContentType(stdStr.c_str());
         }
 
         if (selectFileSystemAndFixPath(path) == false)

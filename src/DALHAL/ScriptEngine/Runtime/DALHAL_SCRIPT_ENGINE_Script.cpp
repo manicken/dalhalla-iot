@@ -152,9 +152,9 @@ namespace DALHAL {
                 }
                 HALOperationResult res = triggerBlocks[i].Exec();
                 if (res != HALOperationResult::Success) {
-                    GlobalLogger.Error(F("trigger: "), HALOperationResultToString(res));
+                    GlobalLogger.Error(F("trigger: "), String(HALOperationResultToString(res)).c_str());
 //#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                    printf("script exec error:%s\n", HALOperationResultToString(res));
+                    printf("script exec error:%s\n", String(HALOperationResultToString(res)).c_str());
 //#endif
                 }
             }

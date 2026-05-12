@@ -779,4 +779,9 @@ namespace DALHAL {
     bool operator!=(const char* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
     bool operator==(const ZeroCopyString& lhs, const char* rhs) { return lhs.Equals(rhs); }
     bool operator!=(const ZeroCopyString& lhs, const char* rhs) { return !lhs.Equals(rhs); }
+
+    bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return rhs.Equals(lhs); }
+    bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
+    bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs) { return lhs.Equals(rhs); }
+    bool operator!=(const ZeroCopyString& lhs, const __FlashStringHelper* rhs) { return !lhs.Equals(rhs); }
 }

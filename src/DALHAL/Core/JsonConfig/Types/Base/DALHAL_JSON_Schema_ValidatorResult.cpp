@@ -29,15 +29,15 @@ namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* ValidatorResultToString(ValidatorResult res) {
+        const __FlashStringHelper* ValidatorResultToString(ValidatorResult res) {
             switch (res)
             {
-                case ValidatorResult::FieldEmpty: return "FieldEmpty";
-                case ValidatorResult::FieldInvalidValue: return "FieldInvalidValue";
-                case ValidatorResult::FieldTypeMismatch: return "FieldTypeMismatch";
-                case ValidatorResult::RequiredFieldMissing: return "RequiredFieldMissing";
-                case ValidatorResult::Success: return "Success";
-                default: return "Unknown";
+                case ValidatorResult::FieldEmpty: return F("FieldEmpty");
+                case ValidatorResult::FieldInvalidValue: return F("FieldInvalidValue");
+                case ValidatorResult::FieldTypeMismatch: return F("FieldTypeMismatch");
+                case ValidatorResult::RequiredFieldMissing: return F("RequiredFieldMissing");
+                case ValidatorResult::Success: return F("Success");
+                default: return F("Unknown");
             }
         }
 

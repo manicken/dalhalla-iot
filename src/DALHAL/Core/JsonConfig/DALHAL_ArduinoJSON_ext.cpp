@@ -116,7 +116,7 @@ namespace DALHAL {
         return true;
     }
 
-    double ParseRefreshTime(const JsonVariant &value) {
+    /*double ParseRefreshTime(const JsonVariant &value) {
         if (value.is<float>() || value.is<double>()) {
             return value.as<double>();
         } else if (IsConstChar(value)) {
@@ -144,7 +144,7 @@ namespace DALHAL {
             return defaultRefreshTimeMs;
         }
         return static_cast<uint32_t>(round(rawSec * 1000));
-    }
+    }*/
     bool ValidateUINT8(const JsonVariant& jsonObj, const char* keyName) {
         if (!jsonObj.containsKey(keyName)) {
             GlobalLogger.Error(DALHAL_ERR_MISSING_STRING_VALUE_KEY, keyName);

@@ -48,7 +48,7 @@ namespace DALHAL
         mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_COMMAND_SUBSCRIBE_TOPIC_FMT,/*QoS*/0, deviceID_cStr);
     }
     
-    const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
+    /*const char* HA_DeviceDiscovery::GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr) {
         const char* cfgFormatStr = DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT;
         uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
         int ddTopicLength = snprintf(nullptr, 0, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
@@ -56,7 +56,7 @@ namespace DALHAL
         char* topicStr = new char[ddTopicLength];
         snprintf(topicStr, ddTopicLength, cfgFormatStr, type_cStr, unitDeviceUID, deviceId_cStr, uid_cStr);
         return topicStr;
-    }
+    }*/
 
     void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {//, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
@@ -74,11 +74,29 @@ namespace DALHAL
         // second real send 
         //const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
         //mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
-
+        Serial.println(F("HASS DD CONFIG TOPIC FMT: " DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT));
+        
         uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
-        mqtt.beginPublish_fmt(dryRunPSC.count, /*retained*/true,
-            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT, ctx.cStr_deviceId, unitDeviceUID, ctx.cStr_type, ctx.cStr_entity_uid);
+        uint32_t unitDeviceUID_MSB = (uint32_t)(unitDeviceUID>>32);
+        uint32_t unitDeviceUID_LSB = (uint32_t)(unitDeviceUID & 0xFFFFFFFF);
+        //Serial.print(F("HASS DD CONFIG unitDeviceUID: ")); Serial.print(unitDeviceUID);
+        Serial.print(F("HASS DD CONFIG ctx.cStr_deviceId: ")); Serial.println(ctx.cStr_deviceId);
+        Serial.print(F("HASS DD CONFIG ctx.cStr_entity_uid: ")); Serial.println(ctx.cStr_entity_uid);
+        if (mqtt.connected() == false) {
+            GlobalLogger.Error(F("could NOT Begin Publish discovery because of disconnected"));
+            return; // no point of continue here
+        }
+        bool couldBeginPublish = mqtt.beginPublish_fmt(dryRunPSC.count, /*retained*/true,
+            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT, ctx.cStr_type, unitDeviceUID_MSB, unitDeviceUID_LSB, ctx.cStr_deviceId, ctx.cStr_entity_uid);
+        
+        const char* cfgTopicOut_cStrStart = mqtt.lastTxTopic();
+        const char* cfgTopicOut_cStrEnd = cfgTopicOut_cStrStart + mqtt.lastTxTopicLength();
+        ZeroCopyString zcCfgTopic(cfgTopicOut_cStrStart, cfgTopicOut_cStrEnd);
 
+        if (couldBeginPublish == false) {
+            GlobalLogger.Error(F("could NOT Begin Publish discovery:"), zcCfgTopic);
+            return; // no point of continue here
+        }
         mqtt.write('{'); // start of json object
         mqtt.write('\n'); // easier debug prints
         HA_DeviceDiscovery::SendDeviceGroupData(mqtt, ctx);
@@ -87,14 +105,12 @@ namespace DALHAL
             entityWriter(mqtt, topicBasePath);
         mqtt.write('}'); // end of json object
         
-        const char* cfgTopicOut_cStrStart = mqtt.lastTxTopic();
-        const char* cfgTopicOut_cStrEnd = cfgTopicOut_cStrStart + mqtt.lastTxTopicLength();
-        ZeroCopyString zcCfgTopic(cfgTopicOut_cStrStart, cfgTopicOut_cStrEnd);
+        
         // one big issue right now is that endPublish allways returns 1
         if (mqtt.endPublish()) {
-            GlobalLogger.Info(F("sent discovery:"), zcCfgTopic);
+            GlobalLogger.Info(F("sent discovery: "), zcCfgTopic);
         } else {
-            GlobalLogger.Error(F("while trying to send discovery:"), zcCfgTopic);
+            GlobalLogger.Error(F("could NOT send discovery: "), zcCfgTopic);
         }
         //delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
     }

@@ -68,6 +68,8 @@ public:
      */
     static void task();
 
+    static void WaitForConnectionUntilTimeout();
+
     /**
      * @brief Set callback for WiFi events
      */

@@ -111,9 +111,9 @@ namespace DALHAL {
         void SchemaInt::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaInt&>(fieldSchema);
-            out += ','; ToJsonString::appendNumber(out, "default", fs.defaultValue);
-            out += ','; ToJsonString::appendNumber(out, "minValue", fs.minValue);
-            out += ','; ToJsonString::appendNumber(out, "maxValue", fs.maxValue);
+            out += ','; ToJsonString::appendNumber(out, F("default"), fs.defaultValue);
+            out += ','; ToJsonString::appendNumber(out, F("minValue"), fs.minValue);
+            out += ','; ToJsonString::appendNumber(out, F("maxValue"), fs.maxValue);
             
             if (fieldSchema.type == FieldType::Int) {
                 out += '}'; // add the object finalizer if this is the actual object

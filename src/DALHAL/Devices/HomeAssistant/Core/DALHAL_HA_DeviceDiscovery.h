@@ -83,7 +83,7 @@ namespace DALHAL
         static void SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter); //const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter = nullptr);
         static void SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath);
         /** note this return a owned ptr so it need delete[] when done with */
-        static const char* GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr);
+        //static const char* GetDiscoveryCfgTopic(const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr);
 
         static void SubscribeToCommandTopic(PubSubClient& mqtt, const char* deviceID_cStr);
         static void SubscribeToCleanupTopic(PubSubClient& mqtt);

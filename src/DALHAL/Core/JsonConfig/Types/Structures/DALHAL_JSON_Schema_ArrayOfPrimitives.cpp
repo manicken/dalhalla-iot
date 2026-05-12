@@ -93,7 +93,7 @@ namespace DALHAL {
             auto fs = static_cast<const SchemaArrayOfPrimitives&>(fieldSchema);
             // TODO do proper convertion into bool fields
             std::string primitiveTypeFlagsHex = Convert::toHex(fs.primitiveTypeFlags);
-            out += ','; ToJsonString::appendString(out, "primitiveTypeFlags", primitiveTypeFlagsHex.c_str());
+            out += ','; ToJsonString::appendString(out, F("primitiveTypeFlags"), primitiveTypeFlagsHex.c_str());
             
             if (fieldSchema.type == FieldType::ArrayOfPrimitives) { 
                 out += '}'; // add the object finalizer if this is the actual object

@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <WString.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -85,7 +87,7 @@ namespace DALHAL {
         };
 
         struct FieldTypeRegistryItem {
-            const char* name;
+            PGM_P name;
             const FieldTypeRegistryDefine* define;
         };
 
@@ -95,7 +97,7 @@ namespace DALHAL {
 
         const FieldTypeRegistryItem& GetFieldTypeRegistryItem(FieldType type);
 
-        const char* FieldTypeToString(FieldType type);
+        PGM_P FieldTypeToString(FieldType type);
 
         void ValidateSchema(const SchemaTypeBase& stb, const char* sourceObjTypeName, bool& anyError);
         ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);

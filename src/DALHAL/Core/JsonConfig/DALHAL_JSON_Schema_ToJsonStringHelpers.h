@@ -52,13 +52,22 @@ namespace DALHAL {
             void clear();
 
             void appendQuoted(std::string& out, const char* str);
+            void appendQuoted(std::string& out, const __FlashStringHelper* str);
             void appendKey(std::string& out, const char* key);
+            void appendKey(std::string& out, const __FlashStringHelper* key);
             void appendBool(std::string& out, bool v);
             void appendBool(std::string& out, const char* key, bool v);
             void appendNumber(std::string& out, const char* key, unsigned int v);
             void appendNumber(std::string& out, const char* key, int v);
             void appendNumber(std::string& out, const char* key, float v);
             void appendString(std::string& out, const char* key, const char* cStr);
+            void appendString(std::string& out, const __FlashStringHelper* key, const char* cStr);
+            void appendString(std::string& out, const __FlashStringHelper* key, const __FlashStringHelper* cStr);
+
+            void appendBool(std::string& out, const __FlashStringHelper* key, bool v);
+            void appendNumber(std::string& out, const __FlashStringHelper* key, unsigned int v);
+            void appendNumber(std::string& out, const __FlashStringHelper* key, int v);
+            void appendNumber(std::string& out, const __FlashStringHelper* key, float v);
 
         }
 

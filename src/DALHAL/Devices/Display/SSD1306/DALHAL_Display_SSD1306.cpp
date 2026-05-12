@@ -85,24 +85,24 @@ namespace DALHAL {
         //printf("\nDisplay_SSD1306::write data:%s\n", zcData.ToString().c_str());
         ZeroCopyString zcCmd = zcData.SplitOffHead('/');
         
-        if (zcCmd == "text") {
+        if (zcCmd.EqualsIC(F("text"))) {
             //printf("\nDisplay_SSD1306::write text:%s\n", zcData.ToString().c_str());
             display->write(zcData.start, zcData.Length());
         }
-        else if (zcCmd == "print") {
+        else if (zcCmd.EqualsIC(F("print"))) {
             //printf("\nDisplay_SSD1306::write print:%s\n", zcData.ToString().c_str());
             display->write(zcData.start, zcData.Length());
             display->display();
         }
-        else if (zcCmd == "cursor") {
+        else if (zcCmd.EqualsIC(F("cursor"))) {
             ZeroCopyString zcXstr = zcData.SplitOffHead('/');
             int32_t x = 0, y = 0;
             zcXstr.ConvertTo_int32(x);
             zcData.ConvertTo_int32(y);
             display->setCursor(x,y);
-        } else if (zcCmd == "clear") {
+        } else if (zcCmd.EqualsIC(F("clear"))) {
             display->clearDisplay();
-        } else if (zcCmd == "update") {
+        } else if (zcCmd.EqualsIC(F("update"))) {
             display->display();
         } else {
             return HALOperationResult::UnsupportedCommand;

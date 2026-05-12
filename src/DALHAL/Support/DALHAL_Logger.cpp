@@ -260,7 +260,7 @@ void Logger::Error(uint32_t code, const char* text) {
 #ifndef ESP8266
     std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
-    Serial.println(entryStr.c_str())
+    Serial.println(entryStr.c_str());
 #endif
 }
 void Logger::Error(const __FlashStringHelper* msg, const char* text) {

@@ -554,7 +554,7 @@ namespace DALHAL {
                         HALValue halValue;
                         readResult = device->read(halBracketSubscriptValue, halValue);
                         if (readResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(HALOperationResultToString(readResult), String(F(": bracket op read")).c_str());
+                            operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), String(F(": bracket op read")).c_str());
                             anyError = true;
                         }
                     }
@@ -571,7 +571,7 @@ namespace DALHAL {
                         HALValue halValue(HALValue::Type::TEST); // unset type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), String(F(": bracket op write")).c_str());
+                            operandToken.ReportTokenError(String(HALOperationResultToString(writeResult)).c_str(), String(F(": bracket op write")).c_str());
                             anyError = true;
                         }
                     }
@@ -598,7 +598,7 @@ namespace DALHAL {
                     HALValue halValue;
                     readResult = device->read(halValue);
                     if (readResult != HALOperationResult::Success) {
-                        operandToken.ReportTokenError(HALOperationResultToString(readResult), ": read");
+                        operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), ": read");
                         anyError = true;
                     }
                 }
@@ -615,7 +615,7 @@ namespace DALHAL {
                     //printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {
-                        operandToken.ReportTokenError(HALOperationResultToString(writeResult), ": write");
+                        operandToken.ReportTokenError(String(HALOperationResultToString(writeResult)).c_str(), ": write");
                         anyError = true;
                     }
                 }

@@ -159,7 +159,19 @@ void setup() {
 
     System::Setup(); // only littlefs init
 
+#if defined(USE_DISPLAY)
+    init_display();
+#endif
+
+
 #ifdef WIFI_CONNECTION_MANAGER_H
+#if defined(USE_DISPLAY)
+    display.setCursor(0, 0);
+    display.println(F("WiFi connecting..."));
+    display.display();
+#endif
+// Set event callback (optional but recommended)
+    WiFiConnectionManager::setEventCallback(onWiFiEvent);
     WiFiConnectionManager::init(
         "DALHAL-Failsafe",             // AP SSID
         "",                            // AP Password (min 8 chars)
@@ -167,18 +179,12 @@ void setup() {
         60000,                         // AP timeout before reconnect attempts: 60 seconds
         30000                          // Reconnect interval: 30 seconds
     );
-    // Set event callback (optional but recommended)
-    WiFiConnectionManager::setEventCallback(onWiFiEvent);
-#endif
+    WiFiConnectionManager::WaitForConnectionUntilTimeout();
+    
     Serial.println(F("Setup complete - WiFi manager initialized"));
-#if defined(USE_DISPLAY)
-    init_display();
 #endif
-#if defined(USE_DISPLAY)
-    display.setCursor(0, 0);
-    display.println(F("WiFi connecting..."));
-    display.display();
-#endif
+    
+
 
 #if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
     if (InitSD_MMC()) FSBrowser::fsOK = true;

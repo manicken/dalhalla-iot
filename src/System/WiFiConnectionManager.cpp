@@ -172,6 +172,14 @@ void WiFiConnectionManager::handleAPRunning() {
     }
 }
 
+void WiFiConnectionManager::WaitForConnectionUntilTimeout() {
+    unsigned long t = millis();
+    while ((millis() - t) < STA_TIMEOUT && WiFi.status() != WL_CONNECTED) {
+        WiFiConnectionManager::task();
+        yield();
+    }
+}
+
 void WiFiConnectionManager::handleReconnecting() {
     // This state exists for clarity but flows back to STA_CONNECTING
     // handleSTAConnecting will manage the timeout and transitions

@@ -115,12 +115,12 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, out);
             auto fs = static_cast<const SchemaNumber&>(fieldSchema);
 
-            out += ','; ToJsonString::appendKey(out, "allowedTypes");
+            out += ','; ToJsonString::appendKey(out, F("allowedTypes"));
             out += '{';
-            ToJsonString::appendBool(out, "bool", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
-            out += ','; ToJsonString::appendBool(out, "float", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
-            out += ','; ToJsonString::appendBool(out, "int", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
-            out += ','; ToJsonString::appendBool(out, "uint", (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
+            ToJsonString::appendBool(out, F("bool"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
+            out += ','; ToJsonString::appendBool(out, F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
+            out += ','; ToJsonString::appendBool(out, F("int"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
+            out += ','; ToJsonString::appendBool(out, F("uint"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
             out += '}';
             
             if (fieldSchema.type == FieldType::Number) {

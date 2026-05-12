@@ -69,7 +69,7 @@ namespace DALHAL {
 
         void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, std::string& out)
         {
-            ToJsonString::appendKey(out, "fields");
+            ToJsonString::appendKey(out, F("fields"));
             out += '[';
             for (int i = 0; group.fields[i] != nullptr; ++i) {
                 if (i > 0) out += ",";
@@ -94,8 +94,8 @@ namespace DALHAL {
                     ToJsonString::addToInlines(fieldSchema.name, inlineStr);
                 }
                 out += '{';
-                ToJsonString::appendString(out, "type", "_inline_");
-                out += ','; ToJsonString::appendString(out, "name", fieldSchema.name);
+                ToJsonString::appendString(out, F("type"), F("_inline_"));
+                out += ','; ToJsonString::appendString(out, F("name"), fieldSchema.name);
 
             } else {
                 SchemaTypeBase::SchemaToJson(fieldSchema, out);

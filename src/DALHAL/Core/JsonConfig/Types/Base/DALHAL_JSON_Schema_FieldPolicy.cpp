@@ -24,22 +24,23 @@
 #include "DALHAL_JSON_Schema_FieldPolicy.h"
 
 #include <stdlib.h>
+#include <WString.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
 
-        const char* FieldPolicyToString(FieldPolicy policy) {
+        const __FlashStringHelper* FieldPolicyToString(FieldPolicy policy) {
             switch (policy)
             {
-                case FieldPolicy::FieldsGroup: return "FieldsGroup";
-                case FieldPolicy::AllOfFieldsGroup: return "AllOfGroup";
-                case FieldPolicy::OneOfGroup: return "OneOfGroup";
-                case FieldPolicy::ModeDefine: return "ModeDefine";
-                case FieldPolicy::Optional: return "Optional";
-                case FieldPolicy::Required: return "Required";
-                //case FieldPolicy: return "";
-                default: return "Unknown";
+                case FieldPolicy::FieldsGroup: return F("FieldsGroup");
+                case FieldPolicy::AllOfFieldsGroup: return F("AllOfGroup");
+                case FieldPolicy::OneOfGroup: return F("OneOfGroup");
+                case FieldPolicy::ModeDefine: return F("ModeDefine");
+                case FieldPolicy::Optional: return F("Optional");
+                case FieldPolicy::Required: return F("Required");
+                //case FieldPolicy: return F("");
+                default: return F("Unknown");
             }
         }
 

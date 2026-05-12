@@ -71,52 +71,52 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
-        if (val.cmd == "getAllNewDevices") { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            val.out_value = "[";
+        if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
+            val.out_value = '[';
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
-                    val.out_value += ",";
+                    val.out_value += ',';
             }
-            val.out_value += "]";
+            val.out_value += ']';
 
         }
-        else if (val.cmd == "getAllNewDevicesWithTemp") {
-            val.out_value = "[";
+        else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) {
+            val.out_value = '[';
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
-                    val.out_value += ",";
+                    val.out_value += ',';
             }
-            val.out_value += "]";
+            val.out_value += ']';
 
         }
-        else if (val.cmd == "getAllDevices") { // (as json) return a complete list of all devices found for all busses
-            val.out_value = "[";
+        else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
+            val.out_value = '[';
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
-                    val.out_value += ",";
+                    val.out_value += ',';
             }
-            val.out_value += "]";
+            val.out_value += ']';
 
         }
-        else if (val.cmd == "getAllTemperatures") { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
-            val.out_value = "[";
+        else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
+            val.out_value = '[';
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1)
-                    val.out_value += ",";
+                    val.out_value += ',';
             }
-            val.out_value += "]";
+            val.out_value += ']';
             
         } else {
             std::string stdStrCmd = val.cmd.ToString();
@@ -156,19 +156,19 @@ namespace DALHAL {
         
         ret += DeviceConstStrings::uid;
         ret += decodeUID(uid).c_str();
-        ret += "\",";
+        ret += '"'; ret += ',';
         ret += DeviceConstStrings::type;
         ret += this->Type;
-        ret += "\"";
+        ret += '"';
         ret += autoRefresh.ToString();
-        ret += ",\"busses\":[";
+        ret += F(",\"busses\":[");
         for (int i=0;i<busCount;i++) {
-            ret += "{";
+            ret += '{';
             ret += busses[i]->ToString();
-            ret += "}";
-            if (i<busCount-1) ret += ",";
+            ret += '}';
+            if (i<busCount-1) ret += ',';
         }
-        ret += "]";
+        ret += ']';
         return ret;
     }
 }

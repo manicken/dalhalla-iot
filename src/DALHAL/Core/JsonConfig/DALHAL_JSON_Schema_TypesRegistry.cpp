@@ -57,11 +57,13 @@
 namespace DALHAL {
 
     namespace JsonSchema {
-
-        
+        #define X(name) \
+            static const char type_str_##name[] PROGMEM = #name;
+            DALHAL_JsonSchema_FIELD_TYPE_LIST
+        #undef X
 
         constexpr FieldTypeRegistryItem g_fieldTypeTable[] = {
-        #define X(name) { #name, &Schema##name::RegistryDefine },
+        #define X(name) { type_str_##name, &Schema##name::RegistryDefine },
             DALHAL_JsonSchema_FIELD_TYPE_LIST
         #undef X
         };
@@ -77,7 +79,7 @@ namespace DALHAL {
             return g_fieldTypeTable[idx];
         }
 
-        const char* FieldTypeToString(FieldType type) {
+        PGM_P FieldTypeToString(FieldType type) {
             return GetFieldTypeRegistryItem(type).name;
         }
 
