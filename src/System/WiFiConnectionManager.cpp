@@ -148,7 +148,7 @@ void WiFiConnectionManager::handleSTAConnected() {
 
     // Periodically log signal strength (optional)
     static unsigned long lastSignalLog = 0;
-    if (now - lastSignalLog > 60000) { // Log every 60 seconds
+    if (now - lastSignalLog > (5*60*1000)) { // Log every 5 minute
         lastSignalLog = now;
         int8_t rssi = WiFi.RSSI();
         Serial.print(F("[WiFiMgr] Signal strength:")); Serial.print(rssi); Serial.println(F("dBm"));

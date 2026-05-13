@@ -62,6 +62,8 @@ namespace DALHAL {
         Device** devices = nullptr;
         int deviceCount = 0;
 
+        bool initializedOnce = false;
+
         unsigned long lastReconnectAttempt = 0;
         const unsigned long reconnectInterval = 10000; // 10 seconds
 
@@ -79,6 +81,8 @@ namespace DALHAL {
         
         void begin() override;
         void loop() override;
+
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 

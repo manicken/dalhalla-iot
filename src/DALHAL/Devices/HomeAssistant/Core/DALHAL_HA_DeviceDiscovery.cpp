@@ -41,7 +41,9 @@ namespace DALHAL
 
     void HA_DeviceDiscovery::SubscribeToCleanupTopic(PubSubClient& mqtt) {
         uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
-        mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, unitDeviceUID);
+        uint32_t unitDeviceUID_MSB = (uint32_t)((unitDeviceUID>>32) & 0x0000FFFF); // make sure that only 4 nibbles are used
+        uint32_t unitDeviceUID_LSB = (uint32_t)(unitDeviceUID & 0xFFFFFFFF);
+        mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, unitDeviceUID_MSB, unitDeviceUID_LSB);
     }
 
     void HA_DeviceDiscovery::SubscribeToCommandTopic(PubSubClient& mqtt, const char* deviceID_cStr) {
@@ -73,21 +75,27 @@ namespace DALHAL
 
         // second real send 
         //const char* cfgTopic_cStr = GetDiscoveryCfgTopic(ctx.cStr_deviceId, ctx.cStr_type, ctx.cStr_entity_uid);
-        //mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
-        Serial.println(F("HASS DD CONFIG TOPIC FMT: " DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT));
+        //bool couldBeginPublish = mqtt.beginPublish(cfgTopic_cStr, dryRunPSC.count, true);
+        //delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
+        //Serial.println(F("HASS DD CONFIG TOPIC FMT: " DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT));
         
         uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
-        uint32_t unitDeviceUID_MSB = (uint32_t)(unitDeviceUID>>32);
+        uint32_t unitDeviceUID_MSB = (uint32_t)((unitDeviceUID>>32) & 0x0000FFFF); // make sure that only 4 nibbles are used to exactly match the format
         uint32_t unitDeviceUID_LSB = (uint32_t)(unitDeviceUID & 0xFFFFFFFF);
-        //Serial.print(F("HASS DD CONFIG unitDeviceUID: ")); Serial.print(unitDeviceUID);
-        Serial.print(F("HASS DD CONFIG ctx.cStr_deviceId: ")); Serial.println(ctx.cStr_deviceId);
-        Serial.print(F("HASS DD CONFIG ctx.cStr_entity_uid: ")); Serial.println(ctx.cStr_entity_uid);
+
+        /*Serial.printf("\r\nHASS DD - prepare to send (payloadsize=%d):" DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT "\r\n",
+            dryRunPSC.count, ctx.cStr_type, unitDeviceUID_MSB, unitDeviceUID_LSB, ctx.cStr_deviceId, ctx.cStr_entity_uid
+        );*/
+
         if (mqtt.connected() == false) {
             GlobalLogger.Error(F("could NOT Begin Publish discovery because of disconnected"));
             return; // no point of continue here
         }
-        bool couldBeginPublish = mqtt.beginPublish_fmt(dryRunPSC.count, /*retained*/true,
-            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT, ctx.cStr_type, unitDeviceUID_MSB, unitDeviceUID_LSB, ctx.cStr_deviceId, ctx.cStr_entity_uid);
+        bool couldBeginPublish = mqtt.beginPublish_fmt(
+            dryRunPSC.count, /*retained*/true,
+            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_FMT, 
+            ctx.cStr_type, unitDeviceUID_MSB, unitDeviceUID_LSB, ctx.cStr_deviceId, ctx.cStr_entity_uid
+        );
         
         const char* cfgTopicOut_cStrStart = mqtt.lastTxTopic();
         const char* cfgTopicOut_cStrEnd = cfgTopicOut_cStrStart + mqtt.lastTxTopicLength();
@@ -112,7 +120,7 @@ namespace DALHAL
         } else {
             GlobalLogger.Error(F("could NOT send discovery: "), zcCfgTopic);
         }
-        //delete[] cfgTopic_cStr; // safe to do here as beginPublish copies the string
+        
     }
 
     void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
@@ -132,8 +140,8 @@ namespace DALHAL
         }
         
         const char* rootName_cStr = DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME;
-        
-        PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, ctx.cStr_deviceId, ctx.cStr_entity_uid);
+        mqtt.printf(JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, ctx.cStr_deviceId, ctx.cStr_entity_uid);
+        //PSC_JsonWriter::printf_str(mqtt, JSON("unique_id":"%s_%s_%s",\n), rootName_cStr, ctx.cStr_deviceId, ctx.cStr_entity_uid);
         PSC_JsonWriter::kv(mqtt, "name", ctx.cStr_name);
     }
 
@@ -143,9 +151,9 @@ namespace DALHAL
             "identifiers": ["%s"],\n
             "name": "%s"},\n
         );
-        //mqtt.printf(jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
+        mqtt.printf(jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
         // vs
-        PSC_JsonWriter::printf_str(mqtt, jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
+        //PSC_JsonWriter::printf_str(mqtt, jsonFmt, ctx.cStr_groupID, ctx.cStr_groupName);
     }
 
 } // namespace DALHAL

@@ -66,8 +66,7 @@ namespace DALHAL {
         mqttClient.setOnPublishHeaderCallback(this, MqttOnPublishHeaderCallback);
         mqttClient.setOnErrorCallback(this, MqttOnErrorCallback);
 
-        // only do this once
-        HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
+        
     }
 
     void HomeAssistant::ConfigureMqttClient() {
@@ -104,8 +103,7 @@ namespace DALHAL {
         delete[] clientIdStr;
         if (mqttClient.connected()) {
             Serial.println(F("HASS MQTT - connected to brooker"));
-            HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient, deviceID_cStr);
-            HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
+            
         }
     }
 
@@ -118,7 +116,8 @@ namespace DALHAL {
     }
 
     PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback(void* context, char* topic, uint16_t topicLength, uint32_t payloadLength, PSC_PublishFlags flags) {
-        Serial.println(F("PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback"));
+        //Serial.println(F("PubSubClientPacketReceiver HomeAssistant::MqttOnPublishHeaderCallback"));
+        Serial.printf("\r\nPSCPRx CB - topic= %.*s retain=%d\r\n", topicLength, topic, flags.RETAIN());
         //HomeAssistant& self = *static_cast<HomeAssistant*>(context);
         // topic length is already provided by the MQTT protocol
         ZeroCopyString zcTopic(topic, topic + topicLength);
@@ -126,6 +125,8 @@ namespace DALHAL {
         ZeroCopyString zcTmp = zcTopic;
         ZeroCopyString zcHead = zcTmp.SplitOffHead('/');
         ZeroCopyString zcTail = zcTmp.SplitOffTail('/');
+        //Serial.printf("PSCPRx CB topic head: >>>%.*s<<<\r\n", zcHead.Length(), zcHead.start);
+        //Serial.printf("PSCPRx CB topic tail: >>>%.*s<<<\r\n", zcTail.Length(), zcTail.start);
         if (zcHead.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME))) {
             return PubSubClientPacketReceiver(PubSubClientPayloadSink::Buffer, MqttOnPubishCompleteCallback);
         } else if (zcHead.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD)) &&
@@ -139,7 +140,7 @@ namespace DALHAL {
             // The structure of <deviceID> is defined by DALHAL_HA_DeviceDiscovery 
             ZeroCopyString zcEntityID = zcTmp.SplitOffTail('/');
             
-            Serial1.println("rx cleanup topic:");
+            Serial.printf("PSCPR CB - rx cleanup check for: %.*s\r\n", zcEntityID.Length(), zcEntityID.start);
 
         } else {
             // failsafe warning, this will likely never happend
@@ -151,7 +152,12 @@ namespace DALHAL {
 
     void HomeAssistant::MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type) {
         if (type == PubSubClientErrorType::FramingError) {
-            static_cast<HomeAssistant*>(context)->Connect();
+            HomeAssistant& self = *static_cast<HomeAssistant*>(context);
+            self.Connect();
+            if (self.mqttClient.connected() && self.initializedOnce) {
+                HA_DeviceDiscovery::SubscribeToCommandTopic(self.mqttClient, self.deviceID.c_str());
+                HA_DeviceDiscovery::SubscribeToCleanupTopic(self.mqttClient);
+            }
         } 
         GlobalLogger.Error(PubSubClientErrorToString(error));
     }
@@ -321,10 +327,32 @@ namespace DALHAL {
         for (int i=0;i<deviceCount;i++) {
             devices[i]->begin();
         }
+        if (mqttClient.connected()) {
+            HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient, deviceID.c_str());
+            HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
+        }
+        initializedOnce = true;
     }
 
     DeviceFindResult HomeAssistant::findDevice(UIDPath& path, Device*& outDevice) {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
+    }
+
+
+    // debug entry
+    HALOperationResult HomeAssistant::exec(const ZeroCopyString& cmd) {
+        if (cmd.EqualsIC(F("ddTest"))) {
+            StaticJsonDocument<256> jsonDoc;
+            JsonObject root = jsonDoc.to<JsonObject>();
+            root["unit_of_measurement"] = "°C";
+            root["device_class"] = "temperature";
+            TopicBasePath topicBasePath;
+            topicBasePath.Set("deviceId", "uid");
+            HA_DD_Context ha_dd_ctx = {"uid", "deviceId", "sensor", "deviceName", "groupID", "groupName", root};  
+            DALHAL::HA_DeviceDiscovery::SendDiscovery(mqttClient, ha_dd_ctx, topicBasePath, nullptr);
+            return HALOperationResult::Success;
+        }
+        return HALOperationResult::UnsupportedCommand;
     }
 
 }
