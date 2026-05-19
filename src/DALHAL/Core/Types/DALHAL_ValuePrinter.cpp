@@ -21,28 +21,21 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <PubSubClient.h>
-#include <ArduinoJson.h>
-
-#include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
-#include <System/DeviceUID.h>
+#include "DALHAL_ValuePrinter.h"
 
 namespace DALHAL {
 
-    struct HA_CreateFunctionContext : DeviceCreateContext {
-
-        PubSubClient& mqttClient;
-        
-        const char* groupID_cStr;
-        const char* groupName_cStr;
-
-        HA_CreateFunctionContext(PubSubClient& mqttClient) 
-            : DeviceCreateContext(), 
-              mqttClient(mqttClient),
-              groupID_cStr(nullptr),
-              groupName_cStr(nullptr)
-              {}
-    };
+    size_t PrintHALValue(const HALValue& v, Print& p) {
+        switch (v.getType()) {
+            case HALValue::Type::INT:   return p.print(v.asRawInt());
+            case HALValue::Type::FLOAT: return p.print(v.asRawFloat());
+            case HALValue::Type::BOOL:  return p.print(v.asRawBool() ? "true" : "false");
+            case HALValue::Type::UINT: return p.print(v.asRawUInt());
+            case HALValue::Type::CSTRING: return p.print(v.asRawConstChar());
+            case HALValue::Type::TEST: return p.print("_TEST_");
+            case HALValue::Type::UNSET: return p.print("_UNSET_");
+        }
+        return 0;
+    }
+    
 }

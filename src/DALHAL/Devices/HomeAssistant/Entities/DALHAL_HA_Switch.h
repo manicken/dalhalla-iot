@@ -36,6 +36,8 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace HA_Switch { struct Extractors; } } // forward declaration
@@ -50,7 +52,7 @@ namespace DALHAL {
     private:
         static const char* PAYLOAD_ON;
         static const char* PAYLOAD_OFF;
-        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;

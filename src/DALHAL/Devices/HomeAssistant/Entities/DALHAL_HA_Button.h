@@ -37,6 +37,8 @@
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace HA_Button { struct Extractors; } } // forward declaration
@@ -49,7 +51,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;

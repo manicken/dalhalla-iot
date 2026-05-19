@@ -33,7 +33,7 @@
 #include <PubSubClient_ErrorStrings.h>
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
-#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
+//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 
@@ -155,7 +155,7 @@ namespace DALHAL {
             HomeAssistant& self = *static_cast<HomeAssistant*>(context);
             self.Connect();
             if (self.mqttClient.connected() && self.initializedOnce) {
-                HA_DeviceDiscovery::SubscribeToCommandTopic(self.mqttClient, self.deviceID.c_str());
+                HA_DeviceDiscovery::SubscribeToCommandTopic(self.mqttClient);
                 HA_DeviceDiscovery::SubscribeToCleanupTopic(self.mqttClient);
             }
         } 
@@ -245,8 +245,7 @@ namespace DALHAL {
         // split of the tail
         ZeroCopyString zcTopicTail = zcTopic.SplitOffTail(lastSlash);
 
-        const TopicSuffix cmdTopic = GetTopicSuffix(TopicBasePathMode::Command);
-        if (zcTopicTail != cmdTopic.str) { Serial.printf("\nis not command:%s\n", zcTopicTail.ToString().c_str()); return; } // not command
+        if (zcTopicTail.EqualsIC(DALHAL_DEV_HOME_ASSISTANT_DD_COMMAND_TOPIC_TAIL)) { Serial.printf("\nis not command:%s\n", zcTopicTail.ToString().c_str()); return; } // not command
 
         // find second-to-last slash
         const char* secondLastSlash = zcTopic.FindCharReverse('/');
@@ -328,7 +327,7 @@ namespace DALHAL {
             devices[i]->begin();
         }
         if (mqttClient.connected()) {
-            HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient, deviceID.c_str());
+            HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient);
             HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
         }
         initializedOnce = true;
@@ -346,10 +345,10 @@ namespace DALHAL {
             JsonObject root = jsonDoc.to<JsonObject>();
             root["unit_of_measurement"] = "°C";
             root["device_class"] = "temperature";
-            TopicBasePath topicBasePath;
-            topicBasePath.Set("deviceId", "uid");
+            //TopicBasePath topicBasePath;
+            //topicBasePath.Set("deviceId", "uid");
             HA_DD_Context ha_dd_ctx = {"uid", "deviceId", "sensor", "deviceName", "groupID", "groupName", root};  
-            DALHAL::HA_DeviceDiscovery::SendDiscovery(mqttClient, ha_dd_ctx, topicBasePath, nullptr);
+            DALHAL::HA_DeviceDiscovery::SendDiscovery(mqttClient, ha_dd_ctx, nullptr);
             return HALOperationResult::Success;
         }
         return HALOperationResult::UnsupportedCommand;

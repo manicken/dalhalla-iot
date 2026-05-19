@@ -36,6 +36,8 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace HA_Number { struct Extractors; } } // forward declaration
@@ -48,7 +50,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
         
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
@@ -57,7 +59,7 @@ namespace DALHAL {
         HALValue currentValue;
         
         /** send back the current value to Home Assistant to notice user that the value was rejected */
-        void sendCurrentValue();
+        bool sendCurrentValue();
 
     public:
         HA_Number(HA_CreateFunctionContext& context);

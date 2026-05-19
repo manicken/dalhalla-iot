@@ -31,6 +31,32 @@ extern "C" {
 #include <user_interface.h>
 }
 
+    bool DeviceUID::initialized = false;
+    char DeviceUID::g_deviceUID[13];
+
+    void DeviceUID::Init() {
+        if (initialized) return;
+
+        uint64_t uid = getDeviceUID();
+        uint32_t uid_MSB  = (uid>>32) & 0xFFFF; // only care for the 4 nibbles as getDeviceUID only encode in 48 bits
+        uint32_t uid_LSB  = uid & 0xFFFFFFFF;
+        snprintf(g_deviceUID, sizeof(g_deviceUID),
+        "%04X%08X", uid_MSB, uid_LSB);
+        initialized = true;
+    }
+
+    void DeviceUID::Set(const char* uid) {
+        for (int i = 0; i < sizeof(g_deviceUID); ++i) {
+            g_deviceUID[i] = uid[i];
+            if (uid[i] == '\0') break;
+        }
+        g_deviceUID[sizeof(g_deviceUID)-1] = '\0';
+        initialized = true;
+    }
+
+    
+
+
 uint64_t getDeviceUID() {
     uint8_t mac[6];
     wifi_get_macaddr(STATION_IF, mac);

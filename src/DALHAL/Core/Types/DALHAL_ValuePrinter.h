@@ -23,26 +23,11 @@
 
 #pragma once
 
-#include <PubSubClient.h>
-#include <ArduinoJson.h>
-
-#include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
-#include <System/DeviceUID.h>
+#include "DALHAL_Value.h"
+#include <Print.h>
 
 namespace DALHAL {
 
-    struct HA_CreateFunctionContext : DeviceCreateContext {
+    size_t PrintHALValue(const HALValue& v, Print& p);
 
-        PubSubClient& mqttClient;
-        
-        const char* groupID_cStr;
-        const char* groupName_cStr;
-
-        HA_CreateFunctionContext(PubSubClient& mqttClient) 
-            : DeviceCreateContext(), 
-              mqttClient(mqttClient),
-              groupID_cStr(nullptr),
-              groupName_cStr(nullptr)
-              {}
-    };
 }

@@ -44,11 +44,9 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_Number = &DALHAL::HA_Number::RegistryDefine;
 
-    void HA_Number::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
-        const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"state_topic":"%s"), stateTopicStr);
+    void HA_Number::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+        HA_DeviceDiscovery::SendCommandTopicCfg(mqtt, ctx); // adds , before
+        HA_DeviceDiscovery::SendStateTopicCfg(mqtt, ctx); // adds , before
     }
 
     Device* HA_Number::Create(DeviceCreateContext& context) {
@@ -88,7 +86,9 @@ namespace DALHAL {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
         currentValue = val;
-        sendCurrentValue();
+        if (sendCurrentValue() == false) {
+            return HALOperationResult::ExecutionFailed;
+        }
 
         if (cda != nullptr) {
             return cda->WriteSimple(val);
@@ -115,7 +115,9 @@ namespace DALHAL {
                 break;
             default:
                 // send back old value on fail
-                sendCurrentValue();
+                if (sendCurrentValue() == false) {
+                    return HALOperationResult::ExecutionFailed;
+                }
                 return HALOperationResult::WriteValueNaN;
         }
 
@@ -126,14 +128,19 @@ namespace DALHAL {
         } else {
             Serial.println("Number exec fail");
         }
-        sendCurrentValue();
+        if (sendCurrentValue() == false) {
+            return HALOperationResult::ExecutionFailed;
+        }
         return res;
         
     }
 
-    void HA_Number::sendCurrentValue() {
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        mqttClient.publish(stateTopicStr, currentValue.toString().c_str());
+    bool HA_Number::sendCurrentValue() {
+        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), currentValue);
+        if (success == false) {
+            GlobalLogger.Error(F("could not send number state update to HASS"));
+        }
+        return success;
     }
 
 }

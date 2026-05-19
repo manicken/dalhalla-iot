@@ -88,7 +88,7 @@ namespace DALHAL {
                 const char* hass_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
                 const char* hass_prev_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
                 const JsonObject& jsonObj_discovery = JsonSchema::HA_Switch::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
-                HA_DD_Context ha_dd_ctx = {context.unitDeviceUID_MSB, context.unitDeviceUID_LSB, hass_uid_cStr, hass_prev_uid_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                HA_DD_Context ha_dd_ctx = {hass_uid_cStr, hass_prev_uid_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
                 DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, DALHAL::HA_Switch::SendDeviceDiscovery);
 
             }

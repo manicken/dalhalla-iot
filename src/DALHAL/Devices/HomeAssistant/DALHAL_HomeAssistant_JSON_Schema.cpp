@@ -183,24 +183,8 @@ namespace DALHAL {
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);
                 createFuncContext.groupID_cStr = JsonSchema::HomeAssistant::groupUIDField.ExtractFrom(groupObj);
                 createFuncContext.groupName_cStr = JsonSchema::HomeAssistant::groupNameField.ExtractFrom(groupObj);
-                createFuncContext.deviceId_cStr = JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem));
+
                 CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, index);
-                
-                
-                /*for (int i=0;i<arrayCount;i++) {
-                    const JsonVariant& item = jsonArrayItems[i];
-                    if (Device::DisabledOrCommentItem(item)) { continue; }
-
-                    const char* type_cStr = JsonSchema::CommonBase::typeField, item).asConstChar();
-                    
-                    const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-                    createFuncContext.jsonObjItem = &item;
-                    createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-                    self->devices[index++] = regItem.def->Create_Function(createFuncContext);
-                }*/
-
-
-
             }
 
             void Extractors::ExtractIndividualGroupMode(const DALHAL::DeviceCreateContext& context, void* out) {
@@ -238,21 +222,6 @@ namespace DALHAL {
                     createFuncContext.groupName_cStr = JsonSchema::HomeAssistant::groupNameField.ExtractFrom(jsonObjGrpItem);
                     
                     CreateDevicesFromItems(jsonArrayItems, createFuncContext, self->devices, newItemIndex);
-
-
-                    /*for (int j=0;j<jsonArrayItemsCount;j++) {
-                        const JsonVariant& item = jsonArrayItems[j];
-                        if (Device::DisabledOrCommentItem(item)) { continue; }
-
-                        const char* type_cStr = JsonSchema::CommonBase::typeField, item).asConstChar();
-                
-                        const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
-                        createFuncContext.jsonObjItem = &item;
-                        createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-                        self->devices[newItemIndex++] = regItem.def->Create_Function(createFuncContext);
-                    }*/
-
-                    
                 }
             }
 

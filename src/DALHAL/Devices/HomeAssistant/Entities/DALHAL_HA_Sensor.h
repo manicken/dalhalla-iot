@@ -38,7 +38,7 @@
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Core/Types/DALHAL_Consumer.h>
 
-
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 
 #define DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS 5000
 
@@ -54,7 +54,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
         PubSubClient& mqttClient;
         std::string hass_uid;
@@ -69,7 +69,6 @@ namespace DALHAL {
 
     private:
         bool IsTimedRefresh_NOT_Due();
-        void SetAvailability(bool online);
 
     public:
         HA_Sensor(HA_CreateFunctionContext& context);

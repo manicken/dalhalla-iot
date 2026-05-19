@@ -46,14 +46,9 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_Sensor = &DALHAL::HA_Sensor::RegistryDefine;
 
-    void HA_Sensor::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
-        mqtt.write(',');
-        mqtt.write('\n');
-        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, topicBasePath);
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        mqtt.write(',');
-        mqtt.write('\n');
-        PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":"%s"), stateTopicStr);
+    void HA_Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx); // adds , before
+        HA_DeviceDiscovery::SendStateTopicCfg(mqtt, ctx);  // adds , before
     }
 
     Device* HA_Sensor::Create(DeviceCreateContext& context) {
@@ -94,21 +89,6 @@ namespace DALHAL {
         return false;
     }
 
-    void HA_Sensor::SetAvailability(bool online) {
-        if (online == wasOnline) return;
-
-        const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-        bool success = mqttClient.publish(
-            topic,
-            online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
-                : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE
-        );
-
-        if (success) {
-            wasOnline = online;
-        }
-    }
-
     void HA_Sensor::loop() {
 
         switch (consumerMode)
@@ -141,18 +121,18 @@ namespace DALHAL {
         {
             if (!wasOnline)
             {
-                SetAvailability(true);
+                HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
             }
-            mqttClient.publish(
-                topicBasePath.SetAndGet(TopicBasePathMode::State), 
-                val.toString().c_str()
-            );
+            bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), val);
+            if (success == false) {
+                GlobalLogger.Error(F("could not send sensor state update to HASS"));
+            }
         }
         else
         {
             if (wasOnline)
             {
-                SetAvailability(false);
+                HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, false);
             }
         }
     }
@@ -171,12 +151,11 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
-            const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            wasOnline = mqttClient.publish(availabilityTopicStr, DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE);
+            HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
         }
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        mqttClient.publish(stateTopicStr, val.toString().c_str());
-        return HALOperationResult::Success;
+        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), val);
+        
+        return success ? HALOperationResult::Success: HALOperationResult::ExecutionFailed;
     };
     
 }

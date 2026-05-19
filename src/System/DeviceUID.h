@@ -28,6 +28,18 @@
 extern "C" {
 #endif
 
+struct DeviceUID {
+private:  
+  static char g_deviceUID[13];
+  static bool initialized;
+public:
+    static void Init();
+    static void Set(const char* uid);
+    inline static const char* Get() {
+        return g_deviceUID;
+    }
+};
+
 struct DALHAL_DeviceUID {
     uint32_t unitDeviceUID_MSB = 0;
     uint32_t unitDeviceUID_LSB = 0;

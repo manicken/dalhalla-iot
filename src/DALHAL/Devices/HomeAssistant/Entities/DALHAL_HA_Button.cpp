@@ -44,9 +44,8 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_Button = &DALHAL::HA_Button::RegistryDefine;
 
-    void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
-        const char* cmdTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Command);
-        PSC_JsonWriter::printf_str(mqtt, JSON(,"command_topic":"%s"), cmdTopicStr);
+    void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+        HA_DeviceDiscovery::SendCommandTopicCfg(mqtt, ctx); // adds , before
     }
 
     Device* HA_Button::Create(DeviceCreateContext& context) {

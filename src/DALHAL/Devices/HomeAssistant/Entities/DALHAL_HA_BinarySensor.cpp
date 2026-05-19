@@ -36,7 +36,12 @@
 
 #include "DALHAL_HA_BinarySensor_JSON_Schema.h"
 
+
+
 #include <System/DeviceUID.h>
+
+#define DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF "OFF"
+#define DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON "ON"
 
 namespace DALHAL {
 
@@ -47,13 +52,9 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_BinarySensor = &DALHAL::HA_BinarySensor::RegistryDefine;
 
-    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx) {
-        mqtt.write(',');
-        mqtt.write('\n');
-        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx);
-        mqtt.write(',');
-        mqtt.write('\n');
-        PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":) "\"" DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT "\"", ctx.unitDeviceUID_MSB, ctx.unitDeviceUID_LSB, ctx.cStr_hass_uid, DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL);
+    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx); // adds , before
+        HA_DeviceDiscovery::SendStateTopicCfg(mqtt, ctx); // adds , before
         mqtt.write(',');
         mqtt.write('\n');
         PSC_JsonWriter::kv(mqtt, "platform", "binary_sensor");
@@ -97,28 +98,6 @@ namespace DALHAL {
         return false;
     }
 
-    void HA_BinarySensor::SetAvailability(bool online) {
-        if (online == wasOnline) return;
-        DALHAL_DeviceUID devUID = getDALHAL_DeviceUID();
-        uint32_t pLength = (online ? sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE)
-                : sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE)) - 1;
-        mqttClient.beginPublish_fmt(pLength, false, DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT, devUID.unitDeviceUID_MSB, devUID.unitDeviceUID_LSB, this->hass_uid.c_str(), DALHAL_DEV_HOME_ASSISTANT_DD_STATUS_TOPIC_TAIL);
-        mqttClient.print(online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
-                : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE);
-        bool success = mqttClient.endPublish();
-
-        /*const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-        bool success = mqttClient.publish(
-            topic,
-            online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
-                : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE
-        );*/
-
-        if (success) {
-            wasOnline = online;
-        }
-    }
-
     void HA_BinarySensor::loop() {
 
         switch (consumerMode)
@@ -151,55 +130,24 @@ namespace DALHAL {
         {
             if (!wasOnline)
             {
-                SetAvailability(true);
+                HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
             }
-            mqttClient.publish(
-                topicBasePath.SetAndGet(TopicBasePathMode::State), 
-                (val.toBool())?"ON":"OFF"
-            );
+            bool state = val.toBool();
+            uint32_t state_cStr_Length = (state ? sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON) : sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF)) - 1;
+            const char* state_cStr = state ? DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON : DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF;
+            bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), state_cStr, state_cStr_Length);
+            if (success == false) {
+                GlobalLogger.Error(F("could not send binary sensor state update to HASS"));
+            }
         }
         else
         {
             if (wasOnline)
             {
-                SetAvailability(false);
+                HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, false);
             }
         }
     }
-
-    /*if (res == HALOperationResult::Success) {
-            //GlobalLogger.Info(F("BinarySensor::loop() exec Success"));
-            if (!wasOnline) {
-                const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_ONLINE);
-                if (success) {
-                    // this will make the availability update secure and non deadlock
-                    GlobalLogger.Info(F("BinarySensor::loop() exec Success availability changed to active"));
-                    wasOnline = true;
-                }
-                
-            }
-            const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-            // if the following fails then it will try again next update
-            // could implement a try again mechanism but that would require 
-            // refactor to make the code DRY
-            bool state = val.asInt() != 0;
-            mqttClient.publish(stateTopicStr, state ? "ON" : "OFF");
-
-           // GlobalLogger.Info(F("BinarySensor::loop() exec Success sent to topic: "), stateTopicStr);
-        } else {
-            GlobalLogger.Info(F("BinarySensor::loop() exec fail"));
-            if (wasOnline) {
-                const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-                success = mqttClient.publish(availabilityTopicStr, DALHAL_HOME_ASSISTANT_AVAILABILITY_OFFLINE);
-                
-                if (success) {
-                    // this will make the availability update secure and non deadlock
-                    GlobalLogger.Info(F("BinarySensor::loop() exec Success availability changed to inactive"));
-                    wasOnline = false;
-                }
-            }
-        }*/
 
     void HA_BinarySensor::begin() {
 
@@ -216,12 +164,17 @@ namespace DALHAL {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
-            const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
-            wasOnline = mqttClient.publish(availabilityTopicStr, DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE);
+            HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
         }
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-        mqttClient.publish(stateTopicStr, val.toString().c_str());
-        return HALOperationResult::Success;
+        if (!wasOnline) {
+            return HALOperationResult::ExecutionFailed;
+        }
+        bool state = val.toBool();
+        uint32_t state_cStr_Length = (state ? sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON) : sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF)) - 1;
+        const char* state_cStr = state ? DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON : DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF;
+        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), state_cStr, state_cStr_Length);
+
+        return success ? HALOperationResult::Success: HALOperationResult::ExecutionFailed;
     };
     
 }
