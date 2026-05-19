@@ -36,6 +36,8 @@
 
 #include "DALHAL_HA_BinarySensor_JSON_Schema.h"
 
+#include <System/DeviceUID.h>
+
 namespace DALHAL {
 
     __attribute__((used, externally_visible))
@@ -45,14 +47,13 @@ namespace DALHAL {
     };
     //volatile const void* keep_HA_BinarySensor = &DALHAL::HA_BinarySensor::RegistryDefine;
 
-    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
+    void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx) {
         mqtt.write(',');
         mqtt.write('\n');
-        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, topicBasePath);
-        const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
+        HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx);
         mqtt.write(',');
         mqtt.write('\n');
-        PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":"%s"), stateTopicStr);
+        PSC_JsonWriter::printf_str(mqtt, JSON("state_topic":) "\"" DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT "\"", ctx.unitDeviceUID_MSB, ctx.unitDeviceUID_LSB, ctx.cStr_hass_uid, DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL);
         mqtt.write(',');
         mqtt.write('\n');
         PSC_JsonWriter::kv(mqtt, "platform", "binary_sensor");
@@ -98,13 +99,20 @@ namespace DALHAL {
 
     void HA_BinarySensor::SetAvailability(bool online) {
         if (online == wasOnline) return;
+        DALHAL_DeviceUID devUID = getDALHAL_DeviceUID();
+        uint32_t pLength = (online ? sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE)
+                : sizeof(DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE)) - 1;
+        mqttClient.beginPublish_fmt(pLength, false, DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT, devUID.unitDeviceUID_MSB, devUID.unitDeviceUID_LSB, this->hass_uid.c_str(), DALHAL_DEV_HOME_ASSISTANT_DD_STATUS_TOPIC_TAIL);
+        mqttClient.print(online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
+                : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE);
+        bool success = mqttClient.endPublish();
 
-        const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+        /*const char* topic = topicBasePath.SetAndGet(TopicBasePathMode::Status);
         bool success = mqttClient.publish(
             topic,
             online ? DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE
                 : DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE
-        );
+        );*/
 
         if (success) {
             wasOnline = online;

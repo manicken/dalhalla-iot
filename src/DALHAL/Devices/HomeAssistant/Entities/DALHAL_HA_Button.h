@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
+//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
 
 #include <Arduino.h> // Needed for String class
@@ -49,11 +49,12 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static void SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        TopicBasePath topicBasePath;
+        std::string hass_uid;
+        //TopicBasePath topicBasePath;
 
     public:
         HA_Button(HA_CreateFunctionContext& context);

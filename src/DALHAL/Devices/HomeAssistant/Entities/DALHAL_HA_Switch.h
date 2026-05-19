@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
+//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
@@ -50,11 +50,12 @@ namespace DALHAL {
     private:
         static const char* PAYLOAD_ON;
         static const char* PAYLOAD_OFF;
-        static void SendDeviceDiscovery(PubSubClient& mqtt, TopicBasePath& topicBasePath);
+        static void SendDeviceDiscovery(PubSubClient& mqtt, HA_DD_Context& ctx);
 
         PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        TopicBasePath topicBasePath;
+        std::string hass_uid;
+        //TopicBasePath topicBasePath;
 
         bool momentary;
 

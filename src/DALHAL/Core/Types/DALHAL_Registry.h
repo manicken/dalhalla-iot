@@ -47,7 +47,6 @@ namespace DALHAL {
 
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
-
             const JsonSchema::JsonObjectSchema* jsonSchema;
             const EventDescriptor* reactiveTable;
             

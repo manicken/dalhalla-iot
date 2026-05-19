@@ -36,6 +36,8 @@
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_JsonSchema_Common.h>
+
 #include "DALHAL_HA_Number.h"
 
 namespace DALHAL {
@@ -44,14 +46,13 @@ namespace DALHAL {
 
         namespace HA_Number {
 
-            constexpr SchemaString nameField = {"name", FieldPolicy::Required};
             constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
             constexpr SchemaStringUID_Path targetField = {"target", FieldPolicy::Required};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
+                &HomeAssistant::common_fields,
                 &targetField,
-                &nameField, 
                 &discoveryField,
                 nullptr,
             };
@@ -70,10 +71,6 @@ namespace DALHAL {
                 const char* uid_cStr = JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem));
                 out->uid = encodeUID(uid_cStr);
 
-                const char* deviceId_cStr = context.deviceId_cStr;
-        
-                out->topicBasePath.Set(deviceId_cStr, uid_cStr);
-
                 const char* target_cStr = JsonSchema::HA_Number::targetField.ExtractFrom(*(context.jsonObjItem));
                 
                 ZeroCopyString zcSrcDeviceUidStr = target_cStr; // target_cStr cannot be nullptr as that is a required field
@@ -83,10 +80,12 @@ namespace DALHAL {
                     out->cda = nullptr;
                 }
 
-                const char* deviceName_cStr = JsonSchema::HA_Number::nameField.ExtractFrom(*context.jsonObjItem);
+                const char* deviceName_cStr = JsonSchema::HomeAssistant::nameField.ExtractFrom(*context.jsonObjItem);
+                const char* hass_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
+                const char* hass_prev_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
                 const JsonObject& jsonObj_discovery = JsonSchema::HA_Number::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
-                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_Number::SendDeviceDiscovery);
+                HA_DD_Context ha_dd_ctx = {context.unitDeviceUID_MSB, context.unitDeviceUID_LSB, hass_uid_cStr, hass_prev_uid_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, DALHAL::HA_Number::SendDeviceDiscovery);
 
             }
 

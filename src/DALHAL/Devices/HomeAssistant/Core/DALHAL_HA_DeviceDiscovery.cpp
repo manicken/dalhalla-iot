@@ -60,7 +60,7 @@ namespace DALHAL
         return topicStr;
     }*/
 
-    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {//, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
+    void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, HADiscoveryWriteFn entityWriter) {//, const char* deviceId_cStr, const char* type_cStr, const char* uid_cStr, const JsonVariant& jsonObj, const JsonVariant& jsonObjGlobal, TopicBasePath& topicBasePath, HADiscoveryWriteFn entityWriter) {
         
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
@@ -70,7 +70,7 @@ namespace DALHAL
         HA_DeviceDiscovery::SendDeviceGroupData(dryRunPSC, ctx);
         HA_DeviceDiscovery::SendBaseData(dryRunPSC, ctx);
         if (entityWriter)
-            entityWriter(dryRunPSC, topicBasePath);
+            entityWriter(dryRunPSC, ctx);
         dryRunPSC.write('}'); // end of json object
 
         // second real send 
@@ -110,7 +110,7 @@ namespace DALHAL
         HA_DeviceDiscovery::SendDeviceGroupData(mqtt, ctx);
         HA_DeviceDiscovery::SendBaseData(mqtt, ctx);
         if (entityWriter)
-            entityWriter(mqtt, topicBasePath);
+            entityWriter(mqtt, ctx);
         mqtt.write('}'); // end of json object
         
         
@@ -123,8 +123,13 @@ namespace DALHAL
         
     }
 
-    void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, TopicBasePath& topicBasePath) {
-        const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+    void HA_DeviceDiscovery::SendAvailabilityTopicCfg(PubSubClient& mqtt, const HA_DD_Context& ctx) {
+        //const char* availabilityTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::Status);
+        uint64_t unitDeviceUID = getDeviceUID(); // this is from DeviceUID.h and usually returns the MAC-adress
+        uint32_t unitDeviceUID_MSB = (uint32_t)((unitDeviceUID>>32) & 0x0000FFFF); // make sure that only 4 nibbles are used to exactly match the format
+        uint32_t unitDeviceUID_LSB = (uint32_t)(unitDeviceUID & 0xFFFFFFFF);
+
+        mqtt.printf(DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT, unitDeviceUID_MSB, unitDeviceUID_LSB, )
         PSC_JsonWriter::kv(mqtt, "availability_topic", availabilityTopicStr); mqtt.write(','); mqtt.write('\n');
         PSC_JsonWriter::kv(mqtt, "payload_available", DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_ONLINE); mqtt.write(','); mqtt.write('\n');
         PSC_JsonWriter::kv(mqtt, "payload_not_available", DALHAL_DEV_HOME_ASSISTANT_DD_AVAILABILITY_OFFLINE);

@@ -28,8 +28,19 @@
 extern "C" {
 #endif
 
+struct DALHAL_DeviceUID {
+    uint32_t unitDeviceUID_MSB = 0;
+    uint32_t unitDeviceUID_LSB = 0;
+
+    DALHAL_DeviceUID(uint64_t uid) : 
+      unitDeviceUID_MSB((uint32_t)((uid>>32) & 0x0000FFFF)), 
+      unitDeviceUID_LSB((uint32_t)(uid & 0xFFFFFFFF))
+      {}
+};
+DALHAL_DeviceUID getDALHAL_DeviceUID();
 // Returns 48-bit device UID packed in uint64_t (upper 16 bits zero)
 uint64_t getDeviceUID();
+
 
 /** Converts the UID to a 12-character hex string (stack-only), 
  * can be used as a example how it should be converted 

@@ -39,6 +39,10 @@ uint64_t getDeviceUID() {
     return id;
 }
 
+DALHAL_DeviceUID getDALHAL_DeviceUID() {
+    return getDeviceUID();
+}
+
 #elif defined(ESP32)
 #include <esp_system.h>
 

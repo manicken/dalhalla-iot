@@ -27,6 +27,7 @@
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Types/DALHAL_DeviceCreateContext.h>
+#include <System/DeviceUID.h>
 
 namespace DALHAL {
 
@@ -34,10 +35,21 @@ namespace DALHAL {
 
         PubSubClient& mqttClient;
         
-        const char* deviceId_cStr;
+        /** immutable device id MSB part */
+        const uint32_t unitDeviceUID_MSB = 0;
+        /** immutable device id LSB part */
+        const uint32_t unitDeviceUID_LSB = 0;
+
         const char* groupID_cStr;
         const char* groupName_cStr;
 
-        HA_CreateFunctionContext(PubSubClient& mqttClient) : DeviceCreateContext(), mqttClient(mqttClient), groupID_cStr(nullptr), groupName_cStr(nullptr) {}
+        HA_CreateFunctionContext(PubSubClient& mqttClient, const DALHAL_DeviceUID unitDeviceUID) 
+            : DeviceCreateContext(), 
+              mqttClient(mqttClient),
+              unitDeviceUID_MSB(unitDeviceUID.unitDeviceUID_MSB),
+              unitDeviceUID_LSB(unitDeviceUID.unitDeviceUID_LSB),
+              groupID_cStr(nullptr),
+              groupName_cStr(nullptr)
+              {}
     };
 }

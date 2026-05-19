@@ -40,6 +40,8 @@
 
 #include <DALHAL/Core/Types/DALHAL_Consumer.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_JsonSchema_Common.h>
+
 #include "DALHAL_HA_BinarySensor.h"
 
 namespace DALHAL {
@@ -48,17 +50,12 @@ namespace DALHAL {
 
         namespace HA_BinarySensor {
 
-            constexpr SchemaString nameField = {"name", FieldPolicy::Required};
             constexpr SchemaObject discoveryField = {"discovery", FieldPolicy::Optional, nullptr}; // nullptr here makes it completely ignore whats inside for now
 
             constexpr const SchemaTypeBase* fields[] = {
-                //&CommonBase::disabled_type_uidreq_note_group,
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-                //&CommonTime::refreshTimeGroupFields, // DALHAL_CommonSchemas_Time
-                //&CommonConsumer::sourceField,
-                //&CommonConsumer::eventSourceField,
+                &HomeAssistant::common_fields,
                 &CommonConsumer::consumerFieldsGroup, // includes: refreshTimeGroupFields, sourceField, eventSourceField
-                &nameField, 
                 &discoveryField,
                 nullptr,
             };
@@ -124,14 +121,12 @@ namespace DALHAL {
                     out->consumerMode = DALHAL::Consumer::Mode::Manual;
                 }
 
-                const char* deviceId_cStr = context.deviceId_cStr;
-                
-                out->topicBasePath.Set(deviceId_cStr, uid_cStr);
-
-                const char* deviceName_cStr = JsonSchema::HA_BinarySensor::nameField.ExtractFrom(*context.jsonObjItem);
+                const char* deviceName_cStr = JsonSchema::HomeAssistant::nameField.ExtractFrom(*context.jsonObjItem);
+                const char* hass_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
+                const char* hass_prev_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
                 const JsonObject& jsonObj_discovery = JsonSchema::HA_BinarySensor::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
-                HA_DD_Context ha_dd_ctx = {uid_cStr, deviceId_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
-                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, out->topicBasePath, DALHAL::HA_BinarySensor::SendDeviceDiscovery);
+                HA_DD_Context ha_dd_ctx = {context.unitDeviceUID_MSB, context.unitDeviceUID_LSB, hass_uid_cStr, hass_prev_uid_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
+                DALHAL::HA_DeviceDiscovery::SendDiscovery(context.mqttClient, ha_dd_ctx, DALHAL::HA_BinarySensor::SendDeviceDiscovery);
 
             }
 
