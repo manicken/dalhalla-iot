@@ -111,7 +111,8 @@ namespace DALHAL {
         // check should not be needed in final version as then every mode should be explicit
         if (cdr == nullptr) { return; }
 
-        //GlobalLogger.Info(F("BinarySensor::loop() exec"));
+        //GlobalLogger.Info(F("Sensor::loop() exec"));
+        //Serial1.print(hass_uid.c_str()); Serial1.println(F("Sensor::loop() exec"));
 
         HALValue val;
         HALOperationResult res = cdr->ReadSimple(val);
@@ -119,8 +120,10 @@ namespace DALHAL {
 
         if (isOnline)
         {
+            //Serial1.print(hass_uid.c_str()); Serial1.println(F("Sensor::loop() isOnline"));
             if (!wasOnline)
             {
+                Serial1.print(hass_uid.c_str()); Serial1.println(F("Sensor::loop() !wasOnline @ operation success"));
                 HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
             }
             bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), val);
@@ -130,6 +133,7 @@ namespace DALHAL {
         }
         else
         {
+            Serial1.print(hass_uid.c_str()); Serial1.println(F("Sensor::loop() operation fail"));
             if (wasOnline)
             {
                 HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, false);

@@ -82,6 +82,7 @@ namespace DALHAL {
 
                 const char* deviceName_cStr = JsonSchema::HomeAssistant::nameField.ExtractFrom(*context.jsonObjItem);
                 const char* hass_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
+                out->hass_uid = hass_uid_cStr;
                 const char* hass_prev_uid_cStr = JsonSchema::HomeAssistant::hass_uidField.ExtractFrom(*context.jsonObjItem);
                 const JsonObject& jsonObj_discovery = JsonSchema::HA_Number::discoveryField.GetValidatedJsonObject(*context.jsonObjItem);
                 HA_DD_Context ha_dd_ctx = {hass_uid_cStr, hass_prev_uid_cStr, context.deviceType, deviceName_cStr, context.groupID_cStr, context.groupName_cStr, jsonObj_discovery};  
