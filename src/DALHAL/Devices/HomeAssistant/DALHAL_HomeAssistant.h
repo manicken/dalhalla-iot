@@ -33,6 +33,8 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include "Core/DALHAL_HA_Device.h"
+
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 
 #define DALHAL_HOME_ASSISTANT_DEFAULT_PORT 1883
@@ -49,7 +51,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        std::string deviceID;
+        //std::string deviceID;
         std::string username;
         std::string password;
         std::string host; // just for debug???
@@ -74,6 +76,8 @@ namespace DALHAL {
 
         void ConfigureMqttClient();
         void Connect();
+
+        bool CheckIfDeviceWith_HassUID_Exist(const ZeroCopyString& zcUid);
         
     public:
         HomeAssistant(DeviceCreateContext& context);
@@ -85,6 +89,7 @@ namespace DALHAL {
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+        const HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid);
 
         String ToString() override;
     };

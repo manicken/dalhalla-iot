@@ -53,7 +53,7 @@ namespace DALHAL {
 
         namespace HomeAssistant {
 
-            constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
+            //constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
             constexpr SchemaString hostField = {"host", FieldPolicy::Required};
             constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, (unsigned int)1, (unsigned int)65535, (unsigned int)1883};
             constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
@@ -91,7 +91,7 @@ namespace DALHAL {
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-                &deviceIdField,
+                //&deviceIdField,
                 &hostField,
                 &portField,
                 &credentialsGroup,
@@ -132,7 +132,7 @@ namespace DALHAL {
 
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::HomeAssistant* out) {
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
-                out->deviceID = std::string(JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem)));
+                //out->deviceID = std::string(JsonSchema::HomeAssistant::deviceIdField.ExtractFrom(*(context.jsonObjItem)));
                 out->host = std::string(JsonSchema::HomeAssistant::hostField.ExtractFrom(*(context.jsonObjItem)));
                 out->port = JsonSchema::HomeAssistant::portField.ExtractFrom(*(context.jsonObjItem));
                 // note. can only be called after getting host and port
@@ -156,7 +156,7 @@ namespace DALHAL {
                     const Registry::Item& regItem = Registry::GetItem(HA_DeviceRegistry, type_cStr);
                     createFuncContext.jsonObjItem = &item;
                     createFuncContext.deviceType = regItem.typeName; // type_cStr cannot be used here as that is a json string
-                    devices[index++] = regItem.def->Create_Function(createFuncContext);
+                    devices[index++] = (HA_Device*)regItem.def->Create_Function(createFuncContext);
                 }
             }
 
@@ -210,6 +210,7 @@ namespace DALHAL {
                 // second pass create actual enabled/"non comment" items
                 self->deviceCount = activeItemCount;
                 self->devices = new Device*[activeItemCount]();
+
 
                 int newItemIndex = 0;
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);

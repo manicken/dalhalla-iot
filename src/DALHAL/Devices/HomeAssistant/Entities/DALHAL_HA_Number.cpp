@@ -53,7 +53,7 @@ namespace DALHAL {
         return new HA_Number(static_cast<HA_CreateFunctionContext&>(context));
     }
     
-    HA_Number::HA_Number(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
+    HA_Number::HA_Number(HA_CreateFunctionContext& context) : HA_DeviceEntity(context) {
         JsonSchema::HA_Number::Extractors::Apply(context, this);
     }
 

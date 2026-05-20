@@ -36,6 +36,7 @@ public:
     static void Init();
     static void Set(const char* uid);
     inline static const char* Get() {
+        if (!initialized) { Init(); }
         return g_deviceUID;
     }
 };

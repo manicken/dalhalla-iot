@@ -81,6 +81,7 @@ namespace DALHAL {
                 // Allocate space for all devices
                 out->devices = new Device*[deviceCountTmp]();
 
+
                 if (out->devices == nullptr) {
                     out->deviceCount = 0;
                     GlobalLogger.Error(F("Failed to allocate device array"));
@@ -99,7 +100,7 @@ namespace DALHAL {
                     // reuse the passed context as it also carry other important instances or references
                     context.jsonObjItem = &jsonItem;
                     context.deviceType = regItem.typeName;
-                    out->devices[index++] = regItem.def->Create_Function(context);
+                    out->devices[index++] = (HA_Device*)regItem.def->Create_Function(context);
                 }
                 std::string devCountStr = std::to_string(deviceCountTmp);
                 GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());

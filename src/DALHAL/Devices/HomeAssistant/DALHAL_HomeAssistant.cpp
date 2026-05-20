@@ -33,7 +33,6 @@
 #include <PubSubClient_ErrorStrings.h>
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
-//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Constants.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 
@@ -82,14 +81,7 @@ namespace DALHAL {
     }
 
     void HomeAssistant::Connect() {
-        const char* clientIdFormat_cStr = DALHAL_DEV_HOME_ASSISTANT_DD_BASENAME "_%s_%s";
-        std::string uidStr = decodeUID(uid);
-        const char* uid_cStr = uidStr.c_str();
-        const char* deviceID_cStr = deviceID.c_str();
-
-        int commandTopicStrLength = snprintf(nullptr, 0, clientIdFormat_cStr, deviceID_cStr, uid_cStr) + 1;
-        char* clientIdStr = new char[commandTopicStrLength];
-        snprintf(clientIdStr, commandTopicStrLength, clientIdFormat_cStr, deviceID_cStr, uid_cStr);
+        const char* clientIdStr = DeviceUID::Get();
         Serial.print(F("\r\nHASS MQTT - connecting using clientId:")); Serial.println(clientIdStr);
         if (username.length() != 0 && password.length() != 0) { // the default connect is using CleanSession = true
             if (mqttClient.connect(clientIdStr, username.c_str(), password.c_str()) == false) {
@@ -100,7 +92,6 @@ namespace DALHAL {
                 Serial.println(F("\r\nERROR - HASS MQTT - could not connect without credentials\r\n"));
             } 
         }
-        delete[] clientIdStr;
         if (mqttClient.connected()) {
             Serial.println(F("HASS MQTT - connected to brooker"));
             
@@ -209,13 +200,13 @@ namespace DALHAL {
                 GlobalLogger.Error(F("incorrect topic string"));
                 return; // error incorrect topic string
             }
-            if (zcDeviceID.Equals(deviceID.c_str()) == false) {
+            /*if (zcDeviceID.Equals(deviceID.c_str()) == false) {
                 // deviceID have changed remove item
                 GlobalLogger.Info(F("removed stale device bc deviceID change/removed"), topic);
                 mqttClient.publish(topic, "");  // empty retained
                 GlobalLogger.Error(F("empty retained"));
                 return;
-            }
+            }*/
 
             // now zcUID is the actual HA device entity UID
             HAL_UID uid = encodeUID(zcUID);
@@ -337,6 +328,17 @@ namespace DALHAL {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
+    const HA_DeviceEntity* HomeAssistant::findHassDevice(const ZeroCopyString& zcHassUid) {
+        if (devices == nullptr || deviceCount == 0) { return nullptr; }
+        
+        for (int i=0;i<deviceCount;++i) {
+            const HA_DeviceEntity* item = static_cast<HA_Device*>(devices[i])->findHassDevice(zcHassUid);
+            //const HA_DeviceEntity* item = devices[i]->findHassDevice(zcHassUid);
+            if (item != nullptr) return item;
+        }
+        
+        return nullptr;
+    }
 
     // debug entry
     HALOperationResult HomeAssistant::exec(const ZeroCopyString& cmd) {
@@ -345,8 +347,7 @@ namespace DALHAL {
             JsonObject root = jsonDoc.to<JsonObject>();
             root["unit_of_measurement"] = "°C";
             root["device_class"] = "temperature";
-            //TopicBasePath topicBasePath;
-            //topicBasePath.Set("deviceId", "uid");
+
             HA_DD_Context ha_dd_ctx = {"uid", "deviceId", "sensor", "deviceName", "groupID", "groupName", root};  
             DALHAL::HA_DeviceDiscovery::SendDiscovery(mqttClient, ha_dd_ctx, nullptr);
             return HALOperationResult::Success;

@@ -63,7 +63,7 @@ namespace DALHAL {
         return new HA_Switch(static_cast<HA_CreateFunctionContext&>(context));
     }
     
-    HA_Switch::HA_Switch(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
+    HA_Switch::HA_Switch(HA_CreateFunctionContext& context) : HA_DeviceEntity(context) {
         JsonSchema::HA_Switch::Extractors::Apply(context, this);
     }
     

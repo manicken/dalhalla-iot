@@ -33,13 +33,16 @@
 
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Device.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>
+
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
 namespace DALHAL {
 
     namespace JsonSchema { namespace HA_DeviceContainer { struct Extractors; } } // forward declaration
 
-    class HA_DeviceContainer : public Device {
+    class HA_DeviceContainer : public HA_Device {
         friend struct JsonSchema::HA_DeviceContainer::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
@@ -58,6 +61,8 @@ namespace DALHAL {
         void loop() override;
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
+
+        const HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid) override;
 
         String ToString() override;
     };

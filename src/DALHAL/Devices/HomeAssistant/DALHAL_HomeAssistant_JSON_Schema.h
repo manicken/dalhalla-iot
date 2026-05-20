@@ -25,6 +25,8 @@
 
 #include <ArduinoJson.h>
 
+#include "Core/DALHAL_HA_Device.h"
+
 namespace DALHAL {
 
     // forward declarations

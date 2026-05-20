@@ -28,7 +28,6 @@
 #include <PubSubClient.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_ValuePrinter.h>
-//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 
 namespace DALHAL
 {

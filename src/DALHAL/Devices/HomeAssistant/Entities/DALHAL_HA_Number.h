@@ -23,7 +23,6 @@
 
 #pragma once
 
-//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
@@ -36,13 +35,15 @@
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>
+
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 
 namespace DALHAL {
 
     namespace JsonSchema { namespace HA_Number { struct Extractors; } } // forward declaration
 
-    class HA_Number : public Device {
+    class HA_Number : public HA_DeviceEntity {
         friend struct JsonSchema::HA_Number::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
@@ -52,10 +53,9 @@ namespace DALHAL {
     private:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
         
-        PubSubClient& mqttClient;
+        //PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        std::string hass_uid;
-        //TopicBasePath topicBasePath;
+        //std::string hass_uid;
         HALValue currentValue;
         
         /** send back the current value to Home Assistant to notice user that the value was rejected */

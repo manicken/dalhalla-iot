@@ -55,7 +55,7 @@ namespace DALHAL {
         return new HA_Sensor(static_cast<HA_CreateFunctionContext&>(context));
     }
     
-    HA_Sensor::HA_Sensor(HA_CreateFunctionContext& context) : Device(context.deviceType), mqttClient(context.mqttClient) {
+    HA_Sensor::HA_Sensor(HA_CreateFunctionContext& context) : HA_DeviceEntity(context) {
         JsonSchema::HA_Sensor::Extractors::Apply(context, this);
         wasOnline = false;
         lastMs = millis()-refreshMs; // force a direct update after start

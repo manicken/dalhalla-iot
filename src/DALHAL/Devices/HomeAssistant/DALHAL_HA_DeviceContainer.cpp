@@ -49,7 +49,7 @@ namespace DALHAL {
         return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));
     }
     
-    HA_DeviceContainer::HA_DeviceContainer(HA_CreateFunctionContext& context) : Device(context.deviceType) {
+    HA_DeviceContainer::HA_DeviceContainer(HA_CreateFunctionContext& context) : HA_Device(context) {
         JsonSchema::HA_DeviceContainer::Extractors::Apply(context, this);
     }
 
@@ -80,6 +80,17 @@ namespace DALHAL {
 
     DeviceFindResult HA_DeviceContainer::findDevice(UIDPath& path, Device*& outDevice) {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
+    }
+
+    const HA_DeviceEntity* HA_DeviceContainer::findHassDevice(const ZeroCopyString& zcHassUid) {
+        if (devices == nullptr || deviceCount == 0) { return nullptr; }
+        
+        for (int i=0;i<deviceCount;++i) {
+            const HA_DeviceEntity* item = static_cast<HA_Device*>(devices[i])->findHassDevice(zcHassUid);
+            if (item != nullptr) return item;
+        }
+        
+        return nullptr;
     }
 
     String HA_DeviceContainer::ToString() {

@@ -23,8 +23,6 @@
 
 #pragma once
 
-//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
-
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
@@ -40,6 +38,8 @@
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Core/Types/DALHAL_Consumer.h>
 
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>
+
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 
 #define DALHAL_HA_SENSOR_DEFAULT_REFRESH_MS 5000
@@ -48,7 +48,7 @@ namespace DALHAL {
 
     namespace JsonSchema { namespace HA_BinarySensor { struct Extractors; } } // forward declaration
 
-    class HA_BinarySensor : public Device {
+    class HA_BinarySensor : public HA_DeviceEntity {
         friend struct JsonSchema::HA_BinarySensor::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
@@ -58,9 +58,8 @@ namespace DALHAL {
     private:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
         
-        PubSubClient& mqttClient;
-        std::string hass_uid;
-        //TopicBasePath topicBasePath;
+        //PubSubClient& mqttClient;
+        //std::string hass_uid;
 
         Consumer::Mode consumerMode = Consumer::Mode::Manual;
         CachedDeviceRead* cdr = nullptr;
