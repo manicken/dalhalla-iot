@@ -28,6 +28,8 @@
 #include <string>
 #include <ArduinoJson.h>
 
+#include <DALHAL/Core/Types/DALHAL_FlexibleString.h>
+
 #include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Device/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
@@ -66,7 +68,7 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        const char* ts_root_url;
+        FlexibleString ts_root_url;
 
         HTTPClient http;
         WiFiClient wifiClient;

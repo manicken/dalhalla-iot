@@ -36,16 +36,19 @@ namespace DALHAL {
         }
     }
 
-    void ThingSpeakField::Set(int fieldIndex, const char* uidPathAndFuncName_cStr, bool _sendAllInSync) {
+    void ThingSpeakField::Set(int fieldIndex, const char* uidPath_cStr, bool _sendAllInSync) {
         this->sendAllInSync = _sendAllInSync;
         this->index = fieldIndex;
         cdr = new CachedDeviceRead();
-        ZeroCopyString zcStrUidPathAndFuncName(uidPathAndFuncName_cStr);
-        if (cdr->Set(zcStrUidPathAndFuncName)) {
-            HALOperationResult res = DeviceManager::GetDeviceEvent(zcStrUidPathAndFuncName, &reactiveEvent);
+        ZeroCopyString zcStrUidPath(uidPath_cStr);
+        if (cdr->Set(zcStrUidPath)) {
+            ZeroCopyString zcStrEventName = "ValueChange";
+            HALOperationResult res = DeviceManager::GetDeviceEvent(zcStrUidPath, zcStrEventName, &reactiveEvent);
             if (res != HALOperationResult::Success) {
                 reactiveEvent = nullptr;
-                GlobalLogger.Error(F("error while GetDeviceEvent:"), String(HALOperationResultToString(res)).c_str());
+                String errMsg = HALOperationResultToString(res);
+                errMsg += " @ "; errMsg += zcStrUidPath.ToString().c_str();
+                GlobalLogger.Error(F("error while GetDeviceEvent - ValueChange: "), errMsg.c_str());
             }
         }
         

@@ -101,7 +101,8 @@ namespace DALHAL {
                 }
                 if (eventSource_cStr != nullptr) {
                     ZeroCopyString zcSrcDeviceUidStr = eventSource_cStr;
-                    DeviceManager::GetDeviceEvent(zcSrcDeviceUidStr, &out->eventSource);
+                    ZeroCopyString zcStrEventName = "ValueChange";
+                    DeviceManager::GetDeviceEvent(zcSrcDeviceUidStr, zcStrEventName, &out->eventSource);
                 }
                 // have the following to make the modes explicit for now
                 // later it will be directly determined by the mode extractors

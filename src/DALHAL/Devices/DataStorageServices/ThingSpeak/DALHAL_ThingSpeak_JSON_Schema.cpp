@@ -43,7 +43,7 @@ namespace DALHAL {
         namespace ThingSpeak {
 
             constexpr SchemaUInt firstUpdateAfterSecondsField = {"firstUpdateAfterSeconds", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)0};
-            constexpr SchemaBool testserverField = {"testserver", FieldPolicy::Optional, false};
+            constexpr SchemaString serverOverrideField = {"serverOverride", FieldPolicy::Optional};
             constexpr SchemaStringSizeConstrained keyField = {"key", FieldPolicy::Required, "0123456789ABCDEF", (unsigned int)16, (unsigned int)16}; // here min/max defines so that the string must be exact 16 characters long
 
             constexpr SchemaStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
@@ -70,9 +70,9 @@ namespace DALHAL {
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
-                &CommonTime::refreshTimeGroupFields,
+                &CommonTime::refreshTimeGroupFieldsRequired,
                 &firstUpdateAfterSecondsField,
-                &testserverField,
+                &serverOverrideField,
                 &keyField,
                 &itemsField,
                 nullptr,
@@ -93,7 +93,7 @@ namespace DALHAL {
 
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
 
-                HALValue refreshTimeMsTemp = JsonSchema::CommonTime::refreshTimeGroupFields.ExtractFrom(*(context.jsonObjItem));
+                HALValue refreshTimeMsTemp = JsonSchema::CommonTime::refreshTimeGroupFieldsRequired.ExtractFrom(*(context.jsonObjItem));
                 if (refreshTimeMsTemp.isSet()) {
                     out->refreshTimeMs = refreshTimeMsTemp.toUInt();
                     out->useOwnTaskLoop = true;
@@ -101,13 +101,12 @@ namespace DALHAL {
                     out->refreshTimeMs = 0;
                     out->useOwnTaskLoop = false;
                 }
-                bool testserverEnabled = JsonSchema::ThingSpeak::testserverField.ExtractFrom(*(context.jsonObjItem));
-                if (testserverEnabled) {
-        #ifdef DALHAL_DEVICES_THINGSPEAK_TEST_SERVER
-                    out->TS_ROOT_URL = "http://" DALHAL_DEVICES_THINGSPEAK_TEST_SERVER ":8083/update?api_key=";
-        #else
-                    out->ts_root_url = "http://127.0.0.1:8083/update?api_key=";
-        #endif
+                const char* serverOverride = JsonSchema::ThingSpeak::serverOverrideField.ExtractFrom(*(context.jsonObjItem));
+
+                if (serverOverride != nullptr && serverOverride[0] != '\0') {
+                    
+                    out->ts_root_url.SetCopy(serverOverride);
+                    GlobalLogger.Info(F("TS using serverOverride: "), out->ts_root_url.c_str());
                 } else {
                     out->ts_root_url = "http://api.thingspeak.com/update?api_key=";
                 }
@@ -128,7 +127,7 @@ namespace DALHAL {
                     out->fields[index++].Set(fieldIndex, uidPathAndFuncName_cStr);
                 }
 
-                out->urlApi.reserve(strlen(out->ts_root_url) + strlen(out->api_key) + out->fieldCount*(strlen("&fieldx=")+32));
+                out->urlApi.reserve(out->ts_root_url.length() + strlen(out->api_key) + out->fieldCount*(strlen("&fieldx=")+32));
 
                 if (out->useOwnTaskLoop) {
                     uint32_t firstUpdateAfterSeconds = JsonSchema::ThingSpeak::firstUpdateAfterSecondsField.ExtractFrom(*(context.jsonObjItem));

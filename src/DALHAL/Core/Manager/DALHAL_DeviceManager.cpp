@@ -202,10 +202,9 @@ namespace DALHAL {
 
         return HALOperationResult::Success;
     }*/
-    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, ReactiveEvent** reactiveEventOut)
+    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcUidPath, ZeroCopyString zcFuncName, ReactiveEvent** reactiveEventOut)
     {
-        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('#');
-        UIDPath uidPath(zcStrUidPathAndFuncName);
+        UIDPath uidPath(zcUidPath);
 
         Device* deviceOut = nullptr;
         DeviceFindResult findRes = DeviceManager::findDevice(uidPath, deviceOut);
@@ -219,6 +218,11 @@ namespace DALHAL {
 
         // Forward directly to device
         return deviceOut->Get_ReactiveEvent(zcFuncName, reactiveEventOut);
+    }
+    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, ReactiveEvent** reactiveEventOut)
+    {
+        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('@');
+        return GetDeviceEvent(zcStrUidPathAndFuncName, zcFuncName, reactiveEventOut);
     }
     HALOperationResult DeviceManager::ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName) {
         return GetDeviceEvent(zcStrUidPathAndFuncName, nullptr);

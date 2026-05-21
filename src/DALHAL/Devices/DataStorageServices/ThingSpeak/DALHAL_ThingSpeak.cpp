@@ -67,7 +67,10 @@ namespace DALHAL {
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;
-            /*HALOperationResult res = */this->exec();
+            HALOperationResult res = this->exec();
+            if (res != HALOperationResult::Success) {
+                GlobalLogger.Error(F("ThingSpeak::exec"), String(HALOperationResultToString(res)).c_str());
+            }
         }
     }
 
@@ -75,7 +78,8 @@ namespace DALHAL {
         //std::string urlApi;
         bool hasUpdates = false;
         urlApi.clear();
-        urlApi += ts_root_url;
+        ts_root_url.appendTo(urlApi);
+        //urlApi += ts_root_url;
         urlApi += api_key;
         for (int i=0;i<fieldCount;i++) {
             ThingSpeakField& field = fields[i];
@@ -96,6 +100,7 @@ namespace DALHAL {
         if (hasUpdates == false) {
             return HALOperationResult::ExecutionFailed;
         }
+        //Serial1.println(urlApi.c_str());
 
         http.begin(wifiClient, urlApi.c_str());
         http.setTimeout(2000); // set to 2 seconds so WDT would not trigger

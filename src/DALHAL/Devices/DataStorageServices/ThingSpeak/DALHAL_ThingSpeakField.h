@@ -39,7 +39,7 @@ namespace DALHAL {
         ThingSpeakField();
         ~ThingSpeakField();
 
-        void Set(int index, const char* uidPathAndFuncName_cStr, bool _sendAllInSync = false);
+        void Set(int index, const char* uidPath_cStr, bool _sendAllInSync = false);
 
         inline bool DataReady() {
             return true;

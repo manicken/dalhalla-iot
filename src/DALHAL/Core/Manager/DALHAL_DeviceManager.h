@@ -77,6 +77,7 @@ namespace DALHAL {
         /** get the device event struct if the source device supports events, otherwise it returns nullptr, 
          * a special note the consumer MUST delete the DeviceEvent when done with it i.e using delete eventDevice
          */
+        static HALOperationResult GetDeviceEvent(ZeroCopyString zcUidPath, ZeroCopyString zcFuncName, ReactiveEvent** reactiveEventOut);
         static HALOperationResult GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, ReactiveEvent** reactiveEventOut);
         static HALOperationResult ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName);
 

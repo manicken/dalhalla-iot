@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = 8083;
-const HOST = '0.0.0.0';  // Listen on all network interfaces
+const HOST = '192.168.50.200';  // Listen on all network interfaces
 
 // For GET /update
 app.get('/update', (req, res) => {
