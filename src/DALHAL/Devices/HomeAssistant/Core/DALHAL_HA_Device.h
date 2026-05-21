@@ -34,7 +34,7 @@ namespace DALHAL {
 
     class HA_Device : public Device {
     public:
-        virtual const HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid);
+        virtual HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid);
 
         HA_Device(HA_CreateFunctionContext& context);
     };

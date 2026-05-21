@@ -124,9 +124,8 @@ namespace DALHAL {
 
         HALValue val;
         HALOperationResult res = cdr->ReadSimple(val);
-        bool isOnline = (res == HALOperationResult::Success);
 
-        if (isOnline)
+        if (res == HALOperationResult::Success)
         {
             if (!wasOnline)
             {

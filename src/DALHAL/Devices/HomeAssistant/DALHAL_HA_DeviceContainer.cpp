@@ -82,11 +82,11 @@ namespace DALHAL {
         return Device::findInArray(devices, deviceCount, path, this, outDevice);
     }
 
-    const HA_DeviceEntity* HA_DeviceContainer::findHassDevice(const ZeroCopyString& zcHassUid) {
+    HA_DeviceEntity* HA_DeviceContainer::findHassDevice(const ZeroCopyString& zcHassUid) {
         if (devices == nullptr || deviceCount == 0) { return nullptr; }
         
         for (int i=0;i<deviceCount;++i) {
-            const HA_DeviceEntity* item = static_cast<HA_Device*>(devices[i])->findHassDevice(zcHassUid);
+            HA_DeviceEntity* item = static_cast<HA_Device*>(devices[i])->findHassDevice(zcHassUid);
             if (item != nullptr) return item;
         }
         

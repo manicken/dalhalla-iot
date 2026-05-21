@@ -132,7 +132,7 @@ namespace DALHAL {
                 useDefaultFile = true;
             }
             if (useDefaultFile) {
-                GlobalLogger.Error(F("\nUsing default script file: script.txt\n"));
+                GlobalLogger.Info(F("Using default script file: script.txt"));
                 InitScriptList(1);
                 scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
             }
@@ -168,6 +168,10 @@ namespace DALHAL {
                 
                 std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
                 //printf("\nValidating script:%s\n",path.c_str());
+                if (LittleFS.exists(path.c_str()) == false) {
+                    GlobalLogger.Info(F("ValidateAllActiveScripts - script file do not exist:"), path.c_str());
+                    continue;
+                }
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
                 if (valid == false) return false;
                 //yield();
@@ -190,6 +194,10 @@ namespace DALHAL {
                 currentScriptIndex = i;
                 // this should now pass and execute the given callback
                 std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
+                if (LittleFS.exists(path.c_str()) == false) {
+                    GlobalLogger.Info(F("LoadAllActiveScripts - script file do not exist:"), path.c_str());
+                    continue;
+                }
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), ScriptFileParsed);
                 if (valid == false) return false;
                 //yield();
@@ -200,18 +208,22 @@ namespace DALHAL {
         bool ValidateAndLoadAllActiveScripts()
         {
             ScriptsToLoad scriptsToLoad; // Automatically loads the scripts list file (or defaults to script.txt) on construction
-            
+            if (scriptsToLoad.scriptFileCount == 0) {
+                GlobalLogger.Info(F("No scripts to load."));
+                return true;
+            }
+
             ScriptsBlock::running = false;
             ScriptEngine::Expressions::CalcStackSizesInit();
             if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
-                GlobalLogger.Error(F("\nValidateAllActiveScripts fail!\n"));
+                GlobalLogger.Error(F("ValidateAllActiveScripts fail!"));
                 GlobalLogger.printAllLogs(Serial, false);
                 return false;
             }
             
             ScriptEngine::Expressions::InitStacks();
             if (ScriptsBlock::LoadAllActiveScripts(scriptsToLoad) == false) {
-                GlobalLogger.Error(F("\nSERIOUS problem could not load scripts!\"n"));
+                GlobalLogger.Error(F("SERIOUS problem could not load scripts!"));
                 return false;
             }
             ScriptsBlock::running = true;

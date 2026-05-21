@@ -415,6 +415,7 @@ namespace DALHAL {
             return false;
 
         size_t len = Length();
+        if (len == 0) return false;
         return std::strlen(cstr) == len && std::memcmp(start, cstr, len) == 0;
     }
     bool ZeroCopyString::Equals(const __FlashStringHelper* fstr) const {
@@ -425,7 +426,7 @@ namespace DALHAL {
             return false;
 
         size_t len = Length();
-
+        if (len == 0) return false;
         return strlen_P(pstr) == len &&
             memcmp_P(start, pstr, len) == 0;
     }

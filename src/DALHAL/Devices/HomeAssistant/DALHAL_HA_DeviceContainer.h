@@ -62,7 +62,7 @@ namespace DALHAL {
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
-        const HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid) override;
+        HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid) override;
 
         String ToString() override;
     };

@@ -32,12 +32,17 @@ struct DeviceUID {
 private:  
   static char g_deviceUID[13];
   static bool initialized;
+  static bool overridden;
 public:
     static void Init();
     static void Set(const char* uid);
+    static void Get(char* target);
     inline static const char* Get() {
         if (!initialized) { Init(); }
         return g_deviceUID;
+    }
+    inline static bool Overridden() {
+        return overridden;
     }
 };
 

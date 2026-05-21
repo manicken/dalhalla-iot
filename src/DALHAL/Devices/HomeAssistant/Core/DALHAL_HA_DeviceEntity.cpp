@@ -27,7 +27,7 @@ namespace DALHAL {
 
     HA_DeviceEntity::HA_DeviceEntity(HA_CreateFunctionContext& context) : HA_Device(context), mqttClient(context.mqttClient) {}
 
-    const HA_DeviceEntity* HA_DeviceEntity::findHassDevice(const ZeroCopyString& zcHassUid) {
+    HA_DeviceEntity* HA_DeviceEntity::findHassDevice(const ZeroCopyString& zcHassUid) {
         if (zcHassUid.Equals(this->hass_uid.c_str())) {
             return this;
         }

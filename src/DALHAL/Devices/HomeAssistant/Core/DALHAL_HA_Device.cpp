@@ -27,6 +27,6 @@ namespace DALHAL {
 
     HA_Device::HA_Device(HA_CreateFunctionContext& context) : Device(context.deviceType) { }
     
-    const HA_DeviceEntity* HA_Device::findHassDevice(const ZeroCopyString& zcHassUid) { return nullptr; }
+    HA_DeviceEntity* HA_Device::findHassDevice(const ZeroCopyString& zcHassUid) { return nullptr; }
 
 }

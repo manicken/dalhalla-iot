@@ -116,9 +116,8 @@ namespace DALHAL {
 
         HALValue val;
         HALOperationResult res = cdr->ReadSimple(val);
-        bool isOnline = (res == HALOperationResult::Success);
 
-        if (isOnline)
+        if (res == HALOperationResult::Success)
         {
             //Serial1.print(hass_uid.c_str()); Serial1.println(F("Sensor::loop() isOnline"));
             if (!wasOnline)

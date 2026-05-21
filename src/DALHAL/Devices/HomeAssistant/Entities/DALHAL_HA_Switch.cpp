@@ -114,9 +114,9 @@ namespace DALHAL {
             HALValue valState;
             HALOperationResult res = HALOperationResult::NotSet;
             //const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-            if (cmd == HA_Switch::PAYLOAD_ON) {
+            if (cmd.Equals(HA_Switch::PAYLOAD_ON)) {
                 valState.set(true);
-            } else if (cmd == HA_Switch::PAYLOAD_OFF) {
+            } else if (cmd.Equals(HA_Switch::PAYLOAD_OFF)) {
                 valState.set(false);
             } else {
                 return HALOperationResult::UnsupportedCommand; // or some error code

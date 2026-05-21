@@ -28,6 +28,7 @@
 #include <PubSubClient.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_ValuePrinter.h>
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 namespace DALHAL
 {
@@ -90,14 +91,18 @@ namespace DALHAL
         static void SendAvailabilityTopicCfg(PubSubClient& mqtt, const HA_DD_Context& ctx);
         static void SendStateTopicCfg(PubSubClient& mqtt, const HA_DD_Context& ctx);
         static void SendCommandTopicCfg(PubSubClient& mqtt, const HA_DD_Context& ctx);
+        static bool RemoveCfgTopic(PubSubClient& mqtt, const ZeroCopyString& zcStr_type, const ZeroCopyString& zcStr_hass_uid);
 
         static void SubscribeToCommandTopic(PubSubClient& mqtt);
         static void SubscribeToCleanupTopic(PubSubClient& mqtt);
 
         static void SetAvailability(PubSubClient& mqtt, const char* hass_uid_cStr, bool& wasOnline, bool online);
 
-        static bool SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const HALValue val);
-        static bool SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const char* state_cStr, uint32_t state_cStr_length);
+        static bool SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const HALValue val, bool retained = false);
+        static bool SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const char* state_cStr, uint32_t state_cStr_length, bool retained = false);
+        static bool SendState(PubSubClient& mqtt, const ZeroCopyString& hass_uid_zcStr, const ZeroCopyString& state_zcStr, bool retained = false);
+
+        
         
     private:
         static void SendBaseData(PubSubClient& mqtt, const HA_DD_Context& ctx);//, const char* deviceId_cStr, const JsonVariant& jsonObj);

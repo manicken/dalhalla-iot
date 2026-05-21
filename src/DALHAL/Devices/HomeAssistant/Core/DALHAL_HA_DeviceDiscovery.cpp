@@ -41,6 +41,13 @@ namespace DALHAL
 
     void HA_DeviceDiscovery::SubscribeToCleanupTopic(PubSubClient& mqtt) {
         mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, DeviceUID::Get());
+        if (DeviceUID::Overridden()) {
+            // also subscribe to raw device id topics for cleanup
+            // if using device id override
+            char temp[13];
+            DeviceUID::Get(temp);
+            mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, temp);
+        }
     }
 
     void HA_DeviceDiscovery::SubscribeToCommandTopic(PubSubClient& mqtt) {
@@ -163,11 +170,11 @@ namespace DALHAL
         }
     }
 
-    bool HA_DeviceDiscovery::SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const HALValue val) {
+    bool HA_DeviceDiscovery::SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const HALValue val, bool retained/* = false*/) {
         CountingPubSubClient count_psc; // use this to avoid placing value string on heap just to know it's size
         PrintHALValue(val, count_psc); // this allways success so no need to check if the print was success
 
-        bool res = mqtt.beginPublish_fmt(count_psc.count, /*retained*/false, 
+        bool res = mqtt.beginPublish_fmt(count_psc.count, retained, 
             DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT, 
 
             DeviceUID::Get(),
@@ -182,9 +189,9 @@ namespace DALHAL
         return mqtt.endPublish();
     }
 
-    bool HA_DeviceDiscovery::SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const char* state_cStr, uint32_t state_cStr_length) {
+    bool HA_DeviceDiscovery::SendState(PubSubClient& mqtt, const char* hass_uid_cStr, const char* state_cStr, uint32_t state_cStr_length, bool retained/* = false*/) {
         
-        bool res = mqtt.beginPublish_fmt(state_cStr_length, /*retained*/false, 
+        bool res = mqtt.beginPublish_fmt(state_cStr_length, retained, 
             DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_FMT, 
 
             DeviceUID::Get(),
@@ -194,7 +201,41 @@ namespace DALHAL
         if (res == false) {
             return false;
         }
-        if (mqtt.print(state_cStr) == 0) { return false; }
+        if (mqtt.printf("%.*s", state_cStr_length, state_cStr) == 0) { return false; }
+        return mqtt.endPublish();
+    }
+
+    bool HA_DeviceDiscovery::SendState(PubSubClient& mqtt, const ZeroCopyString& hass_uid_zcStr, const ZeroCopyString& state_zcStr, bool retained/* = false*/) {
+        
+        bool res = mqtt.beginPublish_fmt(state_zcStr.Length(), retained, 
+            DALHAL_DEV_HOME_ASSISTANT_DD_ENTITY_TOPIC_ZEROCOPYSTR_FMT, 
+
+            DeviceUID::Get(),
+            hass_uid_zcStr.Length(),
+            hass_uid_zcStr.start,
+            DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL
+        );
+        if (res == false) {
+            return false;
+        }
+        if (mqtt.printf("%.*s",state_zcStr.Length(), state_zcStr.start) == 0) { return false; }
+        return mqtt.endPublish();
+    }
+
+    bool HA_DeviceDiscovery::RemoveCfgTopic(PubSubClient& mqtt, const ZeroCopyString& zcStr_type, const ZeroCopyString& zcStr_hass_uid) {
+        bool res = mqtt.beginPublish_fmt(0, true, 
+            DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_ZEROCOPYSTR_FMT, 
+
+            zcStr_type.Length(),
+            zcStr_type.start,
+            DeviceUID::Get(),
+            zcStr_hass_uid.Length(),
+            zcStr_hass_uid.start,
+            DALHAL_DEV_HOME_ASSISTANT_DD_STATE_TOPIC_TAIL
+        );
+        if (res == false) {
+            return false;
+        }
         return mqtt.endPublish();
     }
 

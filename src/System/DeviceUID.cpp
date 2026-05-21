@@ -32,6 +32,7 @@ extern "C" {
 }
 
     bool DeviceUID::initialized = false;
+    bool DeviceUID::overridden = false;
     char DeviceUID::g_deviceUID[13];
 
     void DeviceUID::Init() {
@@ -52,6 +53,14 @@ extern "C" {
         }
         g_deviceUID[sizeof(g_deviceUID)-1] = '\0';
         initialized = true;
+        overridden = true;
+    }
+
+    void DeviceUID::Get(char* target) {
+        uint64_t uid = getDeviceUID();
+        uint32_t uid_MSB  = (uid>>32) & 0xFFFF; // only care for the 4 nibbles as getDeviceUID only encode in 48 bits
+        uint32_t uid_LSB  = uid & 0xFFFFFFFF;
+        snprintf(target, 12, "%04X%08X", uid_MSB, uid_LSB);
     }
 
     
