@@ -42,6 +42,7 @@ namespace DALHAL {
         Timeout = 11,
         ReactiveEventsNotSupported = 12,
         ReactiveEventByNameNotFound = 13,
+        DataNotReady = 14,
 
         /** script engine specific status */
         IfConditionTrue = 20,

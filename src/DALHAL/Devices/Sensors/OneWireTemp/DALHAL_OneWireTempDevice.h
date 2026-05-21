@@ -74,6 +74,9 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         //static bool VerifyJSON(const JsonVariant &jsonObj);
     
+    private:
+        bool dataValid = false;
+
     public:
         OneWireAddress romid;
         OneWireTempDeviceTempFormat format = OneWireTempDeviceTempFormat::Celsius;
@@ -106,6 +109,7 @@ namespace DALHAL {
         uint8_t pin;
         OneWire* oneWire = nullptr;
         DallasTemperature* dTemp = nullptr;
+        
         void requestTemperatures();
         void readAll();
 

@@ -77,6 +77,7 @@ namespace DALHAL {
             TempAndHumidity tempData = dht.getTempAndHumidity(); // this could take up to 250mS (of what i have read, but the timing spec only make it to max ~23mS)
             if (!isnan(tempData.humidity) && !isnan(tempData.temperature)) {
                 data = tempData;
+                dataValid = true;
 #if HAS_REACTIVE_VALUE_CHANGE(DHT)
                 triggerValueChange();
 #endif
@@ -87,6 +88,7 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(HALValue &val) {
+        if (!dataValid) return HALOperationResult::DataNotReady;
         val = data.humidity;
         return HALOperationResult::Success;
     }
@@ -106,17 +108,20 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::readTemperature(Device* context, HALValue& val) {
-        DHT* dht = static_cast<DHT*>(context);
-        val = dht->data.temperature;
+        DHT& dht = *static_cast<DHT*>(context);
+        if (!dht.dataValid) return HALOperationResult::DataNotReady;
+        val = dht.data.temperature;
         return HALOperationResult::Success;
     }
     HALOperationResult DHT::readHumidity(Device* context, HALValue& val) {
-        DHT* dht = static_cast<DHT*>(context);
-        val = dht->data.humidity;
+        DHT& dht = *static_cast<DHT*>(context);
+        if (!dht.dataValid) return HALOperationResult::DataNotReady;
+        val = dht.data.humidity;
         return HALOperationResult::Success;
     }
 
     HALOperationResult DHT::read(const HALReadValueByCmd &val) {
+        if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = data.temperature;
             return HALOperationResult::Success;
@@ -132,6 +137,7 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
+        if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = "{\"temp\":" + std::to_string(data.temperature) + "}";
             return HALOperationResult::Success;

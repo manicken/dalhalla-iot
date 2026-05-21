@@ -62,6 +62,7 @@ namespace DALHAL {
         DHTesp dht;
         uint8_t pin = 0;
         TempAndHumidity data;
+        bool dataValid = false;
         uint32_t refreshTimeMs = DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS;
         uint32_t lastUpdateMs = 0;
         

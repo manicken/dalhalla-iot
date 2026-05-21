@@ -62,6 +62,7 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempDevice::read(HALValue& val) {
+        if (!dataValid) return HALOperationResult::DataNotReady;
         val = value;
 #if HAS_REACTIVE_READ(ONE_WIRE_TEMP_DEVICE)
         triggerRead();
@@ -82,6 +83,7 @@ namespace DALHAL {
         }
         if (updateVal) {
             value = tempVal;
+            dataValid = true;
             //triggerEvent(); // actually a async event trigger
         }
     }
