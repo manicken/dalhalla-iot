@@ -223,6 +223,11 @@ namespace System {
     void initWebServerHandlers(AsyncWebServer& webserver)
     {
         FSBrowser::setup(webserver);
+        webserver.on("/reset", [](AsyncWebServerRequest* req) {
+            req->send(200, "text/html", "system will now reset");
+            ESP.reset();
+            
+        });
         /*webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
             
             if (LittleFS.format()) {
