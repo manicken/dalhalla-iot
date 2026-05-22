@@ -24,14 +24,7 @@
 #include <cstdio>
 #include <cstdint>
 
-#if defined(ESP8266)
-
-//#include <esp8266.h>
-extern "C" {
-#include <user_interface.h>
-}
-
-    bool DeviceUID::initialized = false;
+bool DeviceUID::initialized = false;
     bool DeviceUID::overridden = false;
     char DeviceUID::g_deviceUID[13];
 
@@ -62,6 +55,15 @@ extern "C" {
         uint32_t uid_LSB  = uid & 0xFFFFFFFF;
         snprintf(target, 12, "%04X%08X", uid_MSB, uid_LSB);
     }
+
+#if defined(ESP8266)
+
+//#include <esp8266.h>
+extern "C" {
+#include <user_interface.h>
+}
+
+    
 
     
 

@@ -38,7 +38,7 @@
 
 #define BUILD_VER "1.0"
 
-/*void Timer_SyncTime() {
+void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
     NTP::NTPConnect();
     tmElements_t now2;
@@ -69,12 +69,14 @@ Scheduler::NameToFunction nameToFunctionList[] = {
 #endif
 };
 
-*/
+
 #ifdef WIFI_CONNECTION_MANAGER_H
 void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
     switch (event) {
-        case WiFiConnectionManager::Event::STA_CONNECT_SUCCESS:
+        case WiFiConnectionManager::Event::STA_CONNECT_SUCCESS: {
+            Serial.println(F("\r\n--------------------------"));
             Serial.print(F("✓ WiFi connected: ")); Serial.println(info);
+            Serial.println(F("\r\n--------------------------"));
             Serial.println(F("wifi/status/ok/connect"));
 #if defined(USE_DISPLAY)
             display.setCursor(0, 9);
@@ -86,9 +88,23 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
 #endif
             // You could trigger WS API initialization here
             DALHAL::WebSocketAPI::setup();
-            break;
+            NTP::NTPConnect();
+            OTA::setup();
 
-        case WiFiConnectionManager::Event::STA_CONNECT_FAILED:
+            Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
+            Info::startTime = now();
+
+#if defined(ESP32) && !defined(esp32c3)
+            File test = SD_MMC.open("/StartTimes.log", "a", true);
+            test.println(Time_ext::GetTimeAsString(now()).c_str());
+            test.close();
+#endif
+            webserver.end();
+            webserver.begin();
+            break;
+        }
+
+        case WiFiConnectionManager::Event::STA_CONNECT_FAILED: {
             Serial.print(F("✗ WiFi failed: ")); Serial.println(info);
             Serial.println(F("wifi/status/error/connect"));
 #if defined(USE_DISPLAY)
@@ -99,8 +115,9 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
 #endif
             // Fallback to local AP configuration
             break;
+        }
 
-        case WiFiConnectionManager::Event::AP_STARTED:
+        case WiFiConnectionManager::Event::AP_STARTED: {
             Serial.print(F("★ AP mode active: ")); Serial.println(info);
 #if defined(USE_DISPLAY)
             display.setCursor(0, 9);
@@ -110,8 +127,8 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
 #endif
             // Start your configuration web server here
             break;
-
-        case WiFiConnectionManager::Event::AP_TO_STA_SUCCESS:
+        }
+        case WiFiConnectionManager::Event::AP_TO_STA_SUCCESS: {
             Serial.print(F("✓ Reconnected from AP:")); Serial.println(info);
 #if defined(USE_DISPLAY)
             display.setCursor(0, 9);
@@ -120,8 +137,8 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
             delay(2000); // allow user to see result
 #endif
             break;
-
-        case WiFiConnectionManager::Event::RECONNECT_ATTEMPT:
+        }
+        case WiFiConnectionManager::Event::RECONNECT_ATTEMPT: {
             Serial.println(F("↻ Attempting WiFi reconnection from AP..."));
 #if defined(USE_DISPLAY)
             display.setCursor(0, 9);
@@ -130,6 +147,7 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
             delay(2000); // allow user to see result
 #endif
             break;
+        }
     }
 }
 #endif
@@ -163,6 +181,9 @@ void setup() {
     init_display();
 #endif
 
+#if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
+    if (InitSD_MMC()) FSBrowser::fsOK = true;
+#endif
 
 #ifdef WIFI_CONNECTION_MANAGER_H
 #if defined(USE_DISPLAY)
@@ -183,39 +204,24 @@ void setup() {
     
     Serial.println(F("Setup complete - WiFi manager initialized"));
 #endif
-    
-
-
-#if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
-    if (InitSD_MMC()) FSBrowser::fsOK = true;
-#endif
-
-    OTA::setup();
-    //Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
-    Info::startTime = now();
+   
     HeartbeatLed::setup();
     
-#if defined(ESP32) && !defined(esp32c3)
-    File test = SD_MMC.open("/StartTimes.log", "a", true);
-    test.println(Time_ext::GetTimeAsString(now()).c_str());
-    test.close();
-#endif
     System::initWebServerHandlers(webserver);
 #ifdef DALHAL_H_
     DALHAL::begin();
 #endif
-    webserver.begin();
+    
 
     // make sure that the following are allways at the end of this function
     Info::PrintHeapInfo();
     DEBUG_UART.println(F("\r\n!!!!!End of MAIN Setup!!!!!\r\n"));
-    delay(0);
 }
 
 void loop() {
     ArduinoOTA.handle();
     HeartbeatLed::task();
-    //Scheduler::HandleAlarms();
+    Scheduler::HandleAlarms();
 #ifdef DALHAL_H_
     DALHAL::loop();
 #endif

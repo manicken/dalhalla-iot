@@ -151,12 +151,16 @@ namespace DALHAL {
                     }
                 }
                 HALOperationResult res = triggerBlocks[i].Exec();
-                if (res != HALOperationResult::Success) {
-                    GlobalLogger.Error(F("trigger: "), String(HALOperationResultToString(res)).c_str());
-//#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+                // only log actual errors, HALOperationResult::DataNotReady is just a signal to certain consumers that 
+                // the value is not yet ready for read
+                if (res != HALOperationResult::Success && res != HALOperationResult::DataNotReady) {
+                    GlobalLogger.Error(F("script exec error: "), String(HALOperationResultToString(res)).c_str());
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     printf("script exec error:%s\n", String(HALOperationResultToString(res)).c_str());
-//#endif
-                }
+#endif
+                } /*else if(res == HALOperationResult::DataNotReady) {
+                    GlobalLogger.Warn(F("script exec warning: DataNotReady"));
+                }*/
             }
         }
 

@@ -59,10 +59,10 @@
 
 //#define ARDUINOJSON_ENABLE_PROGMEM 0
 
-//#include <TimeLib.h>
+#include <TimeLib.h>
 
-//#include <TimeAlarms.h>
-//#include <Scheduler/Scheduler.h>
+#include <TimeAlarms.h>
+#include <Scheduler/Scheduler.h>
 
 #include <System/Info.h>
 

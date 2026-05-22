@@ -77,7 +77,7 @@ namespace DALHAL {
         }
 
         long currmillis = millis();
-        if (currmillis-lastmillis > 100) {
+        if (currmillis-lastmillis > 1) {
             lastmillis = currmillis;
             DeviceManager::loop();
             

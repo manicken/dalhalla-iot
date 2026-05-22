@@ -118,7 +118,7 @@ namespace OTA
             else if (error == OTA_RECEIVE_ERROR) DEBUG_UART.println(F("Receive Failed"));
             else if (error == OTA_END_ERROR) DEBUG_UART.println(F("End Failed"));
         });
-
+        ArduinoOTA.end();
         ArduinoOTA.begin();
         //WiFi.setHostname("test");
 

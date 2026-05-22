@@ -326,7 +326,7 @@ namespace Scheduler
         //webserver = &srv;
         FuncCount = funcDefListCount;
         nameToFuncList = funcDefList;
-        NTP::NTPConnect();
+        
         
         Serial.println(F("setup - tmElements_t now2"));
         tmElements_t now2;

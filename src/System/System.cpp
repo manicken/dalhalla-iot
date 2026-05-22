@@ -148,29 +148,61 @@ namespace System {
         HeartbeatLed::setup(500, 500);
         
         Serial.begin(115200);
-        Serial.println(F("\r\n******** FAILSAFE MODE ********"));
+        delay(500);  // Give Serial time to initialize
+        Serial.println(F("\r\n\n"));
+        Serial.println(F("======================================"));
+        Serial.println(F("      FAILSAFE MODE ACTIVATED"));
+        Serial.println(F("======================================\r\n"));
 
-        // --- STEP 1: Auto-connect to last WiFi ---
-        WiFi.mode(WIFI_STA);
-        WiFi.begin();   // With stored credentials, works on both esp32 + esp8266
+        // === STEP 0: WiFi Preparation ===
+        WiFi.setSleep(false);
+        WiFi.disconnect(true);  // Turn off previous connection completely
+        delay(100);
+        WiFi.mode(WIFI_AP_STA);
 
-        unsigned long startAttempt = millis();
-        while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 8000) {
-            delay(50);    // yield to WiFi
-            HeartbeatLed::task();
-        }
-
-        if (WiFi.status() == WL_CONNECTED) {
-            Serial.print(F("Failsafe WiFi connected: ")); Serial.println(WiFi.localIP().toString().c_str());
+#define DALHAL_FAILSAFE_AP_SSID "Failsafe-Device"
+#define DALHAL_FAILSAFE_AP_PASS "12345678"
+        // Setup AP (failsafe access point)
+        if (!WiFi.softAP(DALHAL_FAILSAFE_AP_SSID, DALHAL_FAILSAFE_AP_PASS)) {
+            Serial.println(F("ERROR: Failed to start AP!"));
         } else {
-            Serial.println(F("Failsafe WiFi FAILED → Starting AP"));
-            WiFi.mode(WIFI_AP);
-            WiFi.softAP("Failsafe-Device", "12345678");
+            WiFi.softAP(DALHAL_FAILSAFE_AP_SSID, DALHAL_FAILSAFE_AP_PASS);
+            Serial.print(F("AP credentials: SSID=" DALHAL_FAILSAFE_AP_SSID ", PASS=" DALHAL_FAILSAFE_AP_PASS));
             Serial.print(F("AP IP: "));
             Serial.println(WiFi.softAPIP());
         }
 
+        // --- STEP 1: Connect to last known WiFi (non-blocking with timeout) ---
+        Serial.println(F("\n[WiFi] Attempting to connect to last known network..."));
+        WiFi.begin();  // Use stored credentials
+
+        unsigned long wifiConnectTimeout = millis() + 60000;  // 60 second WiFi timeout
+        bool wifiConnected = false;
+        int wifiAttempts = 0;
+        
+        while (millis() < wifiConnectTimeout && !wifiConnected) {
+            delay(500);
+            wifiAttempts++;
+            
+            if (WiFi.status() == WL_CONNECTED) {
+                wifiConnected = true;
+                Serial.println(F("\n[WiFi] ✓ Connected to WiFi!"));
+                Serial.print(F("[WiFi] IP: "));
+                Serial.println(WiFi.localIP());
+                break;
+            }
+            
+            if (wifiAttempts % 4 == 0) {  // Print every 2 seconds
+                Serial.print(F("."));
+            }
+        }
+        
+        if (!wifiConnected) {
+            Serial.println(F("\n[WiFi] ✗ Failed to connect to stored network (continuing in AP-only mode)"));
+        }
+
         // --- STEP 2: Setup OTA ---
+        Serial.println(F("\n[OTA] Configuring ArduinoOTA..."));
         ArduinoOTA.onStart([](){ Serial.println(F("OTA Start")); });
         ArduinoOTA.onEnd([](){ Serial.println(F("OTA End")); });
         ArduinoOTA.onError([](ota_error_t err){
@@ -203,19 +235,26 @@ namespace System {
         unsigned long long failsafeLoopTimeoutMs = 1000*60*10; // 10 Min timeout to avoid stuck in this state in case of a error
         unsigned long long failsafeLoopTimeoutMs_Start = millis();
         unsigned long long failsafeLoopTimeoutMs_MaxEnd = failsafeLoopTimeoutMs_Start + failsafeLoopTimeoutMs;
+        static unsigned long lastReconnect = 0;
         // --- STEP 4: FAILSAFE LOOP ---
         while (true) {
+            if (WiFi.status() != WL_CONNECTED && millis() - lastReconnect > 5000) {
+                WiFi.reconnect();
+                lastReconnect = millis();
+            }
             ArduinoOTA.handle();    // Required
             HeartbeatLed::task();   // Non-blocking
 
             if (millis() >= failsafeLoopTimeoutMs_MaxEnd) {
-                Serial.println(F("\r\n***************************************\r\n"));
-                Serial.println(F("\r\n***  Failsafe loop timeout reached  ***\r\n"));
-                Serial.println(F("\r\n***************************************\r\n"));
+                Serial.println(F("\r\n"));
+                Serial.println(F("======================================"));
+                Serial.println(F("  FAILSAFE TIMEOUT REACHED (10 MIN)"));
+                Serial.println(F("  Restarting device..."));
+                Serial.println(F("======================================\r\n"));
                 ESP.restart();
             }
             failsafeLoop_API_exec_cmd();           
-            delay(10);              // Prevent WDT reset
+            delay(1);              // Prevent WDT reset
         }
     }
 
@@ -225,7 +264,7 @@ namespace System {
         FSBrowser::setup(webserver);
         webserver.on("/reset", [](AsyncWebServerRequest* req) {
             req->send(200, "text/html", "system will now reset");
-            ESP.reset();
+            ESP.restart();
             
         });
         /*webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {

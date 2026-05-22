@@ -551,7 +551,7 @@ namespace DALHAL {
                         }
                     } else {
                         HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
-                        HALValue halValue;
+                        HALValue halValue(HALValue::Type::TEST); // unset TEST type
                         readResult = device->read(halBracketSubscriptValue, halValue);
                         if (readResult != HALOperationResult::Success) {
                             operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), String(F(": bracket op read")).c_str());
@@ -568,7 +568,7 @@ namespace DALHAL {
                         }
                     } else {
                         HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
-                        HALValue halValue(HALValue::Type::TEST); // unset type
+                        HALValue halValue(HALValue::Type::TEST); // unset TEST type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {
                             operandToken.ReportTokenError(String(HALOperationResultToString(writeResult)).c_str(), String(F(": bracket op write")).c_str());
@@ -595,7 +595,7 @@ namespace DALHAL {
                         anyError = true;
                     }
                 } else {
-                    HALValue halValue;
+                    HALValue halValue(HALValue::Type::TEST); // unset TEST type
                     readResult = device->read(halValue);
                     if (readResult != HALOperationResult::Success) {
                         operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), ": read");
@@ -611,7 +611,7 @@ namespace DALHAL {
                         anyError = true;
                     }
                 } else {
-                    HALValue halValue(HALValue::Type::TEST);
+                    HALValue halValue(HALValue::Type::TEST); // unset TEST type
                     //printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {

@@ -78,6 +78,7 @@ namespace DALHAL {
                 }
                 // second pass create units(devices)
                 out->units = new Device*[unitCount]();
+                out->unitCount = unitCount;
                 uint32_t index = 0;
                 TX433_Unit_CreateFunctionContext createContext(out->pin);
                 for (int i=0;i<jsonItems_count;i++) {

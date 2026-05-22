@@ -108,12 +108,14 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::readTemperature(Device* context, HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
         DHT& dht = *static_cast<DHT*>(context);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.temperature;
         return HALOperationResult::Success;
     }
     HALOperationResult DHT::readHumidity(Device* context, HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
         DHT& dht = *static_cast<DHT*>(context);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.humidity;
@@ -121,6 +123,7 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(const HALReadValueByCmd &val) {
+        if (val.out_value.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
         if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = data.temperature;
@@ -137,6 +140,7 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
+        
         if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
             val.out_value = "{\"temp\":" + std::to_string(data.temperature) + "}";

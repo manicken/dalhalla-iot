@@ -62,6 +62,8 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempDevice::read(HALValue& val) {
+        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
+
         if (!dataValid) return HALOperationResult::DataNotReady;
         val = value;
 #if HAS_REACTIVE_READ(ONE_WIRE_TEMP_DEVICE)
