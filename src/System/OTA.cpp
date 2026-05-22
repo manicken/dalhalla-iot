@@ -29,10 +29,10 @@ namespace OTA
     
     static int otaPartProcentCount = 0;
     
-    void setup()
+    void pre_setup()
     {
         //Pulled_check(wifiClient);
-        setup_PushedOTA();
+        pre_setup_PushedOTA();
     }
 
     void Download_Update(String url)
@@ -64,7 +64,7 @@ namespace OTA
 #endif
     }
 
-    void setup_PushedOTA()
+    void pre_setup_PushedOTA()
     {
         ArduinoOTA.onStart([]() {
             otaPartProcentCount = 0;
@@ -118,15 +118,16 @@ namespace OTA
             else if (error == OTA_RECEIVE_ERROR) DEBUG_UART.println(F("Receive Failed"));
             else if (error == OTA_END_ERROR) DEBUG_UART.println(F("End Failed"));
         });
-        ArduinoOTA.end();
-        ArduinoOTA.begin();
+        
+        //ArduinoOTA.end();
+        //ArduinoOTA.begin();
         //WiFi.setHostname("test");
 
-        DEBUG_UART.println(F("Ready"));
+        /*DEBUG_UART.println(F("Ready"));
 
         DEBUG_UART.print(F("IP address: "));
 
-        DEBUG_UART.println(WiFi.localIP());
+        DEBUG_UART.println(WiFi.localIP());*/
     }
 }
 #endif

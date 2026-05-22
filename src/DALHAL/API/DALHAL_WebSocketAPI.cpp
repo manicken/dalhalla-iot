@@ -42,6 +42,7 @@ namespace DALHAL {
 
     AsyncWebServer* WebSocketAPI::asyncWebserver = nullptr;
     AsyncWebSocket* WebSocketAPI::asyncWebSocket = nullptr;
+    bool WebSocketAPI::failsafeMode = false;
 
     void WebSocketAPI::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
     {
@@ -53,6 +54,11 @@ namespace DALHAL {
             Serial.printf("WS client #%u connected from %s\r\n",
                         client->id(),
                         client->remoteIP().toString().c_str());
+                        if (failsafeMode) {
+                            client->text("failsafe/recovery mode is active");
+                        } else {
+                            client->text("normal mode");
+                        }
             break;
 
         case WS_EVT_DISCONNECT:
@@ -119,7 +125,8 @@ namespace DALHAL {
         request->send_P(200, "text/html", HTML_WS_CONSOLE);
     }
 
-    void WebSocketAPI::setup() {
+    void WebSocketAPI::setup(bool failsafeMode) {
+        WebSocketAPI::failsafeMode = failsafeMode;
         if (asyncWebserver != nullptr) {
             // just restart server
             if (asyncWebSocket != nullptr) {

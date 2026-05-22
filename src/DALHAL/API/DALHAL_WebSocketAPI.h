@@ -48,9 +48,9 @@ namespace DALHAL {
         static AsyncWebSocket* asyncWebSocket;
         static void GetRootPage_Handler(AsyncWebServerRequest* request);
         static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-        
+        static bool failsafeMode;
     public:
-        static void setup();
+        static void setup(bool failsafeMode = false);
         inline static void loop() { 
 #if defined(ESP32)
           asyncWebSocket->cleanupClients();

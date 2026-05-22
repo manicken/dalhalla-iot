@@ -228,7 +228,7 @@ namespace System {
         });
 
         FSBrowser::setup(*server);
-        DALHAL::WebSocketAPI::setup();
+        DALHAL::WebSocketAPI::setup(/*failsafemode*/true);
 
         server->begin();
         Serial.println(F("\r\nFailsafe HTTP server started"));

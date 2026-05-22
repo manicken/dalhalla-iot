@@ -41,6 +41,21 @@ namespace DALHAL {
         return type;
     }
 
+    const char* HALValue::typeToString() const {
+        if (type == Type::BOOL) return "BOOL";
+        else if (type == Type::CSTRING) return "CSTRING";
+        else if (type == Type::FLOAT) return "FLOAT";
+        else if (type == Type::INT) return "INT";
+        else if (type == Type::TEST) return "TEST";
+        else if (type == Type::UINT) return "UINT";
+        else if (type == Type::UNSET) return "UNSET";
+        else return "Unknown";
+    }
+
+    bool HALValue::isBoolCompatible() const {
+        return type == Type::BOOL || type == Type::UINT || type == Type::FLOAT || type == Type::INT;
+    }
+
     bool HALValue::isNumber() const {
         return type == Type::UINT || type == Type::FLOAT || type == Type::INT;
     }

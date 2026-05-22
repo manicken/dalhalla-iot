@@ -161,7 +161,7 @@ namespace DALHAL {
     }
     HALOperationResult HA_BinarySensor::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
         if (!wasOnline) {
             HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
         }

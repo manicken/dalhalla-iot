@@ -43,7 +43,7 @@ namespace DALHAL {
             constexpr SchemaStringSizeConstrained hexidField = {"hexid", FieldPolicy::ModeDefine, "090A0B", 6, 6};
 
             constexpr SchemaUInt grp_btnField = {"grp_btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
-            constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)3, (unsigned int)0};
+            constexpr SchemaUInt btnField = {"btn", FieldPolicy::Optional, (unsigned int)0, (unsigned int)15, (unsigned int)0};
             constexpr SchemaUInt stateField = {"state", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0};
 
             constexpr ModeConjunctionDefine conjunctions_anid_Mode[] = {

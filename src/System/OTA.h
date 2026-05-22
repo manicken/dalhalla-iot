@@ -43,9 +43,9 @@ namespace OTA{
 #endif
 
     
-    void setup();
+    void pre_setup();
     void Download_Update(String url);
-    void setup_PushedOTA(void);
+    void pre_setup_PushedOTA(void);
     
     
 }

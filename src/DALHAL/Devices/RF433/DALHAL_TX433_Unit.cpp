@@ -78,7 +78,7 @@ namespace DALHAL {
 
     HALOperationResult TX433_Unit::write(const HALValue &val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
         RF433::init(pin); // ensure that the correct pin is used and that it's set to a output
         if (model == TX433_MODEL::FixedCode) {
             if (fixedState == false) {

@@ -340,11 +340,11 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     HALOperationResult Actuator::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
 
-        if (val.isUintOrInt() == false) {
-            return HALOperationResult::WriteValueNotUintOrInt;
-        }
+        //if (val.isUintOrInt() == false) {
+        //    return HALOperationResult::WriteValueNotUintOrInt;
+        //}
 
         int32_t v = val.toInt();
         if (v != 0 && v != 1) {

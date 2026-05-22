@@ -91,7 +91,10 @@ namespace DALHAL {
     }
     HALOperationResult HA_Switch::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        if (!val.isBoolCompatible()) {
+            GlobalLogger.Error(F("HA_Switch::write !val.isBoolCompatible(): "), val.typeToString());
+            return HALOperationResult::WriteValueNaN;
+        }
 
 
         bool state = val.toBool();

@@ -66,6 +66,12 @@ namespace DALHAL
     }
 
     void HA_DeviceDiscovery::SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, HADiscoveryWriteFn entityWriter) {
+        if (ctx.cStr_hass_prev_uid != nullptr &&
+            ctx.cStr_hass_prev_uid[0] != '\0' &&
+            (strcmp(ctx.cStr_hass_prev_uid, ctx.cStr_hass_uid) != 0)) {
+            RemoveCfgTopic(mqtt, ctx.cStr_type, ctx.cStr_hass_prev_uid);
+            delay(250);
+        }
         // first dry run to calculate payload size
         CountingPubSubClient dryRunPSC;
         SendDiscoveryPayload(dryRunPSC, ctx, entityWriter);

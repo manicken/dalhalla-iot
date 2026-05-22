@@ -301,32 +301,32 @@ namespace RF433
     }
 
     uint32_t Get433_SFC_Data(const JsonVariant &jsonObj) {
-        const char* chStr = DALHAL::GetAsConstChar(jsonObj,"ch");
-        const char* btnStr = DALHAL::GetAsConstChar(jsonObj,"btn");
-        const char* stateStr = DALHAL::GetAsConstChar(jsonObj,"state");
+        uint32_t ch = DALHAL::GetAsUINT32(jsonObj,"ch");
+        uint32_t btn = DALHAL::GetAsUINT32(jsonObj,"btn");
+        uint32_t state = DALHAL::GetAsUINT32(jsonObj,"state");
 
-        char ch = chStr[0];
-        char button = btnStr[0];
+        //char ch = chStr[0];
+        //char button = btnStr[0];
 
         uint32_t data = 0;
 
-        if (ch == '1') data |= (1u << 11);
-        else if (ch == '2') data |= (1u << 10);
-        else if (ch == '3') data |= (1u << 9);
-        else if (ch == '4') data |= (1u << 8);
+        if (ch == 1) data |= (1u << 11);
+        else if (ch == 2) data |= (1u << 10);
+        else if (ch == 3) data |= (1u << 9);
+        else if (ch == 4) data |= (1u << 8);
 
-        if (button == '1') data |= (1u << 7);
-        else if (button == '2') data |= (1u << 6);
-        else if (button == '3') data |= (1u << 5);
-        else if (button == '4') data |= (1u << 4);
+        if (btn == 1) data |= (1u << 7);
+        else if (btn == 2) data |= (1u << 6);
+        else if (btn == 3) data |= (1u << 5);
+        else if (btn == 4) data |= (1u << 4);
         
-        if (stateStr[0] == '1') data |= (1u << 0);
+        if (state == 1) data |= (1u << 0);
         return data;
     }
     uint32_t Get433_AFC_Data(const JsonVariant &jsonObj) {
         const char* chStr = DALHAL::GetAsConstChar(jsonObj,"ch");
         const char* btnStr = DALHAL::GetAsConstChar(jsonObj,"btn");
-        const char* stateStr = DALHAL::GetAsConstChar(jsonObj,"state");
+        uint32_t state = DALHAL::GetAsUINT32(jsonObj,"state");
 
         arch_word_t button = Get1AsciiHexValue(btnStr[0]);
         arch_word_t ch = Get1AsciiHexValue(chStr[0]);
@@ -336,11 +336,14 @@ namespace RF433
         if (ch & 0x02) data |= (1u << 10);
         if (ch & 0x04) data |= (1u << 9);
         if (ch & 0x08) data |= (1u << 8);
+
         if (button & 0x01) data |= (1u << 7);
         if (button & 0x02) data |= (1u << 6);
         if (button & 0x04) data |= (1u << 5);
         if (button & 0x08) data |= (1u << 4);
-        if (stateStr[0] == '0') data |= (1u << 0);
+
+        if (state == 1) data |= (1u << 0);
+        
         return data;
     }
     

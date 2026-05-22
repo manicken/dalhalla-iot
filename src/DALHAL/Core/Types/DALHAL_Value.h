@@ -71,6 +71,10 @@ namespace DALHAL {
         Type getType() const;
 
         /**
+         * @brief Check if value is a boolean compatible type (BOOL, INT, UINT, or FLOAT)
+         */
+        bool isBoolCompatible() const;
+        /**
          * @brief Check if value is a numeric type (INT, UINT, or FLOAT)
          */
         bool isNumber() const;
@@ -164,6 +168,8 @@ namespace DALHAL {
          * - BOOL → "true" or "false"
          */
         std::string toString() const;
+
+        const char* typeToString() const;
 
         /**
          * @brief Get value as const char*

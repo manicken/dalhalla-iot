@@ -62,7 +62,7 @@ namespace DALHAL {
 
     HALOperationResult DigitalOutput::write(const HALValue &val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
+        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
         uint32_t newValue = val.toUInt();
 #if HAS_REACTIVE_VALUE_CHANGE(DIGITAL_OUTPUT)
         if (value != newValue) {

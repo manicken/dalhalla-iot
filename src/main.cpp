@@ -89,7 +89,8 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
             // You could trigger WS API initialization here
             DALHAL::WebSocketAPI::setup();
             NTP::NTPConnect();
-            OTA::setup();
+            //ArduinoOTA.end();
+            ArduinoOTA.begin();
 
             Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
             Info::startTime = now();
@@ -169,6 +170,8 @@ void setup() {
     }
     DEBUG_UART.begin(115200);
     DEBUG_UART.setDebugOutput(true);
+
+    OTA::pre_setup();
 
     DEBUG_UART.println(F("\r\n!!!!!Start of MAIN Setup!!!!!\r\n"));
     Info::PrintHeapInfo();
