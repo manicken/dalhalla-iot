@@ -26,6 +26,7 @@
 #include "DALHAL_DeviceCreateContext.h"
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
@@ -49,6 +50,7 @@ namespace DALHAL {
             HAL_DEVICE_CREATE_FUNC Create_Function;
             const JsonSchema::JsonObjectSchema* jsonSchema;
             const EventDescriptor* reactiveTable;
+            const DeviceFunctionTable* functionTable;
             
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
@@ -56,7 +58,8 @@ namespace DALHAL {
             ) :
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
-                reactiveTable(nullptr)                
+                reactiveTable(nullptr),
+                functionTable(nullptr)              
             {}
 
             constexpr DefineBase(
@@ -66,7 +69,31 @@ namespace DALHAL {
             ) :
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
-                reactiveTable(reactiveTable)
+                reactiveTable(reactiveTable),
+                functionTable(nullptr)
+            {}
+
+            constexpr DefineBase(
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
+                const DeviceFunctionTable* functionTable
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(nullptr),
+                functionTable(functionTable)              
+            {}
+
+            constexpr DefineBase(
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
+                const EventDescriptor* reactiveTable,
+                const DeviceFunctionTable* functionTable
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(reactiveTable),
+                functionTable(functionTable)
             {}
         };
         

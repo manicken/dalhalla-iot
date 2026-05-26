@@ -23,6 +23,8 @@
 
 #include "DALHAL_Registry.h"
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 namespace DALHAL {
 
     namespace Registry {
@@ -59,6 +61,12 @@ namespace DALHAL {
                     }
                 }
                 ret += ']';
+                ret += ",\"functions\":{";
+                if (regItem->def->functionTable != nullptr) {
+                    
+                    ret += regItem->def->functionTable->ToString();
+                }
+                ret += '}';
                 ret += '}';
             }
             ret += ']';

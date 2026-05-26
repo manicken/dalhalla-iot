@@ -35,7 +35,7 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariableReadOnly::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariableReadOnly::Root,
-        nullptr /* no events available */
+        /*nullptr*/ /* no events available */
     };
     //volatile const void* keep_ScriptVariableReadOnly = &DALHAL::ScriptVariableReadOnly::RegistryDefine;
     

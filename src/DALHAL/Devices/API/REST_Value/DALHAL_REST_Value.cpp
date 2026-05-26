@@ -37,7 +37,7 @@ namespace DALHAL {
     constexpr Registry::DefineBase REST_Value::RegistryDefine = {
         Create,
         &JsonSchema::REST_Value::Root,
-        nullptr /* no events available on obsolete device*/
+        /*nullptr*/ /* no events available on obsolete device*/
     };
     //volatile const void* keep_REST_Value = &DALHAL::REST_Value::RegistryDefine;
 

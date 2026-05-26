@@ -53,7 +53,7 @@ namespace DALHAL {
     constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
         Create,
         &JsonSchema::HomeAssistant::Root,
-        nullptr /* no events available */
+        /*nullptr*/ /* no events available */
     };
     //volatile const void* keep_HomeAssistant = &DALHAL::HomeAssistant::RegistryDefine;
 

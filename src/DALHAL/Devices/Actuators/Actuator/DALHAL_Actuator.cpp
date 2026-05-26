@@ -25,6 +25,7 @@
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 #include "DALHAL_Actuator_JSON_Schema.h"
 
@@ -34,9 +35,43 @@ namespace DALHAL {
     constexpr Registry::DefineBase Actuator::RegistryDefine = {
         Create,
         &JsonSchema::Actuator::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR)
+        DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR),
+        &Actuator::FunctionTable
     };
     //volatile const void* keep_Actuator = &DALHAL::Actuator::RegistryDefine;
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Actuator::execFunctions[] = {
+        {"close", &exec_drive_to_min, "close/drive to min"},
+        {"open", &exec_drive_to_max, "open/drive to max"},
+        {"toMin", &exec_drive_to_min, "drive to min"},
+        {"toMax", &exec_drive_to_max, "drive to max"},
+        {"stop", &exec_stop, "stops the actuator"},
+        {"reset", &exec_reset, "stop the actuator and reset the internal states"},
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> Actuator::readStringFunctions[] = {
+        {"endstops", &getEndstops, "gets the endstops"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> Actuator::readValueFunctions[] = {
+        {"minEndStop", &getMinEndstop, "get min endstop state"},
+        {"maxEndStop", &getMaxEndstop, "get max endstop state"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable Actuator::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
+        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>
+    };
+    
 
     Device* Actuator::Create(DeviceCreateContext& context) {
         return new Actuator(context);
@@ -270,7 +305,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    HALOperationResult Actuator::exec_drive_to_min(Device* device) {
+    /*static*/ HALOperationResult Actuator::exec_drive_to_min(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMin(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -279,7 +314,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_drive_to_max(Device* device) {
+    /*static*/ HALOperationResult Actuator::exec_drive_to_max(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMax(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -288,7 +323,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_stop(Device* device) {
+    /*static*/ HALOperationResult Actuator::exec_stop(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
         static_cast<Actuator*>(device)->triggerExec();
@@ -296,7 +331,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Actuator::exec_reset(Device* device) {
+    /*static*/ HALOperationResult Actuator::exec_reset(Device* device) {
         static_cast<Actuator*>(device)->reset();
         static_cast<Actuator*>(device)->stopDrive();
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -306,7 +341,9 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
+       return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
+
+       /* if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
             return exec_drive_to_min;
         } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
             return exec_drive_to_max;
@@ -316,10 +353,15 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             return exec_reset;
         } else {
             return nullptr;
-        }
+        }*/
     }
 
     HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
+        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+
+        fn(this);
+        /*
         if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
             driveToMin();
         } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
@@ -331,10 +373,11 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             stopDrive();   
         } else {
             return HALOperationResult::UnsupportedCommand;
-        }
-#if HAS_REACTIVE_EXEC(ACTUATOR)
-        triggerExec();
-#endif
+        }*/
+// the following is not needed as it's executed by the fn call above
+//#if HAS_REACTIVE_EXEC(ACTUATOR)
+//        triggerExec();
+//#endif
         return HALOperationResult::Success;
     }
 
@@ -365,7 +408,40 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
+    /*static*/ HALOperationResult Actuator::getEndstops(Device* device, const HALReadStringRequestValue& val) {
+        val.out_value += "\"min\":";
+        val.out_value += static_cast<Actuator*>(device)->endMinActive() ? "true":"false";
+        val.out_value += ',';
+        val.out_value += "\"max\":";
+        val.out_value += static_cast<Actuator*>(device)->endMaxActive() ? "true":"false";
+
+        return HALOperationResult::Success;
+    }
+
+    /*virtual*/ HALOperationResult Actuator::read(const HALReadValueByCmd& val) /*override*/ {
+        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.out_value);
+    }
+
+    /*static*/ HALOperationResult Actuator::getMinEndstop(Device* device, HALValue& val) {
+        val = static_cast<Actuator*>(device)->endMinActive();
+        return HALOperationResult::Success;
+    }
+
+    /*static*/ HALOperationResult Actuator::getMaxEndstop(Device* device, HALValue& val) {
+        val = static_cast<Actuator*>(device)->endMaxActive();
+        return HALOperationResult::Success;
+    }
+
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        //Exec_FuncType fn = GetExec_Function(cmd);
+
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+
+        return fn(this, val);
+/*
         if (val.cmd.EqualsIC(F("endstops"))) {
             val.out_value += "\"min\":";
             val.out_value += endMinActive() ? "true":"false";
@@ -376,7 +452,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
             return HALOperationResult::Success;
         } else {
             return HALOperationResult::UnsupportedCommand;
-        }
+        }*/
     }
 
     HALOperationResult Actuator::read(HALValue& val) {
