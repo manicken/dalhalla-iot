@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 
 #include <Wire.h>
 

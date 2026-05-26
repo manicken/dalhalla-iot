@@ -31,7 +31,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #include <DALHAL/Config/DALHAL_BuildFlags.h>

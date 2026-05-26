@@ -32,8 +32,8 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>
 

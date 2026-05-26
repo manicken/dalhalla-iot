@@ -23,7 +23,7 @@
 
 #include "DALHAL_Display_SSD1306.h"
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 

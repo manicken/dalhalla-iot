@@ -23,7 +23,7 @@
 
 #pragma once
 #include <Arduino.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h> // HALOperationResult
+#include <DALHAL/Core/Types/DALHAL_Device.h> // HALOperationResult
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include "DALHAL_SCRIPT_ENGINE_LogicExecNode.h"
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h"

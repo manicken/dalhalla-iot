@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
+#include <DALHAL/Core/Types/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 

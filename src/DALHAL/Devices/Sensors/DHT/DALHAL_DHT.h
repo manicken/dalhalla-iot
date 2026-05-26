@@ -30,7 +30,7 @@
 #include <DHTesp.h>
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 
  /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
 #define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000

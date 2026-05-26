@@ -31,7 +31,7 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h> // uses a modded PubSubClient placed in /lib folder
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_Device.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>

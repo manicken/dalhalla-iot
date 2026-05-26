@@ -29,7 +29,7 @@
 
 #include <string>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #define DALHAL_DEVICE_ACTUATOR_CMD_OPEN   "open"

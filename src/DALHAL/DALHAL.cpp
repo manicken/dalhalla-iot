@@ -73,7 +73,7 @@ namespace DALHAL {
             CommandExecutor_UNLOCK_QUEUE();
 
             ZeroCopyString zcCmd(pr.command.c_str());
-            bool ok = CommandExecutor::execute(zcCmd, pr.cb);
+            /*bool ok = */CommandExecutor::execute(zcCmd, pr.cb);
         }
 
         long currmillis = millis();

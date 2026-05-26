@@ -24,10 +24,10 @@
 #pragma once
 
 #include <Arduino.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h> // HALOperationResult
+#include <DALHAL/Core/Types/DALHAL_Device.h> // HALOperationResult
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include "DALHAL_SCRIPT_ENGINE_CalcRPN.h"
-#include <DALHAL/Core/Device/DALHAL_CachedDeviceAccess.h>
+#include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
 
 

@@ -25,7 +25,7 @@
 
 #include "DALHAL_HA_CreateFunctionContext.h"
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 
 //#include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
 

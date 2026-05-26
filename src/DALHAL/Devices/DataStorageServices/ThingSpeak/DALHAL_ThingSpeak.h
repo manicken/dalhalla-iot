@@ -30,8 +30,8 @@
 
 #include <DALHAL/Core/Types/DALHAL_FlexibleString.h>
 
-#include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_CachedDeviceRead.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #if defined(ESP8266)

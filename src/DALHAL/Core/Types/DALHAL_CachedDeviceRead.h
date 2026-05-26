@@ -29,7 +29,7 @@
 #include <ArduinoJson.h>
 #include <stdlib.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 

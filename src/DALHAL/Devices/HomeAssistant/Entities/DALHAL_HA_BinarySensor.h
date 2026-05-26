@@ -33,8 +33,8 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
-#include <DALHAL/Core/Device/DALHAL_CachedDeviceRead.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Core/Types/DALHAL_Consumer.h>
 

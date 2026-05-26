@@ -27,7 +27,7 @@
 #include <string>
 #include <ArduinoJson.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {

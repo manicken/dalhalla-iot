@@ -26,7 +26,7 @@
 #include <PubSubClient.h>
 #include <string>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include "DALHAL_HA_Device.h"
 
 namespace DALHAL {

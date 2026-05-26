@@ -29,7 +29,7 @@
 #include <ArduinoJson.h>
 #include <Wire.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>

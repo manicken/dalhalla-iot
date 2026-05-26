@@ -28,7 +28,7 @@
 #include <Arduino.h> // Needed for String class
 #include <ArduinoJson.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #define DALHAL_KEYNAME_TX433_UNITS "units"

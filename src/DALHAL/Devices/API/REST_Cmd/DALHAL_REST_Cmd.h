@@ -24,7 +24,7 @@
 
 #include <Arduino.h> // to use the dammed String as WiFi client dont support anything else
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 namespace DALHAL {

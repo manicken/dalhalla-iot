@@ -40,7 +40,7 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include <DALHAL/Core/Device/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Device.h>
 #include "Core/DALHAL_HA_Device.h"
 #include "Core/DALHAL_HA_DeviceEntity.h"
 #include <System/DeviceUID.h> // getDeviceUID
