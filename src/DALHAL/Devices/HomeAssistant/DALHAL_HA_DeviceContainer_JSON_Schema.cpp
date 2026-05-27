@@ -40,7 +40,7 @@ namespace DALHAL {
 
         namespace HA_DeviceContainer {
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -61,17 +61,16 @@ namespace DALHAL {
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
                 const JsonArray& jsonArray = JsonSchema::HA_DeviceContainer::itemsField.GetValidatedJsonArray(*(context.jsonObjItem));
                 
-                uint32_t deviceCountTmp = 0;
+                out->deviceCount = 0;
                 int arraySize = jsonArray.size();
 
                 // First pass: count valid entries
                 for (int i=0;i<arraySize;i++) {
                     if (Device::DisabledOrCommentItem(jsonArray[i])) { continue; } // comment or disabled item
-                    deviceCountTmp++;
+                    out->deviceCount++;
                 }
-                
-                out->deviceCount = deviceCountTmp;
-                if (deviceCountTmp == 0) {
+ 
+                if (out->deviceCount == 0) {
                     out->devices = nullptr;
                     GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
                                         "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
@@ -79,7 +78,7 @@ namespace DALHAL {
                 }
 
                 // Allocate space for all devices
-                out->devices = new Device*[deviceCountTmp]();
+                out->devices = new Device*[out->deviceCount]();
 
 
                 if (out->devices == nullptr) {
@@ -102,7 +101,7 @@ namespace DALHAL {
                     context.deviceType = regItem.typeName;
                     out->devices[index++] = (HA_Device*)regItem.def->Create_Function(context);
                 }
-                std::string devCountStr = std::to_string(deviceCountTmp);
+                std::string devCountStr = std::to_string(out->deviceCount);
                 GlobalLogger.Info(F("Created sub devices: "), devCountStr.c_str());
             }
 

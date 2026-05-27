@@ -132,4 +132,35 @@ namespace DALHAL {
         return ret;
     }
 
+    HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
+        if (val.cmd.EqualsIC("getLastUrlApi")) {
+            val.out_value = urlApi;
+            return HALOperationResult::Success;
+        } else if (val.cmd.EqualsIC("simulateSend")) {
+            urlApi.clear();
+            ts_root_url.appendTo(urlApi);
+            //urlApi += ts_root_url;
+            urlApi += api_key;
+            for (int i=0;i<fieldCount;i++) {
+                ThingSpeakField& field = fields[i];
+                
+                if (field.DataReady() == false) continue; // skip values that have not currently been changed
+                HALValue val;
+                HALOperationResult hres = field.cdr->ReadSimple(val);
+                if (hres != HALOperationResult::Success) continue;
+                if (val.isNaN()) continue; // allows devices that have not been read currently to signal not set values
+                
+                urlApi += "&field";
+                urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
+                urlApi += '=';
+                val.appendToString(urlApi);
+            }
+
+            val.out_value = urlApi;
+            return HALOperationResult::Success;
+        }
+        return HALOperationResult::UnsupportedCommand;
+        
+    }
+
 }

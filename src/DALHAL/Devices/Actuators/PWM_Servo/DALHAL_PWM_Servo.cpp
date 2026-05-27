@@ -44,6 +44,23 @@ namespace DALHAL {
     };
     //volatile const void* keep_PWM_Servo = &DALHAL::PWM_Servo::RegistryDefine;
 
+    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> PWM_Servo::writeValueFunctions[] = {
+        {"ratio", &writeAsRatio, "set value explicit as ratio", FunctionValueType::_Number_},
+        {"pulse", &writeAsPulseLength, "set value explicit as pulse", FunctionValueType::_UInt_},
+        {"", &writeByInternalMode, "general write using the preselected mode", FunctionValueType::_Number_}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable PWM_Servo::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
+        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
+
     Device* PWM_Servo::Create(DeviceCreateContext& context) {
         return new PWM_Servo(context);
     }
@@ -67,7 +84,7 @@ namespace DALHAL {
         ledcDetachPin(pin);
         //ledcWrite(ledcChannel, 0);
 #elif defined(ESP8266)
-
+        pinMode(pin, INPUT);
 #endif
     }
 
@@ -123,10 +140,16 @@ namespace DALHAL {
         uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
         ledcWrite(pwmChannel, duty);
 #elif defined(ESP8266)
-
+        pinMode(pin, OUTPUT);        
+        analogWriteFreq(DALHAL_LEDC_SERVO_PWM_FREQ);
+        analogWriteResolution(DALHAL_LEDC_SERVO_RESOLUTION_BITS);
+        uint32_t pulseUs = startPulseLength + pulseLengthOffset;
+        uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
+        analogWrite(pin, duty);
 #endif
     }
 
+    /*virtual override*/
     void PWM_Servo::loop() {
         if (autoOffActive == false) return; // this will only be set to true when writing and autoOffAfterMs != 0
         uint32_t now = millis();
@@ -135,80 +158,55 @@ namespace DALHAL {
 #if defined(ESP32)
             ledcWrite(pwmChannel, 0); // turn pwm off
 #elif defined(ESP8266)
-
+            analogWrite(pin, 0);
 #endif
         }
     }
 
+    /*virtual override*/
     HALOperationResult PWM_Servo::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
-        uint32_t pulseUs = 0;
         if (valueType == ServoValueType::Ratio) {
             float fVal = val.toFloat();
             if (fVal < minVal || fVal > maxVal) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
             printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
-            pulseUs = ratioValueTypeToPulse(fVal, true);
+            writeAsPulseLength(ratioValueTypeToPulse(fVal, true) + pulseLengthOffset);
         } else if (valueType == ServoValueType::PulseUS) {
             uint32_t uiVal = val.toUInt();
             if (uiVal < minPulseLength || uiVal > maxPulseLength) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
-            pulseUs = uiVal;
+            writeAsPulseLength(uiVal + pulseLengthOffset);
         } else { // should never happend
             return HALOperationResult::UnsupportedOperation;
         }
-        pulseUs += pulseLengthOffset;
-        printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
-#if defined(ESP32)
-        uint32_t duty = (pulseUs * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
-
-        ledcWrite(pwmChannel, duty);
-#elif defined(ESP8266)
-
-#endif
+        
         if (autoOffAfterMs != 0) {
             autoOffActive = true;
             lastWriteMs = millis();
         }
         lastValue = val;
-#if HAS_REACTIVE_WRITE(PWM_SERVO)
-        triggerWrite();
-#endif
+
         return HALOperationResult::Success;
     }
 
-    HALOperationResult PWM_Servo::write(const HALWriteStringRequestValue& val) {
-        uint32_t pulseUs = 0;
-        ZeroCopyString zcStr = val.value;
-        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.IsEmpty() || zcStr.IsEmpty() || (zcStr.ValidNumber() == false)) return HALOperationResult::InvalidArgument;
+    /*static*/
+    HALOperationResult PWM_Servo::writeByInternalMode(Device* device, const HALValue& val) {
+        return static_cast<PWM_Servo*>(device)->write(val);
+    }
 
-
-        if (zcCmd.EqualsIC(F("ratio"))) {
-            float fVal = 0.0f;
-            zcStr.ConvertTo_float(fVal);
-            //Serial.printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
-            pulseUs = ratioValueTypeToPulse(fVal, false);
-        } else if (zcCmd.EqualsIC(F("pulse"))) {
-            uint32_t uiVal = 0;
-            zcStr.ConvertTo_uint32(uiVal);
-            pulseUs = uiVal;
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }
-        
-    // Serial.printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
+    HALOperationResult PWM_Servo::writeAsPulseLength(uint32_t pulseUs) {
+        // Serial.printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
         uint32_t duty = (pulseUs * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
         //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
 #if defined(ESP32)
         ledcWrite(pwmChannel, duty);
 #elif defined(ESP8266)
-
+        analogWrite(pin, duty);
 #else
         printf("\r\n PWM_Servo write duty:%d\r\n", duty);
 #endif
@@ -223,6 +221,48 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
+    /*static*/
+    HALOperationResult PWM_Servo::writeAsRatio(Device* device, const HALValue& val) {
+        if (val.isNaN()) { return HALOperationResult::WriteValueNaN; }
+        uint32_t uiVal = static_cast<PWM_Servo*>(device)->ratioValueTypeToPulse(val.toFloat(), false);
+        return static_cast<PWM_Servo*>(device)->writeAsPulseLength(uiVal);
+    }
+    /*static*/
+    HALOperationResult PWM_Servo::writeAsPulseLength(Device* device, const HALValue& val) {
+        if (val.isNaN()) { return HALOperationResult::WriteValueNaN; }
+        return static_cast<PWM_Servo*>(device)->writeAsPulseLength(val.toUInt());
+    }
+
+    /*virtual override*/
+    HALOperationResult PWM_Servo::write(const HALWriteStringRequestValue& val) {
+        
+        ZeroCopyString zcStr = val.value;
+        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+        if (zcCmd.IsEmpty() || zcStr.IsEmpty() || (zcStr.ValidNumber() == false)) {
+            return HALOperationResult::InvalidArgument;
+        }
+
+        auto entry = GetDeviceFunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, zcCmd);
+        if (entry == nullptr) { return HALOperationResult::UnsupportedCommand; }
+
+        if (FunctionValueType::HasFlag(entry->rwTypeMask, FunctionValueType::_UInt_)) {
+            uint32_t iVal;
+            if (zcStr.ConvertTo_uint32(iVal) == false) {
+                return HALOperationResult::InvalidArgument;
+            }
+            return entry->fn(this, iVal);
+        }
+        else if (FunctionValueType::HasAnyFlag(entry->rwTypeMask, FunctionValueType::_Number_)) {
+            float fVal;
+            if (zcStr.ConvertTo_float(fVal) == false) {
+                return HALOperationResult::InvalidArgument;
+            }
+            return entry->fn(this, fVal);
+        }
+        return HALOperationResult::InvalidArgument;
+    }
+
+    /*virtual override*/
     HALOperationResult PWM_Servo::read(HALValue& val) {
         val = lastValue;
 #if HAS_REACTIVE(PWM_SERVO, READ)
@@ -231,6 +271,7 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
+    /*virtual override*/
     String PWM_Servo::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;
@@ -245,6 +286,7 @@ namespace DALHAL {
         ret += std::to_string(pwmChannel).c_str();
         return ret;
     }
+
     uint32_t PWM_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {
         float ratio = (fVal - minVal) / (maxVal - minVal);
 #if defined(ESP8266) || defined(ESP32)

@@ -63,7 +63,6 @@ namespace DALHAL {
                 ret += ']';
                 ret += ",\"functions\":{";
                 if (regItem->def->functionTable != nullptr) {
-                    
                     ret += regItem->def->functionTable->ToString();
                 }
                 ret += '}';

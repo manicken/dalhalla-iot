@@ -38,6 +38,9 @@
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
 namespace DALHAL {
+
+    // forward declaration
+    namespace Registry { struct DefineBase; }
     
     enum class DeviceFindResult {
         Success,
@@ -69,11 +72,14 @@ namespace DALHAL {
         virtual ~Device();
 
         HAL_UID uid;
+
+        virtual const Registry::DefineBase* GetRegistryDefine();
         
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);
         virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
         virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
+        /* TODO START: remove following functions in favor of function table */
         virtual HALOperationResult read(const HALReadStringRequestValue& val);
         virtual HALOperationResult write(const HALWriteStringRequestValue& val);
         virtual HALOperationResult read(const HALReadValueByCmd& val);
@@ -81,10 +87,19 @@ namespace DALHAL {
         virtual ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName);
         virtual WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
         virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
-        virtual HALValue* GetValueDirectAccessPtr();
-
         virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
         virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
+        /** 
+         * Executes a device action with a provided command string, 
+         * only used when doing remote cmd:s, i.e. not used by script.
+         * a special note: Home Assistant currently is using it to decode 
+         * state update
+         */
+        
+        virtual HALOperationResult exec(const ZeroCopyString& cmd);
+        /* TODO END: remove following functions in favor of function table */
+
+        virtual HALValue* GetValueDirectAccessPtr();
 
         virtual HALOperationResult Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** reactiveEventOut);
         
@@ -97,9 +112,7 @@ namespace DALHAL {
 
         /** Executes a device action that requires no parameters. */
         virtual HALOperationResult exec();
-        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        virtual HALOperationResult exec(const ZeroCopyString& cmd);
-
+        
         virtual String ToString();
 
         static bool DisabledOrCommentItem(const JsonVariant& jsonObj);

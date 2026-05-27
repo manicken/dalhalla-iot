@@ -39,7 +39,7 @@ namespace DALHAL {
 
         namespace TX433 {
 
-            constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Optional, TX433_UnitTypeRegistry, "ROOT.TX433"};
+            constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Required, EmptyPolicy::Error, TX433_UnitTypeRegistry, "ROOT.TX433"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group,
@@ -62,23 +62,30 @@ namespace DALHAL {
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(jsonObj));
                 out->pin = JsonSchema::CommonPins::OutputPinField.ExtractFrom(jsonObj);
 
-                // as this whole field is optional we first see if it exists
-                if (jsonObj.containsKey(JsonSchema::TX433::unitsField.name) == false) {
+                // if this is optional we first see if it exists
+                /*if (JsonSchema::TX433::unitsField.policy == FieldPolicy::Optional && jsonObj.containsKey(JsonSchema::TX433::unitsField.name) == false) {
+                    out->unitCount = 0;
+                    out->units = nullptr;
                     return;
-                }
+                }*/
                 // if it exists it's validated that it's a JsonArray so we can safely just do:
                 JsonArray jsonItems = JsonSchema::TX433::unitsField.GetValidatedJsonArray(jsonObj);
                 int jsonItems_count = jsonItems.size();
 
-                int unitCount = 0;
+                out->unitCount = 0;
                 // first pass count enabled and non comment items
                 for (int i=0;i<jsonItems_count;i++) {
                     if (Device::DisabledOrCommentItem(jsonItems[i]) == true) { continue; }
-                    unitCount++;
+                    out->unitCount++;
+                }
+                if (out->unitCount == 0) {
+                    out->units = nullptr;
+                    GlobalLogger.Error(F("TX433 JSON cfg does not contain any valid units!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
                 }
                 // second pass create units(devices)
-                out->units = new Device*[unitCount]();
-                out->unitCount = unitCount;
+                out->units = new Device*[out->unitCount]();
                 uint32_t index = 0;
                 TX433_Unit_CreateFunctionContext createContext(out->pin);
                 for (int i=0;i<jsonItems_count;i++) {

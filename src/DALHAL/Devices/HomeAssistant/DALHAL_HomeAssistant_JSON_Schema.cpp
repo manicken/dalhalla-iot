@@ -76,7 +76,7 @@ namespace DALHAL {
             };
             constexpr SchemaObject globalGroupField = {"group", FieldPolicy::ModeDefine, &globalGroupSchema};
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, EmptyPolicy::Error, DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
             constexpr const SchemaTypeBase* individualGroupFields[] = {&groupUIDField, &groupNameField, &itemsField, nullptr};
             constexpr JsonObjectSchema individualGroupSchema = {
@@ -87,7 +87,7 @@ namespace DALHAL {
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn,
             };
-            constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema};
+            constexpr SchemaArrayOfObjects individualGroupsField = {"groups", FieldPolicy::ModeDefine, &individualGroupSchema, EmptyPolicy::Error};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -167,15 +167,15 @@ namespace DALHAL {
                 const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObj);
                 int arrayCount = jsonArrayItems.size();
 
-                int validItemCount = 0;
+                self->deviceCount = 0;
                 // first pass count and check valid items
                 for (int i=0;i<arrayCount;i++) {
                     const JsonVariant& item = jsonArrayItems[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }
-                    validItemCount++;
+                    self->deviceCount++;
                 }
-                self->deviceCount = validItemCount;
-                self->devices = new Device*[validItemCount](); // create array and initialize all to nullptr
+                
+                self->devices = new Device*[self->deviceCount](); // create array and initialize all to nullptr
                 int index = 0;
                 // second pass create devices
                 const JsonVariant& groupObj = JsonSchema::HomeAssistant::globalGroupField.GetValidatedJsonObject(jsonObj);
@@ -194,7 +194,7 @@ namespace DALHAL {
                 const JsonArray& jsonArrayGroups = JsonSchema::HomeAssistant::individualGroupsField.GetValidatedJsonArray(jsonObj);
                 int jsonArrayGroupsCount = jsonArrayGroups.size();
                 
-                int activeItemCount = 0;
+                self->deviceCount = 0;
                 // first pass count enabled/"non comment" items
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
                     const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
@@ -203,13 +203,18 @@ namespace DALHAL {
                     for (int j=0;j<jsonArrayItemsCount;j++) {
                         const JsonVariant& item = jsonArrayItems[j];
                         if (Device::DisabledOrCommentItem(item)) { continue; }
-                        activeItemCount++;
+                        self->deviceCount++;
                     }
+                }
+                if (self->deviceCount == 0) {
+                    self->devices = nullptr;
+                    GlobalLogger.Error(F("HomeAssistant JSON cfg does not contain any valid items!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
                 }
 
                 // second pass create actual enabled/"non comment" items
-                self->deviceCount = activeItemCount;
-                self->devices = new Device*[activeItemCount]();
+                self->devices = new Device*[self->deviceCount]();
 
 
                 int newItemIndex = 0;

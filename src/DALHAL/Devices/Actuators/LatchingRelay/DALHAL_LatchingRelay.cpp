@@ -29,14 +29,53 @@
 
 namespace DALHAL {
 
-    __attribute__((used, externally_visible))
+    //__attribute__((used, externally_visible))
     constexpr Registry::DefineBase LatchingRelay::RegistryDefine = {
         Create,
         &JsonSchema::LatchingRelay::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING)
+        DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING),
+        &LatchingRelay::FunctionTable
     };
     //volatile const void* keep_LatchingRelay = &DALHAL::LatchingRelay::RegistryDefine;
 
+    /*virtual override*/
+    const Registry::DefineBase* LatchingRelay::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
+
+    //__attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> LatchingRelay::execFunctions[] = {
+        {"reset", &exec_drive_to_reset, "drive relay state to reset"},
+        {"set", &exec_drive_to_set, "drive relay state to set"},
+        {"toA", &exec_drive_to_set, "drive relay state to A"},
+        {"toB", &exec_drive_to_reset, "drive relay state to B"},
+        {"stop", &exec_stop, "stops the relay action"},
+        {"resetmode", &exec_resetMode, "stop the relay action and reset the internal states"},
+    };
+
+    //__attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> LatchingRelay::readStringFunctions[] = {
+        {"states", &getRelayStates, "gets the endstops"}
+    };
+
+    //__attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> LatchingRelay::readValueFunctions[] = {
+        {"resetActive", &getResetActive, "get if reset state is active", FunctionValueType::_Bool_},
+        {"setActive", &getSetActive, "get if set state is active", FunctionValueType::_Bool_}
+    };
+
+    //__attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable LatchingRelay::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
+        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>
+    };
+
+    /*static*/
     Device* LatchingRelay::Create(DeviceCreateContext& context) {
         return new LatchingRelay(context);
     }
@@ -46,6 +85,7 @@ namespace DALHAL {
         setup();
     }
 
+    /*override*/
     LatchingRelay::~LatchingRelay() {
 #if defined(ESP32)
         // FREE all used pins by setting them to INPUTS
@@ -146,6 +186,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 #endif
     }
 
+    /*static*/
     void IRAM_ATTR LatchingRelay::endstop_isr(void* arg) {
         LatchingRelay::ISR_DATA* isr_data = static_cast<LatchingRelay::ISR_DATA*>(arg);
 
@@ -164,8 +205,6 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         // signal to "main loop"
         isr_data->handled = true;
     }
-
-    
 
     void LatchingRelay::setup() {
         isr_data.location = Location::Unknown;
@@ -233,6 +272,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         stopDrive();
     }
 
+    /*virtual override*/
     void LatchingRelay::loop() {
         if (state == State::Idle) return;
         if (state == State::TimeoutFault) return;
@@ -270,8 +310,30 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
     }
 
-    
+    /*static*/ 
+    HALOperationResult LatchingRelay::getRelayStates(Device* device, std::string& outStr) {
+        outStr += "\"reset\":";
+        outStr += static_cast<LatchingRelay*>(device)->resetActive() ? "true":"false";
+        outStr += ',';
+        outStr += "\"set\":";
+        outStr += static_cast<LatchingRelay*>(device)->setActive() ? "true":"false";
 
+        return HALOperationResult::Success;
+    }
+
+    /*static*/
+    HALOperationResult LatchingRelay::getResetActive(Device* device, HALValue& val) {
+        val = static_cast<LatchingRelay*>(device)->resetActive();
+        return HALOperationResult::Success;
+    }
+
+    /*static*/
+    HALOperationResult LatchingRelay::getSetActive(Device* device, HALValue& val) {
+        val = static_cast<LatchingRelay*>(device)->setActive();
+        return HALOperationResult::Success;
+    }
+
+    /*static*/
     HALOperationResult LatchingRelay::exec_drive_to_reset(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
         static_cast<LatchingRelay*>(device)->driveToReset(); // direct call no vtable
@@ -281,6 +343,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
+    /*static*/
     HALOperationResult LatchingRelay::exec_drive_to_set(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
         static_cast<LatchingRelay*>(device)->driveToSet(); // direct call no vtable
@@ -290,6 +353,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
+    /*static*/
     HALOperationResult LatchingRelay::exec_stop(Device* device) {
         static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(RELAY_LATCHING)
@@ -298,6 +362,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
+    /*static*/
     HALOperationResult LatchingRelay::exec_resetMode(Device* device) {
         static_cast<LatchingRelay*>(device)->driveToReset();
         static_cast<LatchingRelay*>(device)->stopDrive();
@@ -307,55 +372,24 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-
     Device::Exec_FuncType LatchingRelay::GetExec_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_CLOSE || zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MIN) {
-            return exec_drive_to_reset;
-        } else if (zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_OPEN || zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
-            return exec_drive_to_set;
-        } else if (zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_STOP) {
-            return exec_stop;
-        } else if (zcFuncName == DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET) {
-            return exec_resetMode;
-        } else {
-            return nullptr;
-        }
+        return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
     }
 
+    /*virtual override*/
     HALOperationResult LatchingRelay::exec(const ZeroCopyString& cmd) {
-        if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_CLOSE || cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MIN) {
-            driveToReset();
-
-        } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_OPEN || cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_TO_MAX) {
-            driveToSet();
-
-        } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_STOP) {
-            stopDrive();
-
-        } else if (cmd == DALHAL_DEVICE_LATCHING_RELAY_CMD_RESET) {
-            resetMode();
-            stopDrive();
-            
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }
-#if HAS_REACTIVE_EXEC(RELAY_LATCHING)
-        triggerExec();
-#endif
-        return HALOperationResult::Success;
+        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this);
     }
 
-
+    /*virtual override*/
     HALOperationResult LatchingRelay::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (!val.isBoolCompatible()) { 
             GlobalLogger.Error(F("LatchingRelay::write !val.isBoolCompatible(): "), val.typeToString());
             return HALOperationResult::WriteValueNaN;
         }
-
-        //if (val.isUintOrInt() == false) {
-        //    return HALOperationResult::WriteValueNotUintOrInt;
-        //}
 
         int32_t v = val.toInt();
         if (v != 0 && v != 1) {
@@ -376,22 +410,21 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult LatchingRelay::read(const HALReadStringRequestValue& val) {
-        if (val.cmd.EqualsIC(F("endstops"))) {
-            val.out_value += "\"min\":";
-            val.out_value += resetActive() ? "true":"false";
-            val.out_value += ',';
-            val.out_value += "\"max\":";
-            val.out_value += setActive() ? "true":"false";
-#if HAS_REACTIVE(RELAY_LATCHING, READ)
-        triggerRead();
-#endif
-            return HALOperationResult::Success;
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }
+    /*virtual override*/ 
+    HALOperationResult LatchingRelay::read(const HALReadValueByCmd& val) /*override*/ {
+        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.out_value);
     }
 
+    /*virtual override*/
+    HALOperationResult LatchingRelay::read(const HALReadStringRequestValue& val) {
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.out_value);
+    }
+
+    /*virtual override*/
     HALOperationResult LatchingRelay::read(HALValue& val) {
         if (state == State::TimeoutFault) {
             return HALOperationResult::Timeout;

@@ -86,6 +86,7 @@ namespace DALHAL {
         ~ThingSpeak() override;
         
         HALOperationResult exec() override;
+        HALOperationResult read(const HALReadStringRequestValue& val) override;
 
         String ToString() override;
 

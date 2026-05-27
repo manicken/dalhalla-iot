@@ -34,6 +34,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 
 #define DALHAL_LEDC_SERVO_PWM_FREQ 50
@@ -52,58 +53,67 @@ using PWM_Servo_DeviceBase = DALHAL::Device;
 namespace DALHAL {
     namespace JsonSchema { namespace PWM_Servo { struct Extractors; } } // forward declaration
 
-class PWM_Servo : public PWM_Servo_DeviceBase {
-    friend struct JsonSchema::PWM_Servo::Extractors; // allow access to private memebers of this class from the schema extractor
+    class PWM_Servo : public PWM_Servo_DeviceBase {
+        friend struct JsonSchema::PWM_Servo::Extractors; // allow access to private memebers of this class from the schema extractor
 
-public: // public static fields and exposed external structures
-    static const Registry::DefineBase RegistryDefine;
-    static Device* Create(DeviceCreateContext& context);
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+        static Device* Create(DeviceCreateContext& context);
 
-private:
-    // private structures/enums/types
-    enum class ServoValueType {
-        Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
-        PulseUS,     // raw microseconds
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
+
+    private:
+        // private structures/enums/types
+        enum class ServoValueType {
+            Ratio,  // covers normalized [0..1], percent [0..100], degrees [-180..180] etc.
+            PulseUS,     // raw microseconds
+        };
+        
+        // private member data
+        ServoValueType valueType = ServoValueType::PulseUS;
+        float minVal;  // min for ratio type
+        float maxVal;  // max for ratio type
+        uint8_t pin = 0;
+
+        ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
+
+
+        HALValue lastValue = 0.0f;
+        uint32_t minPulseLength = 1000;
+        uint32_t maxPulseLength = 2000;
+        int32_t pulseLengthOffset = 0;
+
+        uint32_t startPulseLength = 1500;
+
+        
+
+        uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
+        uint32_t lastWriteMs = 0;
+        bool autoOffActive = false;
+        // private member functions
+        uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
+
+        static HALOperationResult writeByInternalMode(Device* device, const HALValue& val);
+        static HALOperationResult writeAsRatio(Device* device, const HALValue& val);
+        static HALOperationResult writeAsPulseLength(Device* device, const HALValue& val);
+
+        HALOperationResult writeAsPulseLength(uint32_t pulseUs);
+    public:
+        PWM_Servo(DeviceCreateContext& context);
+        ~PWM_Servo() override;
+        
+        void begin() override;
+        void loop() override;
+
+        HALOperationResult write(const HALValue& val) override;
+        HALOperationResult write(const HALWriteStringRequestValue& val) override;
+
+        HALOperationResult read(HALValue& val) override;
+
+        String ToString() override;
+
     };
-    
-    // private member data
-    ServoValueType valueType = ServoValueType::PulseUS;
-    float minVal;  // min for ratio type
-    float maxVal;  // max for ratio type
-    uint8_t pin = 0;
-
-    ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
-
-
-    HALValue lastValue = 0.0f;
-    uint32_t minPulseLength = 1000;
-    uint32_t maxPulseLength = 2000;
-    int32_t pulseLengthOffset = 0;
-
-    uint32_t startPulseLength = 1500;
-
-    
-
-    uint32_t autoOffAfterMs = 0; // set to 0 mean this function is off otherwise the pwm is turned off after the given value
-    uint32_t lastWriteMs = 0;
-    bool autoOffActive = false;
-    // private member functions
-    uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
-
-public:
-    PWM_Servo(DeviceCreateContext& context);
-    ~PWM_Servo() override;
-    
-    void begin() override;
-    void loop() override;
-
-    HALOperationResult write(const HALValue& val) override;
-    HALOperationResult write(const HALWriteStringRequestValue& val) override;
-
-    HALOperationResult read(HALValue& val) override;
-
-    String ToString() override;
-
-};
 
 } // namespace DALHAL

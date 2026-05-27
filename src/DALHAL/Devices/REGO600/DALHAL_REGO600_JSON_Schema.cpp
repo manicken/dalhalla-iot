@@ -93,6 +93,13 @@ namespace DALHAL {
                     if (Device::DisabledOrCommentItem(items[i])) { continue; }
                     out->registerItemCount++;
                 }
+                if (out->registerItemCount == 0) {
+                    out->requestList = nullptr;
+                    out->registerItems = nullptr;
+                    GlobalLogger.Error(F("REGO600 JSON cfg does not contain any valid items!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
+                }
                 // second pass
                 out->requestList = new Drivers::REGO600::Request*[out->registerItemCount]();
                 out->registerItems = new Device*[out->registerItemCount]();

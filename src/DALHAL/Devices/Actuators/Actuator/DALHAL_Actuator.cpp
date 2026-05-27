@@ -40,14 +40,19 @@ namespace DALHAL {
     };
     //volatile const void* keep_Actuator = &DALHAL::Actuator::RegistryDefine;
 
+    /*virtual override*/
+    const Registry::DefineBase* Actuator::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
+
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Actuator::execFunctions[] = {
-        {"close", &exec_drive_to_min, "close/drive to min"},
-        {"open", &exec_drive_to_max, "open/drive to max"},
+        {"close", &exec_drive_to_min, "drive to close/min"},
+        {"open", &exec_drive_to_max, "drive to open/max"},
         {"toMin", &exec_drive_to_min, "drive to min"},
         {"toMax", &exec_drive_to_max, "drive to max"},
         {"stop", &exec_stop, "stops the actuator"},
-        {"reset", &exec_reset, "stop the actuator and reset the internal states"},
+        {"resetmode", &exec_reset, "stop the actuator and reset the internal states"},
     };
 
     __attribute__((used, externally_visible))
@@ -57,8 +62,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> Actuator::readValueFunctions[] = {
-        {"minEndStop", &getMinEndstop, "get min endstop state"},
-        {"maxEndStop", &getMaxEndstop, "get max endstop state"}
+        {"minEndStop", &getMinEndstop, "get min endstop state", FunctionValueType::_Bool_},
+        {"maxEndStop", &getMaxEndstop, "get max endstop state", FunctionValueType::_Bool_}
     };
 
     __attribute__((used, externally_visible))
@@ -72,7 +77,7 @@ namespace DALHAL {
         EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>
     };
     
-
+    /*static*/
     Device* Actuator::Create(DeviceCreateContext& context) {
         return new Actuator(context);
     }
@@ -122,6 +127,46 @@ namespace DALHAL {
 #endif
     }
 
+    /*virtual override*/
+    void Actuator::loop() {
+        if (state == State::Idle) return;
+        if (state == State::TimeoutFault) return;
+        if (isr_data.handled) {
+            isr_data.handled = false;
+            if (isr_data.driveOn) {
+                isr_data.driveOn = false;
+                stopDrive(); // if for some reason the ISR missed it
+                printf("\r\nWarning - ISR have not turned off the motor.\r\n");
+            }
+            if (state == State::MovingToMin) {
+                isr_data.location = Location::Min;
+#if HAS_REACTIVE_CUSTOM(ACTUATOR)
+                triggerReachedMin();
+#endif
+
+            } else if (state == State::MovingToMax) {
+                isr_data.location = Location::Max;
+#if HAS_REACTIVE_CUSTOM(ACTUATOR)
+                triggerReachedMax();
+#endif
+            }
+#if HAS_REACTIVE_STATE_CHANGE(ACTUATOR)
+            triggerStateChange();
+#endif
+            state = State::Idle;
+            
+            return;
+        }
+        
+        if ((millis() - motionStartMs) > timeoutMs) {
+            stopDrive();
+            state = State::TimeoutFault;
+            isr_data.location = Location::Unknown;
+            GlobalLogger.Error(F("Actuator motion timeout"), decodeUID(uid).c_str());
+            return;
+        }
+    }
+
 
 #if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
     static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
@@ -151,7 +196,7 @@ namespace DALHAL {
 
 #endif
 
-void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
+    void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         isr_data.handled = false;
         isr_data.driveOn = true;
         isr_data.gpio_currentPin = somePin;
@@ -183,6 +228,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 #endif
     }
 
+    /*static*/
     void IRAM_ATTR Actuator::endstop_isr(void* arg) {
         Actuator::ISR_DATA* isr_data = static_cast<Actuator::ISR_DATA*>(arg);
 
@@ -266,46 +312,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         stopDrive();
     }
 
-    void Actuator::loop() {
-        if (state == State::Idle) return;
-        if (state == State::TimeoutFault) return;
-        if (isr_data.handled) {
-            isr_data.handled = false;
-            if (isr_data.driveOn) {
-                isr_data.driveOn = false;
-                stopDrive(); // if for some reason the ISR missed it
-                printf("\r\nWarning - ISR have not turned off the motor.\r\n");
-            }
-            if (state == State::MovingToMin) {
-                isr_data.location = Location::Min;
-#if HAS_REACTIVE_CUSTOM(ACTUATOR)
-                triggerReachedMin();
-#endif
-
-            } else if (state == State::MovingToMax) {
-                isr_data.location = Location::Max;
-#if HAS_REACTIVE_CUSTOM(ACTUATOR)
-                triggerReachedMax();
-#endif
-            }
-#if HAS_REACTIVE_STATE_CHANGE(ACTUATOR)
-            triggerStateChange();
-#endif
-            state = State::Idle;
-            
-            return;
-        }
-        
-        if ((millis() - motionStartMs) > timeoutMs) {
-            stopDrive();
-            state = State::TimeoutFault;
-            isr_data.location = Location::Unknown;
-            GlobalLogger.Error(F("Actuator motion timeout"), decodeUID(uid).c_str());
-            return;
-        }
-    }
-
-    /*static*/ HALOperationResult Actuator::exec_drive_to_min(Device* device) {
+    /*static*/
+    HALOperationResult Actuator::exec_drive_to_min(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMin(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -314,7 +322,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    /*static*/ HALOperationResult Actuator::exec_drive_to_max(Device* device) {
+    /*static*/
+    HALOperationResult Actuator::exec_drive_to_max(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
         static_cast<Actuator*>(device)->driveToMax(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -323,7 +332,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    /*static*/ HALOperationResult Actuator::exec_stop(Device* device) {
+    /*static*/
+    HALOperationResult Actuator::exec_stop(Device* device) {
         static_cast<Actuator*>(device)->stopDrive(); // direct call no vtable
 #if HAS_REACTIVE_EXEC(ACTUATOR)
         static_cast<Actuator*>(device)->triggerExec();
@@ -331,7 +341,8 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    /*static*/ HALOperationResult Actuator::exec_reset(Device* device) {
+    /*static*/
+    HALOperationResult Actuator::exec_reset(Device* device) {
         static_cast<Actuator*>(device)->reset();
         static_cast<Actuator*>(device)->stopDrive();
 #if HAS_REACTIVE_EXEC(ACTUATOR)
@@ -340,54 +351,46 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-       return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
+    /*static*/ 
+    HALOperationResult Actuator::getEndstops(Device* device, std::string& outStr) {
+        outStr += "\"min\":";
+        outStr += static_cast<Actuator*>(device)->endMinActive() ? "true":"false";
+        outStr += ',';
+        outStr += "\"max\":";
+        outStr += static_cast<Actuator*>(device)->endMaxActive() ? "true":"false";
 
-       /* if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
-            return exec_drive_to_min;
-        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
-            return exec_drive_to_max;
-        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_STOP))) {
-            return exec_stop;
-        } else if (zcFuncName.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_RESET))) {
-            return exec_reset;
-        } else {
-            return nullptr;
-        }*/
-    }
-
-    HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-
-        fn(this);
-        /*
-        if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_CLOSE)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN))) {
-            driveToMin();
-        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_OPEN)) || cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX))) {
-            driveToMax();
-        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_STOP))) {
-            stopDrive();
-        } else if (cmd.EqualsIC(F(DALHAL_DEVICE_ACTUATOR_CMD_RESET))) {
-            reset();
-            stopDrive();   
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }*/
-// the following is not needed as it's executed by the fn call above
-//#if HAS_REACTIVE_EXEC(ACTUATOR)
-//        triggerExec();
-//#endif
         return HALOperationResult::Success;
     }
 
+    /*static*/
+    HALOperationResult Actuator::getMinEndstop(Device* device, HALValue& val) {
+        val = static_cast<Actuator*>(device)->endMinActive();
+        return HALOperationResult::Success;
+    }
+
+    /*static*/
+    HALOperationResult Actuator::getMaxEndstop(Device* device, HALValue& val) {
+        val = static_cast<Actuator*>(device)->endMaxActive();
+        return HALOperationResult::Success;
+    }
+
+
+    /*virtual override*/ 
+    Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
+       return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
+    }
+
+    /*virtual override*/ 
+    HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
+        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this);
+    }
+
+    /*virtual override*/ 
     HALOperationResult Actuator::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
-
-        //if (val.isUintOrInt() == false) {
-        //    return HALOperationResult::WriteValueNotUintOrInt;
-        //}
 
         int32_t v = val.toInt();
         if (v != 0 && v != 1) {
@@ -408,53 +411,21 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    /*static*/ HALOperationResult Actuator::getEndstops(Device* device, const HALReadStringRequestValue& val) {
-        val.out_value += "\"min\":";
-        val.out_value += static_cast<Actuator*>(device)->endMinActive() ? "true":"false";
-        val.out_value += ',';
-        val.out_value += "\"max\":";
-        val.out_value += static_cast<Actuator*>(device)->endMaxActive() ? "true":"false";
-
-        return HALOperationResult::Success;
-    }
-
-    /*virtual*/ HALOperationResult Actuator::read(const HALReadValueByCmd& val) /*override*/ {
+    /*virtual override*/ 
+    HALOperationResult Actuator::read(const HALReadValueByCmd& val) {
         DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.out_value);
     }
 
-    /*static*/ HALOperationResult Actuator::getMinEndstop(Device* device, HALValue& val) {
-        val = static_cast<Actuator*>(device)->endMinActive();
-        return HALOperationResult::Success;
-    }
-
-    /*static*/ HALOperationResult Actuator::getMaxEndstop(Device* device, HALValue& val) {
-        val = static_cast<Actuator*>(device)->endMaxActive();
-        return HALOperationResult::Success;
-    }
-
+    /*virtual override*/
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
         DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
-        //Exec_FuncType fn = GetExec_Function(cmd);
-
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-
-        return fn(this, val);
-/*
-        if (val.cmd.EqualsIC(F("endstops"))) {
-            val.out_value += "\"min\":";
-            val.out_value += endMinActive() ? "true":"false";
-            val.out_value += ',';
-            val.out_value += "\"max\":";
-            val.out_value += endMaxActive() ? "true":"false";
-
-            return HALOperationResult::Success;
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }*/
+        return fn(this, val.out_value);
     }
 
+    /*virtual override*/
     HALOperationResult Actuator::read(HALValue& val) {
         if (state == State::TimeoutFault) {
             return HALOperationResult::Timeout;
@@ -610,6 +581,7 @@ void Actuator::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 #endif
     }
 
+    /*virtual override*/
     String Actuator::ToString() {
         String ret;
         ret += DeviceConstStrings::uid;

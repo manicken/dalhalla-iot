@@ -57,7 +57,7 @@ namespace DALHAL {
             constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (unsigned int)1, (unsigned int)64, (unsigned int)1};
             constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
-            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &JsonSchema::Display_SSD1306_Element::Root};
+            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &JsonSchema::Display_SSD1306_Element::Root, EmptyPolicy::Error };
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -104,14 +104,13 @@ namespace DALHAL {
 
                 int itemCount = items.size();
                 // first pass count valid items
-                size_t validItemCount = 0;
+                out->elementCount = 0;
                 for (int i=0;i<itemCount;i++) {
                     if (Device::DisabledOrCommentItem(items[i])) { continue; }
-                    validItemCount++;
+                    out->elementCount++;
                 }
                 // second pass actually create the devices
-                out->elementCount = validItemCount;
-                out->elements = new Device*[validItemCount]();
+                out->elements = new Device*[out->elementCount]();
                 int index = 0;
                 DeviceCreateContext createContext;
                 createContext.deviceType = "Display_SSD1306_Element";

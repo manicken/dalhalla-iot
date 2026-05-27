@@ -49,7 +49,7 @@ namespace DALHAL {
             constexpr SchemaUInt freqField = {"freq", FieldPolicy::Optional, (unsigned int)(100*1000)};
             constexpr SchemaUInt busindexField = {"busindex", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)1};
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, I2C_DeviceRegistry, "ROOT.I2C_Master"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -91,15 +91,20 @@ namespace DALHAL {
 
                 int itemCount = items.size();
                 // first pass count valid items
-                size_t validItemCount = 0;
+                out->deviceCount = 0;
                 for (int i=0;i<itemCount;i++) {
                     const JsonVariant& item = items[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }
-                    validItemCount++;
+                    out->deviceCount++;
+                }
+                if (out->deviceCount == 0) {
+                    out->devices = nullptr;
+                    GlobalLogger.Error(F("I2C MASTER JSON cfg does not contain any valid items!\n" 
+                                        "Hint: Check that all entries have 'type' and 'uid' fields, and match known types."));
+                    return;
                 }
                 // second pass actually create the devices
-                out->deviceCount = validItemCount;
-                out->devices = new Device*[validItemCount]();
+                out->devices = new Device*[out->deviceCount]();
                 int index = 0;
                 I2C_Master_CreateFunctionContext createContext(*out->wire);
                 for (int i=0;i<itemCount;i++) {

@@ -23,6 +23,8 @@
 
 #include "DALHAL_Device.h"
 
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
@@ -65,7 +67,9 @@ namespace DALHAL {
     void Device::loop() {}
     void Device::begin() {}
 
-    
+    const Registry::DefineBase* Device::GetRegistryDefine() {
+        return nullptr;
+    }
 
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 

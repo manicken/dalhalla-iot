@@ -77,9 +77,11 @@ namespace DALHAL {
                 }
                 out->busses = new Device*[out->busCount]();
                 // second pass create busses
-                uint32_t index = 0;
+                
                 DeviceCreateContext createContext;
                 createContext.deviceType = "OneWireTempBus";
+                
+                uint32_t index = 0;
                 for (int i=0;i<itemCount;i++) {
                     const JsonVariant& item = items[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }

@@ -36,7 +36,56 @@
 #include <System/WiFiConnectionManager.h>
 #include <DALHAL/API/DALHAL_WebSocketAPI.h>
 
+#include <LittleFS.h>
+#include "esp_partition.h"
+#include "esp_system.h"
+
 #define BUILD_VER "1.0"
+
+/**
+ * Initialize crash handling system
+ */
+void saveCoreDumpToLittleFS()
+{
+    if (esp_reset_reason() != ESP_RST_PANIC) {
+        return;
+    }
+
+    const esp_partition_t* part =
+        esp_partition_find_first(
+            ESP_PARTITION_TYPE_DATA,
+            ESP_PARTITION_SUBTYPE_DATA_COREDUMP,
+            "coredump"
+        );
+
+    if (!part) {
+        Serial.println("No coredump partition found");
+        return;
+    }
+
+    size_t size = part->size;
+    uint8_t* buffer = (uint8_t*)malloc(4096);
+
+    if (!buffer) return;
+    LittleFS.begin();
+    File f = LittleFS.open("/last_core.dump", "w");
+    if (!f) {
+        free(buffer);
+        return;
+    }
+
+    for (size_t offset = 0; offset < size; offset += 4096) {
+        size_t chunk = (size - offset > 4096) ? 4096 : (size - offset);
+
+        esp_partition_read(part, offset, buffer, chunk);
+        f.write(buffer, chunk);
+    }
+
+    f.close();
+    free(buffer);
+
+    Serial.println("Core dump saved to LittleFS");
+}
 
 void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
@@ -166,6 +215,7 @@ void setup() {
 #endif
 
     if (Info::resetReason_is_crash(true)) {
+        saveCoreDumpToLittleFS();
         System::failsafeLoop();
     }
     DEBUG_UART.begin(115200);

@@ -36,4 +36,16 @@ namespace DALHAL {
         ret += ",\"bracketOpWrite\":"; ret += GetDeviceFunctions(bracketOpWrite);
         return ret;
     }
+
+    std::string FunctionValueType::ToString(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask) {
+        std::string ret;
+        bool notFirst = false;
+        ret += '[';
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; ret += "\"uint\""; }
+        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; ret += "\"int\""; }
+        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; ret += "\"float\""; }
+        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; ret += "\"bool\""; }
+        ret += ']';
+        return ret;
+    }
 }

@@ -79,10 +79,11 @@ namespace DALHAL {
                     out->deviceCount++;
                 }
                 out->devices = new Device*[static_cast<size_t>(out->deviceCount)]();
-                uint32_t index = 0;
+                
                 DeviceCreateContext createContext;
                 createContext.deviceType = "OneWireTempDevice";
 
+                uint32_t index = 0;
                 for (int i=0;i<itemCount;i++) {
                     const JsonVariant& item = items[i];
                     if (Device::DisabledOrCommentItem(item)) { continue; }

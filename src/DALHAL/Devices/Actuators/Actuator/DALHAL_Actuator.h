@@ -33,13 +33,6 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
-#define DALHAL_DEVICE_ACTUATOR_CMD_OPEN   "open"
-#define DALHAL_DEVICE_ACTUATOR_CMD_CLOSE  "close"
-#define DALHAL_DEVICE_ACTUATOR_CMD_TO_MIN "toMin"
-#define DALHAL_DEVICE_ACTUATOR_CMD_TO_MAX "toMax"
-#define DALHAL_DEVICE_ACTUATOR_CMD_STOP   "stop"
-#define DALHAL_DEVICE_ACTUATOR_CMD_RESET  "reset"
-
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
 #include "DALHAL_Actuator_Reactive.h"
@@ -61,8 +54,13 @@ namespace DALHAL {
 
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        static const DeviceFunctionTable FunctionTable;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
 
     private:
         union DrivePins {
@@ -81,13 +79,9 @@ namespace DALHAL {
         static HALOperationResult exec_drive_to_max(Device* device);
         static HALOperationResult exec_stop(Device* device);
         static HALOperationResult exec_reset(Device* device);
-        static HALOperationResult getEndstops(Device* device, const HALReadStringRequestValue& val);
+        static HALOperationResult getEndstops(Device* device, std::string& outStr);
         static HALOperationResult getMinEndstop(Device* device, HALValue& val);
         static HALOperationResult getMaxEndstop(Device* device, HALValue& val);
-
-        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
 
         // private structures/enums/types
         enum class GpioRegType {
@@ -119,8 +113,6 @@ namespace DALHAL {
 
         State state = State::Idle;
 
-        
-
         gpio_num_t pinMinEndStop;
         gpio_num_t pinMaxEndStop;
 
@@ -148,15 +140,16 @@ namespace DALHAL {
 
         virtual void loop() override;
 
+        virtual const Registry::DefineBase* GetRegistryDefine() override;
+
         virtual HALOperationResult write(const HALValue& val) override;
         virtual HALOperationResult read(HALValue& val) override;
         virtual HALOperationResult read(const HALReadValueByCmd& val) override;
-
         virtual HALOperationResult read(const HALReadStringRequestValue& val) override;
 
-        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
+        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
         /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        virtual HALOperationResult exec(const ZeroCopyString& cmd);
+        virtual HALOperationResult exec(const ZeroCopyString& cmd) override;
 
         virtual String ToString() override;
     };

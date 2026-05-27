@@ -39,7 +39,7 @@ namespace DALHAL {
 
         namespace DeviceContainer {
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, RootDevicesRegistry, "ROOT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, RootDevicesRegistry, "ROOT"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
@@ -62,16 +62,16 @@ namespace DALHAL {
 
                 const JsonArray& jsonArray = JsonSchema::DeviceContainer::itemsField.GetValidatedJsonArray(jsonObj);
                 
-                uint32_t deviceCountTmp = 0;
+                out->deviceCount = 0;
                 int arraySize = jsonArray.size();
 
                 // First pass: count valid entries
                 for (int i=0;i<arraySize;i++) {
                     if (Device::DisabledOrCommentItem(jsonArray[i]) == true) { continue; }
-                    deviceCountTmp++;
+                    out->deviceCount++;
                 }
                 
-                out->deviceCount = deviceCountTmp;
+                
                 if (out->deviceCount == 0) {
                     out->devices = nullptr;
                     GlobalLogger.Error(F("DeviceContainer JSON cfg does not contain any valid devices!\n" 
