@@ -67,10 +67,12 @@ if (!location_host.endsWith(":82")) location_host += ":82";
 
 let ws;
 let reconnectInterval = 2000; // 2 seconds
+let chunks = [];
+const decoder = new TextDecoder("utf-8");
 
 function connect() {
     ws = new WebSocket(`ws://${location_host}/ws`);
-
+    ws.binaryType = "arraybuffer";
     ws.onopen = () => {
         console.log("WebSocket connected");
         document.getElementById('log').textContent += "Connected\n";
@@ -78,29 +80,55 @@ function connect() {
 
     ws.onmessage = (evt) => {
         const log = document.getElementById('log');
+        if (typeof event.data === "string") {
 
-        let jsonData;
-        try {
-            jsonData = JSON.parse(evt.data);
-            // JSON detected — make it collapsible
-            const details = document.createElement('details');
-            const summary = document.createElement('summary');
-            const oneLine = JSON.stringify(jsonData);
-            summary.textContent = oneLine.length > 80 ? oneLine.substr(0, 77) + "  ..." : oneLine;
-            details.appendChild(summary);
+            let jsonData;
+            try {
+                jsonData = JSON.parse(evt.data);
+                if (jsonData.type && jsonData.type == "startchunked") {
+                    chunks = [];
+                    return;
+                } else if (jsonData.type && jsonData.type == "endchunked") {
+                    const totalSize =
+                    chunks.reduce((sum, c) => sum + c.length, 0);
 
-            const pre = document.createElement('pre');
-            pre.textContent = JSON.stringify(jsonData, null, 2); // nicely indented
-            details.appendChild(pre);
+                    const merged = new Uint8Array(totalSize);
 
-            log.appendChild(details);
-        } catch(e) {
-            // Not JSON, just print normally
-            const div = document.createElement('div');
-            div.style.whiteSpace = "pre-wrap";  // preserves newlines
-            div.style.fontFamily = "monospace"; // optional, for readability
-            div.textContent = evt.data;
-            log.appendChild(div);
+                    let offset = 0;
+                    for (const chunk of chunks) {
+                        merged.set(chunk, offset);
+                        offset += chunk.length;
+                    }
+
+                    const jsonText = decoder.decode(merged);
+
+                    jsonData = JSON.parse(jsonText);
+                }
+                // JSON detected — make it collapsible
+                const details = document.createElement('details');
+                const summary = document.createElement('summary');
+                const oneLine = JSON.stringify(jsonData);
+                summary.textContent = oneLine.length > 80 ? oneLine.substr(0, 77) + "  ..." : oneLine;
+                details.appendChild(summary);
+
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(jsonData, null, 2); // nicely indented
+                details.appendChild(pre);
+
+                log.appendChild(details);
+            } catch(e) {
+                // Not JSON, just print normally
+                const div = document.createElement('div');
+                div.style.whiteSpace = "pre-wrap";  // preserves newlines
+                div.style.fontFamily = "monospace"; // optional, for readability
+                div.textContent = evt.data;
+                log.appendChild(div);
+            }
+        } else {
+           // const text = decoder.decode(event.data);
+           // console.log(text);
+            chunks.push(new Uint8Array(event.data));
+
         }
     };
 

@@ -25,6 +25,8 @@
 
 #include "DALHAL_DeviceCreateContext.h"
 
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
+
 //#include <DALHAL/Core/Types/DALHAL_Device.h>
 //#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEventDescriptor.h>
@@ -112,7 +114,7 @@ namespace DALHAL {
 
         const Registry::Item& GetItem(const Registry::Item* reg, const char* type);
 
-        std::string ToString(const Registry::Item* reg);
+        void ToString(const Registry::Item* reg, CommandCallback cb);
     }
 
 }

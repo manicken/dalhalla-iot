@@ -37,8 +37,10 @@ namespace DALHAL {
             cmd.trim();
             ZeroCopyString zcStrCmd(cmd.c_str());
 
-            CommandExecutor::execute(zcStrCmd, [](const std::string& msg){ 
-                printf("%s\r\n", msg.c_str());
+            CommandExecutor::execute(zcStrCmd, [](const ZeroCopyString& zcMsg, CmdCbType type) -> bool{ 
+                // ignore type for now until we implemented a real protocol over serial
+                // maybe could use something similar to WebSocket
+                printf("%.*s\r\n", zcMsg.Length(), zcMsg.start);
             });
         }
 #endif

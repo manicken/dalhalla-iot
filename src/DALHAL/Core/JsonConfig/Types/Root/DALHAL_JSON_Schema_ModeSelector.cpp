@@ -126,8 +126,10 @@ namespace DALHAL {
                     else { firstConj = false; }
                     out += '{';
                     ToJsonString::appendString(out, F("name"), c.fieldRef->name);
-                    out += ',';
-                    ToJsonString::appendBool(out, F("required"), c.required);
+                    if (c.required) {
+                        // only add required == true 
+                        out += ','; ToJsonString::appendBool(out, F("required"), true);
+                    }
                     out += '}';
                 }
                 out += ']';

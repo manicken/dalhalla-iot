@@ -53,7 +53,13 @@
 //#define DALHAL_CommandExecutor_DEBUG_CMD
 
 namespace DALHAL {
-    using CommandCallback = std::function<void(const std::string& response)>;
+
+    enum class CmdCbType {
+        Text,
+        Binary
+    };
+
+    using CommandCallback = std::function<bool(const ZeroCopyString& response, CmdCbType type)>;
 
     struct PendingRequest {
         std::string command;

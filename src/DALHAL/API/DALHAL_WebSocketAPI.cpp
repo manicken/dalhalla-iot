@@ -91,15 +91,27 @@ namespace DALHAL {
             CommandExecutor_LOCK_QUEUE();
             CommandExecutor::g_pending.push({
                 cmd,
-                [clientId](const std::string& body) {
+                [clientId](const ZeroCopyString& body, CmdCbType type) -> bool {
                     
                     AsyncWebSocketClient* c = asyncWebSocket->client(clientId);
 
-                    if (!c) return;                 // client gone
-                    if (!c->canSend()) return;      // TCP buffer full / closing
-
-                    c->text(body.c_str());
-                    
+                    if (!c) return false;                 // client gone
+                    //bool abortSend = false;
+                    uint32_t retryCount = 0;
+                    while (!c->canSend()) {
+                        delay(1);
+                        retryCount++;
+                        if (retryCount > 10000) {
+                            //abortSend = true;
+                            return false;
+                        }
+                    }      // TCP buffer full / closing
+                    if (type == CmdCbType::Text) {
+                        c->text(body.start, body.Length());
+                    } else if (type == CmdCbType::Binary) {
+                        c->binary(body.start, body.Length());
+                    }                    
+                    return true;
                 }
             });
             CommandExecutor_UNLOCK_QUEUE();

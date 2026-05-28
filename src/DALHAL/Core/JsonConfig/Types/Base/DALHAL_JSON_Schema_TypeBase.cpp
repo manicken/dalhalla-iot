@@ -69,7 +69,10 @@ namespace DALHAL {
             //const char* type_cStr = "test";
             ToJsonString::appendString(out, F("type"), type_cStr?type_cStr:"nullptr unknown");
             out += ','; ToJsonString::appendString(out, F("name"), schema.name);
-            out += ','; ToJsonString::appendBool(out, F("required"), (schema.policy == FieldPolicy::Required));
+            if (schema.policy == FieldPolicy::Required) {
+                // only add required == true 
+                out += ','; ToJsonString::appendBool(out, F("required"), true);
+            }
             if (Gui::HaveAnyNotIncludingInline(schema.guiFlags)) {
                 out += ','; ToJsonString::appendKey(out, F("gui")); Gui::ToJson(schema.guiFlags, out);
             }

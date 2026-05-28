@@ -39,38 +39,50 @@ namespace DALHAL {
             return Registry::TerminatorItem;
         }
 
-        std::string ToString(const Registry::Item* reg) {
-            std::string ret = "{\"regitems\":[";
+        void ToString(const Registry::Item* reg, CommandCallback cb) {
+            
+            cb("{\"type\":\"startchunked\"}", CmdCbType::Text);
 
+            cb("{\"regitems\":[", CmdCbType::Binary);
+            std::string eventEntryName;
+            eventEntryName.reserve(32);
             bool first = true;
             for (const Registry::Item* regItem = reg; regItem->typeName != nullptr; ++regItem)
             {
-                if (first == false) { ret += ","; }
+                if (first == false) { cb(",", CmdCbType::Binary); }
                 else { first = false; }
-                ret += ' ';
-                ret += '{';
-                ret += "\"name\":\""; ret += regItem->typeName; ret += '"';
-                ret += ",\"events\":[";
+                //ret += ' ';
+                //ret += '{';
+                cb("{\"name\":\"", CmdCbType::Binary);
+                cb(regItem->typeName, CmdCbType::Binary);
+                cb("\",\"events\":[", CmdCbType::Binary);
                 if (regItem->def->reactiveTable != nullptr) {
                     bool first2 = true;
                     for (const EventDescriptor* entry = regItem->def->reactiveTable; entry->name; entry++) {
                     
-                        if (first2 == false) { ret += ','; }
+                        if (first2 == false) { cb(",", CmdCbType::Binary); }
                         else { first2 = false; }
-                        ret += '"'; ret += entry->name; ret += '"';
+                        eventEntryName.clear();
+                        
+                        eventEntryName += '"'; eventEntryName += entry->name; eventEntryName += '"';
+                        cb(eventEntryName.c_str(), CmdCbType::Binary);
+                        //cb("\"", CmdCbType::Binary); cb(entry->name, CmdCbType::Binary); cb("\"", CmdCbType::Binary);
                     }
                 }
-                ret += ']';
-                ret += ",\"functions\":{";
+                //ret += ']';
+                cb("],\"functions\":{", CmdCbType::Binary);
                 if (regItem->def->functionTable != nullptr) {
-                    ret += regItem->def->functionTable->ToString();
+                    cb(regItem->def->functionTable->ToString().c_str(), CmdCbType::Binary);
                 }
-                ret += '}';
-                ret += '}';
+                cb("}}", CmdCbType::Binary);
+                //ret += '}';
+                //ret += '}';
             }
-            ret += ']';
-            ret += '}';
-            return ret;
+            cb("]}", CmdCbType::Binary);
+            //ret += ']';
+            //ret += '}';
+            //return ret;
+            cb("{\"type\":\"endchunked\"}", CmdCbType::Text);
         }
 
     }
