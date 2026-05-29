@@ -35,23 +35,23 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Item I2C_DeviceRegistry[] = {
+    constexpr Registry::Item items[] = {
         {"SSD1306",   &Display_SSD1306::RegistryDefine},
         {"PCF8574x",  &PCF8574x::RegistryDefine},
-        /** mandatory null terminator */
-        Registry::TerminatorItem
     };
+
+    constexpr Registry::DeviceRegistry I2C_DeviceRegistry = {items, sizeof(items)/sizeof(items[0]), "I2C Master", "ROOT.I2C_MASTER"};
 
     std::string describeI2CAddress(uint8_t addr) {
         std::string deviceNames;
         deviceNames.reserve(32); // to minimize heap fragmentation
         bool first = true;
-        for (int i = 0; I2C_DeviceRegistry[i].typeName != nullptr; i++) {
-            const I2C_RegistryDefine* i2c_def = static_cast<const I2C_RegistryDefine*>(I2C_DeviceRegistry[i].def);
+        for (size_t i = 0; i < I2C_DeviceRegistry.count; i++) {
+            const I2C_RegistryDefine* i2c_def = static_cast<const I2C_RegistryDefine*>(I2C_DeviceRegistry.items[i].def);
             if (i2c_def->HasAddress_Function(addr)) {
                 if (first == false) deviceNames += ',';
                 else first = false;
-                deviceNames += I2C_DeviceRegistry[i].typeName;
+                deviceNames += I2C_DeviceRegistry.items[i].typeName;
             }
         }
         return deviceNames;

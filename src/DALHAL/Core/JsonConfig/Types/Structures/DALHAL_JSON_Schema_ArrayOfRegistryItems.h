@@ -56,17 +56,17 @@ namespace DALHAL {
         
         public:
             /** also used as a ROOT entry point, so it need to be public */
-            static ValidatorResult ValidateArrayOfRegistryItems(const Registry::Item* reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError);
+            static ValidatorResult ValidateArrayOfRegistryItems(const Registry::DeviceRegistry& reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError);
             const JsonArray GetValidatedJsonArray(const JsonVariant& jsonObj) const;
             
             
-            const Registry::Item* subtypes;
+            const Registry::DeviceRegistry* subtypes;
             const char* regPath;
 
-            constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, const Registry::Item* subtypes, const char* regPath)
+            constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, const Registry::DeviceRegistry* subtypes, const char* regPath)
                 : SchemaArrayBase(name, FieldType::ArrayOfRegistryItems, policy, EmptyPolicy::Warn), subtypes(subtypes), regPath(regPath) {}
 
-            constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, EmptyPolicy emptyPolicy, const Registry::Item* subtypes, const char* regPath)
+            constexpr SchemaArrayOfRegistryItems(const char* name, FieldPolicy policy, EmptyPolicy emptyPolicy, const Registry::DeviceRegistry* subtypes, const char* regPath)
                 : SchemaArrayBase(name, FieldType::ArrayOfRegistryItems, policy, emptyPolicy), subtypes(subtypes), regPath(regPath) {}
 
         };

@@ -74,7 +74,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Item RootDevicesRegistry[] = {
+    constexpr Registry::Item items[] = {
 
          /** ---------------- Script-backed Devices ---------------- */
         {"VAR", &ScriptVariable::RegistryDefine},
@@ -136,14 +136,8 @@ namespace DALHAL {
 #ifdef DALHAL_DEVICE__TEMPLATE_
         {"TEMPLATE", &_Template_::RegistryDefine},
 #endif
-        /** mandatory null terminator */
-        Registry::TerminatorItem, // Stop for active devices
-        
-
-        /** --- Planned / future devices --- */
-#if defined(ESP32) || defined(_WIN32)
-        {"PWM_LEDC", nullptr},
-#endif
     };
+
+    constexpr Registry::DeviceRegistry RootDevicesRegistry = {items, sizeof(items)/sizeof(items[0]), "ROOT", "ROOT"};
 
 }

@@ -59,7 +59,7 @@ namespace DALHAL {
 
     };
 
-    extern const Registry::Item I2C_DeviceRegistry[];
+    extern const Registry::DeviceRegistry I2C_DeviceRegistry;
     
     // used by i2c scanner to describe which devices a adress belongs to
     std::string describeI2CAddress(uint8_t addr);

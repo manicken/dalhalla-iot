@@ -85,10 +85,10 @@ function connect() {
             let jsonData;
             try {
                 jsonData = JSON.parse(evt.data);
-                if (jsonData.type && jsonData.type == "startchunked") {
+                if (jsonData.type && jsonData.type == "start_chunked") {
                     chunks = [];
                     return;
-                } else if (jsonData.type && jsonData.type == "endchunked") {
+                } else if (jsonData.type && jsonData.type == "end_chunked") {
                     const totalSize =
                     chunks.reduce((sum, c) => sum + c.length, 0);
 
@@ -125,8 +125,8 @@ function connect() {
                 log.appendChild(div);
             }
         } else {
-           // const text = decoder.decode(event.data);
-           // console.log(text);
+            const text = decoder.decode(event.data);
+            console.log(text);
             chunks.push(new Uint8Array(event.data));
 
         }

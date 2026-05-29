@@ -62,6 +62,6 @@ namespace DALHAL {
 
     };
     
-    extern const Registry::Item TX433_UnitTypeRegistry[];
+    extern const Registry::DeviceRegistry TX433_UnitTypeRegistry;
 
 }

@@ -250,11 +250,14 @@ public: \
 #define REACTIVE_ENTRY_WRITE_ERROR(CLASS_NAME)    DALHAL_REACTIVE_ENTRY(CLASS_NAME, WriteError)
 #define REACTIVE_ENTRY_EXEC_ERROR(CLASS_NAME)     DALHAL_REACTIVE_ENTRY(CLASS_NAME, ExecError)
 
+#define JSON(...) #__VA_ARGS__
+#define REACTIVE_ALL_ENTRY_NAMES_SIZE sizeof(JSON("events":["Begin","CycleComplete","ValueChange","StateChange","Write","Read","Exec","BracketRead","BracketWrite","Timeout","ReadError","WriteError","ExecError"]))
+        
 
 // Terminator for all tables
 #define REACTIVE_ENTRY__TERMINATOR_()             { nullptr, nullptr }
 
-#define REACTIVE_ENTRY_BEGIN_TEST(NAME, CLASS_NAME)    HAS_REACTIVE_BEGIN(NAME) ? DALHAL_REACTIVE_ENTRY(CLASS_NAME, Begin) : REACTIVE_ENTRY__TERMINATOR_()
+//#define REACTIVE_ENTRY_BEGIN_TEST(NAME, CLASS_NAME)    HAS_REACTIVE_BEGIN(NAME) ? DALHAL_REACTIVE_ENTRY(CLASS_NAME, Begin) : REACTIVE_ENTRY__TERMINATOR_()
 
 
 #define REACTIVE_DECLARE_FEATURE_BEGIN(CLASS_NAME)          DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, Begin)

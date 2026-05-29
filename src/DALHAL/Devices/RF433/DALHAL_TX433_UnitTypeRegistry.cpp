@@ -33,10 +33,11 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Item TX433_UnitTypeRegistry[] = {
+    constexpr Registry::Item items[] = {
         {"lc", &TX433_Unit::LCTypeRegistryDefine},
         {"sfc", &TX433_Unit::SFCTypeRegistryDefine},
         {"afc", &TX433_Unit::AFCTypeRegistryDefine},
-        Registry::TerminatorItem,
     };
+
+    constexpr Registry::DeviceRegistry TX433_UnitTypeRegistry = {items, sizeof(items)/sizeof(items[0]), "TX433", "ROOT.TX433"};
 }

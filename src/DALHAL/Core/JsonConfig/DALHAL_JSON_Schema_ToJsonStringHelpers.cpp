@@ -71,18 +71,18 @@ namespace DALHAL {
                 inlines.push_back( {key, contents} );
             }
 
-            void buildJsonSchemas(const Registry::Item* reg, std::string &out) {
+            void buildJsonSchemas(const Registry::DeviceRegistry& reg, std::string &out) {
                 bool first = true;
-                for (int i=0;reg[i].typeName != nullptr; i++) {
+                for (size_t i=0;reg.count; i++) {
                     if (first == false) {
                         out += ',';
                     } else { first = false; }
-                    appendKey(out, reg[i].typeName);
-                    JsonObjectSchema::SchemaToJson(reg[i].def->jsonSchema, out);
+                    appendKey(out, reg.items[i].typeName);
+                    JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, out);
                 }
             }
 
-            void addRegistrySchemaAndBuild(const Registry::Item* reg, const char* regPath) {
+            void addRegistrySchemaAndBuild(const Registry::DeviceRegistry& reg, const char* regPath) {
                 auto idx = registers.size();
                 registers.push_back({ regPath, {} });
                 std::string out;
@@ -91,7 +91,7 @@ namespace DALHAL {
                 registers[idx].value = out;
             }
 
-            void buildCompleteJsonSchemasStartingFrom(const Registry::Item* reg, std::string &out) {
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, std::string &out) {
                 clear();
                 addRegistrySchemaAndBuild(reg, "ROOT");
                 // here all json is built now we just combine it all

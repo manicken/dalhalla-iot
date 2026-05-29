@@ -27,6 +27,6 @@
 
 namespace DALHAL {
 
-    extern const Registry::Item HA_DeviceRegistry[];
+    extern const Registry::DeviceRegistry HA_DeviceRegistry;
 
 }

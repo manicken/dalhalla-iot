@@ -43,7 +43,7 @@
 
 namespace DALHAL {
 
-    constexpr Registry::Item HA_DeviceRegistry[] = {
+    constexpr Registry::Item items[] = {
         {"sensor",         &HA_Sensor::RegistryDefine},
         {"binary_sensor",  &HA_BinarySensor::RegistryDefine},
         {"switch",         &HA_Switch::RegistryDefine},
@@ -53,5 +53,7 @@ namespace DALHAL {
         /** mandatory null terminator */
         Registry::TerminatorItem
     };
+
+    constexpr Registry::DeviceRegistry HA_DeviceRegistry = {items, sizeof(items)/sizeof(items[0]), "HomeAssistant", "ROOT.HOMEASSISTANT" };
     
 }

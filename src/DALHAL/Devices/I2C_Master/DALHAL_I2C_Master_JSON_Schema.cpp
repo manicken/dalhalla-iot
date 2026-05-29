@@ -49,7 +49,7 @@ namespace DALHAL {
             constexpr SchemaUInt freqField = {"freq", FieldPolicy::Optional, (unsigned int)(100*1000)};
             constexpr SchemaUInt busindexField = {"busindex", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)1};
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, I2C_DeviceRegistry, "ROOT.I2C_Master"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, &I2C_DeviceRegistry, "ROOT.I2C_Master"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

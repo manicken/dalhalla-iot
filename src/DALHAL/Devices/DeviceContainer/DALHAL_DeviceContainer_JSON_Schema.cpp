@@ -39,7 +39,7 @@ namespace DALHAL {
 
         namespace DeviceContainer {
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, RootDevicesRegistry, "ROOT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, &RootDevicesRegistry, "ROOT"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

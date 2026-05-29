@@ -54,7 +54,7 @@ namespace DALHAL {
 
         }
 
-        ValidatorResult SchemaArrayOfRegistryItems::ValidateArrayOfRegistryItems(const Registry::Item* reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError) {
+        ValidatorResult SchemaArrayOfRegistryItems::ValidateArrayOfRegistryItems(const Registry::DeviceRegistry& reg, const JsonArray& items, const char* sourceObjTypeName, bool& anyError) {
             uint32_t itemCount = items.size();
 
             for (uint32_t i = 0; i < itemCount; ++i) {
@@ -98,7 +98,7 @@ namespace DALHAL {
                     anyError = true;
                     continue; // skip the current json device
                 }
-                JsonObjectSchema::ValidateJson(regItem.def->jsonSchema, reg->typeName, jsonItem, anyError);
+                JsonObjectSchema::ValidateJson(regItem.def->jsonSchema, regItem.typeName, jsonItem, anyError);
             }
 
             return ValidatorResult::Success;
@@ -115,7 +115,7 @@ namespace DALHAL {
             }
 
             return ValidateArrayOfRegistryItems(
-                static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema).subtypes, 
+                *(static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema).subtypes), 
                 jsonObj[fieldSchema.name].as<JsonArray>(), 
                 sourceObjTypeName, anyError);
         }
@@ -125,7 +125,7 @@ namespace DALHAL {
 
             auto fs = static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema);
             if (ToJsonString::registerContains(fs.regPath) == false) {
-                ToJsonString::addRegistrySchemaAndBuild(fs.subtypes, fs.regPath);
+                ToJsonString::addRegistrySchemaAndBuild(*fs.subtypes, fs.regPath);
             }
             out += ','; ToJsonString::appendString(out, F("regPath"), fs.regPath);
 

@@ -46,8 +46,8 @@ namespace DALHAL {
             bool inlinesContains(const char* key);
             void addToInlines(const char* key, std::string contents);
 
-            void addRegistrySchemaAndBuild(const Registry::Item* reg, const char* regPath);
-            void buildCompleteJsonSchemasStartingFrom(const Registry::Item* reg, std::string &out);
+            void addRegistrySchemaAndBuild(const Registry::DeviceRegistry& reg, const char* regPath);
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, std::string &out);
 
             void clear();
 

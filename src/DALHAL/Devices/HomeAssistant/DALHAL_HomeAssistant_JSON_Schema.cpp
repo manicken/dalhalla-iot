@@ -76,7 +76,7 @@ namespace DALHAL {
             };
             constexpr SchemaObject globalGroupField = {"group", FieldPolicy::ModeDefine, &globalGroupSchema};
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, EmptyPolicy::Error, DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::ModeDefine, EmptyPolicy::Error, &DALHAL::HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
             constexpr const SchemaTypeBase* individualGroupFields[] = {&groupUIDField, &groupNameField, &itemsField, nullptr};
             constexpr JsonObjectSchema individualGroupSchema = {

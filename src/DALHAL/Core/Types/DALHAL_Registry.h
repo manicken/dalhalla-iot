@@ -45,12 +45,6 @@ namespace DALHAL {
     namespace Registry {
         
         typedef Device* (*HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context);
-  
-        enum class UseRootUID {
-            Mandatory,
-            Optional,
-            Void
-        };
 
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
@@ -110,11 +104,21 @@ namespace DALHAL {
             constexpr Item(const char* typeName, const Registry::DefineBase* def) : typeName(typeName), def(def) {}
         };
 
+        struct DeviceRegistry {
+            const Registry::Item* items;
+            const size_t count;
+            const char* name;
+            const char* path;
+            constexpr DeviceRegistry(const Registry::Item* items, const size_t count, const char* name, const char* path) 
+            : items(items), count(count), name(name), path(path) {}
+        };
+
         constexpr Registry::Item TerminatorItem = {nullptr, nullptr};
 
-        const Registry::Item& GetItem(const Registry::Item* reg, const char* type);
+        const Registry::Item& GetItem(const Registry::DeviceRegistry& reg, const char* type);
 
-        void ToString(const Registry::Item* reg, CommandCallback cb);
+        void GetTypeNames(const Registry::DeviceRegistry& reg, CommandCallback cb);
+        void ToString(const Registry::DeviceRegistry& reg, CommandCallback cb);
     }
 
 }

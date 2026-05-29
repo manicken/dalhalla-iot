@@ -39,7 +39,7 @@ namespace DALHAL {
 
         namespace TX433 {
 
-            constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Required, EmptyPolicy::Error, TX433_UnitTypeRegistry, "ROOT.TX433"};
+            constexpr SchemaArrayOfRegistryItems unitsField = {"units", FieldPolicy::Required, EmptyPolicy::Error, &TX433_UnitTypeRegistry, "ROOT.TX433"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group,

@@ -40,7 +40,7 @@ namespace DALHAL {
 
         namespace HA_DeviceContainer {
 
-            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
+            constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, &HA_DeviceRegistry, "ROOT.HOMEASSISTANT"};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
