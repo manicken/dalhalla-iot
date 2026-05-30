@@ -118,7 +118,7 @@ namespace DALHAL {
         const Registry::Item& GetItem(const Registry::DeviceRegistry& reg, const char* type);
 
         void GetTypeNames(const Registry::DeviceRegistry& reg, CommandCallback cb);
-        void ToString(const Registry::DeviceRegistry& reg, CommandCallback cb);
+        void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb);
     }
 
 }

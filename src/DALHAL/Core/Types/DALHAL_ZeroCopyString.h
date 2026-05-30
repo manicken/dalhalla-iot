@@ -77,6 +77,11 @@ namespace DALHAL {
          * note. endptr is non inclusive and must allway point to after the last char in the string 
          */
         ZeroCopyString(const char* start, const char* end);
+        /** 
+         * Create a ZeroCopyString given by start and lenght, 
+         * note. endptr is calculated by start+length
+         */
+        ZeroCopyString(const char* start, size_t length);
         /**
          * Create a ZeroCopyString from a null-terminated C string.
          * 

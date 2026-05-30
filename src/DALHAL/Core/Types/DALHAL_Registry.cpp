@@ -26,6 +26,8 @@
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 #include <DALHAL/Config/DALHAL_ReactiveConfig.h>
 
+#include <DALHAL/API/DALHAL_API_StreamWriter.h>
+
 namespace DALHAL {
 
     namespace Registry {
@@ -74,58 +76,48 @@ namespace DALHAL {
             cb("{\"type\":\"end_chunked\"}", CmdCbType::Text);
         }
 
-        void ToString(const Registry::DeviceRegistry& reg, CommandCallback cb) {
+        void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb) {
             const Registry::Item* items = reg.items;
             size_t itemCount = reg.count;
 
-            cb("{\"type\":\"start_chunked\"}", CmdCbType::Text);
+            DALHAL::StreamWriter sw(cb, "registry", DALHAL::StreamWriter::DataType::Json);
+            //sw.start("registry");
 
-            cb("{\"regitems\":[", CmdCbType::Binary);
-            std::string eventList;
-            eventList.reserve(REACTIVE_ALL_ENTRY_NAMES_SIZE+2);
-            bool first = true;
+            sw.write("{\"regitems\":[");
+
             for (size_t i=0; i<itemCount; i++)
             {
                 const Registry::Item& regItem = items[i];
 
-                if (first == false) { cb(",", CmdCbType::Binary); }
-                else { first = false; }
-                //ret += ' ';
-                //ret += '{';
-                cb("{\"name\":\"", CmdCbType::Binary);
-                cb(regItem.typeName, CmdCbType::Binary);
-                eventList.clear();
-                eventList = "\",\"events\":[";
-                //cb("\",\"events\":[", CmdCbType::Binary);
+                if (i > 0) { sw.write(','); } 
+
+                sw.write("{\"name\":\"");
+                sw.write(regItem.typeName);
+                sw.write("\",\"events\":[");
+
                 if (regItem.def->reactiveTable != nullptr) {
-                    bool first2 = true;
+                    bool first = true;
                     for (const EventDescriptor* entry = regItem.def->reactiveTable; entry->name; entry++) {
                     
-                        if (first2 == false) { eventList += ','; }
-                        else { first2 = false; }
-                        
-                        
-                        eventList += '"'; eventList += entry->name; eventList += '"';
-                        //cb(eventEntryName.c_str(), CmdCbType::Binary);
-                        //cb("\"", CmdCbType::Binary); cb(entry->name, CmdCbType::Binary); cb("\"", CmdCbType::Binary);
+                        if (first == false) { sw.write(','); }
+                        else { first = false; }
+                        sw.write('"'); sw.write(entry->name); sw.write('"');
                     }
                 }
-                eventList += ']';
-                cb(eventList.c_str(), CmdCbType::Binary);
-                //ret += ']';
-                cb(",\"functions\":{", CmdCbType::Binary);
+                sw.write(']');
+
+                sw.write(",\"functions\":{");
+
                 if (regItem.def->functionTable != nullptr) {
-                    cb(regItem.def->functionTable->ToString().c_str(), CmdCbType::Binary);
+                    regItem.def->functionTable->PrintTo(sw);
                 }
-                cb("}}", CmdCbType::Binary);
-                //ret += '}';
-                //ret += '}';
+                sw.write('}');
+                sw.write('}');
+
             }
-            cb("]}", CmdCbType::Binary);
-            //ret += ']';
-            //ret += '}';
-            //return ret;
-            cb("{\"type\":\"end_chunked\"}", CmdCbType::Text);
+            sw.write(']');
+            sw.write('}');
+            //sw.end(); //  not needed as the destructor takes care of it
         }
 
     }

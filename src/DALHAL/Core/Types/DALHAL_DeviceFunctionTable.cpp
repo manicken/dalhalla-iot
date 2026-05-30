@@ -23,29 +23,28 @@
 
 #include "DALHAL_DeviceFunctionTable.h"
 
+
 namespace DALHAL {
     
-    std::string DeviceFunctionTable::ToString() const{
-        std::string ret;
-        ret += "\"readValue\":"; ret += GetDeviceFunctions(readValue);
-        ret += ",\"writeValue\":"; ret += GetDeviceFunctions(writeValue);
-        ret += ",\"exec\":"; ret += GetDeviceFunctions(exec);
-        ret += ",\"readString\":"; ret += GetDeviceFunctions(readString);
-        ret += ",\"writeString\":"; ret += GetDeviceFunctions(writeString);
-        ret += ",\"bracketOpRead\":"; ret += GetDeviceFunctions(bracketOpRead);
-        ret += ",\"bracketOpWrite\":"; ret += GetDeviceFunctions(bracketOpWrite);
-        return ret;
+    void DeviceFunctionTable::PrintTo(DALHAL::StreamWriter& sw) const{
+        
+        sw.write("\"readValue\":"); GetDeviceFunctions(readValue, sw);
+        sw.write(",\"writeValue\":"); GetDeviceFunctions(writeValue, sw);
+        sw.write(",\"exec\":"); GetDeviceFunctions(exec, sw);
+        sw.write(",\"readString\":"); GetDeviceFunctions(readString, sw);
+        sw.write(",\"writeString\":"); GetDeviceFunctions(writeString, sw);
+        sw.write(",\"bracketOpRead\":"); GetDeviceFunctions(bracketOpRead, sw);
+        sw.write(",\"bracketOpWrite\":"); GetDeviceFunctions(bracketOpWrite, sw);
     }
 
-    std::string FunctionValueType::ToString(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask) {
-        std::string ret;
+    void FunctionValueType::PrintTo(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL::StreamWriter& sw) {
+
         bool notFirst = false;
-        ret += '[';
-        if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; ret += "\"uint\""; }
-        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; ret += "\"int\""; }
-        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; ret += "\"float\""; }
-        if (notFirst) { ret += ','; } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; ret += "\"bool\""; }
-        ret += ']';
-        return ret;
+        sw.write('[');
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; sw.write("\"uint\""); }
+        if (notFirst) { sw.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; sw.write("\"int\""); }
+        if (notFirst) { sw.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; sw.write("\"float\""); }
+        if (notFirst) { sw.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; sw.write("\"bool\""); }
+        sw.write(']');
     }
 }

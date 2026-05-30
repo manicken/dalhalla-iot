@@ -160,8 +160,8 @@ namespace DALHAL {
             }
             else if (zcCommand.EqualsIC(F("printRegistry"))) {
                 if (cb != nullptr) {
-                    //Registry::ToString(RootDevicesRegistry, cb);
-                    Registry::GetTypeNames(RootDevicesRegistry, cb);
+                    Registry::PrintTo(RootDevicesRegistry, cb);
+                    //Registry::GetTypeNames(RootDevicesRegistry, cb);
                     //const ZeroCopyString zcMsg = ret.c_str();
                     //cb(zcMsg, CmdCbType::Text);
                 }

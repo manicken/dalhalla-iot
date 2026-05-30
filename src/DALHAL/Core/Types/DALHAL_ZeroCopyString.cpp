@@ -33,6 +33,10 @@ namespace DALHAL {
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
     }
+    ZeroCopyString::ZeroCopyString(const char* start, size_t length) : start(start), end(start ? (start + length) : start) {
+        if (this->end == nullptr) this->start = nullptr; 
+        else if (this->start == nullptr) this->end = nullptr;
+    }
     void ZeroCopyString::Set(const char* _start, const char* _end) {
         start = _start;
         end = _end;

@@ -32,6 +32,9 @@
 
 #include "DALHAL_CommandExecutor.h"
 
+#include <DALHAL/Support/DALHAL_Logger.h>
+
+#include <LittleFS.h>
 #include "DALHAL_WebSocketAPI_httpFile.h"
 
 #if defined(ESP8266) || defined(ESP32)
@@ -95,7 +98,11 @@ namespace DALHAL {
                     
                     AsyncWebSocketClient* c = asyncWebSocket->client(clientId);
 
-                    if (!c) return false;                 // client gone
+                    if (!c) {
+                        GlobalLogger.Error(F("client gone while WebSocket write"));
+                        Serial.println(F("client gone while WebSocket write"));
+                        return false;                 // client gone
+                    }
                     //bool abortSend = false;
                     uint32_t retryCount = 0;
                     while (!c->canSend()) {
@@ -103,6 +110,8 @@ namespace DALHAL {
                         retryCount++;
                         if (retryCount > 10000) {
                             //abortSend = true;
+                            GlobalLogger.Error(F("client could not write WebSocket data"));
+                            Serial.println(F("client could not write WebSocket data"));
                             return false;
                         }
                     }      // TCP buffer full / closing
@@ -134,6 +143,14 @@ namespace DALHAL {
     }
 
     void WebSocketAPI::GetRootPage_Handler(AsyncWebServerRequest* request) {
+
+        const char* path = "/api/index.html";
+
+        if (LittleFS.exists(path)) {
+            request->send(LittleFS, path, "text/html");
+            return;
+        }
+
         request->send_P(200, "text/html", HTML_WS_CONSOLE);
     }
 
