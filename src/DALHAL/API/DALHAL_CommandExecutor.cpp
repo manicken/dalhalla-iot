@@ -46,6 +46,9 @@
 //#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
+#include <DALHAL/API/DALHAL_BlockStreamer.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #elif defined(ESP32)
@@ -142,8 +145,10 @@ namespace DALHAL {
                 if (anyErrors == false)
                     message += String(F("\"info\":\"OK\"")).c_str();
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_GET_AVAILABLE_GPIO_LIST))) {
-                message += GPIO_manager::GetList(zcStr);
+            else if (zcCommand.EqualsIC(F("getAvailableGPIOs"))) {
+                BlockStreamer bs(cb, "getAvailableGPIOs", BlockStreamer::DataType::Json);
+                StringBuilderStreamer& sbs = bs.writer();
+                GPIO_manager::GetList(zcStr, sbs);
             }
             else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_PRINT_DEVICES))) {
                 message += DeviceManager::ToString();
@@ -161,17 +166,11 @@ namespace DALHAL {
             else if (zcCommand.EqualsIC(F("printRegistry"))) {
                 if (cb != nullptr) {
                     Registry::PrintTo(RootDevicesRegistry, cb);
-                    //Registry::GetTypeNames(RootDevicesRegistry, cb);
-                    //const ZeroCopyString zcMsg = ret.c_str();
-                    //cb(zcMsg, CmdCbType::Data);
                 }
             }
             else if (zcCommand.EqualsIC(F("printJsonSchemas"))) {
                 if (cb != nullptr) {
-                    //std::string ret;
                     JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, cb);
-                    //const ZeroCopyString zcMsg = ret.c_str();
-                    //cb(zcMsg, CmdCbType::Data);
                 }
             }
             else

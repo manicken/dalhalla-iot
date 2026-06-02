@@ -212,41 +212,41 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, std::string& out) {
+        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, StringBuilderStreamer& sbs) {
 
-            out += '{';
+            sbs.write('{');
 
             if (schema == nullptr) {
-                out += '}';
+                sbs.write('}');
                 return;
             }
             
 
             //out += "\"type\":\"object\"";
-            ToJsonString::appendString(out, F("type"), F("object"));
-            out += ','; ToJsonString::appendString(out, F("name"), (schema->typeName!=nullptr)?schema->typeName:"nullptr");
-            out += ','; ToJsonString::appendString(out, F("unknownPolicy"), UnknownFieldPolicyToString(schema->unknownFieldPolicy));
-            out += ','; ToJsonString::appendString(out, F("emptyPolicy"), EmptyPolicyToString(schema->emptyPolicy));
+            sbs.write_jsonString(F("type"), F("object"));
+            sbs.write(','); sbs.write_jsonString(F("name"), (schema->typeName!=nullptr)?schema->typeName:"nullptr");
+            sbs.write(','); sbs.write_jsonString(F("unknownPolicy"), UnknownFieldPolicyToString(schema->unknownFieldPolicy));
+            sbs.write(','); sbs.write_jsonString(F("emptyPolicy"), EmptyPolicyToString(schema->emptyPolicy));
 
             if (schema->modes != nullptr) {
-                out += ','; ModeSelector::ToJson(schema->modes, out);
+                sbs.write(','); ModeSelector::ToJson(schema->modes, sbs);
             }
             if (schema->constraints != nullptr) {
-                out += ','; FieldConstraint::ToJson(schema->constraints, out);
+                sbs.write(','); FieldConstraint::ToJson(schema->constraints, sbs);
             }
-            out += ','; ToJsonString::appendKey(out, F("fields"));
-            out += '[';
+            sbs.write(','); sbs.write_jsonKey(F("fields"));
+            sbs.write('[');
 
             for (int i = 0; schema->fields[i] != nullptr; ++i) {
-                if (i > 0) out += ",";
+                if (i > 0) { sbs.write(','); }
                 const SchemaTypeBase& field = *schema->fields[i];
-                JsonSchema::SchemaToJson(field, out); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                JsonSchema::SchemaToJson(field, sbs); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
                 //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(field.type);
                 //regDefItem.define.ToJson(field, out);
             }
 
-            out += ']';
-            out += '}';
+            sbs.write(']');
+            sbs.write('}');
         }
 
         const char* JsonObjectSchema::GetJavaScriptValidator() {

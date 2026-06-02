@@ -28,6 +28,7 @@
 #include <memory>
 
 #include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 #define REGO600_UART_TX_CHKSUM_START_INDEX 2
 #define REGO600_UART_TX_BUFFER_SIZE 9 // allways 9 in size
@@ -122,7 +123,7 @@ namespace Drivers {
         static const RegoLookupEntry ManualRawEntry;
 
         static bool SystemRegisterTable_ItemExists(void* ctx, const char* name); // ctx not used here as this is a static table
-        static std::string SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx); // ctx not used here as this is a static table
+        static void SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs); // ctx not used here as this is a static table
         
         struct Request {
             

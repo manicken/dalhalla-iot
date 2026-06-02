@@ -55,12 +55,12 @@ namespace DALHAL {
             return SchemaStringAnyOfByFuncConstrained::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
         }
 
-        void SchemaStringAnyOfArrayConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaStringAnyOfByFuncConstrained::SchemaToJson(fieldSchema, out);
+        void SchemaStringAnyOfArrayConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaStringAnyOfByFuncConstrained::SchemaToJson(fieldSchema, sbs);
 
             // actually this is only needed on objects that are not final but keep it here if that change in the future
             if (fieldSchema.type == FieldType::StringAnyOfArrayConstrained) { 
-                out += '}'; // this is complete object
+                sbs.write('}'); // this is complete object
             }
         }
 
@@ -84,18 +84,14 @@ namespace DALHAL {
             return false;
         }
 
-        std::string SchemaStringAnyOfArrayConstrained::DescribeByArray(void* _ctx) {
+        void SchemaStringAnyOfArrayConstrained::DescribeByArray(void* _ctx, StringBuilderStreamer& sbs) {
             const ByArrayConstraints* ctx = static_cast<const ByArrayConstraints*>(_ctx);
-            std::string ret;
-            ret += '[';
+            sbs.write('[');
             for (int i=0;ctx->allowedValues[i] != nullptr;++i) {
-                if (i>0) ret += ',';
-                ret += '"';
-                ret += ctx->allowedValues[i];
-                ret += '"';
+                if (i>0) { sbs.write(','); }
+                sbs.write_jsonQuoted(ctx->allowedValues[i]);
             }
-            ret += ']';
-            return ret;
+            sbs.write(']');
         }
 
         const char* SchemaStringAnyOfArrayConstrained::GetJavaScriptValidator() {

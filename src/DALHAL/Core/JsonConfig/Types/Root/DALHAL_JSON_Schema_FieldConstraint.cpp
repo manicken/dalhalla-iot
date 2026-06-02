@@ -146,21 +146,22 @@ namespace DALHAL {
             }
         }
 
-        void FieldConstraint::ToJson(const FieldConstraint* constraints, std::string& out)
+        void FieldConstraint::ToJson(const FieldConstraint* constraints, StringBuilderStreamer& sbs)
         {
-            ToJsonString::appendKey(out, "constraints");
-            out += '[';
+            sbs.write_jsonKey(F("constraints"));
+            sbs.write('[');
             for (int i=0;constraints[i].type != FieldConstraint::Type::Void; ++i) {
-                if (i>0) out += ',';
-                out += '{';
-                ToJsonString::appendString(out, "fieldA", constraints[i].fieldA->name);
-                out += ',';
-                ToJsonString::appendString(out, "type", FieldConstraint::TypeToString(constraints[i].type));
-                out += ',';
-                ToJsonString::appendString(out, "fieldB", constraints[i].fieldB->name);
-                out += '}';
+                if (i > 0) { sbs.write(','); }
+                sbs.write('{');
+
+                sbs.write_jsonString(F("fieldA"), constraints[i].fieldA->name);
+                sbs.write(',');
+                sbs.write_jsonString(F("type"), FieldConstraint::TypeToString(constraints[i].type));
+                sbs.write(',');
+                sbs.write_jsonString(F("fieldB"), constraints[i].fieldB->name);
+                sbs.write('}');
             }
-            out += ']';
+            sbs.write(']');
         }
 
     }

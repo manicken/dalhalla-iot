@@ -31,6 +31,8 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_String.h>
 #include "DALHAL_JSON_Schema_StringAnyOfByFuncConstrained.h"
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
 namespace DALHAL {
@@ -55,12 +57,12 @@ namespace DALHAL {
         protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs);
             static const char* GetJavaScriptValidator();
 
         private:
             static bool ValidateByArray(void* _ctx, const char* value);
-            static std::string DescribeByArray(void* _ctx);
+            static void DescribeByArray(void* _ctx, StringBuilderStreamer& sbs);
 
         public:
 

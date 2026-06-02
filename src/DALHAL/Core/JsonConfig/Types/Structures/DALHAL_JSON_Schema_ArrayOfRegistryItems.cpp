@@ -120,18 +120,18 @@ namespace DALHAL {
                 sourceObjTypeName, anyError);
         }
 
-        void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaArrayBase::SchemaToJson(fieldSchema, out);
+        void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaArrayBase::SchemaToJson(fieldSchema, sbs);
 
             auto fs = static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema);
             if (ToJsonString::registerContains(fs.regPath) == false) {
-                ToJsonString::addRegistrySchemaAndBuild(*fs.subtypes, fs.regPath);
+                ToJsonString::addToRegistries(fs.regPath, *fs.subtypes);
             }
-            out += ','; ToJsonString::appendString(out, F("regPath"), fs.regPath);
+            sbs.write(','); sbs.write_jsonString(F("regPath"), fs.regPath);
 
             
             if (fieldSchema.type == FieldType::ArrayOfRegistryItems) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

@@ -50,7 +50,7 @@ namespace DALHAL {
         protected:
             static bool ValidateSchemaNameNotNull(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName); 
             static ValidatorResult ValidateFieldPresenceAndPolicy(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs);
         public:
             /** special note about using this, it do internally dispatch to the correct type using the JsonSchema type registry */
             HALValue ExtractViaRegistryFrom(const JsonVariant& jsonObj) const;

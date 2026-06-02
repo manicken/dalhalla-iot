@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 /*
     this file is only intended to manage which functions that are assigned to a specific GPIO pin
@@ -84,7 +85,7 @@ namespace DALHAL {
         };*/
 
         typedef struct {
-            const char* Name;
+            PGM_P Name;
             DALHAL_GPIO_MGR_PINFUNC_TYPE func;
         } PinFuncDef;
 
@@ -124,7 +125,8 @@ namespace DALHAL {
             DALHAL_GPIO_MGR_PINFUNC_TYPE func;
         } gpio_pin;
 
-        std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
+        //std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask);
+        void describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask, StringBuilderStreamer& sbs);
         
         void ClearAllReservations();
         /**
@@ -140,6 +142,6 @@ namespace DALHAL {
 
         void triStateAvailablePins();
 
-        std::string GetList(ZeroCopyString& zcMode);
+        void GetList(ZeroCopyString& zcMode, StringBuilderStreamer& sbs);
     }
 }

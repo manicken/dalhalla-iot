@@ -29,6 +29,8 @@
 #include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
 #endif
 
+
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
@@ -157,17 +159,16 @@ namespace Drivers {
         }
         return false;
     }
-    std::string REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx) { // ctx not used here as this is a static table
-        std::string ret = "[";
+    void REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs) { // ctx not used here as this is a static table
+        sbs.write('[');
         bool first = true;
         for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
             if (first == false) {
-                ret += ',';
+                sbs.write(',');
             } else { first = false; }
-            ret += '"'; ret += SystemRegisterTable[i].name; ret += '"';
+            sbs.write_jsonQuoted(SystemRegisterTable[i].name);
         }
-        ret += ']';
-        return ret;
+        sbs.write(']');
     }
 
     // Constructor for linked values here the type is allways Value

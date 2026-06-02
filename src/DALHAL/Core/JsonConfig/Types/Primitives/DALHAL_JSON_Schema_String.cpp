@@ -114,14 +114,14 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaString&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaString::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             const SchemaString& strSchema = static_cast<const SchemaString&>(fieldSchema);
             if (strSchema.defaultValue != nullptr) {
-                out += ','; ToJsonString::appendString(out, F("default"), strSchema.defaultValue);
+                sbs.write(',');  sbs.write_jsonString(F("default"), strSchema.defaultValue);
             }
             if (fieldSchema.type == FieldType::String) {
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

@@ -114,14 +114,15 @@ namespace DALHAL {
             return regDefItem.define->GetValue(stb, jsonObj);
         }
 
-        void SchemaToJson(const SchemaTypeBase& stb, std::string& jsonStr) {
+        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs) {
             const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
             if (regDefItem.name == nullptr) {
                 GlobalLogger.Error(F("schema error - could not find schema type @ SchemaToJson"));
-                jsonStr += "{}";
+                sbs.write('{');
+                sbs.write('}');
                 return;
             }
-            regDefItem.define->ToJson(stb, jsonStr);
+            regDefItem.define->ToJson(stb, sbs);
         }
 
         const char* GetJavaScriptValidator(const SchemaTypeBase& stb) {

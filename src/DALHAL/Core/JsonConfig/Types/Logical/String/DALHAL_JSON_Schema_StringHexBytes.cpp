@@ -79,13 +79,13 @@ namespace DALHAL {
             return res;
         }
 
-        void SchemaStringHexBytes::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaString::SchemaToJson(fieldSchema, out);
+        void SchemaStringHexBytes::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaString::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaStringHexBytes&>(fieldSchema);
-            out += ','; ToJsonString::appendNumber(out, F("byteCount"), fs.byteCount);
+            sbs.write(','); sbs.write_jsonNumber(F("byteCount"), fs.byteCount);
 
             if (fieldSchema.type == FieldType::StringHexBytes) {
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

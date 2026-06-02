@@ -41,6 +41,7 @@ namespace DALHAL {
                 // ignore type for now until we implemented a real protocol over serial
                 // maybe could use something similar to WebSocket
                 printf("%.*s\r\n", zcMsg.Length(), zcMsg.start);
+                return true;
             });
         }
 #endif

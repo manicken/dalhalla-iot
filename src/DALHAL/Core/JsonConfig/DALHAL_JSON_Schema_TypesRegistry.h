@@ -32,20 +32,26 @@
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <WString.h>
 
 namespace DALHAL {
 
     namespace JsonSchema {
         
-        
-        //void ForceRegistryLink();
+        // should be used on SchemaToJsonFn
+        enum class SchemaEmitMode {
+            Full,
+            Inline,
+            ReferenceOnly
+        };
 
         // used to validate the schema itself
         using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);
         using JsonValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
         using JsonValueExtractFn = HALValue (*)(const SchemaTypeBase&, const JsonVariant&);
-        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, std::string& jsonStr);
+        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, StringBuilderStreamer& sbs);
         using GetJavaScriptValidatorFn = const char* (*)();
 
         struct FieldTypeRegistryDefine {
@@ -101,7 +107,7 @@ namespace DALHAL {
 
         void ValidateSchema(const SchemaTypeBase& stb, const char* sourceObjTypeName, bool& anyError);
         ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-        void SchemaToJson(const SchemaTypeBase& stb, std::string& jsonStr);
+        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs);
 
         HALValue GetValue(const SchemaTypeBase& stb, const JsonVariant& jsonObj);
         HALValue GetValue(const SchemaTypeBase& stb, const DeviceCreateContext& context);

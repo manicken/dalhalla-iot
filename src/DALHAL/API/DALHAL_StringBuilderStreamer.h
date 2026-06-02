@@ -75,6 +75,13 @@ namespace DALHAL {
         void write(uint32_t v);
         void write(int32_t v);
         void write(float v);
+
+        void write_asBin(uint8_t v);
+        void write_asBin(uint16_t v);
+        void write_asBin(uint32_t v);
+        void write_asHex(uint8_t v);
+        void write_asHex(uint16_t v);
+        void write_asHex(uint32_t v);
         
         void write_json(float v);
         void write_jsonQuoted(const __FlashStringHelper* fstr);
@@ -85,6 +92,13 @@ namespace DALHAL {
         void write_jsonKey(const __FlashStringHelper* fstr, size_t len);
         void write_jsonKey(const char* cstr, size_t len);
         void write_jsonKey(const char* cstr);
+
+        void write_jsonString(const __FlashStringHelper* key, const char* cstr);
+        void write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr);
+        void write_jsonBool(const __FlashStringHelper* key, bool v);
+        void write_jsonNumber(const __FlashStringHelper* key, uint32_t v);
+        void write_jsonNumber(const __FlashStringHelper* key, int32_t v);
+        void write_jsonNumber(const __FlashStringHelper* key, float v);
 
     private:
 

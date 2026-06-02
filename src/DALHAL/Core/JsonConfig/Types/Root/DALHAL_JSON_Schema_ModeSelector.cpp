@@ -95,47 +95,48 @@ namespace DALHAL {
             return true;
         }
 
-        void ModeSelector::ToJson(const ModeSelector* modes, std::string& out)
+        void ModeSelector::ToJson(const ModeSelector* modes, StringBuilderStreamer& sbs)
         {
-            ToJsonString::appendKey(out, F("modes"));
-            out += '[';
+            sbs.write_jsonKey(F("modes"));
+            sbs.write('[');
             bool firstMode = true;
             for (size_t i = 0; modes[i].name; ++i) {
                 const auto& mode = modes[i];
-                if (!firstMode) { out += ','; }
+                if (!firstMode) { sbs.write(','); }
                 else { firstMode = false; }
-                out += '{';
+                sbs.write('{');
                 // mode name
-                ToJsonString::appendString(out, F("name"), mode.name ? mode.name : "null");
+                
+                sbs.write_jsonString(F("name"), mode.name ? mode.name : "null");
                 // conjunctions
-                out += ',';
-                ToJsonString::appendKey(out, F("conjunctions"));
+                sbs.write(',');
+                sbs.write_jsonKey(F("conjunctions"));
                 const auto* conj = mode.conjunctions;
                 if (conj == nullptr) {
-                    out += "null"; // a empty array mean something different
-                    out += '}';
+                    sbs.write(F("null")); // a empty array mean something different
+                    sbs.write('}');
                     continue;
                 }
-                out += '[';
+                sbs.write('[');
                 bool firstConj = true;
                 for (size_t j = 0; conj[j].fieldRef; ++j) {
                     const auto& c = conj[j];
                     // skip invalid entries safely
                     if (!c.fieldRef || !c.fieldRef->name) continue;
-                    if (!firstConj) { out += ','; }
+                    if (!firstConj) { sbs.write(','); }
                     else { firstConj = false; }
-                    out += '{';
-                    ToJsonString::appendString(out, F("name"), c.fieldRef->name);
+                    sbs.write('{');
+                    sbs.write_jsonString(F("name"), c.fieldRef->name);
                     if (c.required) {
                         // only add required == true 
-                        out += ','; ToJsonString::appendBool(out, F("required"), true);
+                        sbs.write(','); sbs.write_jsonBool(F("required"), true);
                     }
-                    out += '}';
+                    sbs.write('}');
                 }
-                out += ']';
-                out += '}';
+                sbs.write(']');
+                sbs.write('}');
             }
-            out += ']';
+            sbs.write(']');
         }
 
     }

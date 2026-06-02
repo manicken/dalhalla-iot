@@ -31,6 +31,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <DHTesp.h>
 #include "DALHAL_DHT.h"
 
@@ -78,17 +80,16 @@ namespace DALHAL {
                 return false;
             }
 
-            std::string GetModelStrings(void* ctx) { // here ctx is not used as we can access the table directly
-                std::string out;
-                out = '[';
+            void GetModelStrings(void* ctx, StringBuilderStreamer& sbs) { // here ctx is not used as we can access the table directly
+  
+                sbs.write('[');
                 for (int i=0; i<(int)modelsTable_size; ++i) {
                     if (i>0) {
-                        out += ',';
+                        sbs.write(',');
                     }
-                    out += '"'; out += modelsTable[i].name; out += '"';
+                    sbs.write_jsonQuoted(modelsTable[i].name);
                 }
-                out += ']';
-                return out;
+                sbs.write(']');
             }
 
             constexpr SchemaStringAnyOfByFuncConstrained modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, CheckModelType, GetModelStrings, nullptr};

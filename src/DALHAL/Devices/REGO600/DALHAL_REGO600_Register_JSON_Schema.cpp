@@ -29,6 +29,8 @@
 
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 
+
+
 #include <DALHAL/Drivers/REGO600.h>
 
 #include "DALHAL_REGO600_Register.h"

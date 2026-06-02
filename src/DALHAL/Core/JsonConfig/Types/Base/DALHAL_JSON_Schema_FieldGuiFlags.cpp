@@ -23,7 +23,8 @@
 
 #include "DALHAL_JSON_Schema_FieldGuiFlags.h"
 #include <string>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+
+//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
 
 namespace DALHAL {
 
@@ -42,35 +43,35 @@ namespace DALHAL {
                 return (flags & flag) != 0;
             }
 
-            void Gui::ToJson(FieldGuiFlagsType flags, std::string& out) {
+            void Gui::ToJson(FieldGuiFlagsType flags, StringBuilderStreamer& sbs) {
                 bool first = true;
-                out += '[';
+                sbs.write('[');
                 if (hasFlag(flags, DisableByDefault)) {
                     first = false;
-                    ToJsonString::appendQuoted(out, F("DisableByDefault"));
+                    sbs.write_jsonQuoted(F("DisableByDefault"));
                 }
                 
                 if (hasFlag(flags, HideLabel)) {
-                    if (first == false) { out += ','; }
+                    if (first == false) { sbs.write(','); }
                     first = false;
-                    ToJsonString::appendQuoted(out, F("HideLabel"));
+                    sbs.write_jsonQuoted(F("HideLabel"));
                 }
                 if (hasFlag(flags, ReadOnly)) {
-                    if (first == false) { out += ','; }
+                    if (first == false) { sbs.write(','); }
                     first = false;
-                    ToJsonString::appendQuoted(out, F("ReadOnly"));
+                    sbs.write_jsonQuoted(F("ReadOnly"));
                 }
                 if (hasFlag(flags, RenderAllAllowedValues)) {
-                    if (first == false) { out += ','; }
+                    if (first == false) { sbs.write(','); }
                     first = false;
-                    ToJsonString::appendQuoted(out, F("RenderAllAllowedValues"));
+                    sbs.write_jsonQuoted(F("RenderAllAllowedValues"));
                 }
                 if (hasFlag(flags, UseInline)) {
-                    if (first == false) { out += ','; }
+                    if (first == false) { sbs.write(','); }
                     first = false;
-                    ToJsonString::appendQuoted(out, F("UseInline"));
+                    sbs.write_jsonQuoted(F("UseInline"));
                 }
-                out += ']';
+                sbs.write(']');
             }
 
             bool Gui::HaveUseInline(FieldGuiFlagsType flags) {

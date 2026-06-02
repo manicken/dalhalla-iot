@@ -108,15 +108,15 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaInt&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaInt::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaInt::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaInt&>(fieldSchema);
-            out += ','; ToJsonString::appendNumber(out, F("default"), fs.defaultValue);
-            out += ','; ToJsonString::appendNumber(out, F("minValue"), fs.minValue);
-            out += ','; ToJsonString::appendNumber(out, F("maxValue"), fs.maxValue);
+            sbs.write(','); sbs.write_jsonNumber(F("default"), fs.defaultValue);
+            sbs.write(','); sbs.write_jsonNumber(F("minValue"), fs.minValue);
+            sbs.write(','); sbs.write_jsonNumber(F("maxValue"), fs.maxValue);
             
             if (fieldSchema.type == FieldType::Int) {
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

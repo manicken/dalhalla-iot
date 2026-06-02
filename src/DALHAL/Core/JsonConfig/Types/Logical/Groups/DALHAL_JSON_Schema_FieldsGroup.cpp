@@ -67,50 +67,53 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, std::string& out)
+        void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs)
         {
-            ToJsonString::appendKey(out, F("fields"));
-            out += '[';
+            sbs.write_jsonKey(F("fields"));
+            sbs.write('[');
             for (int i = 0; group.fields[i] != nullptr; ++i) {
-                if (i > 0) out += ",";
+                if (i > 0) sbs.write(',');
 
                 const SchemaTypeBase& field = *group.fields[i];
 
-                JsonSchema::SchemaToJson(field, out); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                JsonSchema::SchemaToJson(field, sbs); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
                 //const auto& regDefItem = GetFieldTypeRegistryItem(field.type);
                 //regDefItem.define.ToJson(field, out);
             }
-            out += ']';
+            sbs.write(']');
         }
         /** this should only be used on final object */
-        void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
             
             if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
                 if (ToJsonString::inlinesContains(fieldSchema.name) == false) {
-                    std::string inlineStr;
+                    /*std::string inlineStr;
                     SchemaTypeBase::SchemaToJson(fieldSchema, inlineStr);
                     inlineStr += ','; BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), inlineStr);
                     inlineStr += '}'; // add the object finalizer
                     ToJsonString::addToInlines(fieldSchema.name, inlineStr);
+                    */
+                    // just add here to be generated later
+                    ToJsonString::addToInlines(fieldSchema.name, fieldSchema);
                 }
-                out += '{';
-                ToJsonString::appendString(out, F("type"), F("_inline_"));
-                out += ','; ToJsonString::appendString(out, F("name"), fieldSchema.name);
+                sbs.write('{');
+                sbs.write_jsonString(F("type"), F("_inline_"));
+                sbs.write(','); sbs.write_jsonString(F("name"), fieldSchema.name);
 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, out);
-                out += ','; BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+                sbs.write(','); BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
             }
-            out += '}'; // add the object finalizer
+            sbs.write('}'); // add the object finalizer
         }
 
-        void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
             if (fieldSchema.type == FieldType::FieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, out);
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs);
                 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, out);
-                out += ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
             }
         }
 

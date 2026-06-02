@@ -115,18 +115,17 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaHardwarePin&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaHardwarePin::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaHardwarePin::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaHardwarePin&>(fieldSchema);
 
-            std::string modeStr = GPIO_manager::describePinFunctions(fs.mode); // this is the most describable version, use this for development test only
-            //std::string modeStr = Convert::toHex(fs.mode); // this is the most compact version
-            //std::string modeStr = Convert::toBin(fs.mode)
-            out += ','; ToJsonString::appendString(out, F("mode"), modeStr.c_str());
-            
+            sbs.write(','); sbs.write_jsonKey(F("mode"));
+            GPIO_manager::describePinFunctions(fs.mode, sbs); // this is the most describable version, use this for development test only
+            //sbs.write_asHex(fs.mode); // this is the most compact version
+            //sbs.write_asBin(fs.mode)
             
             if (fieldSchema.type == FieldType::HardwarePin) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

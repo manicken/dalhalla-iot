@@ -111,20 +111,20 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaNumber&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaNumber::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaNumber::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaNumber&>(fieldSchema);
 
-            out += ','; ToJsonString::appendKey(out, F("allowedTypes"));
-            out += '{';
-            ToJsonString::appendBool(out, F("bool"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
-            out += ','; ToJsonString::appendBool(out, F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
-            out += ','; ToJsonString::appendBool(out, F("int"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
-            out += ','; ToJsonString::appendBool(out, F("uint"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
-            out += '}';
+            sbs.write(','); sbs.write_jsonKey(F("allowedTypes"));
+            sbs.write('{');
+            sbs.write_jsonBool(F("bool"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
+            sbs.write(','); sbs.write_jsonBool(F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
+            sbs.write(','); sbs.write_jsonBool(F("int"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
+            sbs.write(','); sbs.write_jsonBool(F("uint"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
+            sbs.write('}');
             
             if (fieldSchema.type == FieldType::Number) {
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

@@ -209,18 +209,25 @@ namespace DALHAL {
         
         PinReservationType reservedPins[available_gpio_list_size];
 
-        std::string describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask) {
-            std::string result;
+        void describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask, StringBuilderStreamer& sbs) {
+
+            bool anyFunc = false;
+            sbs.write('"');
             for (int i=0; i < (int)PinModeStrings_size; ++i) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
                 if (pinModeDef.Name == nullptr) continue; // failsafe
 
                 if (pinFuncMask & pinModeDef.func) {
-                    if (!result.empty()) result += "|";
-                    result += pinModeDef.Name;
+                    
+                    if (anyFunc) { sbs.write('|'); }
+                    sbs.write(pinModeDef.Name);
+                    anyFunc = true;
                 }
             }
-            return result.empty() ? "None" : result;
+            if (anyFunc == false) {
+                sbs.write(F("None"));
+            }
+            sbs.write('"');
         }
 
         const gpio_pin& GetPinInfo(uint8_t pin, int& index) {
@@ -329,7 +336,7 @@ namespace DALHAL {
 #endif
         }
 
-        std::string GetList(ZeroCopyString& zcMode)
+        void GetList(ZeroCopyString& zcMode, StringBuilderStreamer& sbs)
         {
             GPIO_manager::PrintListMode listMode = GPIO_manager::PrintListMode::Hex; // set the default here
 
@@ -344,63 +351,65 @@ namespace DALHAL {
                 //else // default set above
                 //    listMode = DALHAL_CMD_EXEC_GPIO_LIST_MODE_DEFAULT; // default
             }
-            std::string strList;// = "{";
-            
+            sbs.write('{');
     #if defined(ESP8266)
-            strList.append("\"MCU\":\"ESP8266\",");
+            sbs.write_jsonString(F("MCU"), F("ESP8266"));
     #elif defined(ESP32)
-            strList.append("\"MCU\":\"ESP32\",");
+            sbs.write_jsonString(F("MCU"), F("ESP32"));
     #elif defined(_WIN32) || defined(__linux__)
-            strList.append("\"MCU\":\"PC_SIM\",");
+            sbs.write_jsonString(F("MCU"), F("PC_SIM"));
+    #else
+            sbs.write_jsonString(F("MCU"), F("UNKNOWN"));
     #endif
-            strList.append("\"variant\":\""); strList.append(Info::getESPVariant()); strList.append("\",");
+            sbs.write(','); sbs.write_jsonString(F("variant"), Info::getESPVariant());
             if (listMode != PrintListMode::String) {
-                strList.append("\"PinModes\":{");
+                sbs.write(','); sbs.write_jsonKey(F("PinModes"));
+                sbs.write('{');
                 
                 for (int i=0;i<(int)PinModeStrings_size;++i)
                 {
-                    if (i>0) { strList += ',';}
-                    strList += '"';
-                    uint8_t modeMask = PinModeStrings[i].func;
+                    if (i>0) { sbs.write(','); }
+                    sbs.write_jsonKey(PinModeStrings[i].Name);
+
+                    sbs.write('"');
+                    DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = PinModeStrings[i].func;
                     if (listMode == PrintListMode::Binary) {
-                        strList.append(Convert::toBin(modeMask));
+                        sbs.write_asBin(modeMask);
                     }
                     else {
-                        strList.append(Convert::toHex(modeMask));
+                        sbs.write_asHex(modeMask);
                     }
-                    strList.append("\":\"");
-                    strList.append(PinModeStrings[i].Name);
-                    strList += '"';
+                    sbs.write('"');
+                    
                 }
-                strList.append("},");
+                sbs.write('}'); 
             }
-            strList.append("\"list\":{");
-            bool first = true;
+            sbs.write(','); sbs.write_jsonKey(F("list")); sbs.write('{');
+
            // if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
             for (int i=0;i<(int)available_gpio_list_size;i++)
             {
-                if (first == false)
-                    strList.append(",");
-                else
-                    first = false;
-
-                strList.append("\"");
-                strList.append(std::to_string(available_gpio_list[i].pin));
-                strList.append("\":\"");
-                uint8_t modeMask = available_gpio_list[i].func;
-                if (listMode == PrintListMode::String)
-                    strList.append(describePinFunctions(modeMask).c_str());
-                else if (listMode == PrintListMode::Binary) {
-                    strList.append(Convert::toBin(modeMask));
+                if (i>0) { sbs.write(','); }
+                
+                sbs.write('"');
+                sbs.write(available_gpio_list[i].pin);
+                sbs.write('"');
+                sbs.write(':');
+                sbs.write('"');
+                DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = available_gpio_list[i].func;
+                if (listMode == PrintListMode::String) {
+                    describePinFunctions(modeMask, sbs);
+                } else if (listMode == PrintListMode::Binary) {
+                    sbs.write_asBin(modeMask);
                 }
                 else { // (listMode == PrintListMode::Hex) 
-                    strList.append(Convert::toHex(modeMask));
+                    sbs.write_asHex(modeMask);
                 }
-                strList.append("\"");                        
+                sbs.write('"');                      
             }
-            strList.append("}");
-            //strList.append("}");
-            return strList;
+            sbs.write('}');
+
+            sbs.write('}'); // end of whole json object
         }
     }
 }

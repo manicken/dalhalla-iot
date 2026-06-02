@@ -38,38 +38,33 @@ namespace DALHAL {
 
         namespace ToJsonString {
 
-            struct JsonKeyValue {
-                const char* key; 
-                std::string value;
+            struct DeviceRegistryQueueItem {
+                const char* regPath;
+                const Registry::DeviceRegistry& reg;
             };
 
-            bool registerContains(const char* key);
+            struct JsonObjectSchemaQueueItem {
+                const char* id; 
+                const JsonObjectSchema& schema;
+            };
 
-            bool inlinesContains(const char* key);
-            void addToInlines(const char* key, std::string contents);
+            struct InlineQueueItem {
+                const char* id;
+                const SchemaTypeBase& schema;
+            };
 
-            void addRegistrySchemaAndBuild(const Registry::DeviceRegistry& reg, const char* regPath);
+            bool registerContains(const char* id);
+            bool objectsContains(const char* id);
+            bool inlinesContains(const char* id);
+
+            void addToRegistries(const char* regPath, const Registry::DeviceRegistry& reg);
+            void addToObjects(const char* id, const JsonObjectSchema& schema);
+            void addToInlines(const char* id, const SchemaTypeBase& schema);
+
             void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb);
 
             void clear();
 
-            void appendQuoted(std::string& out, const char* str);
-            void appendQuoted(std::string& out, const __FlashStringHelper* str);
-            void appendKey(std::string& out, const char* key);
-            void appendKey(std::string& out, const __FlashStringHelper* key);
-            void appendBool(std::string& out, bool v);
-            void appendBool(std::string& out, const char* key, bool v);
-            void appendNumber(std::string& out, const char* key, unsigned int v);
-            void appendNumber(std::string& out, const char* key, int v);
-            void appendNumber(std::string& out, const char* key, float v);
-            void appendString(std::string& out, const char* key, const char* cStr);
-            void appendString(std::string& out, const __FlashStringHelper* key, const char* cStr);
-            void appendString(std::string& out, const __FlashStringHelper* key, const __FlashStringHelper* cStr);
-
-            void appendBool(std::string& out, const __FlashStringHelper* key, bool v);
-            void appendNumber(std::string& out, const __FlashStringHelper* key, unsigned int v);
-            void appendNumber(std::string& out, const __FlashStringHelper* key, int v);
-            void appendNumber(std::string& out, const __FlashStringHelper* key, float v);
 
         }
 

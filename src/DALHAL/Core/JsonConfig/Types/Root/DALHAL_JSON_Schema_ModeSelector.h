@@ -49,7 +49,7 @@ namespace DALHAL {
 
             static int evaluate(const ModeSelector* modes, const JsonVariant& j);
             static bool Apply(const ModeSelector* modes, const DALHAL::DeviceCreateContext&, void* outStruct);
-            static void ToJson(const ModeSelector* modes, std::string& out);
+            static void ToJson(const ModeSelector* modes, StringBuilderStreamer& sbs);
         };
 
         

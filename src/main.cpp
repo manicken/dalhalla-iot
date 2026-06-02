@@ -35,13 +35,14 @@
 
 #include <System/WiFiConnectionManager.h>
 #include <DALHAL/API/DALHAL_WebSocketAPI.h>
-
+#ifndef ESP8266
 #include <LittleFS.h>
 #include "esp_partition.h"
 #include "esp_system.h"
-
+#endif
 #define BUILD_VER "1.0"
 
+#ifndef ESP8266
 /**
  * Initialize crash handling system
  */
@@ -86,6 +87,7 @@ void saveCoreDumpToLittleFS()
 
     Serial.println("Core dump saved to LittleFS");
 }
+#endif
 
 void Timer_SyncTime() {
     DEBUG_UART.println("Timer_SyncTime");
@@ -215,7 +217,9 @@ void setup() {
 #endif
 
     if (Info::resetReason_is_crash(true)) {
+#ifndef ESP8266
         saveCoreDumpToLittleFS();
+#endif
         System::failsafeLoop();
     }
     DEBUG_UART.begin(115200);

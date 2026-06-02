@@ -32,6 +32,8 @@
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Base.h>
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Pins.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <WS2812FX.h>
 #include "DALHAL_WS2812.h"
 
@@ -89,17 +91,16 @@ namespace DALHAL {
                 return false;
             }
 
-            std::string GetFormatStrings(void* ctx) { // here ctx is not used as we can access the table directly
-                std::string out;
-                out = '[';
+            void GetFormatStrings(void* ctx, StringBuilderStreamer& sbs) { // here ctx is not used as we can access the table directly
+                
+                sbs.write('[');
                 for (int i=0; i<(int)formatsTableSize; ++i) {
                     if (i>0) {
-                        out += ',';
+                        sbs.write(',');
                     }
-                    out += '"'; out += formatsTable[i].name; out += '"';
+                    sbs.write_jsonQuoted(formatsTable[i].name);
                 }
-                out += ']';
-                return out;
+                sbs.write(']');
             }
 
             constexpr const char* INTERFACE_SPEED_KHZ800 = "KHZ800";

@@ -32,6 +32,8 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <cassert>
 
 namespace DALHAL {
@@ -44,12 +46,12 @@ namespace DALHAL {
         protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs);
             static const char* GetJavaScriptValidator();
         
         public:            
             using ValidateFunc  = bool(*)(void* ctx, const char* value);
-            using DescribeFunc  = std::string(*)(void* ctx);
+            using DescribeFunc  = void(*)(void* ctx, StringBuilderStreamer& sbs);
 
             ValidateFunc validate;
             DescribeFunc describe;

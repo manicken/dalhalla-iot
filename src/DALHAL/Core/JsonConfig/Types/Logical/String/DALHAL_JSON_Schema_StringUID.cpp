@@ -76,11 +76,11 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaString::SchemaToJson(fieldSchema, out);
+        void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaString::SchemaToJson(fieldSchema, sbs);
             
             if (fieldSchema.type == FieldType::StringUID) {
-                out += '}'; // this is complete object
+                sbs.write('}'); // this is complete object
             }
         }
 

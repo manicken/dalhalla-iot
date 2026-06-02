@@ -89,8 +89,10 @@ namespace DALHAL {
             return;
         }
         size_t i = 0;
-        unsigned char b;
-        while (b=pgm_read_byte(pstr + i) != 0) {
+        char b=1;
+        while (true) {
+            b=pgm_read_byte(pstr + i);
+            if (b == '\0') break;
             write(b);
             i++;
         }
@@ -125,6 +127,40 @@ namespace DALHAL {
         char buf[32];
         int n = snprintf(buf, sizeof(buf), "%g", (double)v);
         if (n > 0) write(buf, (size_t)n);
+    }
+
+    void StringBuilderStreamer::write_asBin(uint8_t v) {
+        for (int bit = 7; bit >= 0; --bit) {
+            write((v & (1U << bit)) ? '1' : '0');
+        }
+    }
+    void StringBuilderStreamer::write_asBin(uint16_t v) {
+        for (int bit = 15; bit >= 0; --bit) {
+            write((v & (1U << bit)) ? '1' : '0');
+        }
+    }
+    void StringBuilderStreamer::write_asBin(uint32_t v) {
+        for (int bit = 31; bit >= 0; --bit) {
+            write((v & (1U << bit)) ? '1' : '0');
+        }
+    }
+    char NibbleToHexChar(uint8_t value)
+    {
+        value &= 0x0F;
+        if (value>9) return (value - 10) + 'A';
+        else return value + '0';
+    }
+    void StringBuilderStreamer::write_asHex(uint8_t v) {
+        write(NibbleToHexChar(v >> 4));
+        write(NibbleToHexChar(v));
+    }
+    void StringBuilderStreamer::write_asHex(uint16_t v) {
+        write_asHex((uint8_t)(v >> 8));
+        write_asHex((uint8_t)(v & 0xFF));
+    }
+    void StringBuilderStreamer::write_asHex(uint32_t v) {
+        write_asHex((uint16_t)(v >> 16));
+        write_asHex((uint16_t)(v & 0xFFFF));
     }
 
     void StringBuilderStreamer::write_json(float v) {
@@ -173,6 +209,30 @@ namespace DALHAL {
         write_jsonKey(cstr, strlen(cstr));
     }
 
-    
+    void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const char* cstr) {
+        write_jsonKey(key);
+        write_jsonQuoted(cstr);
+    }
+    void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr) {
+        write_jsonKey(key);
+        write_jsonQuoted(fstr);
+    }
+
+    void StringBuilderStreamer::write_jsonBool(const __FlashStringHelper* key, bool v) {
+        write_jsonKey(key);
+        write(v);
+    }
+    void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, uint32_t v) {
+        write_jsonKey(key);
+        write(v);
+    }
+    void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, int32_t v) {
+        write_jsonKey(key);
+        write(v);
+    }
+    void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, float v) {
+        write_jsonKey(key);
+        write_json(v);
+    }
 
 }

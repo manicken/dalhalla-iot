@@ -50,8 +50,6 @@ namespace DALHAL {
         {"button",         &HA_Button::RegistryDefine},
         {"number",         &HA_Number::RegistryDefine},
         {"CONTAINER",      &HA_DeviceContainer::RegistryDefine},
-        /** mandatory null terminator */
-        Registry::TerminatorItem
     };
 
     constexpr Registry::DeviceRegistry HA_DeviceRegistry = {items, sizeof(items)/sizeof(items[0]), "HomeAssistant", "ROOT.HOMEASSISTANT" };

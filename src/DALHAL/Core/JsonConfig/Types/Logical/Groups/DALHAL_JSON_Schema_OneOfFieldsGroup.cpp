@@ -138,13 +138,13 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaOneOfFieldsGroup&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaOneOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void SchemaOneOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
             if (fieldSchema.type == FieldType::OneOfFieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, out);
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs);
                 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, out);
-                out += ','; SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), out);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
             }
         }
 

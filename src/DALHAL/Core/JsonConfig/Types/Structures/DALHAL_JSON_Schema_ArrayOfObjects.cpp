@@ -76,30 +76,31 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaArrayOfObjects&>(fieldSchema);
-            out += ','; ToJsonString::appendKey(out, F("subtype"));
-            //out += '{'; SchemaToJson adds it
+            sbs.write(',');sbs.write_jsonKey(F("subtype"));
+            //sbs.write('{'); SchemaToJson adds it
             if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
-                if (ToJsonString::inlinesContains(fs.subtype->typeName) == false) {
-                    std::string subTypeOutTemp;
-                    JsonObjectSchema::SchemaToJson(fs.subtype, subTypeOutTemp);
-                    ToJsonString::addToInlines(fs.subtype->typeName, subTypeOutTemp);
+                if (ToJsonString::objectsContains(fs.subtype->typeName) == false) {
+                    //std::string subTypeOutTemp;
+                    //JsonObjectSchema::SchemaToJson(fs.subtype, subTypeOutTemp);
+                    ToJsonString::addToObjects(fs.subtype->typeName, *(fs.subtype));
                 }
-                ToJsonString::appendQuoted(out, fs.subtype->typeName);
+                sbs.write_jsonQuoted(fs.subtype->typeName);
+
                 
             } else {
-                JsonObjectSchema::SchemaToJson(fs.subtype, out);
+                JsonObjectSchema::SchemaToJson(fs.subtype, sbs);
             }
-            //out += '}'; SchemaToJson adds it
+            //sbs.write('}'); SchemaToJson adds it
 
             if (fs.renderAllAllowedValuesFromStringConstraint != nullptr) {
-                out += ','; ToJsonString::appendString(out, F("renderAllAllowedValuesFromStringConstraint"), fs.renderAllAllowedValuesFromStringConstraint->name);
+                sbs.write(','); sbs.write_jsonString(F("renderAllAllowedValuesFromStringConstraint"), fs.renderAllAllowedValuesFromStringConstraint->name);
             }
             
             if (fieldSchema.type == FieldType::ArrayOfObjects) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

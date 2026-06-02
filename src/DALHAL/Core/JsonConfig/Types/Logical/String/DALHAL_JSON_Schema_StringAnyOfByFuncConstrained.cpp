@@ -85,14 +85,14 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaString::SchemaToJson(fieldSchema, out);
-            out += ','; ToJsonString::appendKey(out, F("allowedValues"));
+        void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaString::SchemaToJson(fieldSchema, sbs);
+            sbs.write(','); sbs.write_jsonKey(F("allowedValues"));
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
-            out += strSchema.describe(strSchema.ctx);
+            strSchema.describe(strSchema.ctx, sbs);
             
             if (fieldSchema.type == FieldType::StringAnyOfByFuncConstrained) {
-                out += '}'; // this is complete object
+                sbs.write('}'); // this is complete object
             }
         }
 

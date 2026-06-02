@@ -76,15 +76,15 @@ namespace DALHAL {
             return JsonObjectSchema::ValidateJson(fs.subtype, sourceObjTypeName, subJsonObj, anyError);
         }
 
-        void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaObject::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaObject&>(fieldSchema);
-            out += ','; ToJsonString::appendKey(out, F("subtype"));
-            //out += '{'; SchemaToJson adds it
-            JsonObjectSchema::SchemaToJson(fs.subtype, out);
-            //out += '}'; SchemaToJson adds it
+            sbs.write(','); sbs.write_jsonKey(F("subtype"));
+            //sbs.write('{'); SchemaToJson adds it
+            JsonObjectSchema::SchemaToJson(fs.subtype, sbs);
+            //sbs.write('}'); SchemaToJson adds it
             if (fieldSchema.type == FieldType::Object) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

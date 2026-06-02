@@ -41,57 +41,83 @@ namespace DALHAL {
 
         namespace ToJsonString {
 
-            std::vector<JsonKeyValue> registers;
-            // inlines are not outputted as key/value pairs instead we
-            // just use the key here for simple lockup of allready stored names
-            std::vector<JsonKeyValue> inlines;
+            std::vector<DeviceRegistryQueueItem> registers;
+            std::vector<JsonObjectSchemaQueueItem> objects;
+            std::vector<InlineQueueItem> inlines;
 
             void clear() {
-                registers.reserve(32);
-                inlines.reserve(32);
+                if (registers.capacity() < 32) {
+                    registers.reserve(32);
+                }
+                if (objects.capacity() < 32) {
+                    objects.reserve(32);
+                }
+                if (inlines.capacity() < 32) {
+                    inlines.reserve(32);
+                }
+                
                 registers.clear();
+                objects.clear();
                 inlines.clear();
             }
 
-            bool registerContains(const char* key) {
+            bool registerContains(const char* regPath) {
                 for (int i=0;i<(int)registers.size();++i) {
-                    if (strcmp(registers[i].key, key) == 0) {
+                    if (strcmp(registers[i].regPath, regPath) == 0) {
                         return true;
                     }
                 }
                 return false;
             }
 
-            bool inlinesContains(const char* key) {
+            bool objectsContains(const char* id) {
+                for (int i=0;i<(int)objects.size();++i) {
+                    if (strcmp(objects[i].id, id) == 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            bool inlinesContains(const char* id) {
                 for (int i=0;i<(int)inlines.size();++i) {
-                    if (strcmp(inlines[i].key, key) == 0) {
+                    if (strcmp(inlines[i].id, id) == 0) {
                         return true;
                     }
                 }
                 return false;
             }
-            void addToInlines(const char* key, std::string contents) {
-                inlines.push_back( {key, contents} );
+
+            void addToInlines(const char* id, const SchemaTypeBase& schema) {
+                inlines.push_back( { id, schema } );
             }
 
-            void buildJsonSchemas(const Registry::DeviceRegistry& reg, std::string &out) {
-                bool first = true;
-                for (size_t i=0;reg.count; i++) {
-                    if (first == false) {
-                        out += ',';
-                    } else { first = false; }
-                    appendKey(out, reg.items[i].typeName);
-                    JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, out);
+            void addToRegistries(const char* regPath, const Registry::DeviceRegistry& reg) {
+                registers.push_back( { regPath, reg } );
+            }
+            void addToObjects(const char* id, const JsonObjectSchema& schema) {
+                objects.push_back( { id, schema } );
+            }
+
+            void buildJsonSchemas(const Registry::DeviceRegistry& reg, StringBuilderStreamer& sbs) {
+                
+                for (size_t i=0;i < reg.count; i++) {
+                    if (i > 0) {
+                        sbs.write(',');
+                    }
+                    if (reg.items[i].typeName == nullptr) {
+                        Serial.println("reg.items[i].typeName == nullptr");
+                        sbs.write('"');
+                        sbs.write(F("typeName null_"));
+                        sbs.write((uint32_t)i);
+                        sbs.write('"');
+                        sbs.write(F(":null"));
+                        continue;
+                    }
+                    sbs.write_jsonKey(reg.items[i].typeName);
+
+                    JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, sbs);
                 }
-            }
-
-            void addRegistrySchemaAndBuild(const Registry::DeviceRegistry& reg, const char* regPath) {
-                auto idx = registers.size();
-                registers.push_back({ regPath, {} });
-                std::string out;
-                out.reserve(10240);
-                buildJsonSchemas(reg, out);
-                registers[idx].value = out;
             }
 
             void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb) {
@@ -99,39 +125,50 @@ namespace DALHAL {
                 DALHAL::BlockStreamer bs(cb, "schema", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
 
-                //std::string out; // to be removed later when using new complete API-StreamWriter
-
-
                 clear();
-                addRegistrySchemaAndBuild(reg, "ROOT");
+
+                addToRegistries("ROOT", reg);
+                
                 // here all json is built now we just combine it all
                 sbs.write('{');
-                sbs.write_jsonKey( F("registers"), sizeof("registers")-1);
+                sbs.write_jsonKey(F("registers"));
                 
                 sbs.write('{');
-                int itemCount = registers.size();
-                for (int i=0;i<itemCount;++i) {
+
+                for (int i=0;i < registers.size(); i++) {
                     if (i > 0) { sbs.write(','); }
-                    if (registers[i].key == nullptr) {
-                        sbs.write(F("null_"));
+                    if (registers[i].regPath == nullptr) {
+                        sbs.write('"');
+                        sbs.write(F("regPath null_"));
                         sbs.write((uint32_t)i);
+                        sbs.write('"');
                         sbs.write(F(":null"));
                     } else {
-                        sbs.write_jsonKey(registers[i].key);
+                        sbs.write_jsonKey(registers[i].regPath);
                         sbs.write('{');
-                        sbs.write(registers[i].value.c_str(), registers[i].value.length());
+                        buildJsonSchemas(registers[i].reg, sbs);
                         sbs.write('}');
                     }
                 }
                 sbs.write('}');
                 sbs.write(',');
+                sbs.write_jsonKey(F("objects"));
+                sbs.write('[');
+
+                for (int i=0;i<objects.size();++i) {
+                    if (i > 0) { sbs.write(','); }
+                    JsonSchema::JsonObjectSchema::SchemaToJson(&objects[i].schema, sbs);
+                }
+                sbs.write(']');
+                sbs.write(',');
                 sbs.write_jsonKey(F("inlines"));
                 sbs.write('[');
 
-                itemCount = inlines.size();
-                for (int i=0;i<itemCount;++i) {
+                for (int i=0;i<inlines.size();++i) {
                     if (i > 0) { sbs.write(','); }
-                    sbs.write(inlines[i].value.c_str(), inlines[i].value.length());
+                    const FieldTypeRegistryItem& item = JsonSchema::GetFieldTypeRegistryItem(inlines[i].schema.type);
+                    item.define->ToJson(inlines[i].schema, sbs);
+                    //sbs.write(inlines[i].value.c_str(), inlines[i].value.length());
                 }
                 sbs.write(']');
                 sbs.write('}');
@@ -139,94 +176,6 @@ namespace DALHAL {
                 // dont forget to clean when done
                 clear();
             }
-
-            void appendQuoted(std::string& out, const char* str) {
-                out += '"';
-                if (str) out += str;
-                out += '"';
-            }
-
-            void appendQuoted(std::string& out, const __FlashStringHelper* str) {
-                out += '"';
-                out += String(str).c_str();
-                out += '"';
-            }
-
-            void appendKey(std::string& out, const char* key) {
-                appendQuoted(out, key);
-                out += ':';
-            }
-
-            void appendKey(std::string& out, const __FlashStringHelper* key) {
-                appendQuoted(out, key);
-                out += ':';
-            }
-
-            void appendBool(std::string& out, bool v) {
-                out += (v ? "true" : "false");
-            }
-
-            void appendBool(std::string& out, const char* key, bool v) {
-                appendKey(out, key);
-                appendBool(out, v);
-            }
-
-            void appendNumber(std::string& out, const char* key, unsigned int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-
-            void appendNumber(std::string& out, const char* key, int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-            
-            void appendNumber(std::string& out, const char* key, float v) {
-                appendKey(out, key);
-                if (isnan(v)) {
-                    out += "null"; // otherwise it will print nan which is a invalid json type
-                } else {
-                    out += std::to_string(v);
-                }
-            }
-
-            void appendString(std::string& out, const char* key, const char* cStr) {
-                appendKey(out, key);
-                appendQuoted(out, cStr);
-            }
-            void appendString(std::string& out, const __FlashStringHelper* key, const char* cStr) {
-                appendKey(out, key);
-                appendQuoted(out, cStr);
-            }
-            void appendString(std::string& out, const __FlashStringHelper* key, const __FlashStringHelper* cStr) {
-                appendKey(out, key);
-                appendQuoted(out, cStr);
-            }
-
-            void appendBool(std::string& out, const __FlashStringHelper* key, bool v) {
-                appendKey(out, key);
-                appendBool(out, v);
-            }
-
-            void appendNumber(std::string& out, const __FlashStringHelper* key, unsigned int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-
-            void appendNumber(std::string& out, const __FlashStringHelper* key, int v) {
-                appendKey(out, key);
-                out += std::to_string(v);
-            }
-            
-            void appendNumber(std::string& out, const __FlashStringHelper* key, float v) {
-                appendKey(out, key);
-                if (isnan(v)) {
-                    out += "null"; // otherwise it will print nan which is a invalid json type
-                } else {
-                    out += std::to_string(v);
-                }
-            }
-
         }
 
     }

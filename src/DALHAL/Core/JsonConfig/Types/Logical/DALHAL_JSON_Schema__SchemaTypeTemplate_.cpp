@@ -57,11 +57,11 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
+        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
 
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::_Count_) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

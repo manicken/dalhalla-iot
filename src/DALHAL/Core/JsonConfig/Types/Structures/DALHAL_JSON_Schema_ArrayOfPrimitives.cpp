@@ -88,15 +88,15 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaArrayOfPrimitives::SchemaToJson(const SchemaTypeBase& fieldSchema, std::string& out) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, out);
+        void SchemaArrayOfPrimitives::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
             auto fs = static_cast<const SchemaArrayOfPrimitives&>(fieldSchema);
             // TODO do proper convertion into bool fields
             std::string primitiveTypeFlagsHex = Convert::toHex(fs.primitiveTypeFlags);
-            out += ','; ToJsonString::appendString(out, F("primitiveTypeFlags"), primitiveTypeFlagsHex.c_str());
+            sbs.write(','); sbs.write_jsonString(F("primitiveTypeFlags"), primitiveTypeFlagsHex.c_str());
             
             if (fieldSchema.type == FieldType::ArrayOfPrimitives) { 
-                out += '}'; // add the object finalizer if this is the actual object
+                sbs.write('}'); // add the object finalizer if this is the actual object
             }
         }
 

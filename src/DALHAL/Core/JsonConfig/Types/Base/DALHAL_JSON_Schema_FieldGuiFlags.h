@@ -24,8 +24,9 @@
 #pragma once
 
 #include <stdlib.h>
-#include <string>
+
 #include <cstdint>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace DALHAL {
 
@@ -48,7 +49,7 @@ namespace DALHAL {
 
             static bool hasFlag(FieldGuiFlagsType flags, FieldGuiFlagsType flag);
 
-            static void ToJson(FieldGuiFlagsType flags, std::string& out);
+            static void ToJson(FieldGuiFlagsType flags, StringBuilderStreamer& sbs);
 
             static bool HaveUseInline(FieldGuiFlagsType flags);
         };
