@@ -33,7 +33,7 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ACTUATOR)
 #include "DALHAL_Actuator_Reactive.h"
 using Actuator_DeviceBase = DALHAL::Actuator_Reactive;

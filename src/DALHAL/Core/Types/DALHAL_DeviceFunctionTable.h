@@ -26,7 +26,7 @@
 #include <stddef.h>
 #include <string>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
-#include <DALHAL/API/DALHAL_API_StreamWriter.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 #define DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE             uint32_t
 
@@ -49,7 +49,7 @@ namespace DALHAL {
         constexpr DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE _UInt_Int_ = _UInt_ | _Int_;
         constexpr DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE _None_ = 0x00;
 
-        void PrintTo(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL::StreamWriter& sw);
+        void PrintTo(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL::StringBuilderStreamer& sbs);
         inline bool HasFlag(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE flag) {
             return (mask & flag) == flag;
         }
@@ -113,22 +113,22 @@ namespace DALHAL {
     }
 
     template<typename Fn>
-    static void GetDeviceFunctions(const FunctionTable_t<Fn>& funcTable, DALHAL::StreamWriter& sw) {
+    static void GetDeviceFunctions(const FunctionTable_t<Fn>& funcTable, DALHAL::StringBuilderStreamer& sbs) {
 
-        sw.write('[');
+        sbs.write('[');
         for (size_t i = 0; i<funcTable.count; ++i) {
-            if (i>0) { sw.write(','); }
-            sw.write("{\"name\":\""); if (funcTable.items[i].name) { sw.write(funcTable.items[i].name); } sw.write('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
-            sw.write(",\"help\":\""); if (funcTable.items[i].help) { sw.write(funcTable.items[i].help); } sw.write('"');
+            if (i>0) { sbs.write(','); }
+            sbs.write(F("{\"name\":\"")); if (funcTable.items[i].name) { sbs.write(funcTable.items[i].name); } sbs.write('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
+            sbs.write(F(",\"help\":\"")); if (funcTable.items[i].help) { sbs.write(funcTable.items[i].help); } sbs.write('"');
             if (funcTable.items[i].rwTypeMask != FunctionValueType::_None_) {
-                sw.write(",\"rwTypeMask\":"); FunctionValueType::PrintTo(funcTable.items[i].rwTypeMask, sw);
+                sbs.write(F(",\"rwTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].rwTypeMask, sbs);
             }
             if (funcTable.items[i].bracketTypeMask != FunctionValueType::_None_) {
-                sw.write(",\"bracketTypeMask\":"); FunctionValueType::PrintTo(funcTable.items[i].bracketTypeMask, sw);
+                sbs.write(F(",\"bracketTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].bracketTypeMask, sbs);
             }
-            sw.write('}');
+            sbs.write('}');
         }
-        sw.write(']');
+        sbs.write(']');
     }
 
     struct DeviceFunctionTable {
@@ -167,7 +167,7 @@ namespace DALHAL {
             writeString(writeString)
         {}
 
-        void PrintTo(DALHAL::StreamWriter& sw) const;
+        void PrintTo(DALHAL::StringBuilderStreamer& sbs) const;
 
     };
 }

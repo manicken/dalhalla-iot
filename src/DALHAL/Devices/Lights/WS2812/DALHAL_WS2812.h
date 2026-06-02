@@ -33,7 +33,7 @@
 
 #include <WS2812FX.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(WS2812)
 #include "DALHAL_WS2812_Reactive.h"
 using WS2812_DeviceBase = DALHAL::WS2812_Reactive;

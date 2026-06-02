@@ -31,7 +31,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_ARRAY)
 #include "DALHAL_ScriptArray_Reactive.h"
 using ScriptArray_DeviceBase = DALHAL::ScriptArray_Reactive;

@@ -30,6 +30,8 @@
 
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/API/DALHAL_CommandCallback.h>
+
 namespace DALHAL {
 
     namespace JsonSchema {
@@ -47,7 +49,7 @@ namespace DALHAL {
             void addToInlines(const char* key, std::string contents);
 
             void addRegistrySchemaAndBuild(const Registry::DeviceRegistry& reg, const char* regPath);
-            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, std::string &out);
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb);
 
             void clear();
 

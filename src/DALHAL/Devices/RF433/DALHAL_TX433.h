@@ -33,7 +33,7 @@
 
 #define DALHAL_KEYNAME_TX433_UNITS "units"
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(TX433)
 #include "DALHAL_TX433_Reactive.h"
 using TX433_DeviceBase = DALHAL::TX433_Reactive;

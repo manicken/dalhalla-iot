@@ -30,7 +30,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(REGO600_REGISTRY_ITEM)
 #include "DALHAL_REGO600_Register_Reactive.h"
 using REGO600register_DeviceBase = DALHAL::REGO600_Register_Reactive;

@@ -35,7 +35,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_BUS)
 #include "DALHAL_OneWireTempBus_Reactive.h"
 using OneWireTempBus_DeviceBase = DALHAL::OneWireTempBus_Reactive;

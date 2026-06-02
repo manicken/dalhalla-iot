@@ -30,7 +30,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(DIGITAL_INPUT)
 #include "DALHAL_DigitalInput_Reactive.h"
 using DigitalInput_DeviceBase = DALHAL::DigitalInput_Reactive;

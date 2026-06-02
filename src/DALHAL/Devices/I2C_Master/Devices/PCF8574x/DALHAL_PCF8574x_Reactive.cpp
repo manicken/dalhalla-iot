@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_PCF8574x_Reactive.h"
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
 

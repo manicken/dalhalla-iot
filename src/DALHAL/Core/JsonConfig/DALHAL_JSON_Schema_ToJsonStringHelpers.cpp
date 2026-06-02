@@ -23,6 +23,9 @@
 
 #include "DALHAL_JSON_Schema_ToJsonStringHelpers.h"
 
+#include <DALHAL/API/DALHAL_BlockStreamer.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
@@ -91,36 +94,48 @@ namespace DALHAL {
                 registers[idx].value = out;
             }
 
-            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, std::string &out) {
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb) {
+
+                DALHAL::BlockStreamer bs(cb, "schema", BlockStreamer::DataType::Json);
+                StringBuilderStreamer& sbs = bs.writer();
+
+                //std::string out; // to be removed later when using new complete API-StreamWriter
+
+
                 clear();
                 addRegistrySchemaAndBuild(reg, "ROOT");
                 // here all json is built now we just combine it all
-                out = '{';
-                appendKey(out, "registers");
-                out += '{';
+                sbs.write('{');
+                sbs.write_jsonKey( F("registers"), sizeof("registers")-1);
+                
+                sbs.write('{');
                 int itemCount = registers.size();
                 for (int i=0;i<itemCount;++i) {
-                    if (i > 0) { out += ','; }
+                    if (i > 0) { sbs.write(','); }
                     if (registers[i].key == nullptr) {
-                        out += "null" + std::to_string(i) + ":null";
+                        sbs.write(F("null_"));
+                        sbs.write((uint32_t)i);
+                        sbs.write(F(":null"));
                     } else {
-                        appendKey(out, registers[i].key);
-                        out += '{';
-                        out += registers[i].value;
-                        out += '}';
+                        sbs.write_jsonKey(registers[i].key);
+                        sbs.write('{');
+                        sbs.write(registers[i].value.c_str(), registers[i].value.length());
+                        sbs.write('}');
                     }
                 }
-                out += '}';
-                out += ',';
-                appendKey(out, "inlines");
-                out += '[';
+                sbs.write('}');
+                sbs.write(',');
+                sbs.write_jsonKey(F("inlines"));
+                sbs.write('[');
+
                 itemCount = inlines.size();
                 for (int i=0;i<itemCount;++i) {
-                    if (i > 0) { out += ','; }
-                    out += inlines[i].value;
+                    if (i > 0) { sbs.write(','); }
+                    sbs.write(inlines[i].value.c_str(), inlines[i].value.length());
                 }
-                out += ']';
-                out += '}';
+                sbs.write(']');
+                sbs.write('}');
+
                 // dont forget to clean when done
                 clear();
             }

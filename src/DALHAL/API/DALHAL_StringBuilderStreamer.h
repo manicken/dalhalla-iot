@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <DALHAL/API/DALHAL_CommandExecutor.h>
+#include <functional>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 #if defined(ESP8266)
@@ -43,60 +43,58 @@
 #endif
 
 namespace DALHAL {
-    class StreamWriter {
+    class StringBuilderStreamer {
     public:
-        enum class DataType {
-            Json,
-            PlainText
-        };
-        /**
-         * Automatically starts the stream on construction.
-         *
-         * When the object goes out of scope, the stream is automatically closed.
-         *
-         * A new block can be started using `restart()` if needed, without
-         * destroying the StreamWriter instance.
-         * 
-         * note. tag MUST point to a valid null-terminated string
-         * that remains valid for the entire lifetime of the StreamWriter session.
-         */
-        StreamWriter(CommandCallback cb, const char* tag, DataType dataType);
-        StreamWriter(const StreamWriter&) = delete;
-        StreamWriter& operator=(const StreamWriter&) = delete;
-        StreamWriter(StreamWriter&&) = delete;
 
-        ~StreamWriter();
+        using StreamCallback = std::function<bool(const char* buf, size_t len)>;
 
-        
+        StringBuilderStreamer (StreamCallback cb);
+        StringBuilderStreamer (const StringBuilderStreamer &) = delete;
+        StringBuilderStreamer & operator=(const StringBuilderStreamer &) = delete;
+        StringBuilderStreamer (StringBuilderStreamer &&) = delete;
+
+        ~StringBuilderStreamer();
+
+        void flush();
+
         void write(const char* data, size_t len);
+        
         inline void write(const ZeroCopyString& zcStr) {
             write(zcStr.start, zcStr.Length());
         }
         inline void write(const char* str) {
             write(str, strlen(str));
         }
+        void write(const __FlashStringHelper* fstr);
+        void write(const __FlashStringHelper* fstr, size_t len);
+        void write_P(PGM_P pstr, size_t len);
+        void write_P(PGM_P pstr);
+
         void write(char c);
+        void write(bool v);
+        void write(uint32_t v);
+        void write(int32_t v);
+        void write(float v);
         
-        // tag MUST point to a valid null-terminated string
-        // that remains valid for the entire lifetime of the StreamWriter session.
-        void restart(const char* tag, DataType dataType);
+        void write_json(float v);
+        void write_jsonQuoted(const __FlashStringHelper* fstr);
+        void write_jsonQuoted(const __FlashStringHelper* fstr, size_t len);
+        void write_jsonQuoted(const char* cstr, size_t len);
+        void write_jsonQuoted(const char* cstr);
+        void write_jsonKey(const __FlashStringHelper* fstr);
+        void write_jsonKey(const __FlashStringHelper* fstr, size_t len);
+        void write_jsonKey(const char* cstr, size_t len);
+        void write_jsonKey(const char* cstr);
 
     private:
 
-        CommandCallback _cb;
-
-        const char* currentTag = nullptr;
-        DataType currentDataType = DataType::PlainText;
+        StreamCallback _cb;
 
         char _buf[DALHAL_API_STREAMWRITER_BUFFER_SIZE];
         size_t _pos;
 
-        void sendHeaderFooter(const char* type);
-        void start(const char* tag, DataType dataType);
-        void flush();
-        void end();
+        
 
-        const char* GetCurrentType_cStr();
     };
 
 }

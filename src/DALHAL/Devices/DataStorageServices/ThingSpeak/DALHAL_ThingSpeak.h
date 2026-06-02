@@ -48,7 +48,7 @@
 #define DALHAL_THINGSPEAK_MAX_FIELDS 8
 #define DALHAL_TYPE_THINGSPEAK_DEFAULT_REFRESHRATE_MS 60*1000
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(THINGSPEAK)
 #include "DALHAL_ThingSpeak_Reactive.h"
 using ThingSpeak_DeviceBase = DALHAL::ThingSpeak_Reactive;

@@ -38,7 +38,7 @@
 #include <gpio_types.h> // PC stub
 #endif
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(RELAY_LATCHING)
 #include "DALHAL_LatchingRelay_Reactive.h"
 using LatchingRelay_DeviceBase = DALHAL::LatchingRelay_Reactive;

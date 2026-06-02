@@ -35,7 +35,7 @@
  /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
 #define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(DHT)
 #include "DALHAL_DHT_Reactive.h"
 using DHTDeviceBase = DALHAL::DHT_Reactive;

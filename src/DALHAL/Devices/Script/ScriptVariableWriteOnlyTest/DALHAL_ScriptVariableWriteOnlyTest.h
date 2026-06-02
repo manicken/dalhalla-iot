@@ -32,7 +32,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_WRITEVAR)
 #include "DALHAL_ScriptVariableWriteOnlyTest_Reactive.h"
 using ScriptVariableWriteOnlyTest_DeviceBase = DALHAL::ScriptVariableWriteOnlyTest_Reactive;

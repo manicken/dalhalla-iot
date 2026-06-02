@@ -23,7 +23,7 @@
 
 #include "DALHAL_Actuator_Reactive.h"
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 
 namespace DALHAL {
 

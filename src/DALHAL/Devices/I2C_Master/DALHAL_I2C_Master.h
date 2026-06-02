@@ -33,7 +33,7 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(I2C_MASTER)
 #include "DALHAL_I2C_Master_Reactive.h"
 using I2C_Master_DeviceBase = DALHAL::I2C_Master_Reactive;

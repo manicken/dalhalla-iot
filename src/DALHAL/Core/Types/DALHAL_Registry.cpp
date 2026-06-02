@@ -24,9 +24,10 @@
 #include "DALHAL_Registry.h"
 
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 
-#include <DALHAL/API/DALHAL_API_StreamWriter.h>
+#include <DALHAL/API/DALHAL_BlockStreamer.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace DALHAL {
 
@@ -46,8 +47,8 @@ namespace DALHAL {
 
         void GetTypeNames(const Registry::DeviceRegistry& reg, CommandCallback cb)
         {
-            cb("{\"type\":\"start_chunked\"}", CmdCbType::Text);
-            cb("{\"regitems\":[", CmdCbType::Binary);
+            cb("{\"type\":\"start_chunked\"}", CmdCbType::Control);
+            cb("{\"regitems\":[", CmdCbType::Data);
 
             std::string buffer;
             buffer.reserve(1024);
@@ -57,7 +58,7 @@ namespace DALHAL {
             for (size_t i = 0; i < reg.count; i++)
             {
                 if (buffer.size() > 900) {
-                    cb(buffer.c_str(), CmdCbType::Binary);
+                    cb(buffer.c_str(), CmdCbType::Data);
                     buffer.clear();
                 }
 
@@ -69,55 +70,55 @@ namespace DALHAL {
             }
 
             if (!buffer.empty()) {
-                cb(buffer.c_str(), CmdCbType::Binary);
+                cb(buffer.c_str(), CmdCbType::Data);
             }
 
-            cb("]}", CmdCbType::Binary);
-            cb("{\"type\":\"end_chunked\"}", CmdCbType::Text);
+            cb("]}", CmdCbType::Data);
+            cb("{\"type\":\"end_chunked\"}", CmdCbType::Control);
         }
 
         void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb) {
             const Registry::Item* items = reg.items;
             size_t itemCount = reg.count;
 
-            DALHAL::StreamWriter sw(cb, "registry", DALHAL::StreamWriter::DataType::Json);
-            //sw.start("registry");
+            DALHAL::BlockStreamer bs(cb, "registry", DALHAL::BlockStreamer::DataType::Json);
+            DALHAL::StringBuilderStreamer& sbs = bs.writer();
 
-            sw.write("{\"regitems\":[");
+            sbs.write(F("{\"regitems\":["));
 
             for (size_t i=0; i<itemCount; i++)
             {
                 const Registry::Item& regItem = items[i];
 
-                if (i > 0) { sw.write(','); } 
+                if (i > 0) { sbs.write(','); } 
 
-                sw.write("{\"name\":\"");
-                sw.write(regItem.typeName);
-                sw.write("\",\"events\":[");
+                sbs.write(F("{\"name\":\""));
+                sbs.write(regItem.typeName);
+                sbs.write(F("\",\"events\":["));
 
                 if (regItem.def->reactiveTable != nullptr) {
                     bool first = true;
                     for (const EventDescriptor* entry = regItem.def->reactiveTable; entry->name; entry++) {
                     
-                        if (first == false) { sw.write(','); }
+                        if (first == false) { sbs.write(','); }
                         else { first = false; }
-                        sw.write('"'); sw.write(entry->name); sw.write('"');
+                        sbs.write('"'); sbs.write(entry->name); sbs.write('"');
                     }
                 }
-                sw.write(']');
+                sbs.write(']');
 
-                sw.write(",\"functions\":{");
+                sbs.write(F(",\"functions\":{"));
 
                 if (regItem.def->functionTable != nullptr) {
-                    regItem.def->functionTable->PrintTo(sw);
+                    regItem.def->functionTable->PrintTo(sbs);
                 }
-                sw.write('}');
-                sw.write('}');
+                sbs.write('}');
+                sbs.write('}');
 
             }
-            sw.write(']');
-            sw.write('}');
-            //sw.end(); //  not needed as the destructor takes care of it
+            sbs.write(']');
+            sbs.write('}');
+            sbs.flush();
         }
 
     }

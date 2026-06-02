@@ -24,7 +24,7 @@
 #include "DALHAL_Actuator.h"
 
 #include <DALHAL/Support/DALHAL_Logger.h>
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 #include "DALHAL_Actuator_JSON_Schema.h"

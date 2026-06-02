@@ -115,9 +115,11 @@ namespace DALHAL {
                             return false;
                         }
                     }      // TCP buffer full / closing
-                    if (type == CmdCbType::Text) {
+                    if (type == CmdCbType::Control) {
+                        // send control as text
                         c->text(body.start, body.Length());
-                    } else if (type == CmdCbType::Binary) {
+                    } else if (type == CmdCbType::Data) {
+                        // send data as binary to make it separate from control
                         c->binary(body.start, body.Length());
                     }                    
                     return true;

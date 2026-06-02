@@ -33,7 +33,7 @@
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SINGLE_PULSE_OUTPUT)
 #include "DALHAL_SinglePulseOutput_Reactive.h"
 using SinglePulseOutput_DeviceBase = DALHAL::SinglePulseOutput_Reactive;

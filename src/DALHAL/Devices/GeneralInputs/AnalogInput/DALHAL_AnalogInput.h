@@ -30,7 +30,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ANALOG_INPUT)
 #include "DALHAL_AnalogInput_Reactive.h"
 using AnalogInput_DeviceBase = DALHAL::AnalogInput_Reactive;

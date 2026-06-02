@@ -21,22 +21,29 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_API_StreamWriter.h"
+#include "DALHAL_BlockStreamer.h"
+
+#define DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER_SIZE 128
 
 namespace DALHAL {
 
-    StreamWriter::StreamWriter(CommandCallback cb, const char* tag, DataType dataType)
-        : _cb(cb), _pos(0)
+    BlockStreamer::BlockStreamer(CommandCallback cb, const char* tag, DataType dataType) :
+        _cb(cb), 
+        // lambda wrapper 
+        sbs([cb](const char* buff, size_t len) -> bool {
+            ZeroCopyString zcData(buff, len);
+            return cb(zcData, CmdCbType::Data);
+        })
     {
         start(tag, dataType);
     }
 
-    StreamWriter::~StreamWriter() {
+    BlockStreamer::~BlockStreamer() {
         end();
     }
 
     /* private */
-    const char* StreamWriter::GetCurrentType_cStr() {
+    const char* BlockStreamer::GetCurrentType_cStr() {
         if (currentDataType == DataType::Json) {
             return "json";
         } else if (currentDataType == DataType::PlainText) {
@@ -47,75 +54,47 @@ namespace DALHAL {
     }
 
     /* private */
-    void StreamWriter::sendHeaderFooter(const char* type) {
-#ifdef DALHAL_API_STREAMWRITER_USE_SEPARATE_HEADER_FOOTER_BUFFER
-#define DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER headerBuf
+    void BlockStreamer::sendHeaderFooter(const char* type) {
+
         char headerBuf[DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER_SIZE];
-#else
-#define DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER _buf
-#endif
-        int n = snprintf(DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER, sizeof(DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER),
+
+        int n = snprintf(headerBuf, sizeof(headerBuf),
                         "{\"type\":\"%s\",\"tag\":\"%s\",\"dataType\":\"%s\"}",
                         type, currentTag, GetCurrentType_cStr());
 
-        ZeroCopyString zcSend(DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER, DALHAL_API_STREAMWRITER_HEADER_FOOTER_BUFFER+n);
-        _cb(zcSend, CmdCbType::Text);
+        ZeroCopyString zcSend(headerBuf, n);
+        _cb(zcSend, CmdCbType::Control);
     }
 
     /* private */
-    void StreamWriter::start(const char* tag, DataType dataType) {
+    void BlockStreamer::start(const char* tag, DataType dataType) {
         currentTag = tag;
         currentDataType = dataType;
-        _pos = 0;
+
         const char* cStr = "{\"type\":\"start_chunked\"}";
         ZeroCopyString zcSend(cStr, sizeof("{\"type\":\"start_chunked\"}")-1);
-        _cb(zcSend, CmdCbType::Text);
+        _cb(zcSend, CmdCbType::Control);
+        // sending the data like this make it possible in the future to send tree structures of data
+        // but only if the receiver can handle it,
+        // i.e. sending one different block of data inside annother that is handled separately from the main one 
         //sendHeaderFooter("start_chunked");
     }
 
     /* public */
-    void StreamWriter::restart(const char* tag, DataType dataType) {
+    void BlockStreamer::restart(const char* tag, DataType dataType) {
         // end previous block
         end();
         // start new block
         start(tag, dataType);
     }
 
-    /* public */
-    void StreamWriter::write(const char* data, size_t len) {
-        while (len > 0) {
-
-            size_t space = sizeof(_buf) - _pos;
-            if (space == 0) flush();
-
-            size_t toCopy = (len < space) ? len : space;
-
-            memcpy(_buf + _pos, data, toCopy);
-
-            _pos += toCopy;
-            data += toCopy;
-            len -= toCopy;
-        }
-    }
-
-    /* public */
-    void StreamWriter::write(char c) {
-        if (_pos >= sizeof(_buf)) flush();
-        _buf[_pos++] = c;
-    }
-
     /* private */
-    void StreamWriter::end() {
-        flush();
+    void BlockStreamer::end() {
+        sbs.flush();
         sendHeaderFooter("end_chunked");
     }
 
-    /* private */
-    void StreamWriter::flush() {
-        if (_pos == 0) return;
-        ZeroCopyString zcSend(_buf, _pos);
-        _cb(zcSend, CmdCbType::Binary);
-        _pos = 0;
-    }
+
+    
 
 }

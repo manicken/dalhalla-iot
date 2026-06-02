@@ -42,7 +42,7 @@
 #define DALHAL_LEDC_SERVO_RESOLUTION_BITS 12
 #define DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL ((1U << (DALHAL_LEDC_SERVO_RESOLUTION_BITS))-1u)
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(PWM_SERVO)
 #include "DALHAL_PWM_Servo_Reactive.h"
 using PWM_Servo_DeviceBase = DALHAL::PWM_Servo_Reactive;

@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include <DALHAL/Config/DALHAL_BuildFlags.h>
+#include <DALHAL/DALHAL_BuildFlags.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace  DALHAL

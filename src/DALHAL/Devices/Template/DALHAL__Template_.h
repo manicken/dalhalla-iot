@@ -33,7 +33,7 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(_TEMPLATE_)
 #include "DALHAL__Template__Reactive.h"
 using _Template__DeviceBase = DALHAL::_Template__Reactive;

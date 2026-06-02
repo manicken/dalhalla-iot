@@ -33,7 +33,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 
-#include <DALHAL/Config/DALHAL_ReactiveConfig.h>
+#include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(I2C_DEVICE_PCF8574X)
 #include "DALHAL_PCF8574x_Reactive.h"
 using PCF8574x_DeviceBase = DALHAL::PCF8574x_Reactive;
