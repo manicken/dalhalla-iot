@@ -208,16 +208,23 @@ LogEntry::~LogEntry() {
         text = nullptr;
     }
 }
-String LogEntry::MessageToString() const {
-    String result;
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-    if (source != nullptr)
-        std::cout << "source:" << source << "\n";
-#endif
-    result += (source != nullptr) ? ("[" + String(source) + "]") : "";
-    result += ((message != nullptr) ? String(message) : "<entry error>");
-    result += (text != nullptr) ? String(text) : "";
-    return result;
+
+void LogEntry::MessageWriteTo(DALHAL::StringBuilderStreamer& sbs) const {
+
+    if (source != nullptr) {
+        sbs.write('[');
+        sbs.write(source);
+        sbs.write(']');
+    }
+    if (message != nullptr) {
+        sbs.write(message);
+    } else {
+        sbs.write(F("<entry error>"));
+    }
+    if (text != nullptr) {
+        sbs.write(text);
+    }
+
 }
 
 //    ██       ██████   ██████   ██████  ███████ ██████  

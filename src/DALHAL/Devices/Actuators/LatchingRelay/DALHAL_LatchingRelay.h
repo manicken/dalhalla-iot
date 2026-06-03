@@ -69,7 +69,7 @@ namespace DALHAL {
         static HALOperationResult exec_drive_to_set(Device* device);
         static HALOperationResult exec_stop(Device* device);
         static HALOperationResult exec_resetMode(Device* device);
-        static HALOperationResult getRelayStates(Device* device, std::string& outStr);
+        static HALOperationResult getRelayStates(Device* device, StringBuilderStreamer& sbs);
         static HALOperationResult getResetActive(Device* device, HALValue& val);
         static HALOperationResult getSetActive(Device* device, HALValue& val);
 

@@ -35,7 +35,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -120,8 +120,8 @@ namespace DALHAL {
                 sourceObjTypeName, anyError);
         }
 
-        void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaArrayBase::SchemaToJson(fieldSchema, sbs);
+        void SchemaArrayOfRegistryItems::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaArrayBase::SchemaToJson(fieldSchema, sbs, mode);
 
             auto fs = static_cast<const SchemaArrayOfRegistryItems&>(fieldSchema);
             if (ToJsonString::registerContains(fs.regPath) == false) {

@@ -32,7 +32,7 @@
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Int.h>
 #include <DALHAL/Core/JsonConfig/Types/Primitives/DALHAL_JSON_Schema_Float.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 

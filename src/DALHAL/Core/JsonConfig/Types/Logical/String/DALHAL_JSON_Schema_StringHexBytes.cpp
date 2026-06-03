@@ -34,7 +34,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -79,8 +79,8 @@ namespace DALHAL {
             return res;
         }
 
-        void SchemaStringHexBytes::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaString::SchemaToJson(fieldSchema, sbs);
+        void SchemaStringHexBytes::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaStringHexBytes&>(fieldSchema);
             sbs.write(','); sbs.write_jsonNumber(F("byteCount"), fs.byteCount);
 

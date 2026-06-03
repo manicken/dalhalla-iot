@@ -104,10 +104,10 @@ namespace DALHAL {
             std::string ToString();
 #endif
         };
-        static bool reloadJSON(ZeroCopyString& zcStr, std::string& message);
-        static bool writeCmd(ZeroCopyString& zcStr, std::string& message);
-        static bool readCmd(ZeroCopyString& zcStr, std::string& message);
-        static bool execCmd(ZeroCopyString& zcStr, std::string& message);
+        static bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);
+        static bool writeCmd(ZeroCopyString& zcStr, CommandCallback cb);
+        static bool readCmd(ZeroCopyString& zcStr, CommandCallback cb);
+        static bool execCmd(ZeroCopyString& zcStr, CommandCallback cb);
 
         static void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
     };

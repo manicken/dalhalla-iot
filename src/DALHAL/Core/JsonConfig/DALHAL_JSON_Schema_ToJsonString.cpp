@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_JSON_Schema_ToJsonStringHelpers.h"
+#include "DALHAL_JSON_Schema_ToJsonString.h"
 
 #include <DALHAL/API/DALHAL_BlockStreamer.h>
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
@@ -43,7 +43,7 @@ namespace DALHAL {
 
             std::vector<DeviceRegistryQueueItem> registers;
             std::vector<JsonObjectSchemaQueueItem> objects;
-            std::vector<InlineQueueItem> inlines;
+            std::vector<InlineQueueItem> ByReference;
 
             void clear() {
                 if (registers.capacity() < 32) {
@@ -52,13 +52,13 @@ namespace DALHAL {
                 if (objects.capacity() < 32) {
                     objects.reserve(32);
                 }
-                if (inlines.capacity() < 32) {
-                    inlines.reserve(32);
+                if (ByReference.capacity() < 32) {
+                    ByReference.reserve(32);
                 }
                 
                 registers.clear();
                 objects.clear();
-                inlines.clear();
+                ByReference.clear();
             }
 
             bool registerContains(const char* regPath) {
@@ -79,17 +79,17 @@ namespace DALHAL {
                 return false;
             }
 
-            bool inlinesContains(const char* id) {
-                for (int i=0;i<(int)inlines.size();++i) {
-                    if (strcmp(inlines[i].id, id) == 0) {
+            bool ByReferenceContains(const char* id) {
+                for (int i=0;i<(int)ByReference.size();++i) {
+                    if (strcmp(ByReference[i].id, id) == 0) {
                         return true;
                     }
                 }
                 return false;
             }
 
-            void addToInlines(const char* id, const SchemaTypeBase& schema) {
-                inlines.push_back( { id, schema } );
+            void addToByReference(const char* id, const SchemaTypeBase& schema) {
+                ByReference.push_back( { id, schema } );
             }
 
             void addToRegistries(const char* regPath, const Registry::DeviceRegistry& reg) {
@@ -116,7 +116,7 @@ namespace DALHAL {
                     }
                     sbs.write_jsonKey(reg.items[i].typeName);
 
-                    JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, sbs);
+                    JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, sbs, SchemaEmitMode::ByReference);
                 }
             }
 
@@ -157,18 +157,19 @@ namespace DALHAL {
 
                 for (int i=0;i<objects.size();++i) {
                     if (i > 0) { sbs.write(','); }
-                    JsonSchema::JsonObjectSchema::SchemaToJson(&objects[i].schema, sbs);
+                    JsonSchema::JsonObjectSchema::SchemaToJson(&objects[i].schema, sbs, SchemaEmitMode::ByReference);
                 }
                 sbs.write(']');
                 sbs.write(',');
-                sbs.write_jsonKey(F("inlines"));
+                sbs.write_jsonKey(F("ByReference"));
                 sbs.write('[');
 
-                for (int i=0;i<inlines.size();++i) {
+                for (int i=0;i<ByReference.size();++i) {
                     if (i > 0) { sbs.write(','); }
-                    const FieldTypeRegistryItem& item = JsonSchema::GetFieldTypeRegistryItem(inlines[i].schema.type);
-                    item.define->ToJson(inlines[i].schema, sbs);
-                    //sbs.write(inlines[i].value.c_str(), inlines[i].value.length());
+                    JsonSchema::SchemaToJson(ByReference[i].schema, sbs, SchemaEmitMode::Full);
+                    // vs above is short form of
+                    //const FieldTypeRegistryItem& item = JsonSchema::GetFieldTypeRegistryItem(ByReference[i].schema.type);
+                    //item.define->ToJson(ByReference[i].schema, sbs, SchemaEmitMode::Full);
                 }
                 sbs.write(']');
                 sbs.write('}');

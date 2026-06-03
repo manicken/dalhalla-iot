@@ -26,6 +26,7 @@
 #include <Arduino.h>
 
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace HeartbeatLed
 {
@@ -79,7 +80,7 @@ namespace HeartbeatLed
     /** setups a simple HeartbeatLed not using webserver attachments */
     void setup();
     void setup(unsigned long onInterval, unsigned long offInterval);
-    bool parseCmd(DALHAL::ZeroCopyString& zcCmd, std::string& res);
+    bool parseCmd(DALHAL::ZeroCopyString& zcCmd, DALHAL::StringBuilderStreamer& sbs);
     void task(void);
     
 }

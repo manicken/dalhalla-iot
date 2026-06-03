@@ -28,7 +28,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_FieldPolicy.h>
 
@@ -63,7 +63,7 @@ namespace DALHAL {
             return (exists)?(ValidatorResult::Success):(ValidatorResult::FieldMissing);
         }
         
-        void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, StringBuilderStreamer& sbs) {
+        void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             sbs.write('{'); // this is allways added
             const char* type_cStr = FieldTypeToString(schema.type);
             sbs.write_jsonString(F("type"), type_cStr?type_cStr:"nullptr unknown");

@@ -33,6 +33,8 @@
 #include <DALHAL/Devices/Display/SSD1306/DALHAL_Display_SSD1306.h>
 #include <DALHAL/Devices/I2C_Master/Devices/PCF8574x/DALHAL_PCF8574x.h>
 
+
+
 namespace DALHAL {
 
     constexpr Registry::Item items[] = {
@@ -42,18 +44,15 @@ namespace DALHAL {
 
     constexpr Registry::DeviceRegistry I2C_DeviceRegistry = {items, sizeof(items)/sizeof(items[0]), "I2C Master", "ROOT.I2C_MASTER"};
 
-    std::string describeI2CAddress(uint8_t addr) {
-        std::string deviceNames;
-        deviceNames.reserve(32); // to minimize heap fragmentation
+    void describeI2CAddress(uint8_t addr, StringBuilderStreamer& sbs) {
         bool first = true;
         for (size_t i = 0; i < I2C_DeviceRegistry.count; i++) {
             const I2C_RegistryDefine* i2c_def = static_cast<const I2C_RegistryDefine*>(I2C_DeviceRegistry.items[i].def);
             if (i2c_def->HasAddress_Function(addr)) {
-                if (first == false) deviceNames += ',';
+                if (first == false) sbs.write(',');
                 else first = false;
-                deviceNames += I2C_DeviceRegistry.items[i].typeName;
+                sbs.write(I2C_DeviceRegistry.items[i].typeName);
             }
         }
-        return deviceNames;
     }
 }

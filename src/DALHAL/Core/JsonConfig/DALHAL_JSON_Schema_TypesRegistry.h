@@ -40,18 +40,13 @@ namespace DALHAL {
 
     namespace JsonSchema {
         
-        // should be used on SchemaToJsonFn
-        enum class SchemaEmitMode {
-            Full,
-            Inline,
-            ReferenceOnly
-        };
+        
 
         // used to validate the schema itself
         using SchemaValidatorFn = void (*)(const SchemaTypeBase&, const char* sourceObjTypeName, bool& anyError);
         using JsonValidatorFn = ValidatorResult (*)(const SchemaTypeBase&, const char* sourceObjTypeName, const JsonVariant&, bool& anyError);
         using JsonValueExtractFn = HALValue (*)(const SchemaTypeBase&, const JsonVariant&);
-        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, StringBuilderStreamer& sbs);
+        using SchemaToJsonFn = void (*)(const SchemaTypeBase&, StringBuilderStreamer& sbs, SchemaEmitMode mode);
         using GetJavaScriptValidatorFn = const char* (*)();
 
         struct FieldTypeRegistryDefine {
@@ -107,7 +102,7 @@ namespace DALHAL {
 
         void ValidateSchema(const SchemaTypeBase& stb, const char* sourceObjTypeName, bool& anyError);
         ValidatorResult ValidateJson(const SchemaTypeBase& stb, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs);
+        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs, SchemaEmitMode mode);
 
         HALValue GetValue(const SchemaTypeBase& stb, const JsonVariant& jsonObj);
         HALValue GetValue(const SchemaTypeBase& stb, const DeviceCreateContext& context);

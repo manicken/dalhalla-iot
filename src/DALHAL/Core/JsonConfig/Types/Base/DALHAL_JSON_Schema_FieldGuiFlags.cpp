@@ -24,7 +24,7 @@
 #include "DALHAL_JSON_Schema_FieldGuiFlags.h"
 #include <string>
 
-//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+//#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 

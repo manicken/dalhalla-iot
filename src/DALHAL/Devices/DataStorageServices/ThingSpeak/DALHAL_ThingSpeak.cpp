@@ -134,7 +134,7 @@ namespace DALHAL {
 
     HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
         if (val.cmd.EqualsIC("getLastUrlApi")) {
-            val.out_value = urlApi;
+            val.out_value.write(urlApi.c_str(), urlApi.length());
             return HALOperationResult::Success;
         } else if (val.cmd.EqualsIC("simulateSend")) {
             urlApi.clear();
@@ -156,7 +156,7 @@ namespace DALHAL {
                 val.appendToString(urlApi);
             }
 
-            val.out_value = urlApi;
+            val.out_value.write(urlApi.c_str(), urlApi.length());
             return HALOperationResult::Success;
         }
         return HALOperationResult::UnsupportedCommand;

@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 namespace DALHAL {
     /**
      * @class HALValue
@@ -168,6 +170,8 @@ namespace DALHAL {
          * - BOOL → "true" or "false"
          */
         std::string toString() const;
+
+        void toString(StringBuilderStreamer& sbs) const;
 
         const char* typeToString() const;
 

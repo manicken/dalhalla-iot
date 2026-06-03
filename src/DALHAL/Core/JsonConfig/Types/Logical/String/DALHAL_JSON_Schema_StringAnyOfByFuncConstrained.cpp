@@ -32,7 +32,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -85,8 +85,8 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaString::SchemaToJson(fieldSchema, sbs);
+        void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             sbs.write(','); sbs.write_jsonKey(F("allowedValues"));
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
             strSchema.describe(strSchema.ctx, sbs);

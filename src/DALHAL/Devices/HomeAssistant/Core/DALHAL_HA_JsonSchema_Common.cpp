@@ -44,7 +44,7 @@ namespace DALHAL {
             };
 
             constexpr SchemaFieldsGroup common_fields = {
-                "common",
+                "hass_common",
                 common_items,
                 Gui::UseInline,
                 /*sizeof(disabled_uidreq_note_group_items)/sizeof(disabled_uidreq_note_group_items[0])*/ // future implementation

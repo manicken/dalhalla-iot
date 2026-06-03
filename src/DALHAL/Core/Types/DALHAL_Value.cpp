@@ -173,6 +173,35 @@ namespace DALHAL {
         }
     }
 
+    void HALValue::toString(StringBuilderStreamer& sbs) const {
+        switch (type) {
+            case Type::INT:
+                sbs.write(ival);
+                return;
+            case Type::UINT:
+                sbs.write(uval);
+                return;
+            case Type::FLOAT:
+                sbs.write(fval);
+                return;
+            case Type::CSTRING:
+                return sbs.write_jsonQuoted(cStr != nullptr ? cStr : "");
+                return;
+            case Type::BOOL:
+                sbs.write(bval);
+                return;
+            case Type::TEST:
+                sbs.write_jsonQuoted(F("_test_"));
+                return;
+            case Type::UNSET:
+                sbs.write_jsonQuoted(F("_unset_"));
+                return;
+            default:
+                sbs.write_jsonQuoted(F("_unknown_"));
+                return;
+        }
+    }
+
     std::string HALValue::toString() const {
         switch (type) {
             case Type::INT:

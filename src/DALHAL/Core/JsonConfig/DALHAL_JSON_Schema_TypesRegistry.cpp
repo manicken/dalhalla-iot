@@ -114,7 +114,7 @@ namespace DALHAL {
             return regDefItem.define->GetValue(stb, jsonObj);
         }
 
-        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs) {
+        void SchemaToJson(const SchemaTypeBase& stb, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
             if (regDefItem.name == nullptr) {
                 GlobalLogger.Error(F("schema error - could not find schema type @ SchemaToJson"));
@@ -122,7 +122,7 @@ namespace DALHAL {
                 sbs.write('}');
                 return;
             }
-            regDefItem.define->ToJson(stb, sbs);
+            regDefItem.define->ToJson(stb, sbs, mode);
         }
 
         const char* GetJavaScriptValidator(const SchemaTypeBase& stb) {

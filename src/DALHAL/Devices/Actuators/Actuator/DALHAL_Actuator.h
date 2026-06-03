@@ -79,7 +79,7 @@ namespace DALHAL {
         static HALOperationResult exec_drive_to_max(Device* device);
         static HALOperationResult exec_stop(Device* device);
         static HALOperationResult exec_reset(Device* device);
-        static HALOperationResult getEndstops(Device* device, std::string& outStr);
+        static HALOperationResult getEndstops(Device* device, StringBuilderStreamer& sbs);
         static HALOperationResult getMinEndstop(Device* device, HALValue& val);
         static HALOperationResult getMaxEndstop(Device* device, HALValue& val);
 

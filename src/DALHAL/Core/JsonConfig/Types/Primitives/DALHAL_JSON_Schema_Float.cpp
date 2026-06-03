@@ -35,7 +35,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -108,8 +108,8 @@ namespace DALHAL {
             return HALValue(static_cast<const SchemaFloat&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
-        void SchemaFloat::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+        void SchemaFloat::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaFloat&>(fieldSchema);
             sbs.write(','); sbs.write_jsonNumber(F("default"), fs.defaultValue);
             sbs.write(','); sbs.write_jsonNumber(F("minValue"), fs.minValue);

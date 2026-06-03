@@ -24,7 +24,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../Core/Types/DALHAL_ZeroCopyString.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 #include <time.h>
 #include <functional>
@@ -65,7 +66,7 @@ struct LogEntry {
       LogEntry(const LogEntry&) = delete;
       LogEntry& operator=(const LogEntry&) = delete;
 
-      String MessageToString() const;
+      void MessageWriteTo(DALHAL::StringBuilderStreamer& sbs) const;
       std::string ToString() const;
   };
 

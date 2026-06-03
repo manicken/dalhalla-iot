@@ -76,8 +76,8 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaString::SchemaToJson(fieldSchema, sbs);
+        void SchemaStringUID::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             
             if (fieldSchema.type == FieldType::StringUID) {
                 sbs.write('}'); // this is complete object

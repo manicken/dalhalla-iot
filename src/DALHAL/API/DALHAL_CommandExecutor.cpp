@@ -44,7 +44,7 @@
 #include <Scheduler/Scheduler.h>
 
 //#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 #include <DALHAL/API/DALHAL_BlockStreamer.h>
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
@@ -90,7 +90,7 @@ namespace DALHAL {
     // TODO: refactor this function to send errors to GlobalLogger
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
 
-        std::string message = "";
+        //std::string message = "";
         // Example URL: /write/uint32/tempSensor1/255 where tempSensor1 is a uid defined by cfg json
         //std::cout << "zcStr:" << zcStr.ToString() << "\n";
         ZeroCopyString zcCommand = zcStr.SplitOffHead('/');
@@ -106,17 +106,17 @@ namespace DALHAL {
         if (zcCommand.EqualsIC(F("hal"))) {
             zcCommand = zcStr.SplitOffHead('/');
             if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_WRITE_CMD))) {
-                anyErrors = writeCmd(zcStr, message) == false;
+                anyErrors = writeCmd(zcStr, cb) == false;
             }
             else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_READ_CMD))) {
-                anyErrors = readCmd(zcStr, message) == false;
+                anyErrors = readCmd(zcStr, cb) == false;
             }
             else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_CMD))) {
-                anyErrors = execCmd(zcStr, message) == false;
+                anyErrors = execCmd(zcStr, cb) == false;
             }
             else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_RELOAD_CFG_JSON))) {
                 //long startMillis = millis();
-                anyErrors = reloadJSON(zcStr, message) == false;
+                anyErrors = reloadJSON(zcStr, cb) == false;
                 
                 //printf("\n reloadJSON time:%ld ms\n", millis() - startMillis);
                 //startMillis = millis();
@@ -142,18 +142,25 @@ namespace DALHAL {
                     //message += "\"error\":\"Unknown scripts subcommand.\"";
                     //message += ",\"command\":\""+zcSubCmd.ToString()+"\"";
                 }
-                if (anyErrors == false)
-                    message += String(F("\"info\":\"OK\"")).c_str();
+                if (anyErrors == false) {
+                    BlockStreamer bs(cb, "scripts exec", BlockStreamer::DataType::Json);
+                    StringBuilderStreamer& sbs = bs.writer();
+                    sbs.write(F("\"info\":\"OK\""));
+                }
             }
             else if (zcCommand.EqualsIC(F("getAvailableGPIOs"))) {
                 BlockStreamer bs(cb, "getAvailableGPIOs", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
                 GPIO_manager::GetList(zcStr, sbs);
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_PRINT_DEVICES))) {
-                message += DeviceManager::ToString();
+            else if (zcCommand.EqualsIC(F("printDevices"))) {
+                BlockStreamer bs(cb, "scripts exec", BlockStreamer::DataType::Json);
+                StringBuilderStreamer& sbs = bs.writer();
+                // TODO remove use of std::string here
+                std::string tmp = DeviceManager::ToString();
+                sbs.write(tmp.c_str(), tmp.length());
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS))) {
+            else if (zcCommand.EqualsIC(F("printLog"))) {
 
                 if (cb != nullptr) {
                     GlobalLogger.printAllLogs([cb](const std::string& msg){
@@ -307,41 +314,44 @@ namespace DALHAL {
 #if defined(ESP8266) || defined(ESP32)
             else if (zcCommand.EqualsIC(F("heap"))) {
                 if (cb != nullptr) {
-#define SYSTEM_HEAP_FORMAT_STR "Heap: %u, Max block: %u"
-#define SYSTEM_HEAP_STRING_MAX_SIZE sizeof(SYSTEM_HEAP_FORMAT_STR)-4+7*2
-                    char temp[SYSTEM_HEAP_STRING_MAX_SIZE];
-                    snprintf_P(temp, SYSTEM_HEAP_STRING_MAX_SIZE, SYSTEM_HEAP_FORMAT_STR,
-                        ESP.getFreeHeap(),
+                    BlockStreamer bs(cb, "heap", BlockStreamer::DataType::Json);
+                    StringBuilderStreamer& sbs = bs.writer();
+                    sbs.write('{');
+                    sbs.write_jsonNumber(F("Heap"), ESP.getFreeHeap());
 #if defined(ESP8266)
-                        ESP.getMaxFreeBlockSize());
+                    sbs.write(','); sbs.write_jsonNumber(F("Max block"), ESP.getMaxFreeBlockSize());
 #elif defined(ESP32)
-                        ESP.getMaxAllocHeap());
+                    sbs.write(','); sbs.write_jsonNumber(F("Max block"), ESP.getMaxAllocHeap());
 #endif
-                    cb(temp, CmdCbType::Data);
+                    sbs.write('}');
                 }
             }
             else if (zcCommand.EqualsIC(F("reset")) || zcCommand.EqualsIC(F("restart"))) {
                 if (cb != nullptr) {
-                    cb(String(F("the system will now restart")).c_str(), CmdCbType::Data);
+                    BlockStreamer bs(cb, "reset", BlockStreamer::DataType::PlainText);
+                    StringBuilderStreamer& sbs = bs.writer();
+                    sbs.write(F("the system will now restart"));
+                    sbs.flush();
                 }
                 ESP.restart();
             }
 #endif
 
             else if (zcCommand.EqualsIC(F("HeartbeatLed"))) {
-                std::string resStr;
-                HeartbeatLed::parseCmd(zcStr, resStr);
-                if (cb != nullptr) {
-                    const ZeroCopyString zcMsg = resStr.c_str();
-                    cb(zcMsg, CmdCbType::Data);
-                }
+                BlockStreamer bs(cb, "HeartbeatLed", BlockStreamer::DataType::PlainText);
+                StringBuilderStreamer& sbs = bs.writer();
+                HeartbeatLed::parseCmd(zcStr, sbs);
+                
             }
             else {
                 if (cb != nullptr) {
-                    cb(String(F("error system sub command not found")).c_str(), CmdCbType::Data);
+                    BlockStreamer bs(cb, "system", BlockStreamer::DataType::PlainText);
+                    StringBuilderStreamer& sbs = bs.writer();
+                    sbs.write(F("error system sub command not found"));
                 }
             }
         } else if (zcCommand.EqualsIC(F("schedule"))) {
+
             std::string resStr;
             Scheduler::parseCmd(zcStr, resStr);
             if (cb != nullptr) {
@@ -349,29 +359,33 @@ namespace DALHAL {
                 cb(zcMsg, CmdCbType::Data);
             }
         } else if (zcCommand.EqualsIC(F("ver"))) {
-            message += String(F("\"build_version\":\"")).c_str();
-            message += BUILD_VER_STR;
-            message += '"';
+            BlockStreamer bs(cb, "ver", BlockStreamer::DataType::Json);
+            StringBuilderStreamer& sbs = bs.writer();
+            sbs.write(F("{\"build_version\":\"" BUILD_VER_STR "\"}"));
         } else if (zcCommand.EqualsIC(F("help"))) {
+            BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
+            StringBuilderStreamer& sbs = bs.writer();
+            sbs.write('{');
             if (zcStr.IsEmpty()) {
-                message += String(F("\"available_root_cmds\":[")).c_str();
-                message += String(F("\"help\",\"ver\",\"hal\",\"wifi\"")).c_str();
-                message += ']';
+                sbs.write_jsonKey(F("available_root_cmds"));
+                sbs.write('[');
+                sbs.write(F("\"help\",\"ver\",\"hal\",\"wifi\""));
+                sbs.write(']');
             } else {
                 zcCommand = zcStr.SplitOffHead('/');
-                message += String(F("\"info\":\"")).c_str();
+                sbs.write_jsonKey(F("info"));
                 if (zcCommand.EqualsIC(F("ver"))) {
-                    message += String(F("shows build version, can be used to determine what specific ver a device runs")).c_str();
+                    sbs.write_jsonQuoted(F("shows build version, can be used to determine what specific ver a device runs"));
                 } else if (zcCommand.EqualsIC(F("hal"))) {
-                    message += String(F("write read exec reloadcfg printdevices scripts printlog getavailablegpios")).c_str();
+                    sbs.write_jsonQuoted(F("write read exec reloadcfg printdevices scripts printlog getavailablegpios"));
                 } else if (zcCommand.EqualsIC(F("wifi"))) {
-                    message += String(F("scan set")).c_str();
+                    sbs.write_jsonQuoted(F("scan set"));
                 } else {
-                    message += String(F("!!!! ERROR NO HELP !!!!")).c_str();
+                    sbs.write_jsonQuoted(F("!!!! ERROR NO HELP !!!!"));
                 }
 
-                message += '"';
             }
+            sbs.write('}');
         }
         else
         {
@@ -382,25 +396,28 @@ namespace DALHAL {
 
             const LogEntry& lastEntry = GlobalLogger.getLastEntry();
             if (lastEntry.level == Loglevel::Error) {
-                String lastEntryStr = lastEntry.MessageToString();
-                message += String(F("\"error\":\"")).c_str();
-                message += lastEntryStr.c_str();
-                message += '"';
+                BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
+                StringBuilderStreamer& sbs = bs.writer();
+                sbs.write('{');
+                sbs.write_jsonKey(F("error"));
+                lastEntry.MessageWriteTo(sbs);
+                sbs.write('}');
+
             }
         }
-        if (message.length() != 0) { // this lets the command exec print it's own format
+        /*if (message.length() != 0) { // this lets the command exec print it's own format
             message = '{' + message;
             message += '}';
             if (cb != nullptr) {
 
-                const ZeroCopyString zcMsg = message.c_str();
+                const ZeroCopyString zcMsg(message.c_str(), message.length());
                 cb(zcMsg, CmdCbType::Data);
             }
-        }
+        }*/
         
         return (anyErrors == false);
     }
-    bool CommandExecutor::reloadJSON(ZeroCopyString& zcStr, std::string& message) {
+    bool CommandExecutor::reloadJSON(ZeroCopyString& zcStr, CommandCallback cb) {
         ZeroCopyString zcOptionalFileName = zcStr.SplitOffHead('/');
 #ifdef DALHAL_CommandExecutor_DEBUG_CMD
         message += "\"filename\":\"" + (zcOptionalFileName.NotEmpty()?zcOptionalFileName.ToString():"default") + "\"}";
@@ -418,14 +435,15 @@ namespace DALHAL {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         std::cout << "Reload cfg json: " << filePath << std::endl;  
 #endif
-    
+        BlockStreamer bs(cb, "reloadJSON", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
         if (DeviceManager::ReadJSON(filePath.c_str())) {
-            message += String(F("\"info\":\"OK\"")).c_str();
+            sbs.write(F("{\"info\":\"OK\"}"));
             DeviceManager::begin();
             
             return true;
         } else {
-            message += String(F("\"info\":\"FAIL\",")).c_str();
+            sbs.write(F("{\"info\":\"FAIL\"}"));
             return false;
         }
     }
@@ -436,16 +454,13 @@ namespace DALHAL {
     //   ███ ███  ██   ██ ██    ██    ███████ 
     // 
 
-    // TODO: refactor this function to send errors to GlobalLogger
-    bool CommandExecutor::writeCmd(ZeroCopyString& zcStr, std::string& message) {
+    bool CommandExecutor::writeCmd(ZeroCopyString& zcStr, CommandCallback cb) {
         ReadWriteCmdParameters params(zcStr);
-#ifdef DALHAL_CommandExecutor_DEBUG_CMD
-        message += params.ToString() + "},";
-#endif
+
         // check if have uid given
         if (params.zcUid.IsEmpty()) {
             GlobalLogger.Error(F("uid path is empty"));
-            //message += "\"error\":\"uid path is empty\"";
+
             return false;
         }
         // check if device exists
@@ -455,18 +470,23 @@ namespace DALHAL {
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
-            //message += "\"error\":\"device not found\"";
-            //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
+
             return false;
         }
         // write need a value
         if (params.zcValue.Length() == 0) {
             GlobalLogger.Error(F("No value provided for writing."));
-            //message += "\"error\":\"No value provided for writing.\"";
+
             return false;
         }
 
         HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
+
+        BlockStreamer bs(cb, "hal/write", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write('{');
+        sbs.write_jsonKey(F("info"));
+        bool anyError = false;
 
         if (params.zcType == DALHAL_CMD_EXEC_BOOL_TYPE) {
             uint32_t uintValue = 0;
@@ -477,20 +497,20 @@ namespace DALHAL {
                 uintValue = 0;
             } else {
 
-                //message += "{\"error\":\"Invalid boolean value.\"}";
                 GlobalLogger.Error(F("Invalid boolean value."));
+                sbs.write(F("null"));
+                sbs.write('}');
                 return false;
             }
 
-            //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue = uintValue;
-            //HALWriteRequest req(uidPath, halValue); // obsolete
 
             writeResult = outDevice->write(halValue);
             if (writeResult == HALOperationResult::Success) {
-                message += String(F("\"info\":{\"Value written\":\"")).c_str();
-                message += std::to_string(uintValue);
-                message += '"'; message += '}';
+                sbs.write('{');
+                sbs.write_jsonNumber(F("Value written"), uintValue);
+                sbs.write('}');
+                
             }
         }
         else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
@@ -498,17 +518,16 @@ namespace DALHAL {
             uint32_t uintValue = 0;
             if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
                 GlobalLogger.Error(F("Invalid uint32 value."));
-                //message += "{\"error\":\"Invalid uint32 value.\"}";
+
             } else {
-                //UIDPath uidPath(params.zcUid); // obsolete
+
                 HALValue halValue = uintValue;
-                //HALWriteRequest req(uidPath, halValue); // obsolete
 
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    message += String(F("\"info\":{\"Value written\":\"")).c_str();
-                    message += std::to_string(uintValue);
-                    message += '"'; message += '}';
+                    sbs.write('{');
+                    sbs.write_jsonNumber(F("Value written"), uintValue);
+                    sbs.write('}');
                 }
             }
 
@@ -517,67 +536,51 @@ namespace DALHAL {
             float floatValue = 0.0f;
             if (params.zcValue.ConvertTo_float(floatValue) == false) {
                 GlobalLogger.Error(F("Invalid float value."));
-                //message += "{\"error\":\"Invalid float value.\"}";
             } else {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                std::cout << "float value written: " << floatValue << "\n";
-#endif
-                //UIDPath uidPath(params.zcUid); // obsolete
+
                 HALValue halValue = floatValue;
-                //HALWriteRequest req(uidPath, halValue); // obsolete
 
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    message += String(F("\"info\":{\"Value written\":\"")).c_str();
-                    message += std::to_string(floatValue);
-                    message += '"'; message += '}';
+                    
+                    sbs.write('{');
+                    sbs.write_jsonNumber(F("Value written"), floatValue);
+                    sbs.write('}');
                 }
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
-            //UIDPath uidPath(params.zcUid);  // obsolete
-            std::string result;
-            HALWriteStringRequestValue strHalValue(params.zcValue, result);
-            
-            //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
+            HALWriteStringRequestValue strHalValue(params.zcValue, sbs);
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                message += String(F("\"info\":{\"String written\":\"OK\"}")).c_str();
-                //message += stdString.c_str();
-                //message += "\"}";
+                sbs.write('{');
+                sbs.write_jsonString(F("String written"), params.zcValue);
+                sbs.write('}');
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
-            //UIDPath uidPath(params.zcUid);  // obsolete
-            std::string result;
-            HALWriteStringRequestValue strHalValue(params.zcValue, result);
-            //HALWriteStringRequest req(uidPath, strHalValue);  // obsolete
+            
+            HALWriteStringRequestValue strHalValue(params.zcValue, sbs);
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                message += String(F("\"info\":{\"Json written\":\"OK\"}")).c_str();
-                //message += stdString.c_str();
-                //message += "}";
+                sbs.write('{');
+                sbs.write_jsonString(F("Json string written"), params.zcValue);
+                sbs.write('}');
             }
         }
         else {
             GlobalLogger.Error(F("Unknown type for writing."));
-            //message += "\"error\":\"Unknown type for writing.\"";
-            return false;
+            anyError = true;
         }
-        if (writeResult != HALOperationResult::Success) {
+        if (anyError == false && writeResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(writeResult)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
-            /*message += "\"error\":\"";
-            message += HALOperationResultToString(writeResult);
-            message += '"';
-            message += ",\"target_type\":\"";
-            message += device->GetType();
-            message += '"';*/
-            return false;
+            anyError = true;
         }
-        return true;
+        sbs.write('}');
+        return anyError == false;
     }
     //  ██████  ███████  █████  ██████  
     //  ██   ██ ██      ██   ██ ██   ██ 
@@ -585,17 +588,12 @@ namespace DALHAL {
     //  ██   ██ ██      ██   ██ ██   ██ 
     //  ██   ██ ███████ ██   ██ ██████  
 
-    // TODO: refactor this function to send errors to GlobalLogger
-    bool CommandExecutor::readCmd(ZeroCopyString& zcStr, std::string& message) {
+    bool CommandExecutor::readCmd(ZeroCopyString& zcStr, CommandCallback cb) {
         ReadWriteCmdParameters params(zcStr);
-        std::string valueStr;
-#ifdef DALHAL_CommandExecutor_DEBUG_CMD
-        message += params.ToString() + "},";
-#endif
+                
         // check if have uid given
         if (params.zcUid.IsEmpty()) {
             GlobalLogger.Error(F("uid path is empty"));
-            //message += "\"error\":\"uid path is empty\"";
             return false;
         }
         // check if device exists
@@ -605,100 +603,87 @@ namespace DALHAL {
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), params.zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
-            //message += "\"error\":\"device not found\"";
-            //message += ",\"uidpath\":\"" + params.zcUid.ToString() + "\"";
             return false;
         }
         HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
 
+        BlockStreamer bs(cb, "hal/read", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write('{');
+        sbs.write_jsonKey(F("value"));
+
+        bool anyError = false;
+
         if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_BOOL_TYPE))) {
-            //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
-            //HALReadRequest req(uidPath, halValue); // obsolete
 
             readResult = outDevice->read(halValue);
+
             if (readResult == HALOperationResult::Success) {
-                valueStr = std::to_string(halValue.toUInt());
+                sbs.write(halValue.toUInt());
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
-            //UIDPath uidPath(params.zcUid); // obsolete
             HALValue halValue;
-            //HALReadRequest req(uidPath, halValue); // obsolete
 
             readResult = outDevice->read(halValue);
+
             if (readResult == HALOperationResult::Success) {
-                valueStr = std::to_string(halValue.toUInt());
+                sbs.write(halValue.toUInt());
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
-            //UIDPath uidPath(params.zcUid); // obsolete
+
             if (params.zcValue.Length() == 0) {
                 HALValue halValue;
-                //HALReadRequest req(uidPath, halValue); // obsolete
 
                 readResult = outDevice->read(halValue);
+
                 if (readResult == HALOperationResult::Success) {
-                    valueStr = std::to_string(halValue.toFloat());
+                    sbs.write(halValue.toFloat());
                 }
             }
             else {
                 HALValue halValue;
                 HALReadValueByCmd valByCmd(halValue, params.zcValue);
-                //HALReadValueByCmdReq req(uidPath, valByCmd); // obsolete
 
                 readResult = outDevice->read(valByCmd);
+
                 if (readResult == HALOperationResult::Success) {
-                    valueStr = std::to_string(halValue.toFloat());
+                    sbs.write(halValue.toFloat());
                 }
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
-            //UIDPath uidPath(params.zcUid); // obsolete
-            std::string result;
-            HALReadStringRequestValue strHalValue(params.zcValue, result);
-            //HALReadStringRequest req(uidPath, strHalValue); // obsolete
+            
+            HALReadStringRequestValue strHalValue(params.zcValue, sbs);
 
-            readResult = outDevice->read(strHalValue);
-            if (readResult == HALOperationResult::Success) {
-                valueStr = '"';
-                valueStr += result;
-                valueStr += '"';
-            }
+            readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
+
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
-            //UIDPath uidPath(params.zcUid); // obsolete
-            std::string result;
-            HALReadStringRequestValue strHalValue(params.zcValue, result);
-            //HALReadStringRequest req(uidPath, strHalValue); // obsolete
 
-            readResult = outDevice->read(strHalValue);
-            if (readResult == HALOperationResult::Success) {
-                valueStr += result;
-            }
+            HALReadStringRequestValue strHalValue(params.zcValue, sbs);
+  
+            readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
+
         } else {
             GlobalLogger.Error(F("Unknown type for reading."));
-            //message += "\"error\":\"Unknown type for reading.\"";
-            return false;
+            sbs.write(F("null"));
+            anyError = true;
         }
-        if (readResult != HALOperationResult::Success) {
+        if (anyError == false && readResult != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(readResult)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
-            /*message += "\"error\":\"";
-            message += HALOperationResultToString(readResult);
-            message += '"';
-            message += ",\"target_type\":\"";
-            message += device->GetType();
-            message += '"';*/
-            return false;
+            sbs.write(F("null"));
+            anyError = true;
         }
-        message += DeviceConstStrings::value;
-        message += valueStr;
-        return true;
+
+        sbs.write('}');
+        return anyError == false;
     }
 
-    bool CommandExecutor::execCmd(ZeroCopyString& zcStr, std::string& message) {
+    bool CommandExecutor::execCmd(ZeroCopyString& zcStr, CommandCallback cb) {
         ZeroCopyString zcPath = zcStr.SplitOffHead('/');
         // check if have uid given
         if (zcPath.IsEmpty()) {
             GlobalLogger.Error(F("uid path empty"));
-            //message += "\"error\":\"uid path is empty\"";
             return false;
         }
         // first check if device exists
@@ -708,28 +693,18 @@ namespace DALHAL {
         if (devFindRes != DeviceFindResult::Success) {
             GlobalLogger.Error(F("device not found: "), zcPath);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
-            //message += "\"error\":\"device not found\"";
-            //message += ",\"uidpath\":\"" + zcPath.ToString() + "\"";
             return false;
         }
 
         HALOperationResult res = HALOperationResult::NotSet;
         if (zcStr.NotEmpty()) {
-            //UIDPath path(zcPath); // obsolete
             res = outDevice->exec(zcStr);
         } else {
-            //UIDPath path(zcStr); // obsolete
             res = outDevice->exec();
         }
         if (res != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(res)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
-            /*message += "\"error\":\"";
-            message += HALOperationResultToString(res);
-            message += '"';
-            message += ",\"target_type\":\"";
-            message += device->GetType();
-            message += '"';*/
             return false;
         }
         return true;

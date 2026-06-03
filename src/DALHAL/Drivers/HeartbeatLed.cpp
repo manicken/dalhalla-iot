@@ -34,19 +34,19 @@ namespace HeartbeatLed
     unsigned long currentMillis = 0;
     unsigned long currentInterval = 0;
     
-    bool parseCmd(DALHAL::ZeroCopyString& zcStr, std::string& res)
+    bool parseCmd(DALHAL::ZeroCopyString& zcStr, DALHAL::StringBuilderStreamer& sbs)
     {
         DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F("set"))) {
             zcCmd = zcStr.SplitOffHead('/');
             DALHAL::ZeroCopyString zcValue = zcStr.SplitOffHead('/');
             if (zcValue.Length() == 0) {
-                res = "Error - 'set' cmd value missing: >>>" + zcCmd.ToString() + "<<<";
+                sbs.write(F("Error - 'set' cmd value missing: >>>")); sbs.write(zcCmd); sbs.write(F("<<<"));
                 return false;
             }
             DALHAL::NumberResult numRes = zcValue.ConvertStringToNumber();
             if (numRes.type != DALHAL::NumberType::UINT32) {
-                res = "Error - 'set' cmd value is not a unsigned integer: >>>" + zcValue.ToString() + "<<<";
+                sbs.write(F("Error - 'set' cmd value is not a unsigned integer: >>>")); sbs.write(zcValue); sbs.write(F("<<<"));
                 return false;
             }
             if (zcCmd.EqualsIC(F("on"))) {
@@ -54,13 +54,13 @@ namespace HeartbeatLed
             } else if (zcCmd.EqualsIC(F("off"))) {
                 HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = numRes.u32;
             } else {
-                res = "Error - 'set' cmd not found: >>>" + zcCmd.ToString() + "<<< (possible cmds: on, off)";
+                sbs.write(F("Error - 'set' cmd not found: >>>")); sbs.write(zcCmd); sbs.write(F("<<< (possible cmds: on, off)"));
                 return false;
             }
-            res = "{\"OK\":\"value set\"}";
+            sbs.write(F("{\"OK\":\"value set\"}"));
             return true;
         } else {
-            res = "Error - cmd not found: >>>" + zcCmd.ToString() + "<<< (possible cmds: set)";
+            sbs.write(F("Error - cmd not found: >>>")); sbs.write(zcCmd); sbs.write(F("<<< (possible cmds: set)"));
             return false;
         }
         /* old code 

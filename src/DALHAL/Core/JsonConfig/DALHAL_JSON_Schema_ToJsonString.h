@@ -55,11 +55,11 @@ namespace DALHAL {
 
             bool registerContains(const char* id);
             bool objectsContains(const char* id);
-            bool inlinesContains(const char* id);
+            bool ByReferenceContains(const char* id);
 
             void addToRegistries(const char* regPath, const Registry::DeviceRegistry& reg);
             void addToObjects(const char* id, const JsonObjectSchema& schema);
-            void addToInlines(const char* id, const SchemaTypeBase& schema);
+            void addToByReference(const char* id, const SchemaTypeBase& schema);
 
             void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb);
 

@@ -31,6 +31,8 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Root/DALHAL_JSON_Schema_JsonObjectSchema.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 namespace DALHAL {
 
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
@@ -62,7 +64,7 @@ namespace DALHAL {
     extern const Registry::DeviceRegistry I2C_DeviceRegistry;
     
     // used by i2c scanner to describe which devices a adress belongs to
-    std::string describeI2CAddress(uint8_t addr);
+    void describeI2CAddress(uint8_t addr, StringBuilderStreamer& sbs);
 
     struct I2C_Master_CreateFunctionContext : DeviceCreateContext {
         TwoWire& wire;

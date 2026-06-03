@@ -31,6 +31,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/ConvertHelper.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include "DALHAL_I2C_Master_JSON_Schema.h"
 
 namespace DALHAL {
@@ -103,6 +105,7 @@ namespace DALHAL {
     }
 
     HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
+        StringBuilderStreamer& sbs = val.out_value;
         ZeroCopyString zcStr = val.cmd; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F("raw"))) { // this is more likely to be called
@@ -121,37 +124,36 @@ namespace DALHAL {
             }
             uint32_t addr;
             zcAddr.ConvertTo_uint32(addr);
-            val.out_value.reserve(2+bytesToRead*7/*-1+1*/); // ["0x00","0x01"] 2+ is the [] -1 is to remove the last , and +1 is the null char
-            val.out_value = '[';
-            bool first = true;
+            
+            sbs.write('[');
+
             uint8_t received = wire->requestFrom((uint8_t)addr, (uint8_t)bytesToRead);
             if (received == 0) return HALOperationResult::ExecutionFailed;
             for (uint8_t i = 0; i < received; ++i) {
                 uint8_t byte = wire->read();
-                if (first == false) val.out_value += ',';
-                else first = false;
-                val.out_value += "\"0x";
-                val.out_value += Convert::toHex(byte);
-                val.out_value += "\"";
+                if (i > 0) { sbs.write(','); }
+
+                sbs.write(F("\"0x"));
+                sbs.write_asHex(byte);
+                sbs.write('"');
             }
-            val.out_value += ']';
+            sbs.write(']');
         }
         else if (zcCmd.EqualsIC(F("list"))) {
-            val.out_value = '{';
+            sbs.write('{');
             bool first = true;
             for (uint8_t addr=1; addr<127; ++addr) {
                 wire->beginTransmission(addr);
                 if (wire->endTransmission() == 0) {
-                    if (first == false) val.out_value += ',';
-                    else if (first) first = false;
-                    val.out_value += "\"0x";
-                    val.out_value += Convert::toHex(addr);
-                    val.out_value += "\":\"";
-                    val.out_value += describeI2CAddress(addr);
-                    val.out_value += "\"";
+                    if (addr > 1) { sbs.write(','); }
+                    sbs.write(F("\"0x"));
+                    sbs.write_asHex(addr);
+                    sbs.write('"'); sbs.write(':'); sbs.write('"');
+                    describeI2CAddress(addr, sbs);
+                    sbs.write('"');
                 }
             }
-            val.out_value += '}';
+            sbs.write('}');
             
         } else {
             return HALOperationResult::UnsupportedCommand;
@@ -193,7 +195,7 @@ namespace DALHAL {
             }
             uint8_t res = wire->endTransmission(true);
             if (res != 0) {
-                val.result = 0x30 + res;
+                val.result.write((char)(0x30 + res));
                 return HALOperationResult::ExecutionFailed;
             }
             if (zcStr.IsEmpty() == false) {

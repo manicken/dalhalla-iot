@@ -33,6 +33,8 @@
 
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfPrimitives.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include "DALHAL_ScriptArray_JSON_Schema.h"
 
 namespace DALHAL {
@@ -72,31 +74,32 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
+        StringBuilderStreamer& sbs = val.out_value;
 
         if (val.cmd.EqualsIC(F("valuelist"))) {
-            std::string ret;
-            ret += '[';
+            
+            sbs.write('[');
             for (int i=0;i<valueCount;i++) {
-                ret += values[i].toString();
-                if (i<valueCount-1) ret += ',';
+                values[i].toString(sbs);
+                if (i<valueCount-1) {sbs.write(',');}
             }
-            ret += ']';
-            val.out_value = ret;
+            sbs.write(']');
+
         } else if (val.cmd.ValidNumber()) {
             int32_t index = 0;
             if (val.cmd.ConvertTo_int32(index) == false) {
-                val.out_value = "invalid index not a integer";
+                sbs.write(F("invalid index not a integer"));
                 return HALOperationResult::BracketOpSubscriptInvalid;
             }
 
             if (index < 0 || index >= valueCount) {
-                val.out_value = "invalid index out of range";
+                sbs.write(F("invalid index out of range"));
                 return HALOperationResult::BracketOpSubscriptOutOffRange;
             }
-
-            val.out_value = values[index].toString();
+            values[index].toString(sbs);
+            //val.out_value = values[index].toString();
         } else {
-            val.out_value = "unknown command";
+            sbs.write(F("unknown command"));
             return HALOperationResult::UnsupportedCommand;
         }
 #if HAS_REACTIVE_READ(SCRIPT_ARRAY)

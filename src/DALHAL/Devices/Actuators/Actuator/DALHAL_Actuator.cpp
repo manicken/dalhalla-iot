@@ -352,12 +352,11 @@ namespace DALHAL {
     }
 
     /*static*/ 
-    HALOperationResult Actuator::getEndstops(Device* device, std::string& outStr) {
-        outStr += "\"min\":";
-        outStr += static_cast<Actuator*>(device)->endMinActive() ? "true":"false";
-        outStr += ',';
-        outStr += "\"max\":";
-        outStr += static_cast<Actuator*>(device)->endMaxActive() ? "true":"false";
+    HALOperationResult Actuator::getEndstops(Device* device, StringBuilderStreamer& sbs) {
+
+        sbs.write_jsonBool(F("min"), static_cast<Actuator*>(device)->endMinActive());
+        sbs.write(','); 
+        sbs.write_jsonBool(F("max"), static_cast<Actuator*>(device)->endMaxActive());
 
         return HALOperationResult::Success;
     }

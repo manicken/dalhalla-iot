@@ -32,7 +32,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 #include <DALHAL/Support/ConvertHelper.h>
 
@@ -88,8 +88,8 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaArrayOfPrimitives::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+        void SchemaArrayOfPrimitives::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaArrayOfPrimitives&>(fieldSchema);
             // TODO do proper convertion into bool fields
             std::string primitiveTypeFlagsHex = Convert::toHex(fs.primitiveTypeFlags);

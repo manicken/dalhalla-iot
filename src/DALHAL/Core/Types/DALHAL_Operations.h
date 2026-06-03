@@ -27,6 +27,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace DALHAL {
 
@@ -43,15 +44,15 @@ namespace DALHAL {
     };
 
     struct HALReadStringRequestValue {
-        std::string& out_value;
+        StringBuilderStreamer& out_value;
         const ZeroCopyString& cmd;
-        HALReadStringRequestValue(const ZeroCopyString& cmd, std::string& out_value): out_value(out_value), cmd(cmd) {}
+        HALReadStringRequestValue(const ZeroCopyString& cmd, StringBuilderStreamer& out_value): out_value(out_value), cmd(cmd) {}
     };
 
     struct HALWriteStringRequestValue {
         const ZeroCopyString& value;
-        std::string& result;
-        HALWriteStringRequestValue(const ZeroCopyString& value, std::string& result): value(value), result(result) {}
+        StringBuilderStreamer& result;
+        HALWriteStringRequestValue(const ZeroCopyString& value, StringBuilderStreamer& result): value(value), result(result) {}
     };
 
 }

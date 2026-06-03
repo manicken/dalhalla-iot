@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Config Editor</title>
+<link rel="stylesheet" href="lightmode-style.css">
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="logo">cfg<span>::</span>editor</div>
+    <button class="btn" id="import-btn">↑ Import</button>
+    <button class="btn" id="export-btn">↓ Export</button>
+    <input type="file" id="import-input" accept=".json,.js" style="display:none">
+    <span class="sep"></span>
+    <button class="btn" id="json-btn">{ } JSON</button>
+    <button class="btn suc" id="save-btn">✓ Apply</button>
+  </div>
+  <div id="main">
+    <div id="sidebar">
+      <div id="sb-head">
+        <span class="lbl">Devices</span>
+        <span id="dev-cnt" class="cnt">0</span>
+      </div>
+      <div id="device-list"></div>
+      <div id="add-bar">
+        <select id="add-type-sel"></select>
+        <button class="btn pri sml" id="add-btn">+ Add</button>
+      </div>
+    </div>
+    <div id="panel">
+      <div id="toolbar">
+        <span id="path-display" style="font-family:var(--font);font-size:11px;color:var(--txt2)">Root</span>
+        <span class="sep"></span>
+        <button class="btn dan sml" id="del-btn">✕ Delete</button>
+      </div>
+      <div id="form-area"><div class="empty"><div class="em-icon">⬡</div><div class="em-txt">Select a device or add one</div></div></div>
+      <div id="json-panel"><textarea id="json-ta" spellcheck="false"></textarea></div>
+      <div id="statusbar"><span class="sdot" id="sdot"></span><span id="smsg">Ready</span></div>
+    </div>
+  </div>
+</div>
+<script src="jsonSchema.js"></script>
+<script src="cfg_json_example.js"></script>
+<script>
+
+
+// ═══════════════════════════════════════════════════════════════
+// SCHEMA RESOLVER
+// ═══════════════════════════════════════════════════════════════
+const SR = (() => {
+  const byRefMap = {};
+  for (const ref of (SCHEMA_RAW.ByReference || [])) byRefMap[ref.name] = ref;
+  const objectsMap = {};
+  for (const obj of (SCHEMA_RAW.objects || [])) objectsMap[obj.name] = obj;
+
+  function resolveByRef(name, visited = new Set()) {
+    if (visited.has(name)) return [];
+    visited.add(name);
+    const ref = byRefMap[name];
+    if (!ref) return [];
+    if (ref.type === 'OneOfFieldsGroup') {
+      return [{ type: 'OneOfFieldsGroup', name: ref.name, required: ref.required, fields: ref.fields }];
+    }
+    // FieldsGroup — flatten its fields, recursing into nested _byref_
+    const out = [];
+    for (const f of (ref.fields || [])) {
+      if (f.type === '_byref_') out.push(...resolveByRef(f.name, new Set(visited)));
+      else out.push(f);
+    }
+    return out;
+  }
+
+  function expandFields(fields) {
+    const out = [];
+    for (const f of (fields || [])) {
+      if (f.type === '_byref_') out.push(...resolveByRef(f.name));
+      else out.push(f);
+    }
+    return out;
+  }
+
+  function getRegGroup(regPath) {
+    return SCHEMA_RAW.registers[regPath] || null;
+  }
+
+  function getTypeDef(typeKey, regPath = 'ROOT') {
+    const group = SCHEMA_RAW.registers[regPath];
+    if (!group) return null;
+    const tk = (typeKey || '').toUpperCase();
+    if (group[tk]) return group[tk];
+    // case-insensitive
+    for (const k in group) if (k.toUpperCase() === tk) return group[k];
+    return null;
+  }
+
+  function getObjectDef(name) { return objectsMap[name] || null; }
+
+  function regPathForArrayField(field) {
+    // ArrayOfRegistryItems with regPath -> returns the child registry path
+    return field.regPath || null;
+  }
+
+  return { expandFields, getRegGroup, getTypeDef, getObjectDef, regPathForArrayField };
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+// selection: { path: [{arr, idx, regPath}], leaf: {arr, idx, regPath} | null }
+// path entries describe how we drilled in; leaf is current item
+let SEL = { path: [], leaf: null };
+let jsonOpen = false;
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const el = (tag, attrs = {}, ...children) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'text') e.textContent = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const c of children) if (c) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  return e;
+};
+
+function setStatus(msg, type = 'ok') {
+  document.getElementById('smsg').textContent = msg;
+  const dot = document.getElementById('sdot');
+  dot.className = 'sdot' + (type === 'err' ? ' err' : type === 'warn' ? ' warn' : '');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const list = document.getElementById('device-list');
+  list.innerHTML = '';
+  renderSidebarLevel(list, cfg, 'ROOT', [], 0);
+  document.getElementById('dev-cnt').textContent = cfg.length;
+  refreshAddTypeSelect();
+}
+
+function renderSidebarLevel(container, arr, regPath, pathStack, depth) {
+  if (!arr) return;
+  arr.forEach((item, idx) => {
+    if (typeof item !== 'object' || !item) return;
+    const typeKey = (item.type || '').toUpperCase();
+    const def = SR.getTypeDef(item.type, regPath);
+    console.log("renderSidebarLevel - regPath:", regPath);
+    // Find child arrays from expanded fields
+    const childArrayFields = def ? getChildArrayFields(def, regPath) : [];
+
+    const isSelected = isLeafSelected(pathStack, idx);
+    const div = el('div', {
+      class: `di di-indent${depth > 0 ? '' : ''} ${isSelected ? 'active' : ''} ${item.disabled ? 'dis' : ''}`,
+      style: `padding-left: ${7 + depth * 14}px`,
+      onclick: (e) => { e.stopPropagation(); selectNode(pathStack, idx, arr, regPath); }
+    });
+    div.appendChild(el('span', { class: 'du', text: item.uid || '(no uid)' }));
+    div.appendChild(el('span', { class: 'tb', text: item.type || '?' }));
+
+    let totalChildren = 0;
+    for (const af of childArrayFields) {
+      const childArr = item[af.name];
+      if (Array.isArray(childArr)) totalChildren += childArr.length;
+    }
+    if (totalChildren > 0) div.appendChild(el('span', { class: 'ch', text: `▸${totalChildren}` }));
+
+    container.appendChild(div);
+
+    // Recurse into child arrays
+    for (const af of childArrayFields) {
+      const childArr = item[af.name];
+      if (Array.isArray(childArr) && childArr.length > 0) {
+        const childRegPath = af.regPath || 'ROOT_DEFAULT';
+        renderSidebarLevel(container, childArr, childRegPath,
+          [...pathStack, { arr, idx, regPath, arrKey: af.name }], depth + 1);
+      }
+    }
+  });
+}
+
+function getChildArrayFields(def, regPath) {
+  const fields = SR.expandFields(def.fields || []);
+  const result = [];
+  for (const f of fields) {
+    if (f.type === 'ArrayOfRegistryItems') {
+      result.push({ name: f.name, regPath: f.regPath });
+    } else if (f.type === 'ArrayOfObjects') {
+      // Use regPath of parent for inline object arrays (no specific child reg)
+      result.push({ name: f.name, regPath: null });
+    }
+  }
+  return result;
+}
+
+function isLeafSelected(pathStack, idx) {
+  if (!SEL.leaf) return false;
+  if (SEL.leaf.idx !== idx) return false;
+  if (SEL.path.length !== pathStack.length) return false;
+  for (let i = 0; i < pathStack.length; i++) {
+    if (SEL.path[i].idx !== pathStack[i].idx) return false;
+    if (SEL.path[i].arrKey !== pathStack[i].arrKey) return false;
+  }
+  return true;
+}
+
+function selectNode(pathStack, idx, arr, regPath) {
+  SEL = {
+    path: pathStack.map(p => ({ ...p })),
+    leaf: { arr, idx, regPath }
+  };
+  renderSidebar();
+  renderForm();
+  syncJson();
+}
+
+function refreshAddTypeSelect() {
+  const sel = document.getElementById('add-type-sel');
+  const regPath = getAddTargetRegPath();
+  const group = SR.getRegGroup(regPath) || {};
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for (const k of Object.keys(group)) {
+    const o = el('option', { value: k, text: k + (group[k].name ? ' – ' + group[k].name : '') });
+    sel.appendChild(o);
+  }
+  if (prev && sel.querySelector(`[value="${prev}"]`)) sel.value = prev;
+}
+
+function getAddTargetRegPath() {
+  // If we have a selected item that has child array fields, use that child's regPath
+  if (SEL.leaf) {
+    const item = SEL.leaf.arr[SEL.leaf.idx];
+    const def = SR.getTypeDef(item?.type, SEL.leaf.regPath);
+    if (def) {
+      const caf = getChildArrayFields(def, SEL.leaf.regPath);
+      if (caf.length === 1 && caf[0].regPath) return caf[0].regPath;
+    }
+  }
+  // If we drilled in via a path, use that context's regPath
+  if (SEL.path.length > 0) {
+    const last = SEL.path[SEL.path.length - 1];
+    return last.regPath || 'ROOT';
+  }
+  return 'ROOT';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORM RENDERING
+// ═══════════════════════════════════════════════════════════════
+function renderForm() {
+  const fp = document.getElementById('form-area');
+  fp.innerHTML = '';
+
+  if (!SEL.leaf) {
+    fp.innerHTML = '<div class="empty"><div class="em-icon">⬡</div><div class="em-txt">Select a device or add one</div></div>';
+    updatePathDisplay();
+    return;
+  }
+
+  const item = SEL.leaf.arr[SEL.leaf.idx];
+  const regPath = SEL.leaf.regPath;
+  const typeKey = (item.type || '').toUpperCase();
+  const def = SR.getTypeDef(item.type, regPath) || SR.getTypeDef(typeKey, regPath);
+
+  updatePathDisplay();
+
+  // Breadcrumb
+  if (SEL.path.length > 0) fp.appendChild(renderBreadcrumb());
+
+  // Device header
+  const hdr = el('div', { class: 'dev-hdr' });
+  const nameSpan = el('span', { class: 'dname', text: item.uid || '(no uid)' });
+  const typeSpan = el('span', { class: 'dtype', text: (item.type || '?') + (def ? ' — ' + def.name : '') });
+  const disWrap = el('div', { class: 'dis-wrap' });
+  const disChk = el('input', { type: 'checkbox', id: 'f-disabled' });
+  disChk.checked = !!item.disabled;
+  disChk.addEventListener('change', () => { item.disabled = disChk.checked; renderSidebar(); syncJson(); setStatus('Modified'); });
+  disWrap.appendChild(disChk);
+  disWrap.appendChild(el('label', { for: 'f-disabled', text: 'Disabled' }));
+  hdr.appendChild(nameSpan); hdr.appendChild(typeSpan); hdr.appendChild(disWrap);
+  fp.appendChild(hdr);
+
+  if (!def) {
+    fp.appendChild(el('div', { style: 'color:var(--yel);font-size:11px;margin-bottom:10px', text: `Unknown type "${item.type}" @ "${regPath}". Using raw JSON editing.` }));
+    renderGenericFields(fp, item, ['disabled']);
+    return;
+  }
+
+  // Mode selector (if device has modes)
+  let activeMode = null;
+  if (def.modes && def.modes.length > 0) {
+    activeMode = detectMode(item, def.modes);
+    fp.appendChild(renderModeSelector(item, def, activeMode, () => { renderForm(); syncJson(); }));
+  }
+
+  // Expand fields and render
+  const expanded = SR.expandFields(def.fields || []);
+  const skipKeys = new Set(['disabled', 'type', 'uid', 'note']);
+  const renderedKeys = new Set(skipKeys);
+
+  // Always render uid and note first
+  renderField(fp, item, { type: 'StringUID', name: 'uid', required: true }, regPath, renderedKeys);
+  renderField(fp, item, { type: 'String', name: 'note' }, regPath, renderedKeys);
+
+  for (const f of expanded) {
+    if (skipKeys.has(f.name)) continue;
+    if (f.type === 'OneOfFieldsGroup') {
+      renderRefreshField(fp, item, f, renderedKeys);
+    } else if (f.type === 'AllOfFieldsGroup') {
+      // If mode active, only show groups relevant to active mode
+      if (activeMode) {
+        const modeConj = activeMode.conjunctions.find(c => c.name === f.name);
+        if (!modeConj) continue; // not in this mode
+      }
+      renderAllOfGroup(fp, item, f, renderedKeys);
+    } else if (f.type === 'ArrayOfRegistryItems') {
+      renderArrayOfRegistryItems(fp, item, f, regPath, renderedKeys);
+    } else if (f.type === 'ArrayOfObjects') {
+      renderArrayOfObjects(fp, item, f, regPath, renderedKeys);
+    } else if (f.type === 'Object') {
+      renderObjectField(fp, item, f, regPath, renderedKeys);
+    } else if (f.type === 'ArrayOfPrimitives') {
+      renderArrayOfPrimitives(fp, item, f, renderedKeys);
+    } else {
+      renderField(fp, item, f, regPath, renderedKeys);
+    }
+  }
+
+  // Unknown/extra fields
+  const extraKeys = Object.keys(item).filter(k => !renderedKeys.has(k));
+  if (extraKeys.length > 0) {
+    fp.appendChild(el('div', { class: 'sec-title', html: 'Extra fields <span class="pill pill-yel">unknown</span>' }));
+    for (const k of extraKeys) {
+      renderGenericFieldByKey(fp, item, k);
+    }
+  }
+}
+
+// ─── Mode detection & selector ────────────────────────────────
+function detectMode(item, modes) {
+  // Try to find which mode matches the item's current fields
+  for (const mode of modes) {
+    const req = mode.conjunctions.filter(c => c.required);
+    if (req.length === 0) continue;
+    if (req.every(c => hasGroupFieldPresent(item, c.name))) return mode;
+  }
+  return modes[0];
+}
+
+function hasGroupFieldPresent(item, groupName) {
+  // A group is "present" if any of its keys exist in the item
+  // We check directly by key name (for AllOfFieldsGroup members) or the group name itself
+  return item[groupName] !== undefined || Object.keys(item).some(k => k.startsWith(groupName));
+}
+
+function renderModeSelector(item, def, activeMode, onChange) {
+  const box = el('div', { class: 'mode-box' });
+  box.appendChild(el('label', { text: 'Mode' }));
+  const sel = el('select');
+  for (const m of def.modes) {
+    const o = el('option', { value: m.name, text: m.name });
+    if (activeMode && m.name === activeMode.name) o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.addEventListener('change', () => {
+    const newMode = def.modes.find(m => m.name === sel.value);
+    applyMode(item, def, newMode);
+    onChange();
+  });
+  box.appendChild(sel);
+  return box;
+}
+
+function applyMode(item, def, mode) {
+  // Remove fields from non-active mode groups
+  const allGroups = def.modes.flatMap(m => m.conjunctions.map(c => c.name));
+  const expanded = SR.expandFields(def.fields || []);
+  for (const f of expanded) {
+    if (f.type === 'AllOfFieldsGroup' && allGroups.includes(f.name)) {
+      const inMode = mode.conjunctions.find(c => c.name === f.name);
+      if (!inMode || !inMode.required) {
+        for (const sf of (f.fields || [])) delete item[sf.name];
+      }
+    }
+  }
+}
+
+// ─── Field renderers ──────────────────────────────────────────
+function renderField(fp, item, f, regPath, renderedKeys) {
+  if (renderedKeys) renderedKeys.add(f.name);
+  const row = el('div', { class: 'fr' });
+  const lbl = el('label');
+  lbl.appendChild(document.createTextNode(f.name));
+  if (f.required) lbl.appendChild(el('span', { class: 'req', text: ' *' }));
+  lbl.appendChild(el('span', { class: 'type-hint', text: f.type }));
+  row.appendChild(lbl);
+
+  const val = item[f.name];
+
+  if (f.type === 'Bool') {
+    const wrap = el('div', { class: 'fr-check' });
+    const chk = el('input', { type: 'checkbox' });
+    chk.checked = val !== undefined ? !!val : (f.default !== undefined ? !!f.default : false);
+    chk.addEventListener('change', () => { item[f.name] = chk.checked; syncJson(); setStatus('Modified'); });
+    wrap.appendChild(chk);
+    wrap.appendChild(el('label', { text: f.name }));
+    row.appendChild(wrap);
+  } else if (f.type === 'StringAnyOfByFuncConstrained' && f.allowedValues) {
+    const sel = el('select');
+    for (const v of f.allowedValues) {
+      const o = el('option', { value: v, text: v });
+      if (String(val).toUpperCase() === v.toUpperCase() || val === v) o.selected = true;
+      sel.appendChild(o);
+    }
+    if (val !== undefined) sel.value = val;
+    sel.addEventListener('change', () => { item[f.name] = sel.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(sel);
+  } else if (f.type === 'UInt' || f.type === 'Float' || f.type === 'Number') {
+    const inp = el('input', { type: 'number' });
+    if (f.minValue != null) inp.min = f.minValue;
+    if (f.maxValue != null && f.maxValue > 0) inp.max = f.maxValue;
+    if (f.type === 'Float') inp.step = 'any';
+    inp.value = val !== undefined ? val : (f.default !== null && f.default !== undefined ? f.default : '');
+    inp.addEventListener('input', () => {
+      const v = f.type === 'UInt' ? parseInt(inp.value) : parseFloat(inp.value);
+      if (!isNaN(v)) item[f.name] = v;
+      syncJson(); setStatus('Modified');
+    });
+    row.appendChild(inp);
+    if (f.minValue != null && f.maxValue != null && f.maxValue > 0) {
+      row.appendChild(el('div', { class: 'fn', text: `Range: ${f.minValue} – ${f.maxValue}` }));
+    }
+  } else if (f.type === 'HardwarePin') {
+    const inp = el('input', { type: 'number', placeholder: 'GPIO (neg=disabled)' });
+    inp.value = val !== undefined ? val : '';
+    inp.addEventListener('input', () => { const v = parseInt(inp.value); if (!isNaN(v)) item[f.name] = v; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+    row.appendChild(el('div', { class: 'fn', text: `GPIO pin · mode: ${f.mode || '—'} · negative = active-low` }));
+  } else if (f.type === 'StringHexBytes') {
+    const inp = el('input', { type: 'text', placeholder: f.byteCount === 1 ? 'e.g. 3C' : 'e.g. 28:61:64:35:1B:71:C1:40', style: 'font-family:var(--font)' });
+    inp.value = val !== undefined ? val : (f.default || '');
+    inp.addEventListener('input', () => { item[f.name] = inp.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+    if (f.byteCount) row.appendChild(el('div', { class: 'fn', text: `Hex bytes · ${f.byteCount} byte${f.byteCount > 1 ? 's' : ''}` }));
+  } else if (f.type === 'StringSizeConstrained') {
+    const inp = el('input', { type: 'text' });
+    if (f.maxLength) inp.maxLength = f.maxLength;
+
+    if (f.minLength) {
+      if (f.minLength == f.maxLength) {
+        inp.placeholder = `${f.minLength} chars`;
+      } else {
+        inp.placeholder = `min ${f.minLength} chars`;
+      }
+    }
+    inp.value = val !== undefined ? String(val) : (f.default || '');
+    inp.style.fontFamily = 'var(--font)';
+    inp.addEventListener('input', () => { item[f.name] = inp.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+    //if (f.minLength || f.maxLength) row.appendChild(el('div', { class: 'fn', text: `Length: ${f.minLength || 0}–${f.maxLength || '∞'} chars` }));
+    if (f.minLength != null || f.maxLength != null) {
+        const min = f.minLength ?? 0;
+        const max = f.maxLength ?? '∞';
+
+        const text = (min === max)
+            ? `Length: ${min} chars`
+            : `Length: ${min}–${max} chars`;
+
+        row.appendChild(el('div', { class: 'fn', text }));
+    }
+  } else if (f.type === 'StringUID') {
+    const inp = el('input', { type: 'text', maxlength: '8', placeholder: 'uid (max 8)', style: 'font-family:var(--font)' });
+    inp.value = val !== undefined ? val : '';
+    inp.addEventListener('input', () => { item[f.name] = inp.value; renderSidebar(); syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+    row.appendChild(el('div', { class: 'fn', text:"Length: max 8 chars" }));
+  } else if (f.type === 'StringUID_Path') {
+    const inp = el('input', { type: 'text', placeholder: 'uid path e.g. device:sub', style: 'font-family:var(--font)' });
+    inp.value = val !== undefined ? val : '';
+    inp.addEventListener('input', () => { item[f.name] = inp.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+    row.appendChild(el('div', { class: 'uid-path-hint', text: 'Path format: uid or uid:childuid or uid#field' }));
+    row.appendChild(el('div', { class: 'fn', text:"Length: max ∞ chars" }));
+  } else {
+    // String / fallback
+    const inp = el('input', { type: 'text' });
+    inp.value = val !== undefined ? String(val) : (f.default !== undefined && f.default !== null ? String(f.default) : '');
+    inp.addEventListener('input', () => { item[f.name] = inp.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+  }
+
+  fp.appendChild(row);
+}
+
+function renderRefreshField(fp, item, groupDef, renderedKeys) {
+  const keys = (groupDef.fields || []).map(f => f.name);
+  if (renderedKeys) keys.forEach(k => renderedKeys.add(k));
+  const row = el('div', { class: 'fr' });
+  const lbl = el('label');
+  lbl.appendChild(document.createTextNode('Refresh time'));
+  if (groupDef.required) lbl.appendChild(el('span', { class: 'req', text: ' *' }));
+  lbl.appendChild(el('span', { class: 'type-hint', text: 'OneOf' }));
+  row.appendChild(lbl);
+
+  const wrap = el('div', { class: 'rfg' });
+  const sel = el('select');
+  const unitMap = { refreshtimems: 'ms', refreshtimesec: 'sec', refreshtimemin: 'min' };
+  for (const f of groupDef.fields) {
+    sel.appendChild(el('option', { value: f.name, text: unitMap[f.name] || f.name }));
+  }
+  // detect current
+  let curKey = groupDef.fields[1].name; // default sec
+  for (const f of groupDef.fields) if (item[f.name] !== undefined) { curKey = f.name; break; }
+  sel.value = curKey;
+  const inp = el('input', { type: 'number', min: '0', step: 'any' });
+  inp.value = item[curKey] !== undefined ? item[curKey] : 1;
+
+  sel.addEventListener('change', () => {
+    groupDef.fields.forEach(f => delete item[f.name]);
+    item[sel.value] = parseFloat(inp.value) || 1;
+    syncJson(); setStatus('Modified');
+  });
+  inp.addEventListener('input', () => {
+    groupDef.fields.forEach(f => delete item[f.name]);
+    item[sel.value] = parseFloat(inp.value) || 0;
+    syncJson(); setStatus('Modified');
+  });
+  wrap.appendChild(sel); wrap.appendChild(inp);
+  row.appendChild(wrap);
+  fp.appendChild(row);
+}
+
+function renderAllOfGroup(fp, item, groupDef, renderedKeys) {
+  const box = el('div', { class: 'grp-box' });
+  const title = el('div', { class: 'grp-title' });
+  title.appendChild(document.createTextNode(groupDef.name));
+  title.appendChild(el('span', { class: 'pill pill-pur', text: 'pin group' }));
+  box.appendChild(title);
+  for (const f of (groupDef.fields || [])) {
+    if (renderedKeys) renderedKeys.add(f.name);
+    renderField(box, item, f, null, null);
+  }
+  fp.appendChild(box);
+}
+
+function renderObjectField(fp, item, f, regPath, renderedKeys) {
+  if (renderedKeys) renderedKeys.add(f.name);
+  const subtype = f.subtype;
+  if (!subtype || Object.keys(subtype).length === 0) {
+    // Free-form JSON object (e.g. discovery)
+    renderJsonObjectField(fp, item, f);
+    return;
+  }
+  /*if (f.name === 'items' && f.subtype && f.subtype.fields) {
+    // ThingSpeak items special case
+    if (f.subtype.name === 'ThingSpeakField') {
+      renderThingSpeakItems(fp, item, f);
+      return;
+    }
+  }*/
+  // Inline object with subtype
+  const box = el('div', { class: 'grp-box' });
+  const title = el('div', { class: 'grp-title' });
+  title.appendChild(document.createTextNode(f.name));
+  title.appendChild(el('span', { class: 'pill pill-cya', text: 'object' }));
+  box.appendChild(title);
+  if (!item[f.name]) item[f.name] = {};
+  const sub = item[f.name];
+  const subFields = SR.expandFields(subtype.fields || []);
+  for (const sf of subFields) {
+    renderField(box, sub, sf, regPath, null);
+  }
+  fp.appendChild(box);
+}
+
+function renderJsonObjectField(fp, item, f) {
+  const row = el('div', { class: 'fr' });
+  const lbl = el('label');
+  lbl.appendChild(document.createTextNode(f.name));
+  lbl.appendChild(el('span', { class: 'type-hint', text: 'JSON object' }));
+  row.appendChild(lbl);
+  const ta = el('textarea');
+  ta.value = item[f.name] ? JSON.stringify(item[f.name], null, 2) : '{}';
+  ta.addEventListener('input', () => {
+    try { item[f.name] = JSON.parse(ta.value); ta.style.borderColor = ''; syncJson(); setStatus('Modified'); }
+    catch { ta.style.borderColor = 'var(--red)'; }
+  });
+  row.appendChild(ta);
+  fp.appendChild(row);
+}
+
+/*function renderThingSpeakItems(fp, item, f) {
+  if (!item[f.name]) item[f.name] = {};
+  const sec = el('div', { class: 'sec-title', html: 'ThingSpeak fields <span class="pill pill-cya">1–8</span>' });
+  fp.appendChild(sec);
+  const grid = el('div', { class: 'ts-grid' });
+  for (let i = 1; i <= 8; i++) {
+    const wrap = el('div', { class: 'ts-field' });
+    wrap.appendChild(el('label', { text: String(i) }));
+    const inp = el('input', { type: 'text', placeholder: 'uid:path', style: 'font-family:var(--font);font-size:11px' });
+    inp.value = item[f.name][i] || '';
+    inp.addEventListener('input', () => {
+      if (inp.value) item[f.name][i] = inp.value;
+      else delete item[f.name][i];
+      syncJson(); setStatus('Modified');
+    });
+    wrap.appendChild(inp);
+    grid.appendChild(wrap);
+  }
+  fp.appendChild(grid);
+}*/
+
+function renderArrayOfPrimitives(fp, item, f, renderedKeys) {
+  if (renderedKeys) renderedKeys.add(f.name);
+  const row = el('div', { class: 'fr' });
+  const lbl = el('label');
+  lbl.appendChild(document.createTextNode(f.name));
+  if (f.required) lbl.appendChild(el('span', { class: 'req', text: ' *' }));
+  lbl.appendChild(el('span', { class: 'type-hint', text: 'array' }));
+  row.appendChild(lbl);
+  const ta = el('textarea', { placeholder: 'JSON array of primitives, e.g. [1, 2, 3]' });
+  ta.value = item[f.name] ? JSON.stringify(item[f.name]) : '[]';
+  ta.style.fontFamily = 'var(--font)';
+  ta.style.minHeight = '40px';
+  ta.addEventListener('input', () => {
+    try { item[f.name] = JSON.parse(ta.value); ta.style.borderColor = ''; syncJson(); setStatus('Modified'); }
+    catch { ta.style.borderColor = 'var(--red)'; }
+  });
+  row.appendChild(ta);
+  fp.appendChild(row);
+}
+
+function renderArrayOfRegistryItems(fp, item, f, regPath, renderedKeys) {
+  if (renderedKeys) renderedKeys.add(f.name);
+  const childRegPath = f.regPath || regPath;
+  const childGroup = SR.getRegGroup(childRegPath) || {};
+  if (!item[f.name]) item[f.name] = [];
+  const arr = item[f.name];
+
+  const sec = el('div', { class: 'sec-title' });
+  sec.appendChild(document.createTextNode(f.name));
+  sec.appendChild(el('span', { class: 'pill pill-grn', text: `registry: ${childRegPath}` }));
+  fp.appendChild(sec);
+
+  renderItemsBox(fp, arr, childRegPath, childGroup);
+}
+
+function renderArrayOfObjects(fp, item, f, regPath, renderedKeys) {
+  if (renderedKeys) renderedKeys.add(f.name);
+
+  // Resolve subtype
+  let subDef = null;
+  let childRegPath = null;
+  if (typeof f.subtype === 'string') {
+    subDef = SR.getObjectDef(f.subtype);
+  } else if (f.subtype && f.subtype.type === 'object') {
+    subDef = f.subtype;
+  }
+
+  // Check for special REGO600 renderAllAllowedValues
+  if (f.renderAllAllowedValuesFromStringConstraint && subDef) {
+    renderREGO600Items(fp, item, f, subDef);
+    return;
+  }
+
+  if (!item[f.name]) item[f.name] = [];
+  const arr = item[f.name];
+
+  const sec = el('div', { class: 'sec-title' });
+  sec.appendChild(document.createTextNode(f.name));
+  sec.appendChild(el('span', { class: 'pill pill-cya', text: subDef ? subDef.name : 'objects' }));
+  fp.appendChild(sec);
+
+  // For ArrayOfObjects we use a simplified registry-like group
+  const pseudoGroup = {};
+  if (subDef) {
+    const key = subDef.name || 'item';
+    pseudoGroup[key] = subDef;
+  }
+
+  renderItemsBox(fp, arr, null, pseudoGroup, subDef);
+}
+
+function renderItemsBox(fp, arr, childRegPath, childGroup, fixedSubDef = null) {
+  const box = el('div', { class: 'items-box' });
+  const hdr = el('div', { class: 'items-hdr' });
+  hdr.appendChild(document.createTextNode('Items'));
+  const ic = el('span', { class: 'cnt ic', text: arr.length });
+  hdr.appendChild(ic);
+  box.appendChild(hdr);
+
+  const refresh = () => {
+    // Re-render just the items list part
+    ic.textContent = arr.length;
+    // Remove old ni rows
+    const existing = box.querySelectorAll('.ni');
+    existing.forEach(e => e.remove());
+    // Remove old add bar
+    const oldAdd = box.querySelector('.items-add');
+    if (oldAdd) oldAdd.remove();
+    renderNiRows(box, arr, childRegPath);
+    box.appendChild(renderItemsAddBar(arr, childRegPath, childGroup, fixedSubDef, refresh));
+  };
+
+  renderNiRows(box, arr, childRegPath);
+  box.appendChild(renderItemsAddBar(arr, childRegPath, childGroup, fixedSubDef, refresh));
+  fp.appendChild(box);
+}
+
+function renderNiRows(container, arr, childRegPath) {
+  arr.forEach((child, ci) => {
+    if (typeof child !== 'object' || !child) return;
+    const row = el('div', { class: `ni ${child.disabled ? 'dis' : ''}` });
+    row.appendChild(el('span', { class: 'ni-uid', text: child.uid || '(no uid)' }));
+    if (child.type) row.appendChild(el('span', { class: 'ni-type', text: child.type }));
+    else if (child.regname) row.appendChild(el('span', { class: 'ni-type', text: child.regname }));
+
+    const editBtn = el('button', { class: 'ni-btn', text: 'Edit ›' });
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Build new path entry
+      let newPath = SEL.path.slice();
+      if (SEL.leaf) {
+        // Find which array key this is
+        const parentItem = SEL.leaf.arr[SEL.leaf.idx];
+        let foundKey = null;
+        for (const k of Object.keys(parentItem)) {
+          if (Array.isArray(parentItem[k]) && parentItem[k] === arr) { foundKey = k; break; }
+        }
+        newPath.push({ arr: SEL.leaf.arr, idx: SEL.leaf.idx, regPath: SEL.leaf.regPath, arrKey: foundKey || 'items' });
+      }
+      SEL = { path: newPath, leaf: { arr, idx: ci, regPath: childRegPath || 'ROOT' } };
+      renderSidebar(); renderForm(); syncJson();
+    });
+
+    const delBtn = el('button', { class: 'ni-btn ni-del', text: '✕' });
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete "${child.uid || ci}"?`)) return;
+      arr.splice(ci, 1);
+      renderSidebar(); renderForm(); syncJson(); setStatus('Deleted item');
+    });
+
+    row.appendChild(editBtn);
+    row.appendChild(delBtn);
+    row.addEventListener('click', () => editBtn.click());
+    container.appendChild(row);
+  });
+}
+
+function renderItemsAddBar(arr, childRegPath, childGroup, fixedSubDef, refresh) {
+  const addBar = el('div', { class: 'items-add' });
+  const keys = Object.keys(childGroup || {});
+
+  if (fixedSubDef && keys.length <= 1) {
+    // Fixed type — just add button
+    const btn = el('button', { class: 'btn pri sml', text: '+ Add item' });
+    btn.addEventListener('click', () => {
+      const newItem = buildNewItem(fixedSubDef.name, childGroup, fixedSubDef);
+      arr.push(newItem);
+      renderSidebar(); renderForm(); syncJson(); setStatus('Added item');
+    });
+    addBar.appendChild(btn);
+  } else {
+    const sel = el('select');
+    for (const k of keys) {
+      sel.appendChild(el('option', { value: k, text: k + (childGroup[k]?.name ? ' – ' + childGroup[k].name : '') }));
+    }
+    const btn = el('button', { class: 'btn pri sml', text: '+ Add' });
+    btn.addEventListener('click', () => {
+      const typeKey = sel.value;
+      const def = childGroup[typeKey];
+      const newItem = buildNewItem(typeKey, childGroup, def, childRegPath);
+      arr.push(newItem);
+      renderSidebar(); renderForm(); syncJson(); setStatus(`Added ${typeKey}`);
+    });
+    addBar.appendChild(sel);
+    addBar.appendChild(btn);
+  }
+  return addBar;
+}
+
+function buildNewItem(typeKey, group, def, regPath) {
+  const item = { uid: typeKey.toLowerCase() + '_' + Math.floor(Math.random() * 100) };
+  if (regPath) item.type = typeKey; // only add type if from registry
+  if (def) {
+    const fields = SR.expandFields(def.fields || []);
+    for (const f of fields) {
+      if (['disabled', 'uid', 'note', 'type'].includes(f.name)) continue;
+      if (f.type === 'OneOfFieldsGroup') { item.refreshtimesec = 1; continue; }
+      if (f.required && f.default !== null && f.default !== undefined) item[f.name] = f.default;
+    }
+  }
+  return item;
+}
+
+function renderREGO600Items(fp, item, f, subDef) {
+  const regField = subDef.fields && SR.expandFields(subDef.fields).find(sf => sf.name === f.renderAllAllowedValuesFromStringConstraint);
+  if (!item[f.name]) item[f.name] = [];
+  const arr = item[f.name];
+
+  const sec = el('div', { class: 'sec-title', html: 'REGO600 Registers <span class="pill pill-grn">toggle</span>' });
+  fp.appendChild(sec);
+
+  const enabledSet = new Set(arr.filter(r => !r.disabled).map(r => r.regname?.toUpperCase()));
+  const allVals = regField?.allowedValues || [];
+
+  const grid = el('div', { style: 'display:grid;grid-template-columns:repeat(4,1fr);gap:5px;' });
+  for (const v of allVals) {
+    const isOn = enabledSet.has(v.toUpperCase());
+    const chip = el('div', {
+      style: `padding:5px 8px;border-radius:4px;border:1px solid;cursor:pointer;font-family:var(--font);font-size:11px;text-align:center;transition:all 0.1s;
+        background:${isOn ? 'var(--grn2)' : 'var(--bg2)'};color:${isOn ? '#fff' : 'var(--txt2)'};border-color:${isOn ? 'transparent' : 'var(--line2)'}`,
+      text: v
+    });
+    chip.addEventListener('click', () => {
+      const idx = arr.findIndex(r => r.regname?.toUpperCase() === v.toUpperCase());
+      if (idx >= 0) {
+        arr.splice(idx, 1);
+        chip.style.background = 'var(--bg2)'; chip.style.color = 'var(--txt2)'; chip.style.borderColor = 'var(--line2)';
+      } else {
+        arr.push({ uid: v.toLowerCase(), regname: v });
+        chip.style.background = 'var(--grn2)'; chip.style.color = '#fff'; chip.style.borderColor = 'transparent';
+      }
+      syncJson(); setStatus('Modified');
+    });
+    grid.appendChild(chip);
+  }
+  fp.appendChild(grid);
+}
+
+// ─── Generic field renderer (for unknown fields) ──────────────
+function renderGenericFields(fp, item, skip = []) {
+  const skipSet = new Set(skip);
+  for (const k of Object.keys(item)) {
+    if (skipSet.has(k)) continue;
+    renderGenericFieldByKey(fp, item, k);
+  }
+}
+
+function renderGenericFieldByKey(fp, item, k) {
+  const val = item[k];
+  const row = el('div', { class: 'fr' });
+  row.appendChild(el('label', { text: k, style: 'color:var(--yel)' }));
+  let inp;
+  if (typeof val === 'boolean') {
+    const chk = el('input', { type: 'checkbox' });
+    chk.checked = val;
+    chk.addEventListener('change', () => { item[k] = chk.checked; syncJson(); setStatus('Modified'); });
+    row.appendChild(chk);
+  } else if (typeof val === 'number') {
+    inp = el('input', { type: 'number' });
+    inp.value = val;
+    inp.addEventListener('input', () => { const v = parseFloat(inp.value); if (!isNaN(v)) item[k] = v; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+  } else if (typeof val === 'object') {
+    const ta = el('textarea', { style: 'font-family:var(--font);font-size:11px' });
+    ta.value = JSON.stringify(val, null, 2);
+    ta.addEventListener('input', () => {
+      try { item[k] = JSON.parse(ta.value); ta.style.borderColor = ''; syncJson(); setStatus('Modified'); }
+      catch { ta.style.borderColor = 'var(--red)'; }
+    });
+    row.appendChild(ta);
+  } else {
+    inp = el('input', { type: 'text' });
+    inp.value = val !== undefined ? String(val) : '';
+    inp.addEventListener('input', () => { item[k] = inp.value; syncJson(); setStatus('Modified'); });
+    row.appendChild(inp);
+  }
+  fp.appendChild(row);
+}
+
+// ─── Breadcrumb ───────────────────────────────────────────────
+function renderBreadcrumb() {
+  const bc = el('div', { class: 'bc' });
+  const rootSeg = el('span', { class: 'bc-seg', text: 'Root' });
+  rootSeg.addEventListener('click', () => { SEL = { path: [], leaf: null }; renderSidebar(); renderForm(); });
+  bc.appendChild(rootSeg);
+
+  for (let i = 0; i < SEL.path.length; i++) {
+    const seg = SEL.path[i];
+    const item = seg.arr[seg.idx];
+    bc.appendChild(el('span', { class: 'bc-arr', text: ' › ' }));
+    const s = el('span', { class: 'bc-seg', text: item?.uid || '?' });
+    const capturedPath = SEL.path.slice(0, i + 1);
+    s.addEventListener('click', () => {
+      // Navigate to this level
+      const newPath = capturedPath.slice(0, -1);
+      const last = capturedPath[capturedPath.length - 1];
+      SEL = { path: newPath, leaf: { arr: last.arr, idx: last.idx, regPath: last.regPath } };
+      renderSidebar(); renderForm(); syncJson();
+    });
+    bc.appendChild(s);
+  }
+  return bc;
+}
+
+function updatePathDisplay() {
+  const pd = document.getElementById('path-display');
+  if (!SEL.leaf) { pd.textContent = 'Root'; return; }
+  const parts = ['Root'];
+  for (const p of SEL.path) parts.push(p.arr[p.idx]?.uid || '?');
+  parts.push(SEL.leaf.arr[SEL.leaf.idx]?.uid || '?');
+  pd.textContent = parts.join(' › ');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// JSON PANEL
+// ═══════════════════════════════════════════════════════════════
+function syncJson() {
+  if (!jsonOpen) return;
+  const ta = document.getElementById('json-ta');
+  if (SEL.leaf) {
+    ta.value = JSON.stringify(SEL.leaf.arr[SEL.leaf.idx], null, 2);
+  } else {
+    ta.value = JSON.stringify(cfg, null, 2);
+  }
+}
+
+document.getElementById('json-ta').addEventListener('input', function () {
+  try {
+    const parsed = JSON.parse(this.value);
+    if (SEL.leaf) {
+      SEL.leaf.arr[SEL.leaf.idx] = parsed;
+      renderSidebar(); renderForm();
+    }
+    this.style.color = 'var(--cya)';
+    setStatus('JSON applied');
+  } catch { this.style.color = 'var(--red)'; }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLBAR ACTIONS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('json-btn').addEventListener('click', function () {
+  jsonOpen = !jsonOpen;
+  document.getElementById('json-panel').classList.toggle('open', jsonOpen);
+  this.textContent = jsonOpen ? '{ } Hide' : '{ } JSON';
+  if (jsonOpen) syncJson();
+});
+
+document.getElementById('save-btn').addEventListener('click', () => {
+  setStatus(`Saved — ${cfg.length} root devices`);
+  console.log('Config:', JSON.stringify(cfg, null, 2));
+});
+
+document.getElementById('del-btn').addEventListener('click', () => {
+  if (!SEL.leaf) { setStatus('Nothing selected', 'warn'); return; }
+  const item = SEL.leaf.arr[SEL.leaf.idx];
+  if (!confirm(`Delete "${item?.uid || SEL.leaf.idx}"?`)) return;
+  SEL.leaf.arr.splice(SEL.leaf.idx, 1);
+  SEL = { path: SEL.path.slice(0, -0), leaf: null };
+  if (SEL.path.length > 0) { const p = SEL.path.pop(); SEL.leaf = { arr: p.arr, idx: p.idx, regPath: p.regPath }; }
+  renderSidebar(); renderForm(); syncJson();
+  setStatus('Deleted');
+});
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  const regPath = getAddTargetRegPath();
+  const group = SR.getRegGroup(regPath) || {};
+  const typeKey = document.getElementById('add-type-sel').value;
+  const def = group[typeKey];
+
+  // Find target array
+  let targetArr = cfg;
+  if (SEL.leaf) {
+    const item = SEL.leaf.arr[SEL.leaf.idx];
+    const caf = def ? [] : [];
+    const sDef = SR.getTypeDef(item?.type, SEL.leaf.regPath);
+    if (sDef) {
+      const fields = SR.expandFields(sDef.fields || []);
+      for (const f of fields) {
+        if ((f.type === 'ArrayOfRegistryItems' || f.type === 'ArrayOfObjects') && (f.regPath === regPath || !f.regPath)) {
+          if (!item[f.name]) item[f.name] = [];
+          targetArr = item[f.name];
+          break;
+        }
+      }
+    }
+  }
+
+  const newItem = buildNewItem(typeKey, group, def, regPath);
+  targetArr.push(newItem);
+  renderSidebar(); renderForm(); syncJson();
+  setStatus(`Added ${typeKey}`);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'config.json'; a.click();
+  URL.revokeObjectURL(url);
+  setStatus('Exported config.json');
+});
+
+document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-input').click());
+document.getElementById('import-input').addEventListener('change', function () {
+  const file = this.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let parsed = null;
+    const text = e.target.result;
+    try { parsed = JSON.parse(text); } catch {
+      const m = text.match(/(?:var\s+\w+\s*=\s*)(\[[\s\S]*?\])\s*;?/);
+      if (m) try { parsed = JSON.parse(m[1]); } catch {}
+      if (!parsed) try { const fn = new Function(text + '\nreturn typeof examplecfg!=="undefined"?examplecfg:typeof cfg!=="undefined"?cfg:null;'); parsed = fn(); } catch {}
+    }
+    if (!Array.isArray(parsed)) { setStatus('Import failed: not a JSON array', 'err'); return; }
+    cfg = parsed;
+    SEL = { path: [], leaf: null };
+    renderSidebar(); renderForm(); syncJson();
+    setStatus(`Imported ${cfg.length} devices from ${file.name}`);
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+renderSidebar();
+renderForm();
+setStatus(`Loaded ${cfg.length} root devices`);
+</script>
+</body>
+</html>

@@ -32,7 +32,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -76,24 +76,19 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
+        void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaArrayOfObjects&>(fieldSchema);
             sbs.write(',');sbs.write_jsonKey(F("subtype"));
-            //sbs.write('{'); SchemaToJson adds it
-            if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
+
+            if (Gui::HaveUseInline(fieldSchema.guiFlags) && mode == SchemaEmitMode::ByReference) {
                 if (ToJsonString::objectsContains(fs.subtype->typeName) == false) {
-                    //std::string subTypeOutTemp;
-                    //JsonObjectSchema::SchemaToJson(fs.subtype, subTypeOutTemp);
                     ToJsonString::addToObjects(fs.subtype->typeName, *(fs.subtype));
                 }
                 sbs.write_jsonQuoted(fs.subtype->typeName);
-
-                
             } else {
-                JsonObjectSchema::SchemaToJson(fs.subtype, sbs);
+                JsonObjectSchema::SchemaToJson(fs.subtype, sbs, mode);
             }
-            //sbs.write('}'); SchemaToJson adds it
 
             if (fs.renderAllAllowedValuesFromStringConstraint != nullptr) {
                 sbs.write(','); sbs.write_jsonString(F("renderAllAllowedValuesFromStringConstraint"), fs.renderAllAllowedValuesFromStringConstraint->name);

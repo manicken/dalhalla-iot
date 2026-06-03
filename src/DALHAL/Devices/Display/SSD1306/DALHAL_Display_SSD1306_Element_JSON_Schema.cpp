@@ -63,8 +63,8 @@ namespace DALHAL {
             constexpr JsonObjectSchema Root = {
                 "SSD1306 element",
                 fields,
-                nullptr,
-                nullptr,
+                nullptr, // modes
+                nullptr, // constraints
                 EmptyPolicy::Warn,
                 UnknownFieldPolicy::Warn
             };

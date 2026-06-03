@@ -31,7 +31,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -124,13 +124,13 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaAllOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+        void SchemaAllOfFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             if (fieldSchema.type == FieldType::AllOfFieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs);
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs, mode);
                 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
-                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
+                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
         }
 

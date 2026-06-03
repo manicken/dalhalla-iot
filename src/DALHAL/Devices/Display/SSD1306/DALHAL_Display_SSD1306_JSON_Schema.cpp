@@ -57,7 +57,7 @@ namespace DALHAL {
             constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (unsigned int)1, (unsigned int)64, (unsigned int)1};
             constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
-            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, &JsonSchema::Display_SSD1306_Element::Root, EmptyPolicy::Error };
+            constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &JsonSchema::Display_SSD1306_Element::Root, EmptyPolicy::Error };
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

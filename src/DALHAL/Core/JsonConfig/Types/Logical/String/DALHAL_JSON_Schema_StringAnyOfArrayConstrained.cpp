@@ -55,8 +55,8 @@ namespace DALHAL {
             return SchemaStringAnyOfByFuncConstrained::ValidateJson(fieldSchema, sourceObjTypeName, jsonObj, anyError);
         }
 
-        void SchemaStringAnyOfArrayConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
-            SchemaStringAnyOfByFuncConstrained::SchemaToJson(fieldSchema, sbs);
+        void SchemaStringAnyOfArrayConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
+            SchemaStringAnyOfByFuncConstrained::SchemaToJson(fieldSchema, sbs, mode);
 
             // actually this is only needed on objects that are not final but keep it here if that change in the future
             if (fieldSchema.type == FieldType::StringAnyOfArrayConstrained) { 

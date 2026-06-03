@@ -39,7 +39,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -212,7 +212,7 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, StringBuilderStreamer& sbs) {
+        void JsonObjectSchema::SchemaToJson(const JsonObjectSchema* schema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
 
             sbs.write('{');
 
@@ -240,7 +240,7 @@ namespace DALHAL {
             for (int i = 0; schema->fields[i] != nullptr; ++i) {
                 if (i > 0) { sbs.write(','); }
                 const SchemaTypeBase& field = *schema->fields[i];
-                JsonSchema::SchemaToJson(field, sbs); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                JsonSchema::SchemaToJson(field, sbs, SchemaEmitMode::ByReference); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
                 //const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(field.type);
                 //regDefItem.define.ToJson(field, out);
             }

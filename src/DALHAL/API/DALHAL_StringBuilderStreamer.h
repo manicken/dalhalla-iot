@@ -94,6 +94,7 @@ namespace DALHAL {
         void write_jsonKey(const char* cstr);
 
         void write_jsonString(const __FlashStringHelper* key, const char* cstr);
+        void write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr);
         void write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr);
         void write_jsonBool(const __FlashStringHelper* key, bool v);
         void write_jsonNumber(const __FlashStringHelper* key, uint32_t v);

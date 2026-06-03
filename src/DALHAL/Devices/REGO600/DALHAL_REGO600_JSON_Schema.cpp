@@ -54,7 +54,7 @@ namespace DALHAL {
             constexpr SchemaArrayOfObjects itemsField = {
                 "items", 
                 FieldPolicy::Required,
-                Gui::RenderAllAllowedValues,
+                Gui::RenderAllAllowedValues | Gui::UseInline,
                 &REGO600_Register::regnameField,
                 &REGO600_Register::Root,
                 EmptyPolicy::Error

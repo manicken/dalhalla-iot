@@ -31,7 +31,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -57,7 +57,7 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+        void _SchemaTypeTemplate_::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
 
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::_Count_) { 

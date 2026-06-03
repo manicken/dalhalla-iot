@@ -31,7 +31,7 @@
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_TypesRegistry.h>
 
-#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonStringHelpers.h>
+#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_ToJsonString.h>
 
 namespace DALHAL {
 
@@ -67,7 +67,7 @@ namespace DALHAL {
             return ValidatorResult::Success;
         }
 
-        void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs)
+        void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs, SchemaEmitMode mode)
         {
             sbs.write_jsonKey(F("fields"));
             sbs.write('[');
@@ -76,44 +76,38 @@ namespace DALHAL {
 
                 const SchemaTypeBase& field = *group.fields[i];
 
-                JsonSchema::SchemaToJson(field, sbs); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
+                JsonSchema::SchemaToJson(field, sbs, SchemaEmitMode::ByReference); // shortcut and safer to use, from DALHAL_JSON_Schema_TypesRegistry.h
                 //const auto& regDefItem = GetFieldTypeRegistryItem(field.type);
                 //regDefItem.define.ToJson(field, out);
             }
             sbs.write(']');
         }
         /** this should only be used on final object */
-        void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+        void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             
-            if (Gui::HaveUseInline(fieldSchema.guiFlags)) {
-                if (ToJsonString::inlinesContains(fieldSchema.name) == false) {
-                    /*std::string inlineStr;
-                    SchemaTypeBase::SchemaToJson(fieldSchema, inlineStr);
-                    inlineStr += ','; BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), inlineStr);
-                    inlineStr += '}'; // add the object finalizer
-                    ToJsonString::addToInlines(fieldSchema.name, inlineStr);
-                    */
+            if (Gui::HaveUseInline(fieldSchema.guiFlags) && mode == SchemaEmitMode::ByReference) {
+                if (ToJsonString::ByReferenceContains(fieldSchema.name) == false) {
                     // just add here to be generated later
-                    ToJsonString::addToInlines(fieldSchema.name, fieldSchema);
+                    ToJsonString::addToByReference(fieldSchema.name, fieldSchema);
                 }
                 sbs.write('{');
-                sbs.write_jsonString(F("type"), F("_inline_"));
+                sbs.write_jsonString(F("type"), F("_byref_"));
                 sbs.write(','); sbs.write_jsonString(F("name"), fieldSchema.name);
 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
-                sbs.write(','); BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
+                sbs.write(','); BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
             sbs.write('}'); // add the object finalizer
         }
 
-        void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs) {
+        void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             if (fieldSchema.type == FieldType::FieldsGroup) { 
-                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs);
+                SchemaFieldsGroup::CheckAndAddAsInline(fieldSchema, sbs, mode);
                 
             } else {
-                SchemaTypeBase::SchemaToJson(fieldSchema, sbs);
-                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs);
+                SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
+                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
         }
 

@@ -213,6 +213,10 @@ namespace DALHAL {
         write_jsonKey(key);
         write_jsonQuoted(cstr);
     }
+    void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr) {
+        write_jsonKey(key);
+        write_jsonQuoted(zcStr.start, zcStr.Length());
+    }
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr) {
         write_jsonKey(key);
         write_jsonQuoted(fstr);

@@ -47,10 +47,10 @@ namespace DALHAL {
         protected:
             static void ValidateSchema(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, bool& anyError);
             static ValidatorResult ValidateJson(const SchemaTypeBase& fieldSchema, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError);
-            static void SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs);
-            static void BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs);
+            static void SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode);
+            static void BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs, SchemaEmitMode mode);
             /** this should only be used on final object */
-            static void CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs);
+            static void CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode);
             static const char* GetJavaScriptValidator();
             
         public:

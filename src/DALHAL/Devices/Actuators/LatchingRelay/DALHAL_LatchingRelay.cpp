@@ -311,12 +311,11 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     /*static*/ 
-    HALOperationResult LatchingRelay::getRelayStates(Device* device, std::string& outStr) {
-        outStr += "\"reset\":";
-        outStr += static_cast<LatchingRelay*>(device)->resetActive() ? "true":"false";
-        outStr += ',';
-        outStr += "\"set\":";
-        outStr += static_cast<LatchingRelay*>(device)->setActive() ? "true":"false";
+    HALOperationResult LatchingRelay::getRelayStates(Device* device, StringBuilderStreamer& sbs) {
+
+        sbs.write_jsonBool(F("reset"), static_cast<LatchingRelay*>(device)->resetActive());
+        sbs.write(','); 
+        sbs.write_jsonBool(F("set"), static_cast<LatchingRelay*>(device)->setActive());
 
         return HALOperationResult::Success;
     }
