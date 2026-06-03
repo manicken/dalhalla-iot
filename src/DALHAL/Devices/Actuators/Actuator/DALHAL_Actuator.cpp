@@ -421,7 +421,7 @@ namespace DALHAL {
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
         DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.out_value);
+        return fn(this, val.sbs);
     }
 
     /*virtual override*/

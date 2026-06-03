@@ -45,38 +45,6 @@ namespace DALHAL {
             return Registry::TerminatorItem;
         }
 
-        void GetTypeNames(const Registry::DeviceRegistry& reg, CommandCallback cb)
-        {
-            cb("{\"type\":\"start_chunked\"}", CmdCbType::Control);
-            cb("{\"regitems\":[", CmdCbType::Data);
-
-            std::string buffer;
-            buffer.reserve(1024);
-
-            const auto* items = reg.items;
-
-            for (size_t i = 0; i < reg.count; i++)
-            {
-                if (buffer.size() > 900) {
-                    cb(buffer.c_str(), CmdCbType::Data);
-                    buffer.clear();
-                }
-
-                if (!buffer.empty()) buffer += ',';
-
-                buffer += '"';
-                buffer += items[i].typeName;
-                buffer += '"';
-            }
-
-            if (!buffer.empty()) {
-                cb(buffer.c_str(), CmdCbType::Data);
-            }
-
-            cb("]}", CmdCbType::Data);
-            cb("{\"type\":\"end_chunked\"}", CmdCbType::Control);
-        }
-
         void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb) {
             const Registry::Item* items = reg.items;
             size_t itemCount = reg.count;

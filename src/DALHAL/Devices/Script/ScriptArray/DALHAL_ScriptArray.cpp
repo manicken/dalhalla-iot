@@ -74,7 +74,7 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
-        StringBuilderStreamer& sbs = val.out_value;
+        StringBuilderStreamer& sbs = val.sbs;
 
         if (val.cmd.EqualsIC(F("valuelist"))) {
             

@@ -133,20 +133,24 @@ namespace DALHAL {
             return HALOperationResult::Success;
         }
         else {
-            std::string stdStrCmd = val.cmd.ToString();
-            GlobalLogger.Warn(F("DHT::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
+            GlobalLogger.Warn(F("DHT::read - cmd not found: "), val.cmd); // this can then be read by getting the last entry from logger
             return HALOperationResult::UnsupportedCommand;
         }
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
-        
+        StringBuilderStreamer& sbs = val.sbs;
+
         if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
-            val.out_value = "{\"temp\":" + std::to_string(data.temperature) + "}";
+            sbs.write('{');
+            sbs.write_jsonNumber(F("temp"), data.temperature);
+            sbs.write('}');
             return HALOperationResult::Success;
         } else if (val.cmd.EqualsIC(F("humidity"))) {
-            val.out_value = "{\"humidity\":" + std::to_string(data.humidity) + "}";
+            sbs.write('{');
+            sbs.write_jsonNumber(F("humidity"), data.humidity);
+            sbs.write('}');
             return HALOperationResult::Success;
         }
         else {

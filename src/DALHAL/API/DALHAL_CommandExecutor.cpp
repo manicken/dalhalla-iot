@@ -77,31 +77,11 @@ namespace DALHAL {
         zcUid = zcStr.SplitOffHead('/');
         zcValue = zcStr; // the value is the rest
     }
-#ifdef DALHAL_CommandExecutor_DEBUG_CMD
-    std::string CommandExecutor::ReadWriteCmdParameters::ToString() {
-        std::string message;
-        message += "\"Type\":\"" + zcType.ToString() + "\",";
-        message += "\"UID\":\"" + zcUid.ToString() + "\",";
-        message += "\"Value\":\"" + zcValue.ToString() + "\"";
-        return message;
-    }
-#endif
     
-    // TODO: refactor this function to send errors to GlobalLogger
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
 
-        //std::string message = "";
-        // Example URL: /write/uint32/tempSensor1/255 where tempSensor1 is a uid defined by cfg json
-        //std::cout << "zcStr:" << zcStr.ToString() << "\n";
         ZeroCopyString zcCommand = zcStr.SplitOffHead('/');
 
-        //std::cout << "zcCommand:" << zcCommand.ToString() << "\n";
-
-#ifdef DALHAL_CommandExecutor_DEBUG_CMD
-        message += "\"debug\":{";
-        message += "\"Command\":\"" + zcCommand.ToString() + "\",";
-#endif
-        //bool addLastLogEntryToMessage = false;
         bool anyErrors = false;
         if (zcCommand.EqualsIC(F("hal"))) {
             zcCommand = zcStr.SplitOffHead('/');
@@ -163,9 +143,10 @@ namespace DALHAL {
             else if (zcCommand.EqualsIC(F("printLog"))) {
 
                 if (cb != nullptr) {
+                    // TODO remove use of std::string here
                     GlobalLogger.printAllLogs([cb](const std::string& msg){
                         const ZeroCopyString zcMsg = msg.c_str();
-                        cb(zcMsg, CmdCbType::Data);
+                        cb(zcMsg, CmdCbType::Control);
                     });
                 }
 
@@ -191,15 +172,16 @@ namespace DALHAL {
             zcCommand = zcStr.SplitOffHead('/');
 
             if (zcCommand.EqualsIC(F("scan"))) {
-                if (cb != nullptr) {
-                    cb(String(F("wifi/scanstart\r\n")).c_str(), CmdCbType::Data);
-                }
                 
-                int n = WiFi.scanNetworks();
+                BlockStreamer bs(cb, "wifi/found", BlockStreamer::DataType::Json);
+                StringBuilderStreamer& sbs = bs.writer();
+                sbs.write('[');
+                int n = WiFi.scanNetworks(false, true);
                 for (int i = 0; i < n; i++) {
+                    if (i > 0) {
+                        sbs.write(',');
+                    }
                     String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
-                    int freq = WiFi.channel(i) <= 14 ? 2400 : 5000; // crude 2.4/5 GHz
-                    int rssi = WiFi.RSSI(i);
                     const char* enc;
                     switch(WiFi.encryptionType(i)) {
 #if defined(ESP32)
@@ -220,20 +202,20 @@ namespace DALHAL {
 #endif
                         default: enc = "UNK"; break;
                     }
-                    if (cb != nullptr){
-                        char buffer[256]; // adjust size if needed
-                        std::snprintf(buffer, sizeof(buffer),
-                            "wifi/ssid/%s:%d:%d:%d:%s\r\n",
-                            ssidB64.c_str(), WiFi.channel(i), freq, rssi, enc);
-
-                        std::string ret(buffer);
-                        const ZeroCopyString zcMsg = ret.c_str();
-                        cb(zcMsg, CmdCbType::Data);
-                    }
+                    sbs.write('{');
+                    sbs.write_jsonString(F("ssid"), ssidB64.c_str());
+                    sbs.write(',');
+                    sbs.write_jsonNumber(F("ch"), WiFi.channel(i));
+                    sbs.write(',');
+                    sbs.write_jsonNumber(F("freq"), WiFi.channel(i) <= 14 ? 2400 : 5000); // crude 2.4/5 GHz
+                    sbs.write(',');
+                    sbs.write_jsonNumber(F("rssi"), WiFi.RSSI(i));
+                    sbs.write(',');
+                    sbs.write_jsonString(F("encryption"), enc);
+                    sbs.write('}');
                 }
-                if (cb != nullptr){
-                    cb(String(F("wifi/scanend\r\n")).c_str(), CmdCbType::Data);
-                }
+                sbs.write(']');
+                
             } else if (zcCommand.EqualsIC(F("set_b64"))) {
                 if (zcStr.CountChar(':') >= 1) {
                     DALHAL::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');

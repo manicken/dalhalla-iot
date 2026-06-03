@@ -32,6 +32,8 @@
 
 #include <ArduinoJson.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
@@ -72,7 +74,7 @@ namespace DALHAL {
         void readAll();
         HALOperationResult read(const HALReadStringRequestValue& val) override;
 
-        std::string getAllDevices(bool printTemp = false, bool onlyNewDevices = false);
+        void getAllDevices(bool printTemp, bool onlyNewDevices, StringBuilderStreamer& sbs);
         String ToString() override;
     };
 

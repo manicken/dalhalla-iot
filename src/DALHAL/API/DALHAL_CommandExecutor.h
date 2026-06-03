@@ -83,12 +83,6 @@ namespace DALHAL {
   #define CommandExecutor_UNLOCK_QUEUE() ETS_INTR_UNLOCK()
 #endif
 
-        struct Result {
-            bool success = true;
-            // must be a string as the ownership must be here
-            std::string message;
-        };
-        
         /** 
          * having ZeroCopyString as writable ref, 
          * as that would be useful when passing it to other parsing functions
@@ -100,9 +94,7 @@ namespace DALHAL {
             ZeroCopyString zcUid;
             ZeroCopyString zcValue;
             ReadWriteCmdParameters(ZeroCopyString& zcStr);
-#ifdef DALHAL_CommandExecutor_DEBUG_CMD
-            std::string ToString();
-#endif
+
         };
         static bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);
         static bool writeCmd(ZeroCopyString& zcStr, CommandCallback cb);

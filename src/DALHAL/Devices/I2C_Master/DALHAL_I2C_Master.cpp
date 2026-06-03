@@ -105,7 +105,7 @@ namespace DALHAL {
     }
 
     HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
-        StringBuilderStreamer& sbs = val.out_value;
+        StringBuilderStreamer& sbs = val.sbs;
         ZeroCopyString zcStr = val.cmd; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F("raw"))) { // this is more likely to be called

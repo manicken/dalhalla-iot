@@ -27,6 +27,8 @@
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include <DALHAL/Core/JsonConfig/CommonSchemas/DALHAL_CommonSchemas_Time.h>
 #include "DALHAL_OneWireTempGroup_JSON_Schema.h"
 
@@ -71,57 +73,60 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
+        StringBuilderStreamer& sbs = val.sbs;
+
         if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            val.out_value = '[';
+            sbs.write('[');
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
-                if (i<busCount-1)
-                    val.out_value += ',';
+                if (i<busCount-1) {
+                    sbs.write(',');
+                }
             }
-            val.out_value += ']';
-
+            sbs.write(']');
         }
         else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) {
-            val.out_value = '[';
+            sbs.write('[');
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
-                if (i<busCount-1)
-                    val.out_value += ',';
+                if (i<busCount-1) {
+                    sbs.write(',');
+                }
             }
-            val.out_value += ']';
+            sbs.write(']');
 
         }
         else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
-            val.out_value = '[';
+            sbs.write('[');
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
-                if (i<busCount-1)
-                    val.out_value += ',';
+                if (i<busCount-1) {
+                    sbs.write(',');
+                }
             }
-            val.out_value += ']';
+            sbs.write(']');
 
         }
         else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
-            val.out_value = '[';
+            sbs.write('[');
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
-                if (i<busCount-1)
-                    val.out_value += ',';
+                if (i<busCount-1) {
+                    sbs.write(',');
+                }
             }
-            val.out_value += ']';
+            sbs.write(']');
             
         } else {
-            std::string stdStrCmd = val.cmd.ToString();
-            GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
-            //val.out_value = F("{\"error\":\"cmd not found\"}");
+            GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), val.cmd); // this can then be read by getting the last entry from logger
             return HALOperationResult::UnsupportedCommand;  // cmd not found
         }
 #if HAS_REACTIVE_READ(ONE_WIRE_TEMP_GROUP)

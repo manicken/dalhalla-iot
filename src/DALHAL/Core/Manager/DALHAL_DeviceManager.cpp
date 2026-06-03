@@ -304,46 +304,4 @@ namespace DALHAL {
             delay(0); // give time to RTOS and WiFi tasks
         }
     }
-    /** 
-     * the following is not intended to be used  
-     * it's just to check that everything is correct
-     * in the future it could be a real TEST function
-    */
-    /*void DeviceManager::TEST() {
-
-        ZeroCopyString zcPath = "1WTG";
-        UIDPath path(zcPath);
-        Device* device = nullptr;
-        DeviceFindResult devFindRes = DeviceManager::findDevice(path, device);
-        if (devFindRes != DeviceFindResult::Success) {
-            std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes))+": " + zcPath.ToString() + "\"";
-            Serial.println(msg.c_str());
-            
-        } else {
-            std::string result;
-            ZeroCopyString cmd("getDevices");
-            HALReadStringRequestValue strVal = {cmd, result};
-            //HALReadStringRequest req{path, strVal};
-            if (device->read(strVal) == HALOperationResult::Success) {
-
-                Serial.println(strVal.out_value.c_str());
-            }
-        }
-
-        ZeroCopyString zcPath2 = "1WTG:D2";
-        UIDPath path2(zcPath2);
-        Device* device2 = nullptr;
-        DeviceFindResult devFindRes2 = DeviceManager::findDevice(path2, device2);
-        if (devFindRes2 != DeviceFindResult::Success) {
-            std::string msg = "\"error\":\""+std::string(DeviceFindResultToString(devFindRes2))+": " + zcPath2.ToString() + "\"";
-            Serial.println(msg.c_str());
-            
-        } else {
-            HALValue value;
-            //HALReadRequest req2(path2, value); // obsolete
-            if (device2->read(value) == HALOperationResult::Success) {
-                Serial.println(value.asFloat());
-            }
-        }
-    }*/
 }

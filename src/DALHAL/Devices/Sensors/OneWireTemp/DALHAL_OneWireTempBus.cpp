@@ -82,16 +82,16 @@ namespace DALHAL {
 
     HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
         if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            val.out_value += getAllDevices(false, true);
+            getAllDevices(false, true, val.sbs);
         }
         else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            val.out_value += getAllDevices(true, true);
+            getAllDevices(true, true, val.sbs);
         }
         else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
-            val.out_value += getAllDevices(false, false);
+            getAllDevices(false, false, val.sbs);
         }
         else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
-            val.out_value += getAllDevices(true, false);
+            getAllDevices(true, false, val.sbs);
         } else {
             std::string stdStrCmd = val.cmd.ToString();
             GlobalLogger.Warn(F("OneWireTempBus::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
@@ -113,17 +113,16 @@ namespace DALHAL {
         return false;
     }
 
-    std::string OneWireTempBus::getAllDevices(bool printTemp, bool onlyNewDevices) {
-        //byte i = 0;
+    void OneWireTempBus::getAllDevices(bool printTemp, bool onlyNewDevices, StringBuilderStreamer& sbs) {
         uint8_t done = 0;
         OneWireAddress addr;
-        std::string returnStr;
-        char hexString[3];
         bool first = true;
-
-        returnStr.append("{\"pin\":");
-        returnStr += std::to_string(pin);
-        returnStr.append(",\"items\":[");
+        sbs.write('{');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonKey(F("items"));
+        sbs.write('[');
+        
         if (printTemp) {
             dTemp->setWaitForConversion(true);
             dTemp->requestTemperatures();
@@ -144,34 +143,31 @@ namespace DALHAL {
                 if (onlyNewDevices && haveDeviceWithRomID(addr)==true) continue;
 
                 if (!first) {
-                    returnStr.append(",");
+                    sbs.write(',');
+                } else {
+                    first = false;
                 }
-                if (printTemp) {
-                    returnStr.append("{\"romId\":");
-                }
-                returnStr.append("\"");
-                for(int i = 0; i < 7; i++) 
+       
+                sbs.write('{');
+
+                sbs.write_jsonKey(F("romId"));
+                sbs.write('"');
+                for(int i = 0; i < 8; i++) 
                 {
-                    sprintf(hexString, "%02X", addr.bytes[i]);
-                    returnStr.append(hexString);
-                    returnStr.append(":");
+                    if (i>0) { sbs.write(':'); }
+                    sbs.write_asHex(addr.bytes[i]);
                 }
-                sprintf(hexString, "%02X", addr.bytes[7]);
-                returnStr.append(hexString);
-                returnStr.append("\"");
+                sbs.write('"');
+                
                 if (printTemp) {
-                    returnStr.append(",\"tempC\":");
-                    returnStr += std::to_string(dTemp->getTempC(addr.bytes));
-                    returnStr.append(",\"tempF\":");
-                    returnStr += std::to_string(dTemp->getTempF(addr.bytes));
-                    returnStr.append("}");
+                    sbs.write(','); sbs.write_jsonNumber(F("tempC"), dTemp->getTempC(addr.bytes));
+                    sbs.write(','); sbs.write_jsonNumber(F("tempF"), dTemp->getTempF(addr.bytes));
                 }
-                first = false;
+                sbs.write('}');
             }
         }
-        
-        returnStr.append("]}");
-        return returnStr;
+        sbs.write(']');
+        sbs.write('}');
     }
 
     String OneWireTempBus::ToString() {
