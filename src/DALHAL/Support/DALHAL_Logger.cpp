@@ -100,7 +100,7 @@ LogEntry::LogEntry() : timestamp(0),
         struct tm* timeinfo = localtime(&timestamp);
         char buf[1024]; // buffer for one log line
 
-        sbs.write('[');
+        sbs.write_json_array_begin();
         sbs.write(timeinfo->tm_mday, "%02d");
         sbs.write('/');
         sbs.write(timeinfo->tm_mon+1, "%02d");
@@ -110,7 +110,7 @@ LogEntry::LogEntry() : timestamp(0),
         sbs.write(timeinfo->tm_min, "%02d");
         sbs.write(':');
         sbs.write(timeinfo->tm_sec, "%02d");
-        sbs.write(']');
+        sbs.write_json_array_end();
 
         switch (level) {
             case Loglevel::Info: sbs.write(F("[INFO] ")); break;
@@ -120,9 +120,9 @@ LogEntry::LogEntry() : timestamp(0),
 
         // append source
         if (source != nullptr) {
-            sbs.write('{');
+            sbs.write_json_object_begin();
             sbs.write(source);
-            sbs.write('}');
+            sbs.write_json_object_end();
             sbs.write(' ');
         }
         // append repeat count
@@ -316,9 +316,9 @@ LogEntry::~LogEntry() {
 void LogEntry::MessageWriteTo(DALHAL::StringBuilderStreamer& sbs) const {
 
     if (source != nullptr) {
-        sbs.write('[');
+        sbs.write_json_array_begin();
         sbs.write(source);
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
     if (message != nullptr) {
         sbs.write(message);

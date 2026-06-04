@@ -61,7 +61,7 @@ namespace DALHAL {
 
             // dont forget to change type here to the correct one
             if (fieldSchema.type == FieldType::_Count_) { 
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

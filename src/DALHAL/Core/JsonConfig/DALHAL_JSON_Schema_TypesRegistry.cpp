@@ -118,8 +118,8 @@ namespace DALHAL {
             const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
             if (regDefItem.name == nullptr) {
                 GlobalLogger.Error(F("schema error - could not find schema type @ SchemaToJson"));
-                sbs.write('{');
-                sbs.write('}');
+                sbs.write_json_object_begin();
+                sbs.write_json_object_end();
                 return;
             }
             regDefItem.define->ToJson(stb, sbs, mode);

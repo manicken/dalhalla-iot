@@ -71,12 +71,12 @@ namespace DALHAL {
 
         if (val.cmd.EqualsIC(F("valuelist"))) {
             
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;i<valueCount;i++) {
                 values[i].toString(sbs);
-                if (i<valueCount-1) {sbs.write(',');}
+                if (i<valueCount-1) {sbs.write_json_value_separator();}
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
 
         } else if (val.cmd.ValidNumber()) {
             int32_t index = 0;

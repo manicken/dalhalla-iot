@@ -174,13 +174,13 @@ namespace DALHAL {
     void WS2812::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), ws2812fx->getPin());
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("curr mode"), ws2812fx->getMode());
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("curr brightness"), ws2812fx->getBrightness());
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("curr speed"), ws2812fx->getSpeed());
     }
 

@@ -137,9 +137,9 @@ namespace DALHAL {
                 BlockStreamer bs(cb, "printDevices", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
 
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 DeviceManager::PrintTo(sbs);
-                sbs.write('}');
+                sbs.write_json_object_end();
             }
             else if (zcCommand.EqualsIC(F("printLog"))) {
 
@@ -174,11 +174,11 @@ namespace DALHAL {
                 
                 BlockStreamer bs(cb, "wifi/found", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 int n = WiFi.scanNetworks(false, true);
                 for (int i = 0; i < n; i++) {
                     if (i > 0) {
-                        sbs.write(',');
+                        sbs.write_json_value_separator();
                     }
                     String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
                     const char* enc;
@@ -201,19 +201,19 @@ namespace DALHAL {
 #endif
                         default: enc = "UNK"; break;
                     }
-                    sbs.write('{');
+                    sbs.write_json_object_begin();
                     sbs.write_jsonString(F("ssid"), ssidB64.c_str());
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                     sbs.write_jsonNumber(F("ch"), WiFi.channel(i));
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                     sbs.write_jsonNumber(F("freq"), WiFi.channel(i) <= 14 ? 2400 : 5000); // crude 2.4/5 GHz
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                     sbs.write_jsonNumber(F("rssi"), WiFi.RSSI(i));
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                     sbs.write_jsonString(F("encryption"), enc);
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                 }
-                sbs.write(']');
+                sbs.write_json_array_end();
                 
             } else if (zcCommand.EqualsIC(F("set_b64"))) {
                 if (zcStr.CountChar(':') >= 1) {
@@ -297,14 +297,14 @@ namespace DALHAL {
                 if (cb != nullptr) {
                     BlockStreamer bs(cb, "heap", BlockStreamer::DataType::Json);
                     StringBuilderStreamer& sbs = bs.writer();
-                    sbs.write('{');
+                    sbs.write_json_object_begin();
                     sbs.write_jsonNumber(F("Heap"), ESP.getFreeHeap());
 #if defined(ESP8266)
-                    sbs.write(','); sbs.write_jsonNumber(F("Max block"), ESP.getMaxFreeBlockSize());
+                    sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), ESP.getMaxFreeBlockSize());
 #elif defined(ESP32)
-                    sbs.write(','); sbs.write_jsonNumber(F("Max block"), ESP.getMaxAllocHeap());
+                    sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), ESP.getMaxAllocHeap());
 #endif
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                 }
             }
             else if (zcCommand.EqualsIC(F("reset")) || zcCommand.EqualsIC(F("restart"))) {
@@ -346,12 +346,12 @@ namespace DALHAL {
         } else if (zcCommand.EqualsIC(F("help"))) {
             BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
             StringBuilderStreamer& sbs = bs.writer();
-            sbs.write('{');
+            sbs.write_json_object_begin();
             if (zcStr.IsEmpty()) {
                 sbs.write_jsonKey(F("available_root_cmds"));
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 sbs.write(F("\"help\",\"ver\",\"hal\",\"wifi\""));
-                sbs.write(']');
+                sbs.write_json_array_end();
             } else {
                 zcCommand = zcStr.SplitOffHead('/');
                 sbs.write_jsonKey(F("info"));
@@ -366,7 +366,7 @@ namespace DALHAL {
                 }
 
             }
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
         else
         {
@@ -379,10 +379,10 @@ namespace DALHAL {
             if (lastEntry.level == Loglevel::Error) {
                 BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonKey(F("error"));
                 lastEntry.MessageWriteTo(sbs);
-                sbs.write('}');
+                sbs.write_json_object_end();
 
             }
         }
@@ -465,7 +465,7 @@ namespace DALHAL {
 
         BlockStreamer bs(cb, "hal/write", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
-        sbs.write('{');
+        sbs.write_json_object_begin();
         sbs.write_jsonKey(F("info"));
         bool anyError = false;
 
@@ -480,7 +480,7 @@ namespace DALHAL {
 
                 GlobalLogger.Error(F("Invalid boolean value."));
                 sbs.write(F("null"));
-                sbs.write('}');
+                sbs.write_json_object_end();
                 return false;
             }
 
@@ -488,9 +488,9 @@ namespace DALHAL {
 
             writeResult = outDevice->write(halValue);
             if (writeResult == HALOperationResult::Success) {
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonNumber(F("Value written"), uintValue);
-                sbs.write('}');
+                sbs.write_json_object_end();
                 
             }
         }
@@ -506,9 +506,9 @@ namespace DALHAL {
 
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
-                    sbs.write('{');
+                    sbs.write_json_object_begin();
                     sbs.write_jsonNumber(F("Value written"), uintValue);
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                 }
             }
 
@@ -524,9 +524,9 @@ namespace DALHAL {
                 writeResult = outDevice->write(halValue);
                 if (writeResult == HALOperationResult::Success) {
                     
-                    sbs.write('{');
+                    sbs.write_json_object_begin();
                     sbs.write_jsonNumber(F("Value written"), floatValue);
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                 }
             }
 
@@ -535,9 +535,9 @@ namespace DALHAL {
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonString(F("String written"), params.zcValue);
-                sbs.write('}');
+                sbs.write_json_object_end();
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
@@ -546,9 +546,9 @@ namespace DALHAL {
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonString(F("Json string written"), params.zcValue);
-                sbs.write('}');
+                sbs.write_json_object_end();
             }
         }
         else {
@@ -560,7 +560,7 @@ namespace DALHAL {
             GlobalLogger.setLastEntrySource(outDevice->Type);
             anyError = true;
         }
-        sbs.write('}');
+        sbs.write_json_object_end();
         return anyError == false;
     }
     //  ██████  ███████  █████  ██████  
@@ -590,7 +590,7 @@ namespace DALHAL {
 
         BlockStreamer bs(cb, "hal/read", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
-        sbs.write('{');
+        sbs.write_json_object_begin();
         sbs.write_jsonKey(F("value"));
 
         bool anyError = false;
@@ -656,7 +656,7 @@ namespace DALHAL {
             anyError = true;
         }
 
-        sbs.write('}');
+        sbs.write_json_object_end();
         return anyError == false;
     }
 

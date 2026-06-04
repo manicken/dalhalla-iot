@@ -60,7 +60,7 @@ namespace DALHAL {
 
             // actually this is only needed on objects that are not final but keep it here if that change in the future
             if (fieldSchema.type == FieldType::StringAnyOfArrayConstrained) { 
-                sbs.write('}'); // this is complete object
+                sbs.write_json_object_end(); // this is complete object
             }
         }
 
@@ -86,12 +86,12 @@ namespace DALHAL {
 
         void SchemaStringAnyOfArrayConstrained::DescribeByArray(void* _ctx, StringBuilderStreamer& sbs) {
             const ByArrayConstraints* ctx = static_cast<const ByArrayConstraints*>(_ctx);
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;ctx->allowedValues[i] != nullptr;++i) {
-                if (i>0) { sbs.write(','); }
+                if (i>0) { sbs.write_json_value_separator(); }
                 sbs.write_jsonQuoted(ctx->allowedValues[i]);
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
         }
 
         const char* SchemaStringAnyOfArrayConstrained::GetJavaScriptValidator() {

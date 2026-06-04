@@ -57,6 +57,9 @@ namespace DALHAL {
 
         void flush();
 
+
+        bool writef(const char* fmt, ...);
+
         void write(const char* data, size_t len);
         
         inline void write(const ZeroCopyString& zcStr) {
@@ -71,6 +74,8 @@ namespace DALHAL {
         void write_P(PGM_P pstr);
 
         void write(char c);
+        void write2(char a, char b);
+        void write_escaped(char c);
         void write(bool v);
         void write(uint32_t v);
         void write(int32_t v);
@@ -78,6 +83,7 @@ namespace DALHAL {
         void write(int32_t v, const char* fmt);
         void write(float v);
 
+        
         void write_asBin(uint8_t v);
         void write_asBin(uint16_t v);
         void write_asBin(uint32_t v);
@@ -87,7 +93,18 @@ namespace DALHAL {
 
         /** note if separator is null terminator then the separator is not printed */
         void write_asHex(uint8_t* buff, size_t len, char separator = '\0');
-        
+        /** writes a simple , (comma) */
+        void write_json_value_separator();
+        /** write a simple : (colon) */
+        void write_json_member_separator();
+        /** write a simple [ */
+        void write_json_array_begin();
+        /** write a simple ] */
+        void write_json_array_end();
+        /** write a simple { */
+        void write_json_object_begin();
+        /** write a simple } */
+        void write_json_object_end();
         void write_json(float v);
         void write_jsonQuoted(const __FlashStringHelper* fstr);
         void write_jsonQuoted(const __FlashStringHelper* fstr, size_t len);

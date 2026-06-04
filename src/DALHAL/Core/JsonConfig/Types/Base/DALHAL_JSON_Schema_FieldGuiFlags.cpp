@@ -45,33 +45,33 @@ namespace DALHAL {
 
             void Gui::ToJson(FieldGuiFlagsType flags, StringBuilderStreamer& sbs) {
                 bool first = true;
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 if (hasFlag(flags, DisableByDefault)) {
                     first = false;
                     sbs.write_jsonQuoted(F("DisableByDefault"));
                 }
                 
                 if (hasFlag(flags, HideLabel)) {
-                    if (first == false) { sbs.write(','); }
+                    if (first == false) { sbs.write_json_value_separator(); }
                     first = false;
                     sbs.write_jsonQuoted(F("HideLabel"));
                 }
                 if (hasFlag(flags, ReadOnly)) {
-                    if (first == false) { sbs.write(','); }
+                    if (first == false) { sbs.write_json_value_separator(); }
                     first = false;
                     sbs.write_jsonQuoted(F("ReadOnly"));
                 }
                 if (hasFlag(flags, RenderAllAllowedValues)) {
-                    if (first == false) { sbs.write(','); }
+                    if (first == false) { sbs.write_json_value_separator(); }
                     first = false;
                     sbs.write_jsonQuoted(F("RenderAllAllowedValues"));
                 }
                 if (hasFlag(flags, UseInline)) {
-                    if (first == false) { sbs.write(','); }
+                    if (first == false) { sbs.write_json_value_separator(); }
                     first = false;
                     sbs.write_jsonQuoted(F("UseInline"));
                 }
-                sbs.write(']');
+                sbs.write_json_array_end();
             }
 
             bool Gui::HaveUseInline(FieldGuiFlagsType flags) {

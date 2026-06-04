@@ -76,7 +76,7 @@ namespace Drivers {
 
     void REGO600::DebugErrorMessage(const char* msg) {
         printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
-        DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        //DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg); // not needed as GlobalLogger emit error as well
         GlobalLogger.Error(F(DRIVERS_REGO600_ERROR_BASE_STR), msg);
     }
 
@@ -160,15 +160,15 @@ namespace Drivers {
         return false;
     }
     void REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs) { // ctx not used here as this is a static table
-        sbs.write('[');
+        sbs.write_json_array_begin();
         bool first = true;
         for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
             if (first == false) {
-                sbs.write(',');
+                sbs.write_json_value_separator();
             } else { first = false; }
             sbs.write_jsonQuoted(SystemRegisterTable[i].name);
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 
     // Constructor for linked values here the type is allways Value

@@ -87,32 +87,32 @@ namespace DALHAL {
     void REGO600::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("items"));
-        sbs.write('[');
+        sbs.write_json_array_begin();
 
         for (int i=0;i<registerItemCount;i++) {
-            if (i > 0) { sbs.write(','); }
+            if (i > 0) { sbs.write_json_value_separator(); }
             
-            sbs.write('{');
+            sbs.write_json_object_begin();
    
             registerItems[i]->PrintTo(sbs);
 
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonKey(F("opcode"));
             sbs.write('"');
             sbs.write_asHex((uint8_t)requestList[i]->info.opcode);
             sbs.write('"');
 
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonKey(F("addr"));
             sbs.write('"');
             sbs.write_asHex(requestList[i]->def.address);
             sbs.write('"');
 
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
-        sbs.write('}');
+        sbs.write_json_object_end();
     }
 
     DeviceFindResult REGO600::findDevice(UIDPath& path, Device*& outDevice) {

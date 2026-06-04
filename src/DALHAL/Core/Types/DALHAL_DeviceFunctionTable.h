@@ -115,9 +115,9 @@ namespace DALHAL {
     template<typename Fn>
     static void GetDeviceFunctions(const FunctionTable_t<Fn>& funcTable, DALHAL::StringBuilderStreamer& sbs) {
 
-        sbs.write('[');
+        sbs.write_json_array_begin();
         for (size_t i = 0; i<funcTable.count; ++i) {
-            if (i>0) { sbs.write(','); }
+            if (i>0) { sbs.write_json_value_separator(); }
             sbs.write(F("{\"name\":\"")); if (funcTable.items[i].name) { sbs.write(funcTable.items[i].name); } sbs.write('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
             sbs.write(F(",\"help\":\"")); if (funcTable.items[i].help) { sbs.write(funcTable.items[i].help); } sbs.write('"');
             if (funcTable.items[i].rwTypeMask != FunctionValueType::_None_) {
@@ -126,9 +126,9 @@ namespace DALHAL {
             if (funcTable.items[i].bracketTypeMask != FunctionValueType::_None_) {
                 sbs.write(F(",\"bracketTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].bracketTypeMask, sbs);
             }
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 
     struct DeviceFunctionTable {

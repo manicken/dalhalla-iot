@@ -58,7 +58,7 @@ namespace DALHAL {
             {
                 const Registry::Item& regItem = items[i];
 
-                if (i > 0) { sbs.write(','); } 
+                if (i > 0) { sbs.write_json_value_separator(); } 
 
                 sbs.write(F("{\"name\":\""));
                 sbs.write(regItem.typeName);
@@ -68,24 +68,24 @@ namespace DALHAL {
                     bool first = true;
                     for (const EventDescriptor* entry = regItem.def->reactiveTable; entry->name; entry++) {
                     
-                        if (first == false) { sbs.write(','); }
+                        if (first == false) { sbs.write_json_value_separator(); }
                         else { first = false; }
                         sbs.write('"'); sbs.write(entry->name); sbs.write('"');
                     }
                 }
-                sbs.write(']');
+                sbs.write_json_array_end();
 
                 sbs.write(F(",\"functions\":{"));
 
                 if (regItem.def->functionTable != nullptr) {
                     regItem.def->functionTable->PrintTo(sbs);
                 }
-                sbs.write('}');
-                sbs.write('}');
+                sbs.write_json_object_end();
+                sbs.write_json_object_end();
 
             }
-            sbs.write(']');
-            sbs.write('}');
+            sbs.write_json_array_end();
+            sbs.write_json_object_end();
             sbs.flush();
         }
 

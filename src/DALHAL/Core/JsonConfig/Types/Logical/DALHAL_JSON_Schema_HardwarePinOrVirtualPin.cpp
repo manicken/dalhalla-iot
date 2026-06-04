@@ -134,7 +134,7 @@ namespace DALHAL {
         void SchemaHardwarePinOrVirtualPin::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaHardwarePinOrVirtualPin&>(fieldSchema);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonKey(F("mode"));
             GPIO_manager::describePinFunctions(fs.mode, sbs); // this is the most describable version, use this for development test only
             //std::string modeStr = Convert::toHex(fs.mode); // this is the most compact version
@@ -143,7 +143,7 @@ namespace DALHAL {
             
             
             if (fieldSchema.type == FieldType::HardwarePinOrVirtualPin) { 
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

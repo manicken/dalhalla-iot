@@ -25,9 +25,12 @@
 
 #if defined(ESP8266) || defined(ESP32)
 #include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
+
 #else
 #include <DALHAL_WebSocketAPI_Windows.h> // PC port - for SendMessage
 #endif
+
+#include <DALHAL/API/DALHAL_BlockStreamer.h>
 
 #include "DALHAL_ButtonInput_JSON_Schema.h"
 
@@ -91,14 +94,26 @@ namespace DALHAL {
                     HALValue currValue;
                     HALOperationResult res = toggleTarget->ReadSimple(currValue);
                     if (res != HALOperationResult::Success) {
-                        WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute: ", decodeUID(uid).c_str());
+
+                        DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
+                        bs.writer().write(F("[ButtonInput] pressed, toggleState could not execute: "));
+                        decodeUID(uid, bs.writer());
+                        
                         return;
                     } 
                     HALValue newVal = currValue.toBool() ? false : true;
                     toggleTarget->WriteSimple(newVal);
-                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState=", newVal.toString().c_str());
+
+                    DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
+                    bs.writer().write(F("[ButtonInput] pressed, toggleState="));
+                    newVal.toString(bs.writer());
+                
                 } else {
-                    WebSocketAPI::Broadcast("[ButtonInput] pressed, toggleState could not execute because no targetdevice\r\n", decodeUID(uid).c_str());
+
+                    DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
+                    bs.writer().write(F("[ButtonInput] pressed, toggleState could not execute because no targetdevice"));
+                    decodeUID(uid, bs.writer());
+                    
                 }
 
             } else {
@@ -130,11 +145,11 @@ namespace DALHAL {
     void ButtonInput::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("activeLevel"), activeLevel);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("debounceMs"), debounceMs);
 
     }

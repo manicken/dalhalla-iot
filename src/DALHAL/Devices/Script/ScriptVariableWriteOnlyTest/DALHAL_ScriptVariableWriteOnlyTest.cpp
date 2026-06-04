@@ -60,7 +60,7 @@ namespace DALHAL {
     void ScriptVariableWriteOnlyTest::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("value"));
         value.toString(sbs);
     }

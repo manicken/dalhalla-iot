@@ -84,7 +84,7 @@ namespace DALHAL {
     void PCF8574x::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("addr"));
         sbs.write('"');
         sbs.write('0');

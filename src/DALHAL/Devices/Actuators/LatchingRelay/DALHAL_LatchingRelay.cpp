@@ -314,7 +314,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     HALOperationResult LatchingRelay::getRelayStates(Device* device, StringBuilderStreamer& sbs) {
 
         sbs.write_jsonBool(F("reset"), static_cast<LatchingRelay*>(device)->resetActive());
-        sbs.write(','); 
+        sbs.write_json_value_separator(); 
         sbs.write_jsonBool(F("set"), static_cast<LatchingRelay*>(device)->setActive());
 
         return HALOperationResult::Success;
@@ -585,26 +585,26 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     void LatchingRelay::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         if (mode == DriveMode::Direct) {
             sbs.write(F("\"mode\":\"Direct\""));
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin a"), (int8_t)pins.direct.a);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin b"), (int8_t)pins.direct.b);
         } else if (mode == DriveMode::DataEnable) {
             sbs.write(F("\"mode\":\"data_enable\""));
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin data"), (int8_t)pins.data_enable.data);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.data_enable.enable);
         } else {
             sbs.write(F("\"mode\":\"__unknown__\""));
         }
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pinFeedbackReset"), (int8_t)pinFeedbackReset);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pinFeedbackSet"), (int8_t)pinFeedbackSet);
     }
 

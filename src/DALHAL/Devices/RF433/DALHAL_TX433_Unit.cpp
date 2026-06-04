@@ -105,7 +105,7 @@ namespace DALHAL {
     void TX433_Unit::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("data"));
         sbs.write('"');
         sbs.write_asHex(staticData);

@@ -23,6 +23,8 @@
 
 #include "DALHAL_StringBuilderStreamer.h"
 
+#include <DALHAL/Support/DALHAL_Logger.h>
+
 #include <math.h>
 
 namespace DALHAL {
@@ -47,6 +49,59 @@ namespace DALHAL {
 //    ██ ███ ██ ██   ██ ██    ██    ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
 //     ███ ███  ██   ██ ██    ██    ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
 
+    bool StringBuilderStreamer::writef(const char* fmt, ...)
+    {
+        if (!fmt) return false;
+
+        va_list args;
+        va_start(args, fmt);
+
+        while (true)
+        {
+            size_t remaining = sizeof(_buf) - _pos;
+
+            if (remaining == 0)
+            {
+                flush();
+                continue;
+            }
+
+            va_list args_copy;
+            va_copy(args_copy, args);
+
+            int n = vsnprintf(_buf + _pos, remaining, fmt, args_copy);
+
+            va_end(args_copy);
+
+            if (n < 0)
+            {
+                va_end(args);
+                GlobalLogger.Error(F("SBS format error"));
+                return false;
+            }
+
+            // real "impossible to ever fit"
+            if ((size_t)n > sizeof(_buf))
+            {
+                va_end(args);
+                GlobalLogger.Error(F("SBS formatted message too large"));
+                return false;
+            }
+
+            // doesn't fit in remaining → flush and retry
+            if ((size_t)n >= remaining)
+            {
+                flush();
+                continue;
+            }
+
+            // fits
+            _pos += (size_t)n;
+            va_end(args);
+            return true;
+        }
+    }
+
     /* public */
     void StringBuilderStreamer::write(const char* data, size_t len) {
         while (len > 0) {
@@ -66,8 +121,53 @@ namespace DALHAL {
 
     /* public */
     void StringBuilderStreamer::write(char c) {
+        if (c == '\0') return;
+
         if (_pos >= sizeof(_buf)) flush();
         _buf[_pos++] = c;
+    }
+    void StringBuilderStreamer::write2(char a, char b)
+    {
+        if (_pos + 2 >= sizeof(_buf)) flush();
+        _buf[_pos++] = a;
+        _buf[_pos++] = b;
+    }
+    char NibbleToHexCharLowerCase(uint8_t value)
+    {
+        value &= 0x0F;
+        if (value>9) return (value - 10) + 'a';
+        else return value + '0';
+    }
+    void StringBuilderStreamer::write_escaped(char c) {
+        if (c == '\0') return;
+
+        switch (c)
+        {
+            case '"':  write2('\\', '"'); break;
+            case '\\': write2('\\', '\\'); break;
+            case '\n': write2('\\', 'n');  break;
+            case '\r': write2('\\', 'r');  break;
+            case '\t': write2('\\', 't');  break;
+            case '\b': write2('\\', 'b');  break;
+            case '\f': write2('\\', 'f');  break;
+
+            default:
+                // control chars
+                if ((unsigned char)c < 0x20)
+                {
+                    // safest fallback
+                    // write chars by chars to avoid using slow PROGMEM 
+                    // (specially on ESP8266 where F() strings are needed to save ram)
+                    write2('\\', 'u'); write2('0', '0');
+                    uint8_t v = (uint8_t)c;
+                    write2(NibbleToHexCharLowerCase(v >> 4), NibbleToHexCharLowerCase(v));
+                }
+                else
+                {
+                    write(c);
+                }
+                break;
+        }
     }
 
     void StringBuilderStreamer::write(bool v) {
@@ -161,6 +261,7 @@ namespace DALHAL {
         if (value>9) return (value - 10) + 'A';
         else return value + '0';
     }
+    
     void StringBuilderStreamer::write_asHex(uint8_t v) {
         write(NibbleToHexChar(v >> 4));
         write(NibbleToHexChar(v));
@@ -184,8 +285,8 @@ namespace DALHAL {
     }
 
     void StringBuilderStreamer::write_json(float v) {
-        if (isnan(v) || isfinite(v)) {
-            write(F("null"), 4); // otherwise it will print nan which is a invalid json type
+        if (isnan(v) || !isfinite(v)) {
+            write(F("null")); // otherwise it will print nan which is a invalid json type
             return;
         }
         char buf[32];
@@ -193,37 +294,85 @@ namespace DALHAL {
         if (n > 0) write(buf, (size_t)n);
     }
 
+    void StringBuilderStreamer::write_json_value_separator() {
+        write(',');
+    }
+    void StringBuilderStreamer::write_json_member_separator() {
+        write(':');
+    }
+    void StringBuilderStreamer::write_json_array_begin() {
+        write('[');
+    }
+    void StringBuilderStreamer::write_json_array_end() {
+        write(']');
+    }
+    void StringBuilderStreamer::write_json_object_begin() {
+        write('{');
+    }
+    void StringBuilderStreamer::write_json_object_end() {
+        write('}');
+    }
+
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr, size_t len) {
+        if (fstr == nullptr || len == 0) {
+            write(F("null"));
+            return;
+        }
         write('"');
         write(fstr, len);
         write('"');
     }
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr) {
+        if (fstr == nullptr) {
+            write(F("null"));
+            return;
+        }
         write('"');
         write(fstr);
         write('"');
     }
     void StringBuilderStreamer::write_jsonQuoted(const char* cstr, size_t len) {
+        if (!cstr || len == 0)
+        {
+            write(F("null"));
+            return;
+        }
         write('"');
-        write(cstr, len);
+        size_t i=0;
+        for (const char* p = cstr; *p && i < len; ++p, ++i)
+        {
+            write_escaped(*p);
+        }
+
         write('"');
     }
     void StringBuilderStreamer::write_jsonQuoted(const char* cstr) {
-        write_jsonQuoted(cstr, strlen(cstr));
+        if (!cstr)
+        {
+            write(F("null"));
+            return;
+        }
+        write('"');
+        for (const char* p = cstr; *p; ++p)
+        {
+            write_escaped(*p);
+        }
+
+        write('"');
     }
 
     void StringBuilderStreamer::write_jsonKey(const __FlashStringHelper* fstr, size_t len) {
         write_jsonQuoted(fstr, len);
-        write(':');
+        write_json_member_separator();
     }
     void StringBuilderStreamer::write_jsonKey(const __FlashStringHelper* fstr) {
         write_jsonQuoted(fstr);
-        write(':');
+        write_json_member_separator();
     }
 
     void StringBuilderStreamer::write_jsonKey(const char* cstr, size_t len) {
         write_jsonQuoted(cstr, len);
-        write(':');
+        write_json_member_separator();
     }
     void StringBuilderStreamer::write_jsonKey(const char* cstr) {
         write_jsonKey(cstr, strlen(cstr));

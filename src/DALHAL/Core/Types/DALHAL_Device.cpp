@@ -78,7 +78,7 @@ namespace DALHAL {
         sbs.write('"');
         decodeUID(uid, sbs);
         sbs.write('"');
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonString(F("type"), this->Type);
         
     }

@@ -355,7 +355,7 @@ namespace DALHAL {
     HALOperationResult Actuator::getEndstops(Device* device, StringBuilderStreamer& sbs) {
 
         sbs.write_jsonBool(F("min"), static_cast<Actuator*>(device)->endMinActive());
-        sbs.write(','); 
+        sbs.write_json_value_separator(); 
         sbs.write_jsonBool(F("max"), static_cast<Actuator*>(device)->endMaxActive());
 
         return HALOperationResult::Success;
@@ -584,29 +584,29 @@ namespace DALHAL {
     void Actuator::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         if (mode == DriveMode::HBridge) {
             sbs.write(F("\"mode\":\"h-bridge\""));
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin a"), (int8_t)pins.hbridge.a);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin b"), (int8_t)pins.hbridge.b);
 
         } else if (mode == DriveMode::DirEnable) {
             sbs.write(F("\"mode\":\"dir_enable\""));
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin dir"), (int8_t)pins.diren.dir);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.diren.enable);
-            sbs.write(',');
+            sbs.write_json_value_separator();
             sbs.write_jsonNumber(F("pin brk"), (int8_t)pins.diren.brk);
         } else {
             sbs.write(F("\"mode\":\"__unknown__\""));
         }
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pinEndMin"), (int8_t)pinMinEndStop);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pinEndMax"), (int8_t)pinMaxEndStop);
     }
 

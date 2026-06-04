@@ -79,7 +79,7 @@ namespace DALHAL {
         void SchemaArrayOfObjects::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaArrayOfObjects&>(fieldSchema);
-            sbs.write(',');sbs.write_jsonKey(F("subtype"));
+            sbs.write_json_value_separator();sbs.write_jsonKey(F("subtype"));
 
             if (Gui::HaveUseInline(fieldSchema.guiFlags) && mode == SchemaEmitMode::ByReference) {
                 if (ToJsonString::objectsContains(fs.subtype->typeName) == false) {
@@ -91,11 +91,11 @@ namespace DALHAL {
             }
 
             if (fs.renderAllAllowedValuesFromStringConstraint != nullptr) {
-                sbs.write(','); sbs.write_jsonString(F("renderAllAllowedValuesFromStringConstraint"), fs.renderAllAllowedValuesFromStringConstraint->name);
+                sbs.write_json_value_separator(); sbs.write_jsonString(F("renderAllAllowedValuesFromStringConstraint"), fs.renderAllAllowedValuesFromStringConstraint->name);
             }
             
             if (fieldSchema.type == FieldType::ArrayOfObjects) { 
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

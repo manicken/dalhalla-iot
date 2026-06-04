@@ -115,16 +115,16 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaNumber&>(fieldSchema);
 
-            sbs.write(','); sbs.write_jsonKey(F("allowedTypes"));
-            sbs.write('{');
+            sbs.write_json_value_separator(); sbs.write_jsonKey(F("allowedTypes"));
+            sbs.write_json_object_begin();
             sbs.write_jsonBool(F("bool"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
-            sbs.write(','); sbs.write_jsonBool(F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
-            sbs.write(','); sbs.write_jsonBool(F("int"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
-            sbs.write(','); sbs.write_jsonBool(F("uint"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
-            sbs.write('}');
+            sbs.write_json_value_separator(); sbs.write_jsonBool(F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));
+            sbs.write_json_value_separator(); sbs.write_jsonBool(F("int"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowInt));
+            sbs.write_json_value_separator(); sbs.write_jsonBool(F("uint"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowUInt));
+            sbs.write_json_object_end();
             
             if (fieldSchema.type == FieldType::Number) {
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

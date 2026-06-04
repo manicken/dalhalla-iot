@@ -111,12 +111,12 @@ namespace DALHAL {
         void SchemaUInt::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             const SchemaUInt& fs = static_cast<const SchemaUInt&>(fieldSchema);
-            sbs.write(','); sbs.write_jsonNumber(F("default"), fs.defaultValue);
-            sbs.write(','); sbs.write_jsonNumber(F("minValue"), fs.minValue);
-            sbs.write(','); sbs.write_jsonNumber(F("maxValue"), fs.maxValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("default"), fs.defaultValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("minValue"), fs.minValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("maxValue"), fs.maxValue);
             
             if (fieldSchema.type == FieldType::UInt) {
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

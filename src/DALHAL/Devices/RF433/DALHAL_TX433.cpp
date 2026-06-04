@@ -84,20 +84,20 @@ namespace DALHAL {
     void TX433::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("units"));
-        sbs.write('[');
+        sbs.write_json_array_begin();
 
         for (int i=0;i<unitCount;i++) {
-            if (i>0) { sbs.write(','); }
+            if (i>0) { sbs.write_json_value_separator(); }
             
-            sbs.write('{');
+            sbs.write_json_object_begin();
             units[i]->PrintTo(sbs);
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 
 }

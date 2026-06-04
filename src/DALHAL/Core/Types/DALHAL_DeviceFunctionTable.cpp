@@ -40,11 +40,11 @@ namespace DALHAL {
     void FunctionValueType::PrintTo(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL::StringBuilderStreamer& sbs) {
 
         bool notFirst = false;
-        sbs.write('[');
+        sbs.write_json_array_begin();
         if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; sbs.write("\"uint\""); }
-        if (notFirst) { sbs.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; sbs.write("\"int\""); }
-        if (notFirst) { sbs.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; sbs.write("\"float\""); }
-        if (notFirst) { sbs.write(','); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; sbs.write("\"bool\""); }
-        sbs.write(']');
+        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; sbs.write("\"int\""); }
+        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; sbs.write("\"float\""); }
+        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; sbs.write("\"bool\""); }
+        sbs.write_json_array_end();
     }
 }

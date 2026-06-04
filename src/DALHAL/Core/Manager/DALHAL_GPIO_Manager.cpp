@@ -351,7 +351,7 @@ namespace DALHAL {
                 //else // default set above
                 //    listMode = DALHAL_CMD_EXEC_GPIO_LIST_MODE_DEFAULT; // default
             }
-            sbs.write('{');
+            sbs.write_json_object_begin();
     #if defined(ESP8266)
             sbs.write_jsonString(F("MCU"), F("ESP8266"));
     #elif defined(ESP32)
@@ -361,14 +361,14 @@ namespace DALHAL {
     #else
             sbs.write_jsonString(F("MCU"), F("UNKNOWN"));
     #endif
-            sbs.write(','); sbs.write_jsonString(F("variant"), Info::getESPVariant());
+            sbs.write_json_value_separator(); sbs.write_jsonString(F("variant"), Info::getESPVariant());
             if (listMode != PrintListMode::String) {
-                sbs.write(','); sbs.write_jsonKey(F("PinModes"));
-                sbs.write('{');
+                sbs.write_json_value_separator(); sbs.write_jsonKey(F("PinModes"));
+                sbs.write_json_object_begin();
                 
                 for (int i=0;i<(int)PinModeStrings_size;++i)
                 {
-                    if (i>0) { sbs.write(','); }
+                    if (i>0) { sbs.write_json_value_separator(); }
                     sbs.write_jsonKey(PinModeStrings[i].Name);
 
                     sbs.write('"');
@@ -382,14 +382,14 @@ namespace DALHAL {
                     sbs.write('"');
                     
                 }
-                sbs.write('}'); 
+                sbs.write_json_object_end(); 
             }
-            sbs.write(','); sbs.write_jsonKey(F("list")); sbs.write('{');
+            sbs.write_json_value_separator(); sbs.write_jsonKey(F("list")); sbs.write_json_object_begin();
 
            // if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
             for (int i=0;i<(int)available_gpio_list_size;i++)
             {
-                if (i>0) { sbs.write(','); }
+                if (i>0) { sbs.write_json_value_separator(); }
                 
                 sbs.write('"');
                 sbs.write(available_gpio_list[i].pin);
@@ -407,9 +407,9 @@ namespace DALHAL {
                 }
                 sbs.write('"');                      
             }
-            sbs.write('}');
+            sbs.write_json_object_end();
 
-            sbs.write('}'); // end of whole json object
+            sbs.write_json_object_end(); // end of whole json object
         }
     }
 }

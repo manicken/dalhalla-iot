@@ -64,17 +64,17 @@ namespace DALHAL {
         }
         
         void SchemaTypeBase::SchemaToJson(const SchemaTypeBase& schema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
-            sbs.write('{'); // this is allways added
+            sbs.write_json_object_begin(); // this is allways added
             const char* type_cStr = FieldTypeToString(schema.type);
             sbs.write_jsonString(F("type"), type_cStr?type_cStr:"nullptr unknown");
             
-            sbs.write(','); sbs.write_jsonString(F("name"), schema.name);
+            sbs.write_json_value_separator(); sbs.write_jsonString(F("name"), schema.name);
             if (schema.policy == FieldPolicy::Required) {
                 // only add required == true 
-                sbs.write(','); sbs.write_jsonBool(F("required"), true);
+                sbs.write_json_value_separator(); sbs.write_jsonBool(F("required"), true);
             }
             if (Gui::HaveAnyNotIncludingInline(schema.guiFlags)) {
-                sbs.write(','); sbs.write_jsonKey(F("gui")); Gui::ToJson(schema.guiFlags, sbs);
+                sbs.write_json_value_separator(); sbs.write_jsonKey(F("gui")); Gui::ToJson(schema.guiFlags, sbs);
             }
         }
     }

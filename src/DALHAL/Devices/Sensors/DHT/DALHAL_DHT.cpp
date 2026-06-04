@@ -56,11 +56,11 @@ namespace DALHAL {
     void DHT::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("humidity"), data.humidity);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("temperature"), data.temperature);
 
     }
@@ -138,14 +138,14 @@ namespace DALHAL {
 
         if (!dataValid) return HALOperationResult::DataNotReady;
         if (val.cmd.EqualsIC(F("temp"))) {
-            sbs.write('{');
+            sbs.write_json_object_begin();
             sbs.write_jsonNumber(F("temp"), data.temperature);
-            sbs.write('}');
+            sbs.write_json_object_end();
             return HALOperationResult::Success;
         } else if (val.cmd.EqualsIC(F("humidity"))) {
-            sbs.write('{');
+            sbs.write_json_object_begin();
             sbs.write_jsonNumber(F("humidity"), data.humidity);
-            sbs.write('}');
+            sbs.write_json_object_end();
             return HALOperationResult::Success;
         }
         else {

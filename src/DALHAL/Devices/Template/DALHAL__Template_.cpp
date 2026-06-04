@@ -52,7 +52,7 @@ namespace DALHAL {
     void _Template_::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
     }
 

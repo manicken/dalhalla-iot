@@ -93,14 +93,14 @@ namespace DALHAL {
 
             void GetFormatStrings(void* ctx, StringBuilderStreamer& sbs) { // here ctx is not used as we can access the table directly
                 
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 for (int i=0; i<(int)formatsTableSize; ++i) {
                     if (i>0) {
-                        sbs.write(',');
+                        sbs.write_json_value_separator();
                     }
                     sbs.write_jsonQuoted(formatsTable[i].name);
                 }
-                sbs.write(']');
+                sbs.write_json_array_end();
             }
 
             constexpr const char* INTERFACE_SPEED_KHZ800 = "KHZ800";

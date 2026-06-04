@@ -243,17 +243,17 @@ namespace DALHAL {
     void HomeAssistant::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("items"));
-        sbs.write('[');
+        sbs.write_json_array_begin();
         
         for (int i = 0; i < deviceCount; ++i) {
-            if (i > 0) { sbs.write(','); }
-            sbs.write('{');
+            if (i > 0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             devices[i]->PrintTo(sbs);
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 
     void HomeAssistant::loop() {

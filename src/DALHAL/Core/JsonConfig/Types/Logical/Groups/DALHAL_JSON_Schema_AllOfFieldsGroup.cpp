@@ -130,7 +130,7 @@ namespace DALHAL {
                 
             } else {
                 SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
-                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
+                sbs.write_json_value_separator(); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
         }
 

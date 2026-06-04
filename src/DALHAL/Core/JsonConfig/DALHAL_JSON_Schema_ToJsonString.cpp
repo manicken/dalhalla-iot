@@ -103,7 +103,7 @@ namespace DALHAL {
                 
                 for (size_t i=0;i < reg.count; i++) {
                     if (i > 0) {
-                        sbs.write(',');
+                        sbs.write_json_value_separator();
                     }
                     if (reg.items[i].typeName == nullptr) {
                         Serial.println("reg.items[i].typeName == nullptr");
@@ -130,13 +130,13 @@ namespace DALHAL {
                 addToRegistries("ROOT", reg);
                 
                 // here all json is built now we just combine it all
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonKey(F("registers"));
                 
-                sbs.write('{');
+                sbs.write_json_object_begin();
 
-                for (int i=0;i < registers.size(); i++) {
-                    if (i > 0) { sbs.write(','); }
+                for (size_t i=0; i < registers.size(); i++) {
+                    if (i > 0) { sbs.write_json_value_separator(); }
                     if (registers[i].regPath == nullptr) {
                         sbs.write('"');
                         sbs.write(F("regPath null_"));
@@ -145,34 +145,34 @@ namespace DALHAL {
                         sbs.write(F(":null"));
                     } else {
                         sbs.write_jsonKey(registers[i].regPath);
-                        sbs.write('{');
+                        sbs.write_json_object_begin();
                         buildJsonSchemas(registers[i].reg, sbs);
-                        sbs.write('}');
+                        sbs.write_json_object_end();
                     }
                 }
-                sbs.write('}');
-                sbs.write(',');
+                sbs.write_json_object_end();
+                sbs.write_json_value_separator();
                 sbs.write_jsonKey(F("objects"));
-                sbs.write('[');
+                sbs.write_json_array_begin();
 
                 for (int i=0;i<objects.size();++i) {
-                    if (i > 0) { sbs.write(','); }
+                    if (i > 0) { sbs.write_json_value_separator(); }
                     JsonSchema::JsonObjectSchema::SchemaToJson(&objects[i].schema, sbs, SchemaEmitMode::ByReference);
                 }
-                sbs.write(']');
-                sbs.write(',');
+                sbs.write_json_array_end();
+                sbs.write_json_value_separator();
                 sbs.write_jsonKey(F("ByReference"));
-                sbs.write('[');
+                sbs.write_json_array_begin();
 
                 for (int i=0;i<ByReference.size();++i) {
-                    if (i > 0) { sbs.write(','); }
+                    if (i > 0) { sbs.write_json_value_separator(); }
                     JsonSchema::SchemaToJson(ByReference[i].schema, sbs, SchemaEmitMode::Full);
                     // vs above is short form of
                     //const FieldTypeRegistryItem& item = JsonSchema::GetFieldTypeRegistryItem(ByReference[i].schema.type);
                     //item.define->ToJson(ByReference[i].schema, sbs, SchemaEmitMode::Full);
                 }
-                sbs.write(']');
-                sbs.write('}');
+                sbs.write_json_array_end();
+                sbs.write_json_object_end();
 
                 // dont forget to clean when done
                 clear();

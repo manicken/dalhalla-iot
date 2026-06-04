@@ -98,45 +98,45 @@ namespace DALHAL {
         void ModeSelector::ToJson(const ModeSelector* modes, StringBuilderStreamer& sbs)
         {
             sbs.write_jsonKey(F("modes"));
-            sbs.write('[');
+            sbs.write_json_array_begin();
             bool firstMode = true;
             for (size_t i = 0; modes[i].name; ++i) {
                 const auto& mode = modes[i];
-                if (!firstMode) { sbs.write(','); }
+                if (!firstMode) { sbs.write_json_value_separator(); }
                 else { firstMode = false; }
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 // mode name
                 
                 sbs.write_jsonString(F("name"), mode.name ? mode.name : "null");
                 // conjunctions
-                sbs.write(',');
+                sbs.write_json_value_separator();
                 sbs.write_jsonKey(F("conjunctions"));
                 const auto* conj = mode.conjunctions;
                 if (conj == nullptr) {
                     sbs.write(F("null")); // a empty array mean something different
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                     continue;
                 }
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 bool firstConj = true;
                 for (size_t j = 0; conj[j].fieldRef; ++j) {
                     const auto& c = conj[j];
                     // skip invalid entries safely
                     if (!c.fieldRef || !c.fieldRef->name) continue;
-                    if (!firstConj) { sbs.write(','); }
+                    if (!firstConj) { sbs.write_json_value_separator(); }
                     else { firstConj = false; }
-                    sbs.write('{');
+                    sbs.write_json_object_begin();
                     sbs.write_jsonString(F("name"), c.fieldRef->name);
                     if (c.required) {
                         // only add required == true 
-                        sbs.write(','); sbs.write_jsonBool(F("required"), true);
+                        sbs.write_json_value_separator(); sbs.write_jsonBool(F("required"), true);
                     }
-                    sbs.write('}');
+                    sbs.write_json_object_end();
                 }
-                sbs.write(']');
-                sbs.write('}');
+                sbs.write_json_array_end();
+                sbs.write_json_object_end();
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
         }
 
     }

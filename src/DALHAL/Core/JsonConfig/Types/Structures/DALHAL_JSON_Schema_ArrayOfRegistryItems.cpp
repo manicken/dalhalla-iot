@@ -127,11 +127,11 @@ namespace DALHAL {
             if (ToJsonString::registerContains(fs.regPath) == false) {
                 ToJsonString::addToRegistries(fs.regPath, *fs.subtypes);
             }
-            sbs.write(','); sbs.write_jsonString(F("regPath"), fs.regPath);
+            sbs.write_json_value_separator(); sbs.write_jsonString(F("regPath"), fs.regPath);
 
             
             if (fieldSchema.type == FieldType::ArrayOfRegistryItems) { 
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

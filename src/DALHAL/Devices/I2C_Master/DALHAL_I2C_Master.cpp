@@ -73,24 +73,24 @@ namespace DALHAL {
     void I2C_Master::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("SDA PIN"), sdapin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("SCK PIN"), sckpin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("freq"), freq);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("devices"));
-        sbs.write('[');
+        sbs.write_json_array_begin();
         
         for (int i=0;i<deviceCount;i++) {
-            if (i > 0) { sbs.write(','); }
-            sbs.write('{');
+            if (i > 0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             devices[i]->PrintTo(sbs);
-            sbs.write('}');
+            sbs.write_json_object_end();
 
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 
     DeviceFindResult I2C_Master::findDevice(UIDPath& path, Device*& outDevice) {
@@ -124,27 +124,27 @@ namespace DALHAL {
             uint32_t addr;
             zcAddr.ConvertTo_uint32(addr);
             
-            sbs.write('[');
+            sbs.write_json_array_begin();
 
             uint8_t received = wire->requestFrom((uint8_t)addr, (uint8_t)bytesToRead);
             if (received == 0) return HALOperationResult::ExecutionFailed;
             for (uint8_t i = 0; i < received; ++i) {
                 uint8_t byte = wire->read();
-                if (i > 0) { sbs.write(','); }
+                if (i > 0) { sbs.write_json_value_separator(); }
 
                 sbs.write(F("\"0x"));
                 sbs.write_asHex(byte);
                 sbs.write('"');
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
         }
         else if (zcCmd.EqualsIC(F("list"))) {
-            sbs.write('{');
+            sbs.write_json_object_begin();
             bool first = true;
             for (uint8_t addr=1; addr<127; ++addr) {
                 wire->beginTransmission(addr);
                 if (wire->endTransmission() == 0) {
-                    if (addr > 1) { sbs.write(','); }
+                    if (addr > 1) { sbs.write_json_value_separator(); }
                     sbs.write(F("\"0x"));
                     sbs.write_asHex(addr);
                     sbs.write('"'); sbs.write(':'); sbs.write('"');
@@ -152,7 +152,7 @@ namespace DALHAL {
                     sbs.write('"');
                 }
             }
-            sbs.write('}');
+            sbs.write_json_object_end();
             
         } else {
             return HALOperationResult::UnsupportedCommand;

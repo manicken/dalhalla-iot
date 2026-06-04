@@ -94,13 +94,13 @@ namespace DALHAL {
 
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("romId"));
         sbs.write('"');
         sbs.write_asHex(romid.bytes, 8, ':');
         sbs.write('"');
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("format"));
         sbs.write('"');
         if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write('C'); }
@@ -108,7 +108,7 @@ namespace DALHAL {
         else { sbs.write(F("other")); }
         sbs.write('"');
 
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("value"));
         value.toString(sbs);
 
@@ -165,11 +165,11 @@ namespace DALHAL {
 
     void OneWireTempDeviceAtRoot::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         OneWireTempDevice::PrintTo(sbs);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         autoRefresh.PrintTo(sbs);
     }
 

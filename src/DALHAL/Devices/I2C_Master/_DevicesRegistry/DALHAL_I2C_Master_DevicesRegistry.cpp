@@ -49,7 +49,7 @@ namespace DALHAL {
         for (size_t i = 0; i < I2C_DeviceRegistry.count; i++) {
             const I2C_RegistryDefine* i2c_def = static_cast<const I2C_RegistryDefine*>(I2C_DeviceRegistry.items[i].def);
             if (i2c_def->HasAddress_Function(addr)) {
-                if (first == false) sbs.write(',');
+                if (first == false) sbs.write_json_value_separator();
                 else first = false;
                 sbs.write(I2C_DeviceRegistry.items[i].typeName);
             }

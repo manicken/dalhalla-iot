@@ -76,54 +76,54 @@ namespace DALHAL {
         StringBuilderStreamer& sbs = val.sbs;
 
         if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1) {
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                 }
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
         }
         else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) {
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1) {
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                 }
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
 
         }
         else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1) {
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                 }
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
 
         }
         else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i=0;i<busCount;i++) {
                 OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
                 if (bus == nullptr) continue;
                 bus->read(val);
                 if (i<busCount-1) {
-                    sbs.write(',');
+                    sbs.write_json_value_separator();
                 }
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
             
         } else {
             GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), val.cmd); // this can then be read by getting the last entry from logger
@@ -160,18 +160,18 @@ namespace DALHAL {
 
         Device::PrintTo(sbs);
         
-        sbs.write(',');
+        sbs.write_json_value_separator();
         autoRefresh.PrintTo(sbs);
-        sbs.write(',');
+        sbs.write_json_value_separator();
         sbs.write_jsonKey(F("busses"));
-        sbs.write('[');
+        sbs.write_json_array_begin();
 
         for (int i=0;i<busCount;i++) {
-            if (i > 0) { sbs.write(','); }
-            sbs.write('{');
+            if (i > 0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             busses[i]->PrintTo(sbs);
-            sbs.write('}');
+            sbs.write_json_object_end();
         }
-        sbs.write(']');
+        sbs.write_json_array_end();
     }
 }

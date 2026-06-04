@@ -82,14 +82,14 @@ namespace DALHAL {
 
             void GetModelStrings(void* ctx, StringBuilderStreamer& sbs) { // here ctx is not used as we can access the table directly
   
-                sbs.write('[');
+                sbs.write_json_array_begin();
                 for (int i=0; i<(int)modelsTable_size; ++i) {
                     if (i>0) {
-                        sbs.write(',');
+                        sbs.write_json_value_separator();
                     }
                     sbs.write_jsonQuoted(modelsTable[i].name);
                 }
-                sbs.write(']');
+                sbs.write_json_array_end();
             }
 
             constexpr SchemaStringAnyOfByFuncConstrained modelField = {"model", FieldPolicy::Required, DALHAL_TYPE_DHT_MODEL_DHT11, CheckModelType, GetModelStrings, nullptr};

@@ -80,7 +80,7 @@ namespace DALHAL {
             SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             
             if (fieldSchema.type == FieldType::StringUID) {
-                sbs.write('}'); // this is complete object
+                sbs.write_json_object_end(); // this is complete object
             }
         }
 

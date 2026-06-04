@@ -90,10 +90,10 @@ namespace DALHAL {
         void SchemaBool::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaBool&>(fieldSchema);
-            sbs.write(','); sbs.write_jsonBool(F("default"), fs.defaultValue);
+            sbs.write_json_value_separator(); sbs.write_jsonBool(F("default"), fs.defaultValue);
             
             if (fieldSchema.type == FieldType::Bool) {
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

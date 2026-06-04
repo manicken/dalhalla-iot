@@ -119,13 +119,13 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaHardwarePin&>(fieldSchema);
 
-            sbs.write(','); sbs.write_jsonKey(F("mode"));
+            sbs.write_json_value_separator(); sbs.write_jsonKey(F("mode"));
             GPIO_manager::describePinFunctions(fs.mode, sbs); // this is the most describable version, use this for development test only
             //sbs.write_asHex(fs.mode); // this is the most compact version
             //sbs.write_asBin(fs.mode)
             
             if (fieldSchema.type == FieldType::HardwarePin) { 
-                sbs.write('}'); // add the object finalizer if this is the actual object
+                sbs.write_json_object_end(); // add the object finalizer if this is the actual object
             }
         }
 

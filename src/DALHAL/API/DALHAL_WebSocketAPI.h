@@ -59,10 +59,7 @@ namespace DALHAL {
           asyncWebSocket->cleanupClients();
 #endif
         }
-        /*inline static CommandCallback GetBroadcast()
-        {
-            return &Broadcast;
-        }*/
+
         static bool Broadcast(const char* msg, size_t len, CmdCbType type = CmdCbType::Control);
         static bool Broadcast(std::string &msg, CmdCbType type = CmdCbType::Control);
         static bool Broadcast(const char* msg, CmdCbType type = CmdCbType::Control);

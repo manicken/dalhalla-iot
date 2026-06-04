@@ -70,9 +70,9 @@ namespace DALHAL {
         void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs, SchemaEmitMode mode)
         {
             sbs.write_jsonKey(F("fields"));
-            sbs.write('[');
+            sbs.write_json_array_begin();
             for (int i = 0; group.fields[i] != nullptr; ++i) {
-                if (i > 0) sbs.write(',');
+                if (i > 0) sbs.write_json_value_separator();
 
                 const SchemaTypeBase& field = *group.fields[i];
 
@@ -80,7 +80,7 @@ namespace DALHAL {
                 //const auto& regDefItem = GetFieldTypeRegistryItem(field.type);
                 //regDefItem.define.ToJson(field, out);
             }
-            sbs.write(']');
+            sbs.write_json_array_end();
         }
         /** this should only be used on final object */
         void SchemaFieldsGroup::CheckAndAddAsInline(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
@@ -90,15 +90,15 @@ namespace DALHAL {
                     // just add here to be generated later
                     ToJsonString::addToByReference(fieldSchema.name, fieldSchema);
                 }
-                sbs.write('{');
+                sbs.write_json_object_begin();
                 sbs.write_jsonString(F("type"), F("_byref_"));
-                sbs.write(','); sbs.write_jsonString(F("name"), fieldSchema.name);
+                sbs.write_json_value_separator(); sbs.write_jsonString(F("name"), fieldSchema.name);
 
             } else {
                 SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
-                sbs.write(','); BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
+                sbs.write_json_value_separator(); BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
-            sbs.write('}'); // add the object finalizer
+            sbs.write_json_object_end(); // add the object finalizer
         }
 
         void SchemaFieldsGroup::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
@@ -107,7 +107,7 @@ namespace DALHAL {
                 
             } else {
                 SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
-                sbs.write(','); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
+                sbs.write_json_value_separator(); SchemaFieldsGroup::BuildFieldsArray(static_cast<const SchemaFieldsGroup&>(fieldSchema), sbs, mode);
             }
         }
 
