@@ -27,7 +27,9 @@
 #include <cstring>
 #include <string>
 
-#include <Arduino.h> // Needed for String class
+//#include <Arduino.h> // Needed for String class
+
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 #include <ArduinoJson.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
@@ -113,7 +115,8 @@ namespace DALHAL {
         /** Executes a device action that requires no parameters. */
         virtual HALOperationResult exec();
         
-        virtual String ToString();
+        //virtual String ToString();
+        virtual void PrintTo(StringBuilderStreamer& sbs);
 
         static bool DisabledOrCommentItem(const JsonVariant& jsonObj);
         static bool DisabledInJson(const JsonVariant& jsonObj);

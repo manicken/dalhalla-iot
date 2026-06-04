@@ -64,6 +64,8 @@ namespace DALHAL {
 
         HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid) override;
 
-        String ToString() override;
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 }

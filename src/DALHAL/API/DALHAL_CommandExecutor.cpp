@@ -134,20 +134,19 @@ namespace DALHAL {
                 GPIO_manager::GetList(zcStr, sbs);
             }
             else if (zcCommand.EqualsIC(F("printDevices"))) {
-                BlockStreamer bs(cb, "scripts exec", BlockStreamer::DataType::Json);
+                BlockStreamer bs(cb, "printDevices", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
-                // TODO remove use of std::string here
-                std::string tmp = DeviceManager::ToString();
-                sbs.write(tmp.c_str(), tmp.length());
+
+                sbs.write('{');
+                DeviceManager::PrintTo(sbs);
+                sbs.write('}');
             }
             else if (zcCommand.EqualsIC(F("printLog"))) {
 
                 if (cb != nullptr) {
-                    // TODO remove use of std::string here
-                    GlobalLogger.printAllLogs([cb](const std::string& msg){
-                        const ZeroCopyString zcMsg = msg.c_str();
-                        cb(zcMsg, CmdCbType::Control);
-                    });
+                    BlockStreamer bs(cb, "logs", BlockStreamer::DataType::PlainText);
+                    StringBuilderStreamer& sbs = bs.writer();
+                    GlobalLogger.printAllLogs(sbs);
                 }
 
             }
@@ -228,24 +227,24 @@ namespace DALHAL {
                         if (cb != nullptr) {
 
                             if (ssidLen == 0) {
-                                cb(String(F("wifi/set_b64/error/ssid/empty\r\n")).c_str(), CmdCbType::Data);
+                                cb(String(F("wifi/set_b64/error/ssid/empty\r\n")).c_str(), CmdCbType::Control);
                             } else if (ssidLen == -1) {
-                                cb(String(F("wifi/set_b64/error/ssid/invalidchar\r\n")).c_str(), CmdCbType::Data);
+                                cb(String(F("wifi/set_b64/error/ssid/invalidchar\r\n")).c_str(), CmdCbType::Control);
                             } else if (ssidLen == -2) {
-                                cb(String(F("wifi/set_b64/error/ssid/long\r\n")).c_str(), CmdCbType::Data);
+                                cb(String(F("wifi/set_b64/error/ssid/long\r\n")).c_str(), CmdCbType::Control);
                             }
 
                             if (passLen == -1) {
-                                cb(String(F("wifi/set_b64/error/pass/invalidchar\r\n")).c_str(), CmdCbType::Data);
+                                cb(String(F("wifi/set_b64/error/pass/invalidchar\r\n")).c_str(), CmdCbType::Control);
                             } else if (passLen == -2) {
-                                cb(String(F("wifi/set_b64/error/pass/long\r\n")).c_str(), CmdCbType::Data);
+                                cb(String(F("wifi/set_b64/error/pass/long\r\n")).c_str(), CmdCbType::Control);
                             }
                         }
                         return false;
                     }
 
                     if (cb != nullptr) {
-                        cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Data);
+                        cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Control);
                         delay(50);
                     }
                     
@@ -253,7 +252,7 @@ namespace DALHAL {
 
                 } else {
                     if (cb != nullptr) {
-                        cb(String(F("wifi/set_b64/error/missingparams\r\n")).c_str(), CmdCbType::Data);
+                        cb(String(F("wifi/set_b64/error/missingparams\r\n")).c_str(), CmdCbType::Control);
                     }
                 }
             } else if (zcCommand.EqualsIC(F("set_json"))) {
@@ -261,7 +260,7 @@ namespace DALHAL {
                 DynamicJsonDocument doc(256);
                 DeserializationError err = deserializeJson(doc, zcStr.start); // safe to use start here as that string is null terminated
                 if(err) {
-                    if(cb) cb(String(F("wifi/set_json/error/invalidjson\r\n")).c_str(), CmdCbType::Data);
+                    if(cb) cb(String(F("wifi/set_json/error/invalidjson\r\n")).c_str(), CmdCbType::Control);
                     return false;
                 }
 
@@ -269,13 +268,13 @@ namespace DALHAL {
                 const char* pass = doc["pass"];
 
                 if(ssid == nullptr || ssid[0] == '\0') {
-                    if(cb) { cb(String(F("wifi/set_json/error/ssid/empty\r\n")).c_str(), CmdCbType::Data); }
+                    if(cb) { cb(String(F("wifi/set_json/error/ssid/empty\r\n")).c_str(), CmdCbType::Control); }
                     return false;
                 }
 
                 if(pass == nullptr) pass = ""; // allow empty password if desired
 
-                if(cb) { cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Data); }
+                if(cb) { cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Control); }
 
                 SetWifiCredentialsAndRestart(ssid, pass);
             }
@@ -290,7 +289,7 @@ namespace DALHAL {
 #else
                     std::string infoMsg = "{\"mcu\":\"windows\"}";
 #endif
-                    cb(infoMsg.c_str(), CmdCbType::Data);
+                    cb(infoMsg.c_str(), CmdCbType::Control);
                 }
             } 
 #if defined(ESP8266) || defined(ESP32)
@@ -338,7 +337,7 @@ namespace DALHAL {
             Scheduler::parseCmd(zcStr, resStr);
             if (cb != nullptr) {
                 const ZeroCopyString zcMsg = resStr.c_str();
-                cb(zcMsg, CmdCbType::Data);
+                cb(zcMsg, CmdCbType::Control);
             }
         } else if (zcCommand.EqualsIC(F("ver"))) {
             BlockStreamer bs(cb, "ver", BlockStreamer::DataType::Json);
@@ -393,7 +392,7 @@ namespace DALHAL {
             if (cb != nullptr) {
 
                 const ZeroCopyString zcMsg(message.c_str(), message.length());
-                cb(zcMsg, CmdCbType::Data);
+                cb(zcMsg, CmdCbType::Control);
             }
         }*/
         

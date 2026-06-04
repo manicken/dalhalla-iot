@@ -27,6 +27,8 @@
 #include <Arduino.h> // Needed for String class
 #include <functional>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #define DALHAL_ONE_WIRE_TEMP_DEFAULT_REFRESHRATE_MS 1000
 #define DALHAL_ONE_WIRE_TEMP_CONVERSION_TIME_MS 1000
 
@@ -58,7 +60,8 @@ namespace DALHAL {
         
         void loop();
 
-        String ToString();
+        void PrintTo(StringBuilderStreamer& sbs);
+
     };
 
     

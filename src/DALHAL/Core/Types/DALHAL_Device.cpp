@@ -73,7 +73,24 @@ namespace DALHAL {
 
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
-    String Device::ToString() { return ""; }
+    void Device::PrintTo(StringBuilderStreamer& sbs) {
+        sbs.write_jsonKey(F("uid"));
+        sbs.write('"');
+        decodeUID(uid, sbs);
+        sbs.write('"');
+        sbs.write(',');
+        sbs.write_jsonString(F("type"), this->Type);
+        
+    }
+    /*String Device::ToString() {
+        String ret;
+        ret += "\"uid\":\"";
+        ret += decodeUID(uid).c_str();
+        ret += "\",\"type\":\"";
+        ret += this->Type;
+        ret += '"';
+        return ret;
+    }*/
 
     HALOperationResult Device::read(HALValue& val) { 
         PrintReadFailOperation("HALValue&");
@@ -213,61 +230,13 @@ namespace DALHAL {
         }
         return DeviceFindResult::DeviceNotFound;
     }
-/*
-    Device* Device::findInArray(Device** devices, int deviceCount, UIDPath& path, Device* currentDevice) {
-        if (!devices || deviceCount == 0) return nullptr;
-        if (path.empty()) return nullptr;
-
-        HAL_UID currUID;
-
-        // Determine which UID to compare at this level
-        if (currentDevice && currentDevice->uid.IsSet()) {
-            currUID = path.getNextUID();   // advance for subdevice
-        } else {
-            currUID = path.getCurrentUID(); // root level or placeholder
-        }
-
-        if (currUID.Invalid()) return nullptr;
-
-        Device* indirectMatch = nullptr;
-
-        for (int i = 0; i < deviceCount; i++) {
-            Device* dev = devices[i];
-            if (!dev) continue;
-
-            if (dev->uid == currUID) {
-                if (dev->uidMaxLength == UIDPathMaxLength::One) {
-                    if (path.isLast())
-                        return dev;  // exact match, path ends here
-                    else {
-                        GlobalLogger.Error(F("Device UIDPathMaxLength::One cannot resolve multi-segment path"), dev->type);
-                        return nullptr; // path has more segments but device can't have children
-                    }
-                } else {
-                    // If a device matched the currUID but couldn't directly resolve the full path,
-                    // attempt an indirect lookup via the matched device.
-                    indirectMatch = dev->findDevice(path); // recurse into children
-                    break; // No need to continue — currUID match is unique
-                }
-            } else if (dev->uid.NotSet() && !path.isLast()) { // this will only happen on devices where uidMaxLenght>1
-                Device* d = dev->findDevice(path); // recurse into placeholder
-                if (d) return d; // match allways return valid device
-            }
-        }
-        if (indirectMatch == nullptr) {
-            GlobalLogger.Error(F("could not find device: "),path.ToString().c_str());
-            return nullptr;
-        }
-        return indirectMatch;
-    }*/
 
     namespace DeviceConstStrings {
         DALHAL_DEVICE_CONST_STR_DEFINE(uid, "\"uid\":\"");
         DALHAL_DEVICE_CONST_STR_DEFINE(type, "\"type\":\""); // type allways after uid
         
-        DALHAL_DEVICE_CONST_STR_DEFINE(pin, ",\"pin\":");
+        DALHAL_DEVICE_CONST_STR_DEFINE(pin, "\"pin\":");
         DALHAL_DEVICE_CONST_STR_DEFINE(value, "\"value\":");
-        DALHAL_DEVICE_CONST_STR_DEFINE(valueStartWithComma, ",\"value\":");
         DALHAL_DEVICE_CONST_STR_DEFINE(refreshTimeMs, ",\"refreshTimeMs\":");
 
     }

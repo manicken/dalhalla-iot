@@ -93,23 +93,20 @@ namespace DALHAL {
         return nullptr;
     }
 
-    String HA_DeviceContainer::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",\"items\":[";
-        // TODO fix the following as it wont print
+    void HA_DeviceContainer::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonKey(F("items"));
+        sbs.write('[');
+        
         for (int i = 0; i < deviceCount; ++i) {
-            ret += '{';
-            ret += devices[i]->ToString();
-            ret += '}';
-            if (i < deviceCount - 1) ret += ",";
+            if (i > 0) { sbs.write(','); }
+            sbs.write('{');
+            devices[i]->PrintTo(sbs);
+            sbs.write('}');
         }
-        ret += ']';
-        return ret;
+        sbs.write(']');
     }
 
 }

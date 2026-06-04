@@ -127,22 +127,16 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    // ToString for JSON dump/debug
-    String ButtonInput::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
+    void ButtonInput::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
 
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += ",";
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("activeLevel"), activeLevel);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("debounceMs"), debounceMs);
 
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-
-
-        return ret;
     }
 
 } // namespace DALHAL

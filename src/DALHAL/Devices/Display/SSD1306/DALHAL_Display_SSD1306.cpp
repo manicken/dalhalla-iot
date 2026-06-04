@@ -65,15 +65,13 @@ namespace DALHAL {
         delete display;
     }
 
-    String Display_SSD1306::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        
-        return ret;
+    void Display_SSD1306::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("width"), display->width());
+        sbs.write(',');
+        sbs.write_jsonNumber(F("height"), display->height());
+
     }
 
     DeviceFindResult Display_SSD1306::findDevice(UIDPath& path, Device*& outDevice) {

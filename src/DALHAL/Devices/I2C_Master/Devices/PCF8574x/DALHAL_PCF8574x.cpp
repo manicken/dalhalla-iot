@@ -81,18 +81,16 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String PCF8574x::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += "\"addr\":\"0x";
-        ret += Convert::toHex(addr).c_str();
-        ret += "\"";
-        return ret;
+    void PCF8574x::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonKey(F("addr"));
+        sbs.write('"');
+        sbs.write('0');
+        sbs.write('x');
+        sbs.write_asHex(addr);
+        sbs.write('"');
     }
 
 }

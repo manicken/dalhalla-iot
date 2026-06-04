@@ -57,19 +57,13 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String DigitalInput::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ",";
-        ret += DeviceConstStrings::value;//StartWithComma;
-        ret += std::to_string(digitalRead(pin)).c_str();
-        return ret;
+    void DigitalInput::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("value"), digitalRead(pin));
     }
 	
 }

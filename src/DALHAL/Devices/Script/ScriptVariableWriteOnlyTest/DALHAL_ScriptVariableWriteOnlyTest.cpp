@@ -57,31 +57,12 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String ScriptVariableWriteOnlyTest::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += DeviceConstStrings::value;//StartWithComma;
-        ret += value.toString().c_str();
-        /*
-        if (value.getType() == HALValue::Type::FLOAT) {
-            ret += std::to_string(value.asRawFloat()).c_str();
-        } else if (value.getType() == HALValue::Type::UINT) {
-            ret += std::to_string(value.asRawUInt()).c_str();
-        } else if (value.getType() == HALValue::Type::INT) {
-            ret += std::to_string(value.asRawInt()).c_str();
-        } else if (value.getType() == HALValue::Type::BOOL) {
-            ret += std::to_string(value.asRawBool()).c_str();
-        } else if (value.getType() == HALValue::Type::CSTRING) {
-            ret += value.toConstChar();
-        } else {
-            ret += "\"not set\"";
-        }*/
-        return ret;
+    void ScriptVariableWriteOnlyTest::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonKey(F("value"));
+        value.toString(sbs);
     }
 
 }

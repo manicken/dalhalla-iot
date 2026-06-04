@@ -91,6 +91,106 @@ LogEntry::LogEntry() : timestamp(0),
         return std::string(buf);
     }
 
+    void LogEntry::PrintTo(DALHAL::StringBuilderStreamer& sbs) const {
+        // build timestamp prefix
+        struct tm* timeinfo = localtime(&timestamp);
+        char buf[1024]; // buffer for one log line
+
+        sbs.write('[');
+        sbs.write(timeinfo->tm_mday, "%02d");
+        sbs.write('/');
+        sbs.write(timeinfo->tm_mon+1, "%02d");
+        sbs.write(' ');
+        sbs.write(timeinfo->tm_hour, "%02d");
+        sbs.write(':');
+        sbs.write(timeinfo->tm_min, "%02d");
+        sbs.write(':');
+        sbs.write(timeinfo->tm_sec, "%02d");
+        sbs.write(']');
+
+        switch (level) {
+            case Loglevel::Info: sbs.write(F("[INFO] ")); break;
+            case Loglevel::Warn: sbs.write(F("[WARN] ")); break;
+            case Loglevel::Error: sbs.write(F("[ERR] ")); break;
+        }
+
+        // append source
+        if (source != nullptr) {
+            sbs.write('{');
+            sbs.write(source);
+            sbs.write('}');
+            sbs.write(' ');
+        }
+        // append repeat count
+        if (repeatCount > 0) {
+            sbs.write('(');
+            sbs.write(repeatCount);
+            sbs.write(')');
+            sbs.write(' ');
+        }
+        // append message or error code
+        if (isCode) {
+            sbs.write(F("Error Code: 0x"));
+            sbs.write_asHex(errorCode);
+        } else if (message != nullptr) {
+            sbs.write(message);
+        } else {
+            sbs.write(F("<message null>"));
+        }
+        // append optional text
+        if (text != nullptr) {
+            sbs.write(text);
+        }
+        
+    }
+
+    void LogEntry::Print(Stream &out) const {
+        //char strTime[32]; // Enough for asctime output
+        struct tm* timeinfo = localtime(&timestamp);
+        
+        out.print('[');
+        out.print(timeinfo->tm_mday);
+        out.print('/');
+        out.print(timeinfo->tm_mon+1);
+        out.print(' ');
+        if (timeinfo->tm_hour < 10) out.print('0');
+        out.print(timeinfo->tm_hour);
+        out.print(':');
+        if (timeinfo->tm_min < 10) out.print('0');
+        out.print(timeinfo->tm_min);
+        out.print(':');
+        if (timeinfo->tm_sec < 10) out.print('0');
+        out.print(timeinfo->tm_sec);
+        out.print(']');
+
+        switch (level) {
+            case Loglevel::Info: out.print(F("[INFO] ")); break;
+            case Loglevel::Warn: out.print(F("[WARN] ")); break;
+            case Loglevel::Error: out.print(F("[ERR] ")); break;
+        }
+        if (source != nullptr) {
+            out.print('[');
+            out.print(source);
+            out.print(']');
+            out.print(' ');
+        }
+        if (repeatCount > 0) {
+            out.print('(');
+            out.print((int)repeatCount);
+            out.print(')');
+        }
+
+        if (isCode) {
+            out.print(F("Error Code: 0x"));
+            out.print(errorCode, HEX);
+        } else {
+            out.print(message);
+        }
+        if (text != nullptr)
+            out.print(text);
+       
+    }
+
     bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const 
     {
         if (level != lvl) return false;
@@ -405,6 +505,22 @@ void Logger::Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& 
 #endif
 }
 
+void Logger::printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew) {
+    size_t start = wrapped ? head : 0;
+    size_t count = wrapped ? LOG_BUFFER_SIZE : head;
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t index = (start + i) % LOG_BUFFER_SIZE;
+        LogEntry& entry = buffer[index];
+
+        if (onlyPrintNew && entry.isNew == false) continue;
+        entry.isNew = false;
+        
+        entry.PrintTo(sbs);
+        sbs.write('\n');
+    }
+}
+
 
 void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
     size_t start = wrapped ? head : 0;
@@ -417,49 +533,7 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
         if (onlyPrintNew && entry.isNew == false) continue;
         entry.isNew = false;
 
-        //char strTime[32]; // Enough for asctime output
-        struct tm* timeinfo = localtime(&entry.timestamp);
-        
-        out.print('[');
-        out.print(timeinfo->tm_mday);
-        out.print('/');
-        out.print(timeinfo->tm_mon+1);
-        out.print(' ');
-        if (timeinfo->tm_hour < 10) out.print('0');
-        out.print(timeinfo->tm_hour);
-        out.print(':');
-        if (timeinfo->tm_min < 10) out.print('0');
-        out.print(timeinfo->tm_min);
-        out.print(':');
-        if (timeinfo->tm_sec < 10) out.print('0');
-        out.print(timeinfo->tm_sec);
-        out.print(']');
-
-        switch (entry.level) {
-            case Loglevel::Info: out.print(F("[INFO] ")); break;
-            case Loglevel::Warn: out.print(F("[WARN] ")); break;
-            case Loglevel::Error: out.print(F("[ERR] ")); break;
-        }
-        if (entry.source != nullptr) {
-            out.print('[');
-            out.print(entry.source);
-            out.print(']');
-            out.print(' ');
-        }
-        if (entry.repeatCount > 0) {
-            out.print('(');
-            out.print((int)entry.repeatCount);
-            out.print(')');
-        }
-
-        if (entry.isCode) {
-            out.print(F("Error Code: 0x"));
-            out.print(entry.errorCode, HEX);
-        } else {
-            out.print(entry.message);
-        }
-        if (entry.text != nullptr)
-            out.print(entry.text);
+        entry.Print(out);
         out.println();
     }
 }
@@ -476,47 +550,6 @@ void Logger::printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew) {
         entry.isNew = false;
 
         cb(entry.ToString());
-        /*
-
-        // build timestamp prefix
-        struct tm* timeinfo = localtime(&entry.timestamp);
-        char buf[128]; // buffer for one log line
-
-        int len = snprintf(buf, sizeof(buf), "[%02d/%02d %02d:%02d:%02d]",
-            timeinfo->tm_mday, timeinfo->tm_mon+1,
-            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-
-        // append level
-        switch (entry.level) {
-            case Loglevel::Info: len += snprintf(buf+len, sizeof(buf)-len, "[INFO] "); break;
-            case Loglevel::Warn: len += snprintf(buf+len, sizeof(buf)-len, "[WARN] "); break;
-            case Loglevel::Error: len += snprintf(buf+len, sizeof(buf)-len, "[ERR] "); break;
-        }
-
-        // append source
-        if (entry.source != nullptr)
-            len += snprintf(buf+len, sizeof(buf)-len, "[%s] ", entry.source);
-
-        // append repeat count
-        if (entry.repeatCount > 0)
-            len += snprintf(buf+len, sizeof(buf)-len, "(%d) ", entry.repeatCount);
-
-        // append message or error code
-        if (entry.isCode)
-            len += snprintf(buf+len, sizeof(buf)-len, "Error Code: 0x%X", entry.errorCode);
-        else
-            len += snprintf(buf+len, sizeof(buf)-len, "%s", entry.message);
-
-        // append optional text
-        if (entry.text != nullptr)
-            len += snprintf(buf+len, sizeof(buf)-len, "%s", entry.text);
-
-        // final newline
-        if (len < sizeof(buf)) buf[len++] = '\n';
-        buf[len] = '\0';
-
-        // send via callback
-        cb(std::string(buf));*/
     }
 }
 

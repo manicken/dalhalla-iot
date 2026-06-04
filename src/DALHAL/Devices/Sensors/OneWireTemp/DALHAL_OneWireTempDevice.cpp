@@ -90,22 +90,28 @@ namespace DALHAL {
         }
     }
     
-    String OneWireTempDevice::ToString() {
-        String ret;
-        ret.reserve(128);
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",\"romid\":\"";
-        ret += String(Convert::ByteArrayToString(romid.bytes, 8).c_str());
-        ret += "\",\"format\":";
-        if (format == OneWireTempDeviceTempFormat::Celsius) ret += "\"C\"";
-        else if (format == OneWireTempDeviceTempFormat::Fahrenheit) ret += "\"F\"";
-        else ret += "\"other\"";
-        ret += ",";
-        ret += DeviceConstStrings::value;//StartWithComma;
-        ret += value.toString().c_str();
-        //ret += "\"";
-        return ret;
+    void OneWireTempDevice::PrintTo(StringBuilderStreamer& sbs) {
+
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonKey(F("romId"));
+        sbs.write('"');
+        sbs.write_asHex(romid.bytes, 8, ':');
+        sbs.write('"');
+
+        sbs.write(',');
+        sbs.write_jsonKey(F("format"));
+        sbs.write('"');
+        if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write('C'); }
+        else if (format == OneWireTempDeviceTempFormat::Fahrenheit) { sbs.write('F'); }
+        else { sbs.write(F("other")); }
+        sbs.write('"');
+
+        sbs.write(',');
+        sbs.write_jsonKey(F("value"));
+        value.toString(sbs);
+
     }
 
     //   ██     ██     ██ ██ ██████  ███████     ████████ ███████ ███    ███ ██████      ██████  ███████ ██    ██ ██  ██████ ███████      ██████      ██████   ██████   ██████  ████████ 
@@ -157,14 +163,14 @@ namespace DALHAL {
         autoRefresh.loop();
     }
 
-    String OneWireTempDeviceAtRoot::ToString() {
-        String ret;
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += OneWireTempDevice::ToString();
-        ret += autoRefresh.ToString();
-        return ret;
+    void OneWireTempDeviceAtRoot::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        OneWireTempDevice::PrintTo(sbs);
+        sbs.write(',');
+        autoRefresh.PrintTo(sbs);
     }
 
 }

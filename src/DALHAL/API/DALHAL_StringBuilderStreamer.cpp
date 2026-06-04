@@ -129,6 +129,17 @@ namespace DALHAL {
         if (n > 0) write(buf, (size_t)n);
     }
 
+    void StringBuilderStreamer::write(uint32_t v, const char* fmt) {
+        char buf[11]; // max 4294967295 + '\0'
+        int n = snprintf(buf, sizeof(buf), fmt, (unsigned long)v);
+        if (n > 0) write(buf, (size_t)n);
+    }
+    void StringBuilderStreamer::write(int32_t v, const char* fmt) {
+        char buf[11]; // max 4294967295 + '\0'
+        int n = snprintf(buf, sizeof(buf), fmt, (unsigned long)v);
+        if (n > 0) write(buf, (size_t)n);
+    }
+
     void StringBuilderStreamer::write_asBin(uint8_t v) {
         for (int bit = 7; bit >= 0; --bit) {
             write((v & (1U << bit)) ? '1' : '0');
@@ -161,6 +172,15 @@ namespace DALHAL {
     void StringBuilderStreamer::write_asHex(uint32_t v) {
         write_asHex((uint16_t)(v >> 16));
         write_asHex((uint16_t)(v & 0xFFFF));
+    }
+
+    void StringBuilderStreamer::write_asHex(uint8_t* buff, size_t len, char separator /* = '\0'*/) {
+        for (size_t i=0;i<len;i++) {
+            if (separator != '\0' && i > 0) {
+                write(separator);
+            }
+            write_asHex(buff[i]);
+        }
     }
 
     void StringBuilderStreamer::write_json(float v) {

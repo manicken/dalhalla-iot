@@ -61,16 +61,10 @@ namespace DALHAL {
         delete cda;
     }
 
-    String HA_Number::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-       
-        return ret;
+    void HA_Number::PrintTo(StringBuilderStreamer& sbs) {
+        //String ret = Device::ToString();
+        Device::PrintTo(sbs);       
+        //return ret;
     }
 
     HALOperationResult HA_Number::read(HALValue& val) {

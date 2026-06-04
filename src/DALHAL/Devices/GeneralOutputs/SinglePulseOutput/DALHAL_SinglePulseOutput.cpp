@@ -119,19 +119,13 @@ namespace DALHAL {
         pulseTicker.detach();
     }
 
-    String SinglePulseOutput::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ",\"pulseLength\":";
-        ret += std::to_string(pulseLength).c_str();
-        return ret;
+    void SinglePulseOutput::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pulseLength"), pulseLength);
     }
 	
 }

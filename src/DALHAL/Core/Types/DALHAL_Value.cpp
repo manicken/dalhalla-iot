@@ -211,11 +211,15 @@ namespace DALHAL {
             case Type::FLOAT:
                 return std::to_string(fval);
             case Type::CSTRING:
-                return std::string(cStr != nullptr ? cStr : "");
+                return '"' + std::string(cStr != nullptr ? cStr : "null") + '"';
             case Type::BOOL:
                 return bval ? "true" : "false";
+            case Type::TEST:
+                return "\"_test_\"";
+            case Type::UNSET:
+                return "\"_unset_\"";
             default:
-                return "";
+                return "\"_unknown_\"";
         }
     }
 

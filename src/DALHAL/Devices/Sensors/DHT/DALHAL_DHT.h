@@ -70,8 +70,6 @@ namespace DALHAL {
         DHT(DeviceCreateContext& context);
         ~DHT() override = default;
 
-        String ToString() override;
-        
         void loop() override; // will need loop for automatic polling as this device is slow
 
         ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
@@ -79,6 +77,10 @@ namespace DALHAL {
         HALOperationResult read(HALValue &val) override;
         HALOperationResult read(const HALReadValueByCmd &val) override;
         HALOperationResult read(const HALReadStringRequestValue &val) override;
+
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+
     };
 
 }

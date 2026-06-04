@@ -66,16 +66,10 @@ namespace DALHAL {
         delete cdr;
     }
 
-    String HA_Sensor::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-       
-        return ret;
+    void HA_Sensor::PrintTo(StringBuilderStreamer& sbs) {
+        //String ret = Device::ToString();
+        Device::PrintTo(sbs);
+        //return ret;
     }
 
     bool HA_Sensor::IsTimedRefresh_NOT_Due() {

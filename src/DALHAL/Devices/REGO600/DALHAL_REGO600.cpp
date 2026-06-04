@@ -84,32 +84,35 @@ namespace DALHAL {
         return new REGO600(context);
     }
 
-    String REGO600::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += "\"items\":[";
-        bool first = true;
+    void REGO600::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonKey(F("items"));
+        sbs.write('[');
+
         for (int i=0;i<registerItemCount;i++) {
-            if (first == false) { ret += ","; }
-            else
-                first = false;
-            ret += '{';
-            ret += registerItems[i]->ToString();
-            ret += ",\"opcode\":\"";
-            ret += Convert::toHex((uint8_t)requestList[i]->info.opcode).c_str();
-            ret += "\",\"addr\":\"";
-            ret += Convert::toHex(requestList[i]->def.address).c_str();
-            ret += "\",";
-            ret += registerItems[i]->ToString();
-            ret += "}";
+            if (i > 0) { sbs.write(','); }
+            
+            sbs.write('{');
+   
+            registerItems[i]->PrintTo(sbs);
+
+            sbs.write(',');
+            sbs.write_jsonKey(F("opcode"));
+            sbs.write('"');
+            sbs.write_asHex((uint8_t)requestList[i]->info.opcode);
+            sbs.write('"');
+
+            sbs.write(',');
+            sbs.write_jsonKey(F("addr"));
+            sbs.write('"');
+            sbs.write_asHex(requestList[i]->def.address);
+            sbs.write('"');
+
+            sbs.write('}');
         }
-        ret += ']';
-        return ret;
+        sbs.write('}');
     }
 
     DeviceFindResult REGO600::findDevice(UIDPath& path, Device*& outDevice) {

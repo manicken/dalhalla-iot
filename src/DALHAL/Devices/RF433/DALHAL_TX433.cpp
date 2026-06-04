@@ -81,29 +81,23 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String TX433::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ",\"units\":[";
-        bool first = true;
+    void TX433::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonKey(F("units"));
+        sbs.write('[');
+
         for (int i=0;i<unitCount;i++) {
-            if (first == false)
-                ret += ",";
-            else
-                first = false;
-            ret += "{";
-            ret += units[i]->ToString();
-            ret += "}";            
+            if (i>0) { sbs.write(','); }
+            
+            sbs.write('{');
+            units[i]->PrintTo(sbs);
+            sbs.write('}');
         }
-        ret += "]";
-        return ret;
+        sbs.write(']');
     }
 
 }

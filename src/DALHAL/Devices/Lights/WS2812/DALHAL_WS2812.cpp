@@ -171,17 +171,17 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String WS2812::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += ",\"";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(ws2812fx->getPin()).c_str();
-        return ret;
+    void WS2812::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), ws2812fx->getPin());
+        sbs.write(',');
+        sbs.write_jsonNumber(F("curr mode"), ws2812fx->getMode());
+        sbs.write(',');
+        sbs.write_jsonNumber(F("curr brightness"), ws2812fx->getBrightness());
+        sbs.write(',');
+        sbs.write_jsonNumber(F("curr speed"), ws2812fx->getSpeed());
     }
 
     uint8_t neoCodeFromString(const char* str) {

@@ -39,6 +39,8 @@
 #include <DALHAL/Core/Types/DALHAL_Operations.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 // uses no leading / as the program usualy runs from in a folder where the hal is just a subfolder
@@ -84,7 +86,8 @@ namespace DALHAL {
         // Maintenance
         static void loop();
         
-        static std::string ToString();
+        static void PrintTo(StringBuilderStreamer& sbs);
+        //static std::string ToString();
 
         // Debug / Testing
         //static void TEST();

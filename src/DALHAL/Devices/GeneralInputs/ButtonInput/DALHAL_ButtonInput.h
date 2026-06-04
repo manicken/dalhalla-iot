@@ -65,9 +65,11 @@ namespace DALHAL {
         ~ButtonInput() override;
 
         HALOperationResult read(HALValue &val) override;
-        String ToString() override;
 
         void loop();
+
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
 
     };
 

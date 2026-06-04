@@ -91,7 +91,9 @@ namespace DALHAL {
 
         void read(DallasTemperature& dTemp);
 
-        String ToString() override;
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+
     };
 
     namespace JsonSchema { namespace OneWireTempDeviceAtRoot { struct Extractors; } } // forward declaration
@@ -122,6 +124,8 @@ namespace DALHAL {
 #endif
         void loop() override;
 
-        String ToString() override;
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 }

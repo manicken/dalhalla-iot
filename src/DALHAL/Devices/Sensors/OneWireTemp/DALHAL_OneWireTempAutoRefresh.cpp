@@ -72,12 +72,7 @@ namespace DALHAL {
         }
 	}
 
-    
-
-    String OneWireTempAutoRefresh::ToString() {
-        String ret;
-        ret += DeviceConstStrings::refreshTimeMs;
-        ret += std::to_string(refreshTimeMs + DALHAL_ONE_WIRE_TEMP_CONVERSION_TIME_MS).c_str();
-        return ret;
+    void OneWireTempAutoRefresh::PrintTo(StringBuilderStreamer& sbs) {
+        sbs.write_jsonNumber(F("refreshtimeMs"), refreshTimeMs + DALHAL_ONE_WIRE_TEMP_CONVERSION_TIME_MS);
     }
 }

@@ -156,24 +156,22 @@ namespace DALHAL {
         autoRefresh.loop();
     }
 
-    String OneWireTempGroup::ToString() {
-        String ret;
+    void OneWireTempGroup::PrintTo(StringBuilderStreamer& sbs) {
+
+        Device::PrintTo(sbs);
         
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += '"'; ret += ',';
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += '"';
-        ret += autoRefresh.ToString();
-        ret += F(",\"busses\":[");
+        sbs.write(',');
+        autoRefresh.PrintTo(sbs);
+        sbs.write(',');
+        sbs.write_jsonKey(F("busses"));
+        sbs.write('[');
+
         for (int i=0;i<busCount;i++) {
-            ret += '{';
-            ret += busses[i]->ToString();
-            ret += '}';
-            if (i<busCount-1) ret += ',';
+            if (i > 0) { sbs.write(','); }
+            sbs.write('{');
+            busses[i]->PrintTo(sbs);
+            sbs.write('}');
         }
-        ret += ']';
-        return ret;
+        sbs.write(']');
     }
 }

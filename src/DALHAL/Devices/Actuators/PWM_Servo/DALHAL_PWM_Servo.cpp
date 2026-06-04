@@ -272,19 +272,13 @@ namespace DALHAL {
     }
 
     /*virtual override*/
-    String PWM_Servo::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ", ledc_ch:";
-        ret += std::to_string(pwmChannel).c_str();
-        return ret;
+    void PWM_Servo::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pwmChannel"), pwmChannel);
     }
 
     uint32_t PWM_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {

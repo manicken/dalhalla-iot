@@ -52,18 +52,19 @@ namespace DALHAL {
         return true;
     }
 
-    std::string DeviceManager::ToString() {
-        std::string ret;
-        ret += "\"deviceCount\":" + std::to_string(deviceCount); 
-        ret += ",\"devices\":[";
+    void DeviceManager::PrintTo(StringBuilderStreamer& sbs) {
+        sbs.write_jsonNumber(F("deviceCount"), deviceCount);
+        sbs.write(',');
+        sbs.write_jsonKey(F("devices"));
+        sbs.write('[');
+
         for (int i=0;i<deviceCount;i++) {
-            ret += "{";
-            ret += devices[i]->ToString().c_str();
-            ret += "}";
-            if (i<deviceCount-1) ret += ",";
+            if (i > 0) { sbs.write(','); }
+            sbs.write('{');
+            devices[i]->PrintTo(sbs);
+            sbs.write('}');
         }
-        ret += "]";
-        return ret;
+        sbs.write(']');
     }
 
     Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant& jsonObj) {

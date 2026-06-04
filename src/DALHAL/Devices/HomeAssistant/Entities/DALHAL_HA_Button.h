@@ -65,7 +65,9 @@ namespace DALHAL {
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         HALOperationResult exec() override;
 
-        String ToString() override;
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 
 }

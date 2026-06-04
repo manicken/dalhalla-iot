@@ -102,23 +102,14 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String TX433_Unit::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
+    void TX433_Unit::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
         
-        ret += "\"model\":\"";
-        if (model == TX433_MODEL::LearningCode)
-            ret += "LC";
-        else if (model == TX433_MODEL::FixedCode)
-            ret += "FC";
-        
-        ret += "\",";
-        ret += "\"data\":\"";
-        ret += Convert::toHex(staticData).c_str();
-        ret += "\"";
-        return ret;
+        sbs.write(',');
+        sbs.write_jsonKey(F("data"));
+        sbs.write('"');
+        sbs.write_asHex(staticData);
+        sbs.write('"');
     }
 
 }

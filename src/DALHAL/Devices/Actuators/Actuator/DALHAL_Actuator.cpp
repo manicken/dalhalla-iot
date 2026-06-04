@@ -581,39 +581,33 @@ namespace DALHAL {
     }
 
     /*virtual override*/
-    String Actuator::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
+    void Actuator::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
         if (mode == DriveMode::HBridge) {
-            ret += "\"mode\":\"h-bridge\"";
-            ret += ',';
-            ret += "\"pin a\":";
-            ret += std::to_string((int8_t)pins.hbridge.a).c_str();
-            ret += ',';
-            ret += "\"pin b\":";
-            ret += std::to_string((int8_t)pins.hbridge.b).c_str();
+            sbs.write(F("\"mode\":\"h-bridge\""));
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin a"), (int8_t)pins.hbridge.a);
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin b"), (int8_t)pins.hbridge.b);
+
         } else if (mode == DriveMode::DirEnable) {
-            ret += "\"mode\":\"dir_enable\"";
-            ret += ',';
-            ret += "\"pin dir\":";
-            ret += std::to_string((int8_t)pins.diren.dir).c_str();
-            ret += ',';
-            ret += "\"pin enable\":";
-            ret += std::to_string((int8_t)pins.diren.enable).c_str();
+            sbs.write(F("\"mode\":\"dir_enable\""));
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin dir"), (int8_t)pins.diren.dir);
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.diren.enable);
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin brk"), (int8_t)pins.diren.brk);
+        } else {
+            sbs.write(F("\"mode\":\"__unknown__\""));
         }
         
-        ret += ',';
-        ret += "\"pinEndMin\":";
-        ret += std::to_string((int8_t)pinMinEndStop).c_str();
-        ret += ',';
-        ret += "\"pinEndMax\":";
-        ret += std::to_string((int8_t)pinMaxEndStop).c_str();
-        return ret;
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pinEndMin"), (int8_t)pinMinEndStop);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pinEndMax"), (int8_t)pinMaxEndStop);
     }
 
 } // namespace DALHAL

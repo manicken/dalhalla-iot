@@ -67,6 +67,8 @@ struct LogEntry {
       LogEntry& operator=(const LogEntry&) = delete;
 
       void MessageWriteTo(DALHAL::StringBuilderStreamer& sbs) const;
+      void PrintTo(DALHAL::StringBuilderStreamer& sbs) const;
+      void Print(Stream &out = Serial) const;
       std::string ToString() const;
   };
 
@@ -90,7 +92,11 @@ class Logger {
     void Warn(uint32_t code, const char* text);
     void Warn(const __FlashStringHelper* msg, const char* text);
     void Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr);
+    void printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew = false);
     void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
+    /** only to be used in rare cases as this uses a temporary std::string
+     * prefer to use StringBuilderStreamer or Stream variants instead
+     */
     void printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew = false);
     
     const LogEntry& getLastEntry() const;

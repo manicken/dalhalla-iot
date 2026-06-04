@@ -58,15 +58,8 @@ namespace DALHAL {
         return new ScriptArray(context);
     }
 
-    String ScriptArray::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-        return ret;
+    void ScriptArray::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
     }
     // init array here
     void ScriptArray::begin() {

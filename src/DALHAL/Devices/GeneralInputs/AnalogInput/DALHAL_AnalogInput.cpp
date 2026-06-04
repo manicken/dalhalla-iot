@@ -69,20 +69,13 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String AnalogInput::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ",";
-        ret += DeviceConstStrings::value;//StartWithComma;
-        ret += std::to_string(analogRead(pin)).c_str();
-        return ret;
+    void AnalogInput::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+        
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("value"), analogRead(pin));
     }
 
 	

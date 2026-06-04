@@ -28,6 +28,7 @@
 #include <string>
 
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace DALHAL {
     struct HAL_UID {
@@ -59,5 +60,6 @@ namespace DALHAL {
     HAL_UID encodeUID(const char* str);
     HAL_UID encodeUID(const ZeroCopyString& zcStr);
     HAL_UID encodeUID(const char* str, uint32_t count);
+    void decodeUID(HAL_UID& uid, StringBuilderStreamer& sbs);
     std::string decodeUID(HAL_UID& uid);
 }

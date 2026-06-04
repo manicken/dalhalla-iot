@@ -63,40 +63,7 @@ namespace HeartbeatLed
             sbs.write(F("Error - cmd not found: >>>")); sbs.write(zcCmd); sbs.write(F("<<< (possible cmds: set)"));
             return false;
         }
-        /* old code 
-        srv.on("/HeartbeatLed/set", [](AsyncWebServerRequest *request) {
-            bool hadAnyArg = false;
-            String ret = "";
-            if (request->hasArg("on")) {
-                hadAnyArg = true;
-                String onArg = request->arg("on");
-                if (Convert::isInteger(onArg.c_str()) == false)
-                    ret += "ERROR: on argument is not a number<br>";
-                else
-                {
-                    int onValue = atoi(onArg.c_str());
-                    HeartbeatLed::HEARTBEATLED_ON_INTERVAL = onValue;
-                    ret += "On value set to " + onArg + "<br>";
-                }
-            }
-            if (request->hasArg("off")) {
-                hadAnyArg = true;
-                String offArg = request->arg("off");
-                if (Convert::isInteger(offArg.c_str()) == false)
-                    ret += "ERROR: off argument is not a number<br>";
-                else
-                {
-                    int offValue = atoi(offArg.c_str());
-                    HeartbeatLed::HEARTBEATLED_OFF_INTERVAL = offValue;
-                    ret += "Off value set to " + offArg + "<br>";
-                }
-            }
-            if (hadAnyArg == false) {
-                ret += "Warning: On/Off arguments missing!!!<br>";
-            }
-            request->send(200, "text/html", ret);
-        });
-        */
+        
     }
     void setup(unsigned long onInterval, unsigned long offInterval)
     {

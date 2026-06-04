@@ -70,28 +70,27 @@ namespace DALHAL {
         pinMode(sdapin, INPUT);
     }
 
-    String I2C_Master::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += ",\"SDA PIN\":";
-        ret += std::to_string(sdapin).c_str();
-        ret += ",\"SCK PIN\":";
-        ret += std::to_string(sckpin).c_str();
-        ret += ",\"freq\":";
-        ret += std::to_string(freq).c_str();
-        ret += ",\"devices\":[";
+    void I2C_Master::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("SDA PIN"), sdapin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("SCK PIN"), sckpin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("freq"), freq);
+        sbs.write(',');
+        sbs.write_jsonKey(F("devices"));
+        sbs.write('[');
+        
         for (int i=0;i<deviceCount;i++) {
-            ret += "{";
-            ret += devices[i]->ToString();
-            ret += "}";
-            if (i<deviceCount-1) ret += ",";
+            if (i > 0) { sbs.write(','); }
+            sbs.write('{');
+            devices[i]->PrintTo(sbs);
+            sbs.write('}');
+
         }
-        ret += "]";
-        return ret;
+        sbs.write(']');
     }
 
     DeviceFindResult I2C_Master::findDevice(UIDPath& path, Device*& outDevice) {

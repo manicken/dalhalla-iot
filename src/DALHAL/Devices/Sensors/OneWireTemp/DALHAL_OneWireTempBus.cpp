@@ -152,11 +152,7 @@ namespace DALHAL {
 
                 sbs.write_jsonKey(F("romId"));
                 sbs.write('"');
-                for(int i = 0; i < 8; i++) 
-                {
-                    if (i>0) { sbs.write(':'); }
-                    sbs.write_asHex(addr.bytes[i]);
-                }
+                sbs.write_asHex(addr.bytes, 8, ':');
                 sbs.write('"');
                 
                 if (printTemp) {
@@ -170,22 +166,22 @@ namespace DALHAL {
         sbs.write('}');
     }
 
-    String OneWireTempBus::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += '"';
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += F(",\"devices\":[");
+    void OneWireTempBus::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonKey(F("devices"));
+        sbs.write('[');
+
         for (int i=0;i<deviceCount;i++) {
-            ret += '{';
-            ret += devices[i]->ToString();
-            ret += '}'; 
-            if (i<deviceCount-1) ret += ',';
+            if (i > 0) { sbs.write(','); }
+            sbs.write('{');
+            devices[i]->PrintTo(sbs);
+            sbs.write('}');
         }
-        ret += ']';
-        return ret;
+        sbs.write(']');
     }
 
     OneWireTempBusAtRoot::OneWireTempBusAtRoot(DeviceCreateContext& context) 
@@ -209,18 +205,14 @@ namespace DALHAL {
         autoRefresh.loop();
     }
 
-    String OneWireTempBusAtRoot::ToString() {
-        String ret;
-        //ret += DeviceConstStrings::uid;
-        //ret += decodeUID(uid).c_str();
-        //ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += OneWireTempBus::ToString();
-        ret += autoRefresh.ToString();
-        
-        return ret;
+    void OneWireTempBusAtRoot::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        OneWireTempBus::PrintTo(sbs);
+        sbs.write(',');
+        autoRefresh.PrintTo(sbs);
+
     }
 
     Device* OneWireTempBusAtRoot::Create(DeviceCreateContext& context) {

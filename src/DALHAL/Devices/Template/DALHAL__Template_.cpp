@@ -49,17 +49,11 @@ namespace DALHAL {
         return new _Template_(context);
     }
 
-    String _Template_::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        return ret;
+    void _Template_::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
     }
 
     void _Template_::loop() {}

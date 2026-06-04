@@ -66,16 +66,8 @@ namespace DALHAL {
     }
 
 
-    String ScriptEventDispatcher::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += '"';
-        ret += ',';
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += '"';
-        return ret;
+    void ScriptEventDispatcher::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
     }
 
 }

@@ -45,12 +45,8 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    String REGO600_Register::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += '"';
-        return ret;
+    void REGO600_Register::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
     }
 
 }

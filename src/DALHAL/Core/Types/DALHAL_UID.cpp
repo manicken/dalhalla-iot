@@ -92,4 +92,16 @@ namespace DALHAL {
         }
         return std::string(str);
     }
+
+    void decodeUID(HAL_UID& uid, StringBuilderStreamer& sbs) {
+        if (uid.NotSet()) { sbs.write(F("<unset>")); return; };
+        if (uid.Invalid()) { sbs.write(F("<invalid>")); return; };
+
+        for (int i = 0; i < (int)HAL_UID::Size; ++i) {
+            // Extract each byte from most significant to least significant
+            char c = uid.str[i];
+            if (c == '\0') return;
+            sbs.write(c);
+        }
+    }
 }

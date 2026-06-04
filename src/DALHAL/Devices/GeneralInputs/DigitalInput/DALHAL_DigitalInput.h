@@ -57,7 +57,10 @@ namespace DALHAL {
         ~DigitalInput() override = default;
 
         HALOperationResult read(HALValue &val) override;
-        String ToString() override;
+        
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 
 }

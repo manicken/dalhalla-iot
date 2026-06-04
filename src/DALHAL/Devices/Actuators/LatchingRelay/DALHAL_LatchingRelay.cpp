@@ -582,39 +582,30 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 #endif
     }
 
-    String LatchingRelay::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\",";
-        if (mode == DriveMode::Direct) {
-            ret += "\"mode\":\"Direct\"";
-            ret += ',';
-            ret += "\"pin a\":";
-            ret += std::to_string((int8_t)pins.direct.a).c_str();
-            ret += ',';
-            ret += "\"pin b\":";
-            ret += std::to_string((int8_t)pins.direct.b).c_str();
-        } else if (mode == DriveMode::DataEnable) {
-            ret += "\"mode\":\"data_enable\"";
-            ret += ',';
-            ret += "\"pin dir\":";
-            ret += std::to_string((int8_t)pins.data_enable.data).c_str();
-            ret += ',';
-            ret += "\"pin enable\":";
-            ret += std::to_string((int8_t)pins.data_enable.enable).c_str();
-        }
+    void LatchingRelay::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
         
-        ret += ',';
-        ret += "\"pinEndMin\":";
-        ret += std::to_string((int8_t)pinFeedbackReset).c_str();
-        ret += ',';
-        ret += "\"pinEndMax\":";
-        ret += std::to_string((int8_t)pinFeedbackSet).c_str();
-        return ret;
+        sbs.write(',');
+        if (mode == DriveMode::Direct) {
+            sbs.write(F("\"mode\":\"Direct\""));
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin a"), (int8_t)pins.direct.a);
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin b"), (int8_t)pins.direct.b);
+        } else if (mode == DriveMode::DataEnable) {
+            sbs.write(F("\"mode\":\"data_enable\""));
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin data"), (int8_t)pins.data_enable.data);
+            sbs.write(',');
+            sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.data_enable.enable);
+        } else {
+            sbs.write(F("\"mode\":\"__unknown__\""));
+        }
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pinFeedbackReset"), (int8_t)pinFeedbackReset);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pinFeedbackSet"), (int8_t)pinFeedbackSet);
     }
 
 } // namespace DALHAL

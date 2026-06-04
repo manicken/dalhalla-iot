@@ -53,21 +53,16 @@ namespace DALHAL {
         return new DHT(context);
     }
 
-    String DHT::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        ret += "\"";
-        ret += DeviceConstStrings::pin;
-        ret += std::to_string(pin).c_str();
-        ret += ",\"humidity\":";
-        ret += std::to_string(data.humidity).c_str();
-        ret += ",\"temperature\":";
-        ret += std::to_string(data.temperature).c_str();
-        return ret;
+    void DHT::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
+
+        sbs.write(',');
+        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("humidity"), data.humidity);
+        sbs.write(',');
+        sbs.write_jsonNumber(F("temperature"), data.temperature);
+
     }
 
     void DHT::loop() {

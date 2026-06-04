@@ -58,7 +58,10 @@ namespace DALHAL {
         
         void loop() override;
         HALOperationResult read(HALValue &val) override;
-        String ToString() override;
+        
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 
     // TODO implement Analog Input Config to set resolution, but resolution could be individual as it can be set before each read

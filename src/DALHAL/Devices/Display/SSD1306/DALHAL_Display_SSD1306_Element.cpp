@@ -33,14 +33,8 @@ namespace DALHAL {
         JsonSchema::Display_SSD1306_Element::Extractors::Apply(context, this);
     }
 
-    String Display_SSD1306_Element::ToString() {
-        String ret;
-        ret += DeviceConstStrings::uid;
-        ret += decodeUID(uid).c_str();
-        ret += "\",";
-        ret += DeviceConstStrings::type;
-        ret += this->Type;
-        return ret;
+    void Display_SSD1306_Element::PrintTo(StringBuilderStreamer& sbs) {
+        Device::PrintTo(sbs);
     }
 
     HALOperationResult Display_SSD1306_Element::write(const HALValue& val) {

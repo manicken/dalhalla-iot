@@ -138,20 +138,22 @@ namespace DALHAL {
         Actuator(DeviceCreateContext& context);
         ~Actuator() override;
 
-        virtual void loop() override;
+        void loop() override;
 
-        virtual const Registry::DefineBase* GetRegistryDefine() override;
+        const Registry::DefineBase* GetRegistryDefine() override;
 
-        virtual HALOperationResult write(const HALValue& val) override;
-        virtual HALOperationResult read(HALValue& val) override;
-        virtual HALOperationResult read(const HALReadValueByCmd& val) override;
-        virtual HALOperationResult read(const HALReadStringRequestValue& val) override;
+        HALOperationResult write(const HALValue& val) override;
+        HALOperationResult read(HALValue& val) override;
+        HALOperationResult read(const HALReadValueByCmd& val) override;
+        HALOperationResult read(const HALReadStringRequestValue& val) override;
 
-        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
+        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
         /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        virtual HALOperationResult exec(const ZeroCopyString& cmd) override;
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
 
-        virtual String ToString() override;
+        //String ToString() override;
+        void PrintTo(StringBuilderStreamer& sbs) override;
+        
     };
 
 } // namespace DALHAL

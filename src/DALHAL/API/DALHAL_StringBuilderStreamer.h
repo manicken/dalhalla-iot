@@ -74,6 +74,8 @@ namespace DALHAL {
         void write(bool v);
         void write(uint32_t v);
         void write(int32_t v);
+        void write(uint32_t v, const char* fmt);
+        void write(int32_t v, const char* fmt);
         void write(float v);
 
         void write_asBin(uint8_t v);
@@ -82,6 +84,9 @@ namespace DALHAL {
         void write_asHex(uint8_t v);
         void write_asHex(uint16_t v);
         void write_asHex(uint32_t v);
+
+        /** note if separator is null terminator then the separator is not printed */
+        void write_asHex(uint8_t* buff, size_t len, char separator = '\0');
         
         void write_json(float v);
         void write_jsonQuoted(const __FlashStringHelper* fstr);
