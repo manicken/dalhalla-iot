@@ -29,6 +29,7 @@
 #include <LittleFS.h>
 
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_CommandCallback.h>
 
 #if defined(ESP32) || defined(ESP8266)
   #include <Support/LittleFS_ext.h>
@@ -58,11 +59,17 @@ namespace DALHAL {
           asyncWebSocket->cleanupClients();
 #endif
         }
-        static void Broadcast(std::string &msg);
-        static void Broadcast(const char* msg);
-        static void Broadcast(const ZeroCopyString& zcStr);
+        /*inline static CommandCallback GetBroadcast()
+        {
+            return &Broadcast;
+        }*/
+        static bool Broadcast(const char* msg, size_t len, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(std::string &msg, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(const char* msg, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(const ZeroCopyString& zcStr, CmdCbType type = CmdCbType::Control);
+        static bool BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type);
         /** can be used to combine two messages */ 
-        static void Broadcast(const char* source, const char* msg);
-        //static void Broadcast(const char* fmt, ...);
+        static bool Broadcast(const char* source, const char* msg, CmdCbType type = CmdCbType::Control);
+
     };
 }

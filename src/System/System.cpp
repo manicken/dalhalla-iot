@@ -34,7 +34,6 @@
 #include <ESPmDNS.h>
 #endif
 
-#include <System/MainConfig.h>
 #include "OTA.h"
 #include "FSBrowserAsync.h"
 
@@ -104,25 +103,6 @@ namespace System {
             log_e("could not initialize/find any connected sd-card.");
             return false;
         }
-    }
-#endif
-#if defined(ESP32) && !defined(seeed_xiao_esp32c3)
-    void Start_MDNS()
-    {
-        DEBUG_UART.println("\n\n***** STARTING mDNS service ********");
-        if (MDNS.begin(MainConfig::mDNS_name.c_str())) {
-            mdns_instance_name_set("ESP32 development board");
-            MDNS.addService("http", "tcp", 80);
-            
-            if (mdns_service_add("_esp32devices", "http", "tcp", 80, NULL, 0) != ESP_OK)
-                DEBUG_UART.println("Failed adding service view");
-        // MDNS.addServiceTxt("http", "tcp", "path", "/");
-            DEBUG_UART.println("MDNS started with name:" + MainConfig::mDNS_name);
-        }
-        else {
-            DEBUG_UART.println("MDNS could not start");
-        }
-        DEBUG_UART.println("\n");
     }
 #endif
 

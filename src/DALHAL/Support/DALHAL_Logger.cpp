@@ -343,16 +343,7 @@ Logger::Logger() {
 
 void Logger::EmitLastEntry()
 {
-    DALHAL::BlockStreamer bs(
-        [](const DALHAL::ZeroCopyString& zc, DALHAL::CmdCbType type) -> bool {
-            if (type == DALHAL::CmdCbType::Data)
-                DALHAL::WebSocketAPI::Broadcast(zc);
-            else
-                DALHAL::WebSocketAPI::Broadcast(zc);
-        },
-        "log",
-        DALHAL::BlockStreamer::DataType::Json
-    );
+    DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
 
     getLastEntry().PrintTo(bs.writer());
 #ifndef ESP8266

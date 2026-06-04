@@ -180,28 +180,42 @@ namespace DALHAL {
 //#endif
     }
 
-    void WebSocketAPI::Broadcast(std::string &msg) {
+
+    bool WebSocketAPI::Broadcast(const char* msg, size_t len, CmdCbType type) {
         if (asyncWebSocket->availableForWriteAll()) {
-            asyncWebSocket->textAll(msg.c_str());
+            if (type == CmdCbType::Control) {
+                asyncWebSocket->textAll(msg, len);
+                return true;
+            } else if (type == CmdCbType::Data) {
+                // send data as binary to make it separate from control
+                asyncWebSocket->binaryAll(msg, len);
+                return true;
+            }
         }
+        return false;
     }
-    void WebSocketAPI::Broadcast(const char* msg) {
-        if (asyncWebSocket->availableForWriteAll()) {
-            asyncWebSocket->textAll(msg);
-        }
+
+    bool WebSocketAPI::Broadcast(std::string &msg, CmdCbType type) {
+        return Broadcast(msg.c_str(), msg.length(), type);
     }
-    void WebSocketAPI::Broadcast(const ZeroCopyString& zcStr) {
-        if (asyncWebSocket->availableForWriteAll()) {
-            asyncWebSocket->textAll(zcStr.start, zcStr.Length());
-        }
+    bool WebSocketAPI::Broadcast(const char* msg, CmdCbType type) {
+        return Broadcast(msg, strlen(msg), type);
     }
-    void WebSocketAPI::Broadcast(const char* source, const char* msg) {
+    bool WebSocketAPI::Broadcast(const ZeroCopyString& zcStr, CmdCbType type) {
+        return Broadcast(zcStr.start, zcStr.Length(), type);
+    }
+    bool WebSocketAPI::BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type) {
+        return Broadcast(zcStr.start, zcStr.Length(), type);
+    }
+    bool WebSocketAPI::Broadcast(const char* source, const char* msg, CmdCbType type) {
         if (asyncWebSocket->availableForWriteAll()) {
             std::string msgStr;
             msgStr.reserve(strlen(source) + strlen(msg) + 2);
             msgStr.append(source);
             msgStr.append(msg);
-            asyncWebSocket->textAll(msg);
+            return Broadcast(msgStr.c_str(), msgStr.length(), type);
+        } else {
+            return false;
         }
     }
 
