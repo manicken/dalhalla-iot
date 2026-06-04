@@ -34,7 +34,7 @@ namespace DALHAL {
     namespace Registry {
         
         const Registry::Item& GetItem(const Registry::DeviceRegistry& reg, const char* type) {
-            int i=0;
+            
             const Registry::Item* items = reg.items;
             size_t itemCount = reg.count;
             for (size_t i=0;i<itemCount;i++) {

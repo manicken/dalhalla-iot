@@ -155,7 +155,7 @@ namespace DALHAL {
                 sbs.write_jsonKey(F("objects"));
                 sbs.write_json_array_begin();
 
-                for (int i=0;i<objects.size();++i) {
+                for (size_t i=0;i<objects.size();++i) {
                     if (i > 0) { sbs.write_json_value_separator(); }
                     JsonSchema::JsonObjectSchema::SchemaToJson(&objects[i].schema, sbs, SchemaEmitMode::ByReference);
                 }
@@ -164,7 +164,7 @@ namespace DALHAL {
                 sbs.write_jsonKey(F("ByReference"));
                 sbs.write_json_array_begin();
 
-                for (int i=0;i<ByReference.size();++i) {
+                for (size_t i=0;i<ByReference.size();++i) {
                     if (i > 0) { sbs.write_json_value_separator(); }
                     JsonSchema::SchemaToJson(ByReference[i].schema, sbs, SchemaEmitMode::Full);
                     // vs above is short form of

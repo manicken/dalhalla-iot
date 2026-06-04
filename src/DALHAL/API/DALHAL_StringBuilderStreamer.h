@@ -74,7 +74,9 @@ namespace DALHAL {
         void write_P(PGM_P pstr);
 
         void write(char c);
+        /** writes two characters, used in hot paths */
         void write2(char a, char b);
+        /** write a escaped character */
         void write_escaped(char c);
         void write(bool v);
         void write(uint32_t v);

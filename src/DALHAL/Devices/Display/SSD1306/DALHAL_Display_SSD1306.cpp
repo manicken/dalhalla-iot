@@ -62,7 +62,16 @@ namespace DALHAL {
             elements = nullptr;
             elementCount = 0;
         }
+        // note to myself and others just ignore the warning this give
+        // as it's because the class uses virtuals but the destructor is not virtual
         delete display;
+        /* the following silence the warning but is very ugly
+        if (display != nullptr) {
+            Adafruit_SSD1306* adafruitDisplay = static_cast<Adafruit_SSD1306*>(display);
+            adafruitDisplay->~Adafruit_SSD1306();
+            ::operator delete(adafruitDisplay);
+            display = nullptr;
+        }*/
     }
 
     void Display_SSD1306::PrintTo(StringBuilderStreamer& sbs) {

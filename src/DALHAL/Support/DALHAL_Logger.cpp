@@ -51,54 +51,13 @@ LogEntry::LogEntry() : timestamp(0),
       level(Loglevel::Info),
       errorCode(0),
       text(nullptr),
-      isCode(true),
-      source(nullptr) {}
-
-    std::string LogEntry::ToString() const {
-        
-        // build timestamp prefix
-        struct tm* timeinfo = localtime(&timestamp);
-        char buf[1024]; // buffer for one log line
-
-        int len = snprintf(buf, sizeof(buf), "[%02d/%02d %02d:%02d:%02d]",
-            timeinfo->tm_mday, timeinfo->tm_mon+1,
-            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-
-        // append level
-        switch (level) {
-            case Loglevel::Info: len += snprintf(buf+len, sizeof(buf)-len, "[INFO] "); break;
-            case Loglevel::Warn: len += snprintf(buf+len, sizeof(buf)-len, "[WARN] "); break;
-            case Loglevel::Error: len += snprintf(buf+len, sizeof(buf)-len, "[ERR] "); break;
-        }
-
-        // append source
-        if (source != nullptr)
-            len += snprintf(buf+len, sizeof(buf)-len, "{%s} ", source);
-
-        // append repeat count
-        if (repeatCount > 0)
-            len += snprintf(buf+len, sizeof(buf)-len, "(%d) ", repeatCount);
-
-        // append message or error code
-        if (isCode)
-            len += snprintf(buf+len, sizeof(buf)-len, "Error Code: 0x%X", errorCode);
-        else
-            len += snprintf(buf+len, sizeof(buf)-len, "%s", message);
-
-        // append optional text
-        if (text != nullptr)
-            len += snprintf(buf+len, sizeof(buf)-len, "%s", text);
-
-        // final newline
-        if (len < sizeof(buf)) buf[len++] = '\n';
-        buf[len] = '\0';
-        return std::string(buf);
-    }
+      source(nullptr),
+      isCode(true)
+       {}
 
     void LogEntry::PrintTo(DALHAL::StringBuilderStreamer& sbs) const {
         // build timestamp prefix
         struct tm* timeinfo = localtime(&timestamp);
-        char buf[1024]; // buffer for one log line
 
         sbs.write_json_array_begin();
         sbs.write(timeinfo->tm_mday, "%02d");
@@ -493,22 +452,6 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
         out.println();
     }
 }
-
-void Logger::printAllLogs(LogEntrySendCallback cb, bool onlyPrintNew) {
-    size_t start = wrapped ? head : 0;
-    size_t count = wrapped ? LOG_BUFFER_SIZE : head;
-
-    for (size_t i = 0; i < count; ++i) {
-        size_t index = (start + i) % LOG_BUFFER_SIZE;
-        LogEntry& entry = buffer[index];
-
-        if (onlyPrintNew && entry.isNew == false) continue;
-        entry.isNew = false;
-
-        cb(entry.ToString());
-    }
-}
-
 
 void Logger::advance() {
     head = (head + 1) % LOG_BUFFER_SIZE;

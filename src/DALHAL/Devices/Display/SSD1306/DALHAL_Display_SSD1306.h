@@ -58,10 +58,10 @@ namespace DALHAL {
         static bool HasAddress(uint8_t addr);
 
     private:
-        Adafruit_SSD1306* display;
+        Adafruit_SSD1306* display = nullptr;
 
-        Device** elements;
-        int elementCount;
+        Device** elements = nullptr;
+        int elementCount = 0;
 
     public:        
         Display_SSD1306(I2C_Master_CreateFunctionContext& context);

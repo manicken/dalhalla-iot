@@ -143,7 +143,7 @@ namespace DALHAL {
         pinMode(pin, OUTPUT);        
         analogWriteFreq(DALHAL_LEDC_SERVO_PWM_FREQ);
         analogWriteResolution(DALHAL_LEDC_SERVO_RESOLUTION_BITS);
-        uint32_t pulseUs = startPulseLength + pulseLengthOffset;
+        //uint32_t pulseUs = startPulseLength + pulseLengthOffset;
         uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
         analogWrite(pin, duty);
 #endif

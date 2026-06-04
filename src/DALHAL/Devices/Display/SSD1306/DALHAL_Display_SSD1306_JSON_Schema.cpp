@@ -88,7 +88,7 @@ namespace DALHAL {
                 uint8_t textSize = JsonSchema::Display_SSD1306::textsizeField.ExtractFrom(*(context.jsonObjItem));
 
                 out->display = new Adafruit_SSD1306(width, height, &(context.wire), -1); // -1 = no reset pin
-
+                
                 delay(200);
                 if (out->display->begin(SSD1306_SWITCHCAPVCC, addr))
                 {
