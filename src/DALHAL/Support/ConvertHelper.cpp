@@ -27,7 +27,7 @@
 
 namespace Convert
 {
-    std::string floatToString(float value) {
+    /*std::string floatToString(float value) {
         char buffer[32]; // Adjust size based on needs
         snprintf(buffer, sizeof(buffer), "%.6f", value); // Format as float with 6 decimals
 
@@ -40,9 +40,9 @@ namespace Convert
         }
 
         return result;
-    }
+    }*/
 
-    bool isInteger(const char* str)
+    /*bool isInteger(const char* str)
     {
         if (str == nullptr || *str == '\0') return false; // Null or empty string is not valid
 
@@ -57,7 +57,7 @@ namespace Convert
         }
 
         return true; // All characters are digits
-    }
+    }*/
 
     char ConvertOneNibble(uint8_t value)
     {
@@ -73,7 +73,7 @@ namespace Convert
         hexStr[2] = 0x00;
         return std::string(hexStr);
     }
-
+/*
     std::string toHex(uint16_t value) {
         char hexStr[5];
         uint32_t divider = 0x1000;
@@ -133,7 +133,7 @@ namespace Convert
             if (i<(arraySize-1)) str.append(":");
         }
         return str;
-    }
+    }*/
 
     bool HexToBytes(const char* hexString, uint8_t* byteArray, size_t arraySize)
     {
@@ -188,7 +188,7 @@ namespace Convert
                                     (macAddrPtr[5]);
         return macAddrBigEndian;
     }
-
+/*
     String toHex(const char *data, size_t len) {
         String hex = "";
         for (size_t i = 0; i < len; i++) {
@@ -198,7 +198,7 @@ namespace Convert
         }
         return hex;
     }
-
+*/
     String convertISO88591toUTF8(const String &input) {
         String output = "";
         for (unsigned int i = 0; i < input.length(); i++) {
