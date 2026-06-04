@@ -54,9 +54,7 @@ namespace DALHAL {
     private:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
-        //PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        //std::string hass_uid;
 
     public:
         HA_Button(HA_CreateFunctionContext& context);
@@ -65,7 +63,7 @@ namespace DALHAL {
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         HALOperationResult exec() override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

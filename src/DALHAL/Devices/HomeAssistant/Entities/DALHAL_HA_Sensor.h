@@ -57,9 +57,6 @@ namespace DALHAL {
     private:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
-        //PubSubClient& mqttClient;
-        //std::string hass_uid;
-        
         Consumer::Mode consumerMode = Consumer::Mode::Manual;
         CachedDeviceRead* cdr = nullptr;
         ReactiveEvent* eventSource = nullptr;
@@ -80,7 +77,7 @@ namespace DALHAL {
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
    
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

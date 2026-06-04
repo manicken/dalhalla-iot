@@ -64,7 +64,7 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         HALOperationResult write(const HALWriteStringRequestValue &val) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

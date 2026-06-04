@@ -55,10 +55,7 @@ namespace DALHAL {
         static const char* PAYLOAD_OFF;
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
 
-        //PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        //std::string hass_uid;
-
         bool momentary;
 
     public:
@@ -70,7 +67,7 @@ namespace DALHAL {
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

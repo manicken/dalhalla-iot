@@ -72,7 +72,7 @@ namespace DALHAL {
         BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
         BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

@@ -91,7 +91,7 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid);
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

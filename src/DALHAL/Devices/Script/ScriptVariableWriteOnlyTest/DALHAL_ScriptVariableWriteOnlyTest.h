@@ -60,7 +60,7 @@ namespace DALHAL {
 
         HALOperationResult write(const HALValue& val) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

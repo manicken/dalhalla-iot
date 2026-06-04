@@ -69,7 +69,7 @@ namespace DALHAL {
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
         Device::WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

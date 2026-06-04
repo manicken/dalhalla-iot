@@ -53,9 +53,7 @@ namespace DALHAL {
     private:
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
         
-        //PubSubClient& mqttClient;
         CachedDeviceAccess* cda;
-        //std::string hass_uid;
         HALValue currentValue;
         
         /** send back the current value to Home Assistant to notice user that the value was rejected */
@@ -70,7 +68,7 @@ namespace DALHAL {
 
         HALOperationResult exec(const ZeroCopyString& cmd) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

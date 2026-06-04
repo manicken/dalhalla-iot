@@ -78,7 +78,7 @@ namespace DALHAL {
         HALOperationResult read(const HALReadValueByCmd &val) override;
         HALOperationResult read(const HALReadStringRequestValue &val) override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
 
     };

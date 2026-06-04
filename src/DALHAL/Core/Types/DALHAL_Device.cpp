@@ -82,16 +82,7 @@ namespace DALHAL {
         sbs.write_jsonString(F("type"), this->Type);
         
     }
-    /*String Device::ToString() {
-        String ret;
-        ret += "\"uid\":\"";
-        ret += decodeUID(uid).c_str();
-        ret += "\",\"type\":\"";
-        ret += this->Type;
-        ret += '"';
-        return ret;
-    }*/
-
+    
     HALOperationResult Device::read(HALValue& val) { 
         PrintReadFailOperation("HALValue&");
         return HALOperationResult::UnsupportedOperation;

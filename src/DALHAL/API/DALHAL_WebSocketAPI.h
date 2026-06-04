@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <LittleFS.h>
 
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+
 #if defined(ESP32) || defined(ESP8266)
   #include <Support/LittleFS_ext.h>
   #include <WiFiClient.h>
@@ -58,6 +60,7 @@ namespace DALHAL {
         }
         static void Broadcast(std::string &msg);
         static void Broadcast(const char* msg);
+        static void Broadcast(const ZeroCopyString& zcStr);
         /** can be used to combine two messages */ 
         static void Broadcast(const char* source, const char* msg);
         //static void Broadcast(const char* fmt, ...);

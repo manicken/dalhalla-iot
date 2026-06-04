@@ -93,7 +93,7 @@ namespace DALHAL {
 
             CommandExecutor_LOCK_QUEUE();
             CommandExecutor::g_pending.push({
-                cmd,
+                std::move(cmd),
                 [clientId](const ZeroCopyString& body, CmdCbType type) -> bool {
                     
                     AsyncWebSocketClient* c = asyncWebSocket->client(clientId);
@@ -188,6 +188,11 @@ namespace DALHAL {
     void WebSocketAPI::Broadcast(const char* msg) {
         if (asyncWebSocket->availableForWriteAll()) {
             asyncWebSocket->textAll(msg);
+        }
+    }
+    void WebSocketAPI::Broadcast(const ZeroCopyString& zcStr) {
+        if (asyncWebSocket->availableForWriteAll()) {
+            asyncWebSocket->textAll(zcStr.start, zcStr.Length());
         }
     }
     void WebSocketAPI::Broadcast(const char* source, const char* msg) {

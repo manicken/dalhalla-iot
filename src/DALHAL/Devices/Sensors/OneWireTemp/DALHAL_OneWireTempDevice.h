@@ -91,7 +91,7 @@ namespace DALHAL {
 
         void read(DallasTemperature& dTemp);
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
 
     };
@@ -124,7 +124,7 @@ namespace DALHAL {
 #endif
         void loop() override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

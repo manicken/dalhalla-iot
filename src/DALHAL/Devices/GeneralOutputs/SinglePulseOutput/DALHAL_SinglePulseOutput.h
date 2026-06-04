@@ -73,7 +73,7 @@ namespace DALHAL {
         HALOperationResult exec() override;
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
         
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

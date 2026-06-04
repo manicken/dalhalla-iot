@@ -70,7 +70,7 @@ namespace DALHAL {
 
         HALValue* GetValueDirectAccessPtr() override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
 
     };

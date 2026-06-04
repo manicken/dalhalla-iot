@@ -77,6 +77,7 @@ class Logger {
     
   public:
     Logger();
+    void EmitLastEntry();
     void Error(uint32_t code);
     void Error(const __FlashStringHelper* msg);
     void Error(uint32_t code, const char* text);

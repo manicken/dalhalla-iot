@@ -76,7 +76,7 @@ namespace DALHAL {
 
         void getAllDevices(bool printTemp, bool onlyNewDevices, StringBuilderStreamer& sbs);
         
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
     
     };
@@ -99,7 +99,7 @@ namespace DALHAL {
 
         void loop() override;
         
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

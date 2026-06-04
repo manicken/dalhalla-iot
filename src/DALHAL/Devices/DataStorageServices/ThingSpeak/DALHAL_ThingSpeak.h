@@ -90,7 +90,7 @@ namespace DALHAL {
 
         void loop() override;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

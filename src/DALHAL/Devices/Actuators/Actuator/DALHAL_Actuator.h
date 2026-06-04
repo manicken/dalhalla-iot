@@ -151,7 +151,6 @@ namespace DALHAL {
         /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
         HALOperationResult exec(const ZeroCopyString& cmd) override;
 
-        //String ToString() override;
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

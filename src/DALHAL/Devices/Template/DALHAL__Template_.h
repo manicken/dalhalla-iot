@@ -82,7 +82,7 @@ namespace DALHAL {
         /** Executes a device action with a provided command string. */
         HALOperationResult exec(const ZeroCopyString& cmd) override ;
 
-        //String ToString() override;
+        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

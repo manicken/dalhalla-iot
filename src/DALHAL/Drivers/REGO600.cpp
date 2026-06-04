@@ -415,8 +415,6 @@ namespace Drivers {
 
     void REGO600::RefreshLoop_SendCurrent() {
         Request* req = refreshLoopList[refreshLoopIndex];
-        //std::string reqDebugStr = req->ToString();
-        //DALHAL::WebSocketAPI::Broadcast(reqDebugStr);
 
         uartTxBuffer[1] = (uint8_t)req->info.opcode;
         SetRequestAddr(req->def.address);
