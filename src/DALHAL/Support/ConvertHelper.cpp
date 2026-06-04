@@ -73,7 +73,7 @@ namespace Convert
         hexStr[2] = 0x00;
         return std::string(hexStr);
     }
-/*
+
     std::string toHex(uint16_t value) {
         char hexStr[5];
         uint32_t divider = 0x1000;
@@ -133,7 +133,7 @@ namespace Convert
             if (i<(arraySize-1)) str.append(":");
         }
         return str;
-    }*/
+    }
 
     bool HexToBytes(const char* hexString, uint8_t* byteArray, size_t arraySize)
     {
