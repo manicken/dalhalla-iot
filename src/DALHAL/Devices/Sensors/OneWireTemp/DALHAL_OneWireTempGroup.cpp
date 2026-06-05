@@ -163,7 +163,7 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         autoRefresh.PrintTo(sbs);
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("busses"));
+        sbs.write_jsonMemberStart(F("busses"));
         sbs.write_json_array_begin();
 
         for (int i=0;i<busCount;i++) {

@@ -65,9 +65,9 @@ LogEntry::LogEntry() : timestamp(0),
         sbs.write(timeinfo->tm_mon+1, "%02d");
         sbs.write(' ');
         sbs.write(timeinfo->tm_hour, "%02d");
-        sbs.write(':');
+        sbs.write_char(':');
         sbs.write(timeinfo->tm_min, "%02d");
-        sbs.write(':');
+        sbs.write_char(':');
         sbs.write(timeinfo->tm_sec, "%02d");
         sbs.write_json_array_end();
 

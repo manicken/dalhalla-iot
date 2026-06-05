@@ -97,7 +97,7 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("items"));
+        sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
         
         for (int i = 0; i < deviceCount; ++i) {

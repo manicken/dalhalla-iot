@@ -47,7 +47,7 @@ namespace DALHAL {
         };
 
         struct SchemaTypeBase {
-            const char* name;    // flash string
+            const char* name;
             FieldType type;
             FieldPolicy policy;
             FieldGuiFlagsType guiFlags;

@@ -234,7 +234,7 @@ namespace DALHAL {
             if (schema->constraints != nullptr) {
                 sbs.write_json_value_separator(); FieldConstraint::ToJson(schema->constraints, sbs);
             }
-            sbs.write_json_value_separator(); sbs.write_jsonKey(F("fields"));
+            sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("fields"));
             sbs.write_json_array_begin();
 
             for (int i = 0; schema->fields[i] != nullptr; ++i) {

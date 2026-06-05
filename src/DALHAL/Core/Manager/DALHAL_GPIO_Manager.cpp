@@ -212,7 +212,7 @@ namespace DALHAL {
         void describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask, StringBuilderStreamer& sbs) {
 
             bool anyFunc = false;
-            sbs.write('"');
+            sbs.write_char('"');
             for (int i=0; i < (int)PinModeStrings_size; ++i) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
                 if (pinModeDef.Name == nullptr) continue; // failsafe
@@ -227,7 +227,7 @@ namespace DALHAL {
             if (anyFunc == false) {
                 sbs.write(F("None"));
             }
-            sbs.write('"');
+            sbs.write_char('"');
         }
 
         const gpio_pin& GetPinInfo(uint8_t pin, int& index) {
@@ -363,15 +363,15 @@ namespace DALHAL {
     #endif
             sbs.write_json_value_separator(); sbs.write_jsonString(F("variant"), Info::getESPVariant());
             if (listMode != PrintListMode::String) {
-                sbs.write_json_value_separator(); sbs.write_jsonKey(F("PinModes"));
+                sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("PinModes"));
                 sbs.write_json_object_begin();
                 
                 for (int i=0;i<(int)PinModeStrings_size;++i)
                 {
                     if (i>0) { sbs.write_json_value_separator(); }
-                    sbs.write_jsonKey(PinModeStrings[i].Name);
+                    sbs.write_jsonMemberStart(PinModeStrings[i].Name);
 
-                    sbs.write('"');
+                    sbs.write_char('"');
                     DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = PinModeStrings[i].func;
                     if (listMode == PrintListMode::Binary) {
                         sbs.write_asBin(modeMask);
@@ -379,23 +379,23 @@ namespace DALHAL {
                     else {
                         sbs.write_asHex(modeMask);
                     }
-                    sbs.write('"');
+                    sbs.write_char('"');
                     
                 }
                 sbs.write_json_object_end(); 
             }
-            sbs.write_json_value_separator(); sbs.write_jsonKey(F("list")); sbs.write_json_object_begin();
+            sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("list")); sbs.write_json_object_begin();
 
            // if (available_gpio_list_lenght == -1) set_available_gpio_list_length();
             for (int i=0;i<(int)available_gpio_list_size;i++)
             {
                 if (i>0) { sbs.write_json_value_separator(); }
                 
-                sbs.write('"');
+                sbs.write_char('"');
                 sbs.write(available_gpio_list[i].pin);
-                sbs.write('"');
-                sbs.write(':');
-                sbs.write('"');
+                sbs.write_char('"');
+                sbs.write_char(':');
+                sbs.write_char('"');
                 DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = available_gpio_list[i].func;
                 if (listMode == PrintListMode::String) {
                     describePinFunctions(modeMask, sbs);
@@ -405,7 +405,7 @@ namespace DALHAL {
                 else { // (listMode == PrintListMode::Hex) 
                     sbs.write_asHex(modeMask);
                 }
-                sbs.write('"');                      
+                sbs.write_char('"');                      
             }
             sbs.write_json_object_end();
 

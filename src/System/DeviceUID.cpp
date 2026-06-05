@@ -40,7 +40,7 @@ bool DeviceUID::initialized = false;
     }
 
     void DeviceUID::Set(const char* uid) {
-        for (int i = 0; i < sizeof(g_deviceUID); ++i) {
+        for (size_t i = 0; i < sizeof(g_deviceUID); ++i) {
             g_deviceUID[i] = uid[i];
             if (uid[i] == '\0') break;
         }
@@ -53,7 +53,7 @@ bool DeviceUID::initialized = false;
         uint64_t uid = getDeviceUID();
         uint32_t uid_MSB  = (uid>>32) & 0xFFFF; // only care for the 4 nibbles as getDeviceUID only encode in 48 bits
         uint32_t uid_LSB  = uid & 0xFFFFFFFF;
-        snprintf(target, 12, "%04X%08X", uid_MSB, uid_LSB);
+        snprintf(target, 13, "%04X%08X", uid_MSB, uid_LSB);
     }
 
 #if defined(ESP8266)

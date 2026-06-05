@@ -93,7 +93,7 @@ namespace Scheduler
         if (jsonStatus != DeserializationError::Ok) {
             delete[] buff;
             std::string strCode = std::to_string((int)jsonStatus.code());
-            printf("LJ err:&s\r\n", strCode.c_str());
+            printf("LJ err:%s\r\n", strCode.c_str());
             return false;
         }
         size_t itemCount = jsonDoc.size();
@@ -156,13 +156,13 @@ namespace Scheduler
         {
             JsonBaseVars vars = GetJsonBaseVars(json);
             if (vars.funcName == nullptr) return;
-            AlarmID_t id=-1;
+            //AlarmID_t id=-1;
             if(json.containsKey("params")) {
                 AsStringParameter *params = new AsStringParameter(json["params"]);
-                id = Scheduler->timerRepeat(vars.h,vars.m,vars.s, GetFunctionExt(vars.funcName), params);
+                /*id = */Scheduler->timerRepeat(vars.h,vars.m,vars.s, GetFunctionExt(vars.funcName), params);
             }
             else {
-                id = Scheduler->timerRepeat(vars.h,vars.m,vars.s, GetFunction(vars.funcName));
+                /*id = */Scheduler->timerRepeat(vars.h,vars.m,vars.s, GetFunction(vars.funcName));
             }
 
             //DEBUG_UART.printf("added timer repeat %d:%d:%d  now:%s   Scheduler->read(id):%s   Scheduler->getNextTrigger():%s   Scheduler->getNextTrigger(id):%s\r\n", vars.h, vars.m, vars.s, Time_ext::GetTimeAsString(now()).c_str(), Time_ext::GetTimeAsString(Scheduler->read(id)).c_str() , Time_ext::GetTimeAsString(Scheduler->getNextTrigger()).c_str(), Time_ext::GetTimeAsString(Scheduler->getNextTrigger(id)).c_str());

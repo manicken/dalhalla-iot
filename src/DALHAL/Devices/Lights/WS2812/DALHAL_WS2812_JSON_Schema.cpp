@@ -98,7 +98,7 @@ namespace DALHAL {
                     if (i>0) {
                         sbs.write_json_value_separator();
                     }
-                    sbs.write_jsonQuoted(formatsTable[i].name);
+                    sbs.write_jsonQuoted_cStr(formatsTable[i].name);
                 }
                 sbs.write_json_array_end();
             }

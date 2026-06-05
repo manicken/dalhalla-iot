@@ -87,7 +87,7 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("units"));
+        sbs.write_jsonMemberStart(F("units"));
         sbs.write_json_array_begin();
 
         for (int i=0;i<unitCount;i++) {

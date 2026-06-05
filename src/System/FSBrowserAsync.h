@@ -249,7 +249,7 @@ namespace FSBrowser {
             
             // Logga HTTP headers
             Serial.println(F("Headers:"));
-            for (int i = 0; i < request->headers(); i++) {
+            for (size_t i = 0; i < request->headers(); i++) {
                 AsyncWebHeader* h = request->getHeader(i);
                 Serial.print("  ");
                 Serial.print(h->name());

@@ -95,21 +95,21 @@ namespace DALHAL {
         Device::PrintTo(sbs);
         
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("romId"));
-        sbs.write('"');
+        sbs.write_jsonMemberStart(F("romId"));
+        sbs.write_char('"');
         sbs.write_asHex(romid.bytes, 8, ':');
-        sbs.write('"');
+        sbs.write_char('"');
 
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("format"));
-        sbs.write('"');
+        sbs.write_jsonMemberStart(F("format"));
+        sbs.write_char('"');
         if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write('C'); }
         else if (format == OneWireTempDeviceTempFormat::Fahrenheit) { sbs.write('F'); }
         else { sbs.write(F("other")); }
-        sbs.write('"');
+        sbs.write_char('"');
 
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("value"));
+        sbs.write_jsonMemberStart(F("value"));
         value.toString(sbs);
 
     }

@@ -107,14 +107,14 @@ namespace DALHAL {
                     }
                     if (reg.items[i].typeName == nullptr) {
                         Serial.println("reg.items[i].typeName == nullptr");
-                        sbs.write('"');
+                        sbs.write_char('"');
                         sbs.write(F("typeName null_"));
                         sbs.write((uint32_t)i);
-                        sbs.write('"');
+                        sbs.write_char('"');
                         sbs.write(F(":null"));
                         continue;
                     }
-                    sbs.write_jsonKey(reg.items[i].typeName);
+                    sbs.write_jsonMemberStart(reg.items[i].typeName);
 
                     JsonObjectSchema::SchemaToJson(reg.items[i].def->jsonSchema, sbs, SchemaEmitMode::ByReference);
                 }
@@ -131,20 +131,20 @@ namespace DALHAL {
                 
                 // here all json is built now we just combine it all
                 sbs.write_json_object_begin();
-                sbs.write_jsonKey(F("registers"));
+                sbs.write_jsonMemberStart(F("registers"));
                 
                 sbs.write_json_object_begin();
 
                 for (size_t i=0; i < registers.size(); i++) {
                     if (i > 0) { sbs.write_json_value_separator(); }
                     if (registers[i].regPath == nullptr) {
-                        sbs.write('"');
+                        sbs.write_char('"');
                         sbs.write(F("regPath null_"));
                         sbs.write((uint32_t)i);
-                        sbs.write('"');
+                        sbs.write_char('"');
                         sbs.write(F(":null"));
                     } else {
-                        sbs.write_jsonKey(registers[i].regPath);
+                        sbs.write_jsonMemberStart(registers[i].regPath);
                         sbs.write_json_object_begin();
                         buildJsonSchemas(registers[i].reg, sbs);
                         sbs.write_json_object_end();
@@ -152,7 +152,7 @@ namespace DALHAL {
                 }
                 sbs.write_json_object_end();
                 sbs.write_json_value_separator();
-                sbs.write_jsonKey(F("objects"));
+                sbs.write_jsonMemberStart(F("objects"));
                 sbs.write_json_array_begin();
 
                 for (size_t i=0;i<objects.size();++i) {
@@ -161,7 +161,7 @@ namespace DALHAL {
                 }
                 sbs.write_json_array_end();
                 sbs.write_json_value_separator();
-                sbs.write_jsonKey(F("ByReference"));
+                sbs.write_jsonMemberStart(F("ByReference"));
                 sbs.write_json_array_begin();
 
                 for (size_t i=0;i<ByReference.size();++i) {

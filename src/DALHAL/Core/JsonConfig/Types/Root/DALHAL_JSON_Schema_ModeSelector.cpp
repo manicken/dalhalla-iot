@@ -97,7 +97,7 @@ namespace DALHAL {
 
         void ModeSelector::ToJson(const ModeSelector* modes, StringBuilderStreamer& sbs)
         {
-            sbs.write_jsonKey(F("modes"));
+            sbs.write_jsonMemberStart(F("modes"));
             sbs.write_json_array_begin();
             bool firstMode = true;
             for (size_t i = 0; modes[i].name; ++i) {
@@ -110,7 +110,7 @@ namespace DALHAL {
                 sbs.write_jsonString(F("name"), mode.name ? mode.name : "null");
                 // conjunctions
                 sbs.write_json_value_separator();
-                sbs.write_jsonKey(F("conjunctions"));
+                sbs.write_jsonMemberStart(F("conjunctions"));
                 const auto* conj = mode.conjunctions;
                 if (conj == nullptr) {
                     sbs.write(F("null")); // a empty array mean something different

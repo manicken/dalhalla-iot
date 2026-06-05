@@ -43,9 +43,11 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
+    const static char help_exec_drive_to_reset[] PROGMEM = "drive relay state to reset";
+
     //__attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> LatchingRelay::execFunctions[] = {
-        {"reset", &exec_drive_to_reset, "drive relay state to reset"},
+        {"reset", &exec_drive_to_reset, /*help_exec_drive_to_reset*/ "drive relay state to reset"},
         {"set", &exec_drive_to_set, "drive relay state to set"},
         {"toA", &exec_drive_to_set, "drive relay state to A"},
         {"toB", &exec_drive_to_reset, "drive relay state to B"},

@@ -85,12 +85,12 @@ namespace DALHAL {
         Device::PrintTo(sbs);
         
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("addr"));
-        sbs.write('"');
+        sbs.write_jsonMemberStart(F("addr"));
+        sbs.write_char('"');
         sbs.write('0');
         sbs.write('x');
         sbs.write_asHex(addr);
-        sbs.write('"');
+        sbs.write_char('"');
     }
 
 }

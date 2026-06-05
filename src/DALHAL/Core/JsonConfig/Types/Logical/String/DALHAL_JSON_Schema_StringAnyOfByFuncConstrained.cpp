@@ -87,7 +87,7 @@ namespace DALHAL {
 
         void SchemaStringAnyOfByFuncConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaString::SchemaToJson(fieldSchema, sbs, mode);
-            sbs.write_json_value_separator(); sbs.write_jsonKey(F("allowedValues"));
+            sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("allowedValues"));
             const SchemaStringAnyOfByFuncConstrained& strSchema = static_cast<const SchemaStringAnyOfByFuncConstrained&>(fieldSchema);
             strSchema.describe(strSchema.ctx, sbs);
             

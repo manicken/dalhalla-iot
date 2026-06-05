@@ -71,11 +71,13 @@ namespace DALHAL {
         void write(const __FlashStringHelper* fstr);
         void write(const __FlashStringHelper* fstr, size_t len);
         void write_P(PGM_P pstr, size_t len);
+        void write_escapedChars_P(PGM_P pstr, size_t len);
         void write_P(PGM_P pstr);
+        void write_escapedChars_P(PGM_P pstr);
 
-        void write(char c);
+        void write_char(char c);
         /** writes two characters, used in hot paths */
-        void write2(char a, char b);
+        void write_2chars(char a, char b);
         /** write a escaped character */
         void write_escaped(char c);
         void write(bool v);
@@ -111,11 +113,11 @@ namespace DALHAL {
         void write_jsonQuoted(const __FlashStringHelper* fstr);
         void write_jsonQuoted(const __FlashStringHelper* fstr, size_t len);
         void write_jsonQuoted(const char* cstr, size_t len);
-        void write_jsonQuoted(const char* cstr);
-        void write_jsonKey(const __FlashStringHelper* fstr);
-        void write_jsonKey(const __FlashStringHelper* fstr, size_t len);
-        void write_jsonKey(const char* cstr, size_t len);
-        void write_jsonKey(const char* cstr);
+        void write_jsonQuoted_cStr(const char* cstr);
+        void write_jsonMemberStart(const __FlashStringHelper* fstr);
+        void write_jsonMemberStart(const __FlashStringHelper* fstr, size_t len);
+        void write_jsonMemberStart(const char* cstr, size_t len);
+        void write_jsonMemberStart(const char* cstr);
 
         void write_jsonString(const __FlashStringHelper* key, const char* cstr);
         void write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr);

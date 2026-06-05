@@ -80,7 +80,7 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("freq"), freq);
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("devices"));
+        sbs.write_jsonMemberStart(F("devices"));
         sbs.write_json_array_begin();
         
         for (int i=0;i<deviceCount;i++) {
@@ -134,22 +134,22 @@ namespace DALHAL {
 
                 sbs.write(F("\"0x"));
                 sbs.write_asHex(byte);
-                sbs.write('"');
+                sbs.write_char('"');
             }
             sbs.write_json_array_end();
         }
         else if (zcCmd.EqualsIC(F("list"))) {
             sbs.write_json_object_begin();
-            bool first = true;
+            //bool first = true;
             for (uint8_t addr=1; addr<127; ++addr) {
                 wire->beginTransmission(addr);
                 if (wire->endTransmission() == 0) {
                     if (addr > 1) { sbs.write_json_value_separator(); }
                     sbs.write(F("\"0x"));
                     sbs.write_asHex(addr);
-                    sbs.write('"'); sbs.write(':'); sbs.write('"');
+                    sbs.write_char('"'); sbs.write_char(':'); sbs.write_char('"');
                     describeI2CAddress(addr, sbs);
-                    sbs.write('"');
+                    sbs.write_char('"');
                 }
             }
             sbs.write_json_object_end();

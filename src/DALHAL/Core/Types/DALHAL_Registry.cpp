@@ -70,7 +70,7 @@ namespace DALHAL {
                     
                         if (first == false) { sbs.write_json_value_separator(); }
                         else { first = false; }
-                        sbs.write('"'); sbs.write(entry->name); sbs.write('"');
+                        sbs.write_char('"'); sbs.write(entry->name); sbs.write_char('"');
                     }
                 }
                 sbs.write_json_array_end();

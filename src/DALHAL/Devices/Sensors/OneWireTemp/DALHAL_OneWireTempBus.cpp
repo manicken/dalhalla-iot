@@ -120,7 +120,7 @@ namespace DALHAL {
         sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("pin"), pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("items"));
+        sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
         
         if (printTemp) {
@@ -150,10 +150,10 @@ namespace DALHAL {
        
                 sbs.write_json_object_begin();
 
-                sbs.write_jsonKey(F("romId"));
-                sbs.write('"');
+                sbs.write_jsonMemberStart(F("romId"));
+                sbs.write_char('"');
                 sbs.write_asHex(addr.bytes, 8, ':');
-                sbs.write('"');
+                sbs.write_char('"');
                 
                 if (printTemp) {
                     sbs.write_json_value_separator(); sbs.write_jsonNumber(F("tempC"), dTemp->getTempC(addr.bytes));
@@ -172,7 +172,7 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("pin"), pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("devices"));
+        sbs.write_jsonMemberStart(F("devices"));
         sbs.write_json_array_begin();
 
         for (int i=0;i<deviceCount;i++) {

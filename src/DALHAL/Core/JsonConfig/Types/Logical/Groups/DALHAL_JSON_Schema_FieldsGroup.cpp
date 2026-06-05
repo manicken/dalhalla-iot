@@ -69,7 +69,7 @@ namespace DALHAL {
 
         void SchemaFieldsGroup::BuildFieldsArray(const SchemaFieldsGroup& group, StringBuilderStreamer& sbs, SchemaEmitMode mode)
         {
-            sbs.write_jsonKey(F("fields"));
+            sbs.write_jsonMemberStart(F("fields"));
             sbs.write_json_array_begin();
             for (int i = 0; group.fields[i] != nullptr; ++i) {
                 if (i > 0) sbs.write_json_value_separator();

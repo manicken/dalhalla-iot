@@ -74,10 +74,10 @@ namespace DALHAL {
     DeviceFindResult Device::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
 
     void Device::PrintTo(StringBuilderStreamer& sbs) {
-        sbs.write_jsonKey(F("uid"));
-        sbs.write('"');
+        sbs.write_jsonMemberStart(F("uid"));
+        sbs.write_char('"');
         decodeUID(uid, sbs);
-        sbs.write('"');
+        sbs.write_char('"');
         sbs.write_json_value_separator();
         sbs.write_jsonString(F("type"), this->Type);
         

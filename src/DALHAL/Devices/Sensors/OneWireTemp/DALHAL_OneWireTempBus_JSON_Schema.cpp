@@ -117,7 +117,7 @@ namespace DALHAL {
             };
 
             void Extractors::Apply(DALHAL::DeviceCreateContext& context, DALHAL::OneWireTempBusAtRoot* out) {
-                const JsonVariant& jsonObj = *(context.jsonObjItem);
+                //const JsonVariant& jsonObj = *(context.jsonObjItem);
                 // empty function for future use
             }
 

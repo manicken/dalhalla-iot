@@ -115,7 +115,7 @@ namespace DALHAL {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaNumber&>(fieldSchema);
 
-            sbs.write_json_value_separator(); sbs.write_jsonKey(F("allowedTypes"));
+            sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("allowedTypes"));
             sbs.write_json_object_begin();
             sbs.write_jsonBool(F("bool"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowBool));
             sbs.write_json_value_separator(); sbs.write_jsonBool(F("float"), (fs.primitiveTypeFlags & PrimitiveTypeFlags::AllowFloat));

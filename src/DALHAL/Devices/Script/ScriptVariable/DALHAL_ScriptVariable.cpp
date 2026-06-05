@@ -75,7 +75,7 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("value"));
+        sbs.write_jsonMemberStart(F("value"));
         value.toString(sbs);
 
     }

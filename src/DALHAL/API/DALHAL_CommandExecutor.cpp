@@ -348,13 +348,13 @@ namespace DALHAL {
             StringBuilderStreamer& sbs = bs.writer();
             sbs.write_json_object_begin();
             if (zcStr.IsEmpty()) {
-                sbs.write_jsonKey(F("available_root_cmds"));
+                sbs.write_jsonMemberStart(F("available_root_cmds"));
                 sbs.write_json_array_begin();
                 sbs.write(F("\"help\",\"ver\",\"hal\",\"wifi\""));
                 sbs.write_json_array_end();
             } else {
                 zcCommand = zcStr.SplitOffHead('/');
-                sbs.write_jsonKey(F("info"));
+                sbs.write_jsonMemberStart(F("info"));
                 if (zcCommand.EqualsIC(F("ver"))) {
                     sbs.write_jsonQuoted(F("shows build version, can be used to determine what specific ver a device runs"));
                 } else if (zcCommand.EqualsIC(F("hal"))) {
@@ -380,7 +380,7 @@ namespace DALHAL {
                 BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
                 StringBuilderStreamer& sbs = bs.writer();
                 sbs.write_json_object_begin();
-                sbs.write_jsonKey(F("error"));
+                sbs.write_jsonMemberStart(F("error"));
                 lastEntry.MessageWriteTo(sbs);
                 sbs.write_json_object_end();
 
@@ -466,7 +466,7 @@ namespace DALHAL {
         BlockStreamer bs(cb, "hal/write", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
-        sbs.write_jsonKey(F("info"));
+        sbs.write_jsonMemberStart(F("info"));
         bool anyError = false;
 
         if (params.zcType == DALHAL_CMD_EXEC_BOOL_TYPE) {
@@ -591,7 +591,7 @@ namespace DALHAL {
         BlockStreamer bs(cb, "hal/read", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
-        sbs.write_jsonKey(F("value"));
+        sbs.write_jsonMemberStart(F("value"));
 
         bool anyError = false;
 

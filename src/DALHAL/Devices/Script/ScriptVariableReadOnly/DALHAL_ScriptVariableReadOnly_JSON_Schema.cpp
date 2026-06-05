@@ -38,6 +38,8 @@ namespace DALHAL {
         namespace ScriptVariableReadOnly {
 
             constexpr SchemaNumber valueField = {"value", FieldPolicy::Optional};
+            __attribute__((used, externally_visible))
+            constexpr SchemaNumber valueField2 = {"valuevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluevaluesss", FieldPolicy::Optional};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

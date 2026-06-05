@@ -120,13 +120,13 @@ namespace DALHAL {
     }
 
     /* public */
-    void StringBuilderStreamer::write(char c) {
+    void StringBuilderStreamer::write_char(char c) {
         if (c == '\0') return;
 
         if (_pos >= sizeof(_buf)) flush();
         _buf[_pos++] = c;
     }
-    void StringBuilderStreamer::write2(char a, char b)
+    void StringBuilderStreamer::write_2chars(char a, char b)
     {
         if (_pos + 2 >= sizeof(_buf)) flush();
         _buf[_pos++] = a;
@@ -143,13 +143,13 @@ namespace DALHAL {
 
         switch (c)
         {
-            case '"':  write2('\\', '"'); break;
-            case '\\': write2('\\', '\\'); break;
-            case '\n': write2('\\', 'n');  break;
-            case '\r': write2('\\', 'r');  break;
-            case '\t': write2('\\', 't');  break;
-            case '\b': write2('\\', 'b');  break;
-            case '\f': write2('\\', 'f');  break;
+            case '"':  write_2chars('\\', '"'); break;
+            case '\\': write_2chars('\\', '\\'); break;
+            case '\n': write_2chars('\\', 'n');  break;
+            case '\r': write_2chars('\\', 'r');  break;
+            case '\t': write_2chars('\\', 't');  break;
+            case '\b': write_2chars('\\', 'b');  break;
+            case '\f': write_2chars('\\', 'f');  break;
 
             default:
                 // control chars
@@ -158,13 +158,13 @@ namespace DALHAL {
                     // safest fallback
                     // write chars by chars to avoid using slow PROGMEM 
                     // (specially on ESP8266 where F() strings are needed to save ram)
-                    write2('\\', 'u'); write2('0', '0');
+                    write_2chars('\\', 'u'); write_2chars('0', '0');
                     uint8_t v = (uint8_t)c;
-                    write2(NibbleToHexCharLowerCase(v >> 4), NibbleToHexCharLowerCase(v));
+                    write_2chars(NibbleToHexCharLowerCase(v >> 4), NibbleToHexCharLowerCase(v));
                 }
                 else
                 {
-                    write(c);
+                    write_char((char)c);
                 }
                 break;
         }
@@ -193,7 +193,20 @@ namespace DALHAL {
         while (true) {
             b=pgm_read_byte(pstr + i);
             if (b == '\0') break;
-            write(b);
+            write_char(b);
+            i++;
+        }
+    }
+    void StringBuilderStreamer::write_escapedChars_P(PGM_P pstr) {
+        if (!pstr) {
+            return;
+        }
+        size_t i = 0;
+        char b=1;
+        while (true) {
+            b=pgm_read_byte(pstr + i);
+            if (b == '\0') break;
+            write_escaped(b);
             i++;
         }
     }
@@ -209,7 +222,22 @@ namespace DALHAL {
 
         for (size_t i = 0; i < len; i++) {
             char b = pgm_read_byte(pstr + i);
-            write(b);
+            write_char(b);
+        }
+    }
+
+    void StringBuilderStreamer::write_escapedChars_P(PGM_P pstr, size_t len) {
+        if (!pstr) {
+            return;
+        }
+
+        if (len == 0) {
+            return;
+        }
+
+        for (size_t i = 0; i < len; i++) {
+            char b = pgm_read_byte(pstr + i);
+            write_escaped(b);
         }
     }
 
@@ -242,17 +270,17 @@ namespace DALHAL {
 
     void StringBuilderStreamer::write_asBin(uint8_t v) {
         for (int bit = 7; bit >= 0; --bit) {
-            write((v & (1U << bit)) ? '1' : '0');
+            write_char((v & (1U << bit)) ? '1' : '0');
         }
     }
     void StringBuilderStreamer::write_asBin(uint16_t v) {
         for (int bit = 15; bit >= 0; --bit) {
-            write((v & (1U << bit)) ? '1' : '0');
+            write_char((v & (1U << bit)) ? '1' : '0');
         }
     }
     void StringBuilderStreamer::write_asBin(uint32_t v) {
         for (int bit = 31; bit >= 0; --bit) {
-            write((v & (1U << bit)) ? '1' : '0');
+            write_char((v & (1U << bit)) ? '1' : '0');
         }
     }
     char NibbleToHexChar(uint8_t value)
@@ -263,8 +291,8 @@ namespace DALHAL {
     }
     
     void StringBuilderStreamer::write_asHex(uint8_t v) {
-        write(NibbleToHexChar(v >> 4));
-        write(NibbleToHexChar(v));
+        write_char(NibbleToHexChar(v >> 4));
+        write_char(NibbleToHexChar(v));
     }
     void StringBuilderStreamer::write_asHex(uint16_t v) {
         write_asHex((uint8_t)(v >> 8));
@@ -278,7 +306,7 @@ namespace DALHAL {
     void StringBuilderStreamer::write_asHex(uint8_t* buff, size_t len, char separator /* = '\0'*/) {
         for (size_t i=0;i<len;i++) {
             if (separator != '\0' && i > 0) {
-                write(separator);
+                write_char(separator);
             }
             write_asHex(buff[i]);
         }
@@ -295,22 +323,22 @@ namespace DALHAL {
     }
 
     void StringBuilderStreamer::write_json_value_separator() {
-        write(',');
+        write_char(',');
     }
     void StringBuilderStreamer::write_json_member_separator() {
-        write(':');
+        write_char(':');
     }
     void StringBuilderStreamer::write_json_array_begin() {
-        write('[');
+        write_char('[');
     }
     void StringBuilderStreamer::write_json_array_end() {
-        write(']');
+        write_char(']');
     }
     void StringBuilderStreamer::write_json_object_begin() {
-        write('{');
+        write_char('{');
     }
     void StringBuilderStreamer::write_json_object_end() {
-        write('}');
+        write_char('}');
     }
 
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr, size_t len) {
@@ -318,18 +346,18 @@ namespace DALHAL {
             write(F("null"));
             return;
         }
-        write('"');
+        write_char('"');
         write(fstr, len);
-        write('"');
+        write_char('"');
     }
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr) {
         if (fstr == nullptr) {
             write(F("null"));
             return;
         }
-        write('"');
+        write_char('"');
         write(fstr);
-        write('"');
+        write_char('"');
     }
     void StringBuilderStreamer::write_jsonQuoted(const char* cstr, size_t len) {
         if (!cstr || len == 0)
@@ -337,74 +365,85 @@ namespace DALHAL {
             write(F("null"));
             return;
         }
-        write('"');
-        size_t i=0;
-        for (const char* p = cstr; *p && i < len; ++p, ++i)
-        {
-            write_escaped(*p);
+        write_char('"');
+        if ((uint32_t)cstr >= 0x40200000) {
+            write_escapedChars_P(cstr, len);
+        } else {
+            size_t i=0;
+            for (const char* p = cstr; (*p != '\0') && (i < len); ++p, ++i)
+            {
+                write_escaped(*p);
+            }
         }
 
-        write('"');
+        write_char('"');
     }
-    void StringBuilderStreamer::write_jsonQuoted(const char* cstr) {
+    void StringBuilderStreamer::write_jsonQuoted_cStr(const char* cstr) {
         if (!cstr)
         {
             write(F("null"));
             return;
         }
-        write('"');
-        for (const char* p = cstr; *p; ++p)
-        {
-            write_escaped(*p);
+
+        write_char('"');
+        //Serial1.printf("cstr = %p\n", cstr);
+        if ((uint32_t)cstr >= 0x40200000) {
+            write_escapedChars_P(cstr);
+        } else {
+           
+            for (const char* p = cstr; *p != '\0'; ++p)
+            {
+                write_escaped(*p);
+            }
         }
 
-        write('"');
+        write_char('"');
     }
 
-    void StringBuilderStreamer::write_jsonKey(const __FlashStringHelper* fstr, size_t len) {
+    void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr, size_t len) {
         write_jsonQuoted(fstr, len);
         write_json_member_separator();
     }
-    void StringBuilderStreamer::write_jsonKey(const __FlashStringHelper* fstr) {
+    void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr) {
         write_jsonQuoted(fstr);
         write_json_member_separator();
     }
 
-    void StringBuilderStreamer::write_jsonKey(const char* cstr, size_t len) {
+    void StringBuilderStreamer::write_jsonMemberStart(const char* cstr, size_t len) {
         write_jsonQuoted(cstr, len);
         write_json_member_separator();
     }
-    void StringBuilderStreamer::write_jsonKey(const char* cstr) {
-        write_jsonKey(cstr, strlen(cstr));
+    void StringBuilderStreamer::write_jsonMemberStart(const char* cstr) {
+        write_jsonMemberStart(cstr, strlen(cstr));
     }
 
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const char* cstr) {
-        write_jsonKey(key);
-        write_jsonQuoted(cstr);
+        write_jsonMemberStart(key);
+        write_jsonQuoted_cStr(cstr);
     }
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write_jsonQuoted(zcStr.start, zcStr.Length());
     }
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write_jsonQuoted(fstr);
     }
 
     void StringBuilderStreamer::write_jsonBool(const __FlashStringHelper* key, bool v) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write(v);
     }
     void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, uint32_t v) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write(v);
     }
     void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, int32_t v) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write(v);
     }
     void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, float v) {
-        write_jsonKey(key);
+        write_jsonMemberStart(key);
         write_json(v);
     }
 

@@ -118,8 +118,8 @@ namespace DALHAL {
         sbs.write_json_array_begin();
         for (size_t i = 0; i<funcTable.count; ++i) {
             if (i>0) { sbs.write_json_value_separator(); }
-            sbs.write(F("{\"name\":\"")); if (funcTable.items[i].name) { sbs.write(funcTable.items[i].name); } sbs.write('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
-            sbs.write(F(",\"help\":\"")); if (funcTable.items[i].help) { sbs.write(funcTable.items[i].help); } sbs.write('"');
+            sbs.write(F("{\"name\":\"")); if (funcTable.items[i].name) { sbs.write(funcTable.items[i].name); } sbs.write_char('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
+            sbs.write(F(",\"help\":\"")); if (funcTable.items[i].help) { sbs.write(funcTable.items[i].help); } sbs.write_char('"');
             if (funcTable.items[i].rwTypeMask != FunctionValueType::_None_) {
                 sbs.write(F(",\"rwTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].rwTypeMask, sbs);
             }

@@ -88,7 +88,7 @@ namespace DALHAL {
         Device::PrintTo(sbs);
         
         sbs.write_json_value_separator();
-        sbs.write_jsonKey(F("items"));
+        sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
 
         for (int i=0;i<registerItemCount;i++) {
@@ -99,16 +99,16 @@ namespace DALHAL {
             registerItems[i]->PrintTo(sbs);
 
             sbs.write_json_value_separator();
-            sbs.write_jsonKey(F("opcode"));
-            sbs.write('"');
+            sbs.write_jsonMemberStart(F("opcode"));
+            sbs.write_char('"');
             sbs.write_asHex((uint8_t)requestList[i]->info.opcode);
-            sbs.write('"');
+            sbs.write_char('"');
 
             sbs.write_json_value_separator();
-            sbs.write_jsonKey(F("addr"));
-            sbs.write('"');
+            sbs.write_jsonMemberStart(F("addr"));
+            sbs.write_char('"');
             sbs.write_asHex(requestList[i]->def.address);
-            sbs.write('"');
+            sbs.write_char('"');
 
             sbs.write_json_object_end();
         }
