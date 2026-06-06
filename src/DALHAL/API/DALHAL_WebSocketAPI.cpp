@@ -168,16 +168,13 @@ namespace DALHAL {
             return;
         }
         asyncWebserver = new AsyncWebServer(82);
-//#if defined(ESP32)
         asyncWebSocket = new AsyncWebSocket("/ws");
         asyncWebSocket->onEvent(onWsEvent);
         asyncWebserver->addHandler(asyncWebSocket);
-//#endif
         asyncWebserver->on("/", GetRootPage_Handler);
         asyncWebserver->begin();
-//#if defined(ESP32)
         asyncWebSocket->enable(true);
-//#endif
+
     }
 
 

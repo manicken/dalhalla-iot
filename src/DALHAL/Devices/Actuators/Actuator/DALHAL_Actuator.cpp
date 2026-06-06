@@ -47,6 +47,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Actuator::execFunctions[] = {
+        
         {"close", &exec_drive_to_min, "drive to close/min"},
         {"open", &exec_drive_to_max, "drive to open/max"},
         {"toMin", &exec_drive_to_min, "drive to min"},

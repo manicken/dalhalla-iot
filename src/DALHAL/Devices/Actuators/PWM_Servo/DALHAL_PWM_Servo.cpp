@@ -40,7 +40,8 @@ namespace DALHAL {
     constexpr Registry::DefineBase PWM_Servo::RegistryDefine = {
         Create,
         &JsonSchema::PWM_Servo::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO)
+        DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO),
+        &PWM_Servo::FunctionTable
     };
     //volatile const void* keep_PWM_Servo = &DALHAL::PWM_Servo::RegistryDefine;
 

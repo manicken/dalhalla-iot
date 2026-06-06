@@ -55,9 +55,7 @@ namespace DALHAL {
     public:
         static void setup(bool failsafeMode = false);
         inline static void loop() { 
-#if defined(ESP32)
           asyncWebSocket->cleanupClients();
-#endif
         }
 
         static bool Broadcast(const char* msg, size_t len, CmdCbType type = CmdCbType::Control);
