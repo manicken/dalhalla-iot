@@ -24,7 +24,7 @@
 #pragma once
 
 #include <stdlib.h>
-#include <ArduinoJSON.h>
+#include <ArduinoJson.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 

@@ -302,10 +302,11 @@ Logger::Logger() {
 
 void Logger::EmitLastEntry()
 {
+#ifndef ESP8266 // currently disabled for esp8266 to debug issuse
     DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
 
     getLastEntry().PrintTo(bs.writer());
-#ifndef ESP8266
+
     /*std::string entryStr = getLastEntry().ToString();
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());*/

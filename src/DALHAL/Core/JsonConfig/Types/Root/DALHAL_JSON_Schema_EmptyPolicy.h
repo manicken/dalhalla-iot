@@ -24,6 +24,8 @@
 #pragma once
 
 #include <stdlib.h>
+#include <ArduinoJson.h>
+
 #include <WString.h>
 
 namespace DALHAL {

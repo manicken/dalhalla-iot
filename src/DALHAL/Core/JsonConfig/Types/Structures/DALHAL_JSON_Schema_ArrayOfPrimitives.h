@@ -24,6 +24,8 @@
 #pragma once
 
 #include <stdlib.h>
+#include <ArduinoJson.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <DALHAL/Core/JsonConfig/Types/Base/DALHAL_JSON_Schema_TypeBase.h>

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <ArduinoJson.h>
 
 namespace DALHAL {
 

@@ -28,6 +28,7 @@
 #include <string>
 
 #include <ArduinoJson.h>
+
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 
