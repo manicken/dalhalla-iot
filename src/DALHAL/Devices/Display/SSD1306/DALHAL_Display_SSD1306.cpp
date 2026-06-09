@@ -36,9 +36,33 @@ namespace DALHAL {
         Create,
         &JsonSchema::Display_SSD1306::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DISPLAY_SSD1306),
-        HasAddress
+        &Display_SSD1306::FunctionTable,
+        HasAddress,
     };
     //volatile const void* keep_Display_SSD1306 = &DALHAL::Display_SSD1306::RegistryDefine;
+
+    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> Display_SSD1306::writeStringFunctions[] = {
+        {"setCursor", &setCursor, "sets the cursor"},
+        {"addText", &addText, "add text to the buffer data"},
+        {"printText", &printText, "add text and display the buffer data"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Display_SSD1306::execFunctions[] = {
+        {"update", &display_update, "display the data in the buffer"},
+        {"clear", &display_clear, "clear the display"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable Display_SSD1306::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+    };
 
     bool Display_SSD1306::HasAddress(uint8_t addr) {
         return addr == 0x3C || addr == 0x3D; 
@@ -87,32 +111,45 @@ namespace DALHAL {
         return Device::findInArray(elements, elementCount, path, this, outDevice);
     }
 
+    /* static */
+    HALOperationResult Display_SSD1306::display_update(Device* device) {
+        static_cast<Display_SSD1306*>(device)->display->display();
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult Display_SSD1306::display_clear(Device* device) {
+        static_cast<Display_SSD1306*>(device)->display->clearDisplay();
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult Display_SSD1306::setCursor(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        ZeroCopyString zcXstr = zcParams.SplitOffHead('/');
+        int32_t x = 0, y = 0;
+        zcXstr.ConvertTo_int32(x);
+        zcParams.ConvertTo_int32(y);
+        static_cast<Display_SSD1306*>(device)->display->setCursor(x,y);
+        return HALOperationResult::Success;
+    }
+    /* static */
+    HALOperationResult Display_SSD1306::addText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        static_cast<Display_SSD1306*>(device)->display->write(zcParams.start, zcParams.Length());
+        return HALOperationResult::Success;
+    }
+    /* static */
+    HALOperationResult Display_SSD1306::printText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        static_cast<Display_SSD1306*>(device)->display->write(zcParams.start, zcParams.Length());
+        static_cast<Display_SSD1306*>(device)->display->display();
+        return HALOperationResult::Success;
+    }
+
     HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {
-        ZeroCopyString zcData = val.value;
-        //printf("\nDisplay_SSD1306::write data:%s\n", zcData.ToString().c_str());
-        ZeroCopyString zcCmd = zcData.SplitOffHead('/');
-        
-        if (zcCmd.EqualsIC(F("text"))) {
-            //printf("\nDisplay_SSD1306::write text:%s\n", zcData.ToString().c_str());
-            display->write(zcData.start, zcData.Length());
-        }
-        else if (zcCmd.EqualsIC(F("print"))) {
-            //printf("\nDisplay_SSD1306::write print:%s\n", zcData.ToString().c_str());
-            display->write(zcData.start, zcData.Length());
-            display->display();
-        }
-        else if (zcCmd.EqualsIC(F("cursor"))) {
-            ZeroCopyString zcXstr = zcData.SplitOffHead('/');
-            int32_t x = 0, y = 0;
-            zcXstr.ConvertTo_int32(x);
-            zcData.ConvertTo_int32(y);
-            display->setCursor(x,y);
-        } else if (zcCmd.EqualsIC(F("clear"))) {
-            display->clearDisplay();
-        } else if (zcCmd.EqualsIC(F("update"))) {
-            display->display();
-        } else {
-            return HALOperationResult::UnsupportedCommand;
+        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        HALOperationResult res = fn(this, val.parameters, val.sbs);
+        if (res != HALOperationResult::Success) {
+            return res;
         }
 #if HAS_REACTIVE_WRITE(DISPLAY_SSD1306)
         triggerWrite();

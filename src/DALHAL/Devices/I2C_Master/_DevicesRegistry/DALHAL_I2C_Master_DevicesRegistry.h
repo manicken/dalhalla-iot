@@ -59,6 +59,27 @@ namespace DALHAL {
             HasAddress_Function(HasAddress_Function)
         {}
 
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const DeviceFunctionTable* functionTable,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, functionTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const EventDescriptor* reactiveTable,
+            const DeviceFunctionTable* functionTable,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, reactiveTable, functionTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
     };
 
     extern const Registry::DeviceRegistry I2C_DeviceRegistry;

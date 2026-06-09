@@ -45,6 +45,27 @@ namespace DALHAL {
     };
     //volatile const void* keep_I2C_Master = &DALHAL::I2C_Master::RegistryDefine;
 
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> I2C_Master::readStringFunctions[] = {
+        {"raw", &read_raw, "read raw data"},
+        {"list", &list_devices, "list all devices found by using adress scan"},
+    };
+
+    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> I2C_Master::writeStringFunctions[] = {
+        {"raw", &write_raw, "write raw data"},
+        {"speed", &set_speed, "set i2c speed"},
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable I2C_Master::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+    };
+
     Device* I2C_Master::Create(DeviceCreateContext& context) {
         return new I2C_Master(context);
     }
@@ -108,51 +129,10 @@ namespace DALHAL {
         ZeroCopyString zcStr = val.cmd; // make copy
         ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F("raw"))) { // this is more likely to be called
-            if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
-            ZeroCopyString zcAddr = zcStr.SplitOffHead('/');
-            if (zcAddr.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
-            uint32_t bytesToRead = 0;
-            if (zcStr.IsEmpty()) bytesToRead = 1;
-            else {
-                ZeroCopyString zcByteCount = zcStr.SplitOffHead('/'); // make this safe in case there are additonal / parameters that should just be ignored
-                // the following could default to one byte to read, 
-                // but if it's specified with a additional parameter
-                // it's best to return a error so that the user don't expect anything else
-                if (zcByteCount.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
-                zcByteCount.ConvertTo_uint32(bytesToRead);
-            }
-            uint32_t addr;
-            zcAddr.ConvertTo_uint32(addr);
             
-            sbs.write_json_array_begin();
-
-            uint8_t received = wire->requestFrom((uint8_t)addr, (uint8_t)bytesToRead);
-            if (received == 0) return HALOperationResult::ExecutionFailed;
-            for (uint8_t i = 0; i < received; ++i) {
-                uint8_t byte = wire->read();
-                if (i > 0) { sbs.write_json_value_separator(); }
-
-                sbs.write(F("\"0x"));
-                sbs.write_asHex(byte);
-                sbs.write_char('"');
-            }
-            sbs.write_json_array_end();
         }
         else if (zcCmd.EqualsIC(F("list"))) {
-            sbs.write_json_object_begin();
-            //bool first = true;
-            for (uint8_t addr=1; addr<127; ++addr) {
-                wire->beginTransmission(addr);
-                if (wire->endTransmission() == 0) {
-                    if (addr > 1) { sbs.write_json_value_separator(); }
-                    sbs.write(F("\"0x"));
-                    sbs.write_asHex(addr);
-                    sbs.write_char('"'); sbs.write_char(':'); sbs.write_char('"');
-                    describeI2CAddress(addr, sbs);
-                    sbs.write_char('"');
-                }
-            }
-            sbs.write_json_object_end();
+            
             
         } else {
             return HALOperationResult::UnsupportedCommand;
@@ -164,64 +144,129 @@ namespace DALHAL {
     }
 
     HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
-        ZeroCopyString zcStr = val.value; // make copy
-        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.EqualsIC(F("raw"))) {
-            if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
-            ZeroCopyString zcAddr = zcStr.SplitOffHead('/');
-            if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError; // simple early check
-            if (zcAddr.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
-            ZeroCopyString zcByteCount = zcStr.SplitOffHead('/');
-            if (zcByteCount.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
-            uint32_t bytesToWrite = 0;
-            zcByteCount.ConvertTo_uint32(bytesToWrite);
-            if (bytesToWrite == 0) return HALOperationResult::StringRequestParameterError;
-            
-            uint32_t paramCount = zcStr.CountChar('/')+1; // +1 to make it easier/clearer
-            if (paramCount < bytesToWrite) return HALOperationResult::StringRequestParameterError;
-            uint32_t addr = 0;
-            zcAddr.ConvertTo_uint32(addr);
-            wire->beginTransmission((uint8_t)addr);
-            while (bytesToWrite--) {
-                ZeroCopyString zcByte = zcStr.SplitOffHead('/');
-                if (zcByte.ValidUINT() == false) {
-                    wire->endTransmission(true);
-                    return HALOperationResult::StringRequestParameterError;
-                }
-                uint32_t byteVal  = 0;
-                zcByte.ConvertTo_uint32(byteVal );
-                wire->write((uint8_t)byteVal );
-            }
-            uint8_t res = wire->endTransmission(true);
-            if (res != 0) {
-                val.result.write((char)(0x30 + res));
-                return HALOperationResult::ExecutionFailed;
-            }
-            if (zcStr.IsEmpty() == false) {
-                // this would mean that this is a write read request
-                // and the current parameter is the number of bytes to read
-                // currently a TODO feature
-                // and the read function need to be DRY first
-            }
-        } else if (zcCmd.EqualsIC(F("speed"))) {
-            if (zcStr.IsEmpty()) return HALOperationResult::StringRequestParameterError;
-            ZeroCopyString zcSpeed = zcStr.SplitOffHead('/');
-            if (zcSpeed.IsEmpty()) return HALOperationResult::StringRequestParameterError;
-            if (zcSpeed.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
-            uint32_t speed = 0;
-            zcSpeed.ConvertTo_uint32(speed);
-            if (speed == 0) return HALOperationResult::StringRequestParameterError;
-#if defined(ESP32)
-            if (wire->setClock(speed) == false) return HALOperationResult::ExecutionFailed;
-#else
-            wire->setClock(speed);
-#endif
-        } else {
-            return HALOperationResult::UnsupportedCommand;
+        
+        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        HALOperationResult res = fn(this, val.parameters, val.sbs);
+        if (res != HALOperationResult::Success) {
+            return res;
         }
 #if HAS_REACTIVE_WRITE(I2C_MASTER)
         triggerWrite();
 #endif
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult I2C_Master::write_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        if (zcParams.IsEmpty()) {
+            return HALOperationResult::StringRequestParameterError;
+        }
+        ZeroCopyString zcAddr = zcParams.SplitOffHead('/');
+        if (zcParams.IsEmpty()) return HALOperationResult::StringRequestParameterError; // simple early check
+        if (zcAddr.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
+        ZeroCopyString zcByteCount = zcParams.SplitOffHead('/');
+        if (zcByteCount.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
+        uint32_t bytesToWrite = 0;
+        zcByteCount.ConvertTo_uint32(bytesToWrite);
+        if (bytesToWrite == 0) { return HALOperationResult::StringRequestParameterError; }
+        
+        uint32_t paramCount = zcParams.CountChar('/')+1; // +1 to make it easier/clearer
+        if (paramCount < bytesToWrite) { return HALOperationResult::StringRequestParameterError; }
+        uint32_t addr = 0;
+        zcAddr.ConvertTo_uint32(addr);
+        I2C_Master& self = *static_cast<I2C_Master*>(device);
+        self.wire->beginTransmission((uint8_t)addr);
+        while (bytesToWrite--) {
+            ZeroCopyString zcByte = zcParams.SplitOffHead('/');
+            if (zcByte.ValidUINT() == false) {
+                self.wire->endTransmission(true);
+                return HALOperationResult::StringRequestParameterError;
+            }
+            uint32_t byteVal  = 0;
+            zcByte.ConvertTo_uint32(byteVal );
+            self.wire->write((uint8_t)byteVal );
+        }
+        uint8_t res = self.wire->endTransmission(true);
+        if (res != 0) {
+            //val.result.write((char)(0x30 + res));
+            return HALOperationResult::ExecutionFailed;
+        }
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult I2C_Master::set_speed(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        if (zcParams.IsEmpty()) { 
+            return HALOperationResult::StringRequestParameterError;
+        }
+        ZeroCopyString zcSpeed = zcParams.SplitOffHead('/');
+        if (zcSpeed.IsEmpty()) { return HALOperationResult::StringRequestParameterError; }
+        if (zcSpeed.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
+        uint32_t speed = 0;
+        zcSpeed.ConvertTo_uint32(speed);
+        if (speed == 0) { return HALOperationResult::StringRequestParameterError; }
+#if defined(ESP32)
+        if (static_cast<I2C_Master*>(device)->wire->setClock(speed) == false) return HALOperationResult::ExecutionFailed;
+#else
+        static_cast<I2C_Master*>(device)->wire->setClock(speed);
+#endif
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult I2C_Master::read_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        if (zcParams.IsEmpty()) { 
+            return HALOperationResult::StringRequestParameterError;
+        }
+        ZeroCopyString zcAddr = zcParams.SplitOffHead('/');
+        if (zcAddr.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
+        uint32_t bytesToRead = 0;
+        if (zcParams.IsEmpty()) {
+            bytesToRead = 1;
+        } else {
+            ZeroCopyString zcByteCount = zcParams.SplitOffHead('/'); // make this safe in case there are additonal / parameters that should just be ignored
+            // the following could default to one byte to read, 
+            // but if it's specified with a additional parameter
+            // it's best to return a error so that the user don't expect anything else
+            if (zcByteCount.ValidUINT() == false) return HALOperationResult::StringRequestParameterError;
+            zcByteCount.ConvertTo_uint32(bytesToRead);
+        }
+        uint32_t addr;
+        zcAddr.ConvertTo_uint32(addr);
+        
+        sbs.write_json_array_begin();
+
+        uint8_t received = static_cast<I2C_Master*>(device)->wire->requestFrom((uint8_t)addr, (uint8_t)bytesToRead);
+        if (received == 0) return HALOperationResult::ExecutionFailed;
+        for (uint8_t i = 0; i < received; ++i) {
+            uint8_t byte = static_cast<I2C_Master*>(device)->wire->read();
+            if (i > 0) { sbs.write_json_value_separator(); }
+
+            sbs.write(F("\"0x"));
+            sbs.write_asHex(byte);
+            sbs.write_char('"');
+        }
+        sbs.write_json_array_end();
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult I2C_Master::list_devices(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        sbs.write_json_object_begin();
+        I2C_Master& self = *static_cast<I2C_Master*>(device);
+        for (uint8_t addr=1; addr<127; ++addr) {
+            self.wire->beginTransmission(addr);
+            if (self.wire->endTransmission() == 0) {
+                if (addr > 1) { sbs.write_json_value_separator(); }
+                sbs.write(F("\"0x"));
+                sbs.write_asHex(addr);
+                sbs.write_char('"'); sbs.write_char(':'); sbs.write_char('"');
+                describeI2CAddress(addr, sbs);
+                sbs.write_char('"');
+            }
+        }
+        sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
 

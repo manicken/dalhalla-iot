@@ -138,8 +138,8 @@ namespace DALHAL {
         using WriteHALValue_FuncType = HALOperationResult (*)(Device* device, const HALValue& value);
         using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
-        using ReadString_FuncType = HALOperationResult (*)(Device* device, StringBuilderStreamer& sbs);
-        using WriteString_FuncType = HALOperationResult (*)(Device* device, ZeroCopyString zcStr);
+        using ReadString_FuncType = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        using WriteString_FuncType = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
 
         const FunctionTable_t<Exec_FuncType> exec;
         const FunctionTable_t<ReadToHALValue_FuncType> readValue;

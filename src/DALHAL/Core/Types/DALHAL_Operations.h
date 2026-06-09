@@ -44,15 +44,17 @@ namespace DALHAL {
     };
 
     struct HALReadStringRequestValue {
-        StringBuilderStreamer& sbs;
         const ZeroCopyString& cmd;
-        HALReadStringRequestValue(const ZeroCopyString& cmd, StringBuilderStreamer& out_value): sbs(out_value), cmd(cmd) {}
+        const ZeroCopyString& parameters;
+        StringBuilderStreamer& sbs;
+        HALReadStringRequestValue(const ZeroCopyString& cmd, const ZeroCopyString& parameters, StringBuilderStreamer& sbs): cmd(cmd), parameters(parameters), sbs(sbs) {}
     };
 
     struct HALWriteStringRequestValue {
-        const ZeroCopyString& value;
-        StringBuilderStreamer& result;
-        HALWriteStringRequestValue(const ZeroCopyString& value, StringBuilderStreamer& result): value(value), result(result) {}
+        const ZeroCopyString& cmd;
+        const ZeroCopyString& parameters;
+        StringBuilderStreamer& sbs;
+        HALWriteStringRequestValue(const ZeroCopyString& cmd, const ZeroCopyString& parameters, StringBuilderStreamer& sbs): cmd(cmd), parameters(parameters), sbs(sbs) {}
     };
 
 }

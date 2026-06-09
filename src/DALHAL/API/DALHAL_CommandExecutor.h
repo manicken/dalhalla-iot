@@ -92,7 +92,8 @@ namespace DALHAL {
         struct ReadWriteCmdParameters {
             ZeroCopyString zcType;
             ZeroCopyString zcUid;
-            ZeroCopyString zcValue;
+            ZeroCopyString zcCmd;
+            ZeroCopyString zcParameters;
             ReadWriteCmdParameters(ZeroCopyString& zcStr);
 
         };

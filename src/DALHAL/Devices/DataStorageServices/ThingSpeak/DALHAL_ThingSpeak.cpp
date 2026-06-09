@@ -43,9 +43,27 @@ namespace DALHAL {
     constexpr Registry::DefineBase ThingSpeak::RegistryDefine = {
         Create,
         &JsonSchema::ThingSpeak::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK)
+        DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK),
+        &ThingSpeak::FunctionTable
     };
     //volatile const void* keep_ThingSpeak = &DALHAL::ThingSpeak::RegistryDefine;
+
+    
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> ThingSpeak::readStringFunctions[] = {
+        {"getLastUrlApi", &getLastUrlApi, "get the last url api string"},
+        {"simulateSend", &simulateSend, "simulate a send by generating the url api post string"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ThingSpeak::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
 
     Device* ThingSpeak::Create(DeviceCreateContext& context) {
         return new ThingSpeak(context);
@@ -125,35 +143,42 @@ namespace DALHAL {
         Device::PrintTo(sbs);
     }
 
-    HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
-        if (val.cmd.EqualsIC("getLastUrlApi")) {
-            val.sbs.write(urlApi.c_str(), urlApi.length());
-            return HALOperationResult::Success;
-        } else if (val.cmd.EqualsIC("simulateSend")) {
-            urlApi.clear();
-            ts_root_url.appendTo(urlApi);
-            //urlApi += ts_root_url;
-            urlApi += api_key;
-            for (int i=0;i<fieldCount;i++) {
-                ThingSpeakField& field = fields[i];
-                
-                if (field.DataReady() == false) continue; // skip values that have not currently been changed
-                HALValue val;
-                HALOperationResult hres = field.cdr->ReadSimple(val);
-                if (hres != HALOperationResult::Success) continue;
-                if (val.isNaN()) continue; // allows devices that have not been read currently to signal not set values
-                
-                urlApi += "&field";
-                urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
-                urlApi += '=';
-                val.appendToString(urlApi);
-            }
+    HALOperationResult ThingSpeak::getLastUrlApi(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        ThingSpeak& self = *static_cast<ThingSpeak*>(device);
+        sbs.write(self.urlApi.c_str(), self.urlApi.length());
+        return HALOperationResult::Success;
+    }
 
-            val.sbs.write(urlApi.c_str(), urlApi.length());
-            return HALOperationResult::Success;
+    HALOperationResult ThingSpeak::simulateSend(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        ThingSpeak& self = *static_cast<ThingSpeak*>(device);
+        self.urlApi.clear();
+        self.ts_root_url.appendTo(self.urlApi);
+        //urlApi += ts_root_url;
+        self.urlApi += self.api_key;
+        for (int i=0;i<self.fieldCount;i++) {
+            ThingSpeakField& field = self.fields[i];
+            
+            if (field.DataReady() == false) continue; // skip values that have not currently been changed
+            HALValue val;
+            HALOperationResult hres = field.cdr->ReadSimple(val);
+            if (hres != HALOperationResult::Success) continue;
+            if (val.isNaN()) continue; // allows devices that have not been read currently to signal not set values
+            
+            self.urlApi += "&field";
+            self.urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
+            self.urlApi += '=';
+            val.appendToString(self.urlApi);
         }
-        return HALOperationResult::UnsupportedCommand;
-        
+
+        sbs.write(self.urlApi.c_str(), self.urlApi.length());
+        return HALOperationResult::Success;
+
+    }
+
+    HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.parameters, val.sbs);
     }
 
 }

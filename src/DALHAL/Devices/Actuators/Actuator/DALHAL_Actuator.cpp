@@ -353,7 +353,7 @@ namespace DALHAL {
     }
 
     /*static*/ 
-    HALOperationResult Actuator::getEndstops(Device* device, StringBuilderStreamer& sbs) {
+    HALOperationResult Actuator::getEndstops(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
 
         sbs.write_jsonBool(F("min"), static_cast<Actuator*>(device)->endMinActive());
         sbs.write_json_value_separator(); 
@@ -421,8 +421,9 @@ namespace DALHAL {
     /*virtual override*/
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
         DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.sbs);
+        return fn(this, val.parameters, val.sbs);
     }
 
     /*virtual override*/

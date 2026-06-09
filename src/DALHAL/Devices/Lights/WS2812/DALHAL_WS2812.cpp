@@ -102,65 +102,70 @@ namespace DALHAL {
     }
 
     HALOperationResult WS2812::write(const HALWriteStringRequestValue& val) {
-        ZeroCopyString zcStr = val.value; // copy first
-        ZeroCopyString cmd = zcStr.SplitOffHead('/');
-        if (cmd.EqualsIC(F("brightness"))) {
-            uint32_t val;
-            zcStr.ConvertTo_uint32(val);
-            ws2812fx->setBrightness(val);
+        ZeroCopyString zcParams = val.parameters;
+
+        if (val.cmd.EqualsIC(F("brightness"))) {
+            uint32_t uval;
+            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            zcUval.ConvertTo_uint32(uval);
+            ws2812fx->setBrightness(uval);
         }
-        else if (cmd.EqualsIC(F("mode"))) {
-            uint32_t val;
-            zcStr.ConvertTo_uint32(val);
-            ws2812fx->setMode(val);
+        else if (val.cmd.EqualsIC(F("mode"))) {
+            uint32_t uval;
+            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            zcUval.ConvertTo_uint32(uval);
+            ws2812fx->setMode(uval);
             ws2812fx->resume();
         }
-        else if (cmd.EqualsIC(F("fxspeed"))) {
-            uint32_t val;
-            zcStr.ConvertTo_uint32(val);
-            ws2812fx->setSpeed(val);
+        else if (val.cmd.EqualsIC(F("fxspeed"))) {
+            uint32_t uval;
+            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            zcUval.ConvertTo_uint32(uval);
+            ws2812fx->setSpeed(uval);
         }
-        else if (cmd.EqualsIC(F("setpixel"))) {
+        else if (val.cmd.EqualsIC(F("setpixel"))) {
             ws2812fx->pause();
            // ws2812fx->setSpeed(0);
-            ZeroCopyString zcIndex = zcStr.SplitOffHead('/');
-            ZeroCopyString zcR = zcStr.SplitOffHead('/');
-            ZeroCopyString zcG = zcStr.SplitOffHead('/');
-            ZeroCopyString zcB = zcStr.SplitOffHead('/');
+            ZeroCopyString zcIndex = zcParams.SplitOffHead('/');
+            ZeroCopyString zcR = zcParams.SplitOffHead('/');
+            ZeroCopyString zcG = zcParams.SplitOffHead('/');
+            ZeroCopyString zcB = zcParams.SplitOffHead('/');
             uint32_t index,r,g,b;
             zcIndex.ConvertTo_uint32(index);
             zcR.ConvertTo_uint32(r);
             zcG.ConvertTo_uint32(g);
             zcB.ConvertTo_uint32(b);
-            if (zcStr.IsEmpty()) {// simple rgb
+            if (zcParams.IsEmpty()) {// simple rgb
                 
                 ws2812fx->setPixelColor(index,r,g,b);
                 //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d\n",index,r,g,b);
             }
             else {
                 uint32_t w;
-                zcStr.ConvertTo_uint32(w);
+                ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+                zcUval.ConvertTo_uint32(w);
                 ws2812fx->setPixelColor(index,r,g,b,w);
                 //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d, w=%d\n",index,r,g,b,w);
             }
             ws2812fx->execShow();
         }
-        else if (cmd.EqualsIC(F("color"))) {
+        else if (val.cmd.EqualsIC(F("color"))) {
             uint32_t halval = 0;
-            zcStr.ConvertTo_uint32(halval);
+            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            zcUval.ConvertTo_uint32(halval);
             const HALValue cVal = halval;
             WS2812::writeColor(this, cVal);
         }
-        else if (cmd.EqualsIC(F("pause"))) {
+        else if (val.cmd.EqualsIC(F("pause"))) {
             ws2812fx->pause();
         }
-        else if (cmd.EqualsIC(F("resume"))) {
+        else if (val.cmd.EqualsIC(F("resume"))) {
             ws2812fx->resume();
         }
-        else if (cmd.EqualsIC(F("stop"))) {
+        else if (val.cmd.EqualsIC(F("stop"))) {
             ws2812fx->stop();
         }
-        else if (cmd.EqualsIC(F("start"))) {
+        else if (val.cmd.EqualsIC(F("start"))) {
             ws2812fx->start();
         }
         else

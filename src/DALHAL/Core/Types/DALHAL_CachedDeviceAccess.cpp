@@ -27,6 +27,8 @@
 #include <DALHAL/Core/Types/DALHAL_UID_Path.h>
 
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 namespace DALHAL {
 
@@ -84,7 +86,12 @@ namespace DALHAL {
         //else
         //    printf("create cached device access: %s\n", uidPath.ToString().c_str());
         readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
-        writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName);
+        // the following commented out is the new way, to be implemented when all devices use the new way
+        // and when i can remove all Get....._Function 
+        //const DALHAL::Registry::DefineBase* devdef = device->GetRegistryDefine();
+        //DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(devdef->functionTable->readValue, zcStrFuncName);
+        //writeFromHalValueFunc = fn;
+        writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName); // old way
         execFunc = device->GetExec_Function(zcStrFuncName);
         bracketReadFunc = device->GetBracketOpRead_Function(zcStrFuncName);
         bracketWriteFunc = device->GetBracketOpWrite_Function(zcStrFuncName);

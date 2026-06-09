@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(I2C_MASTER)
@@ -51,6 +53,16 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+
+        static HALOperationResult write_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult set_speed(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult read_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult list_devices(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
 
     private:
         TwoWire* wire = nullptr;

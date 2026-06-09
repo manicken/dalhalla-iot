@@ -72,10 +72,28 @@ namespace DALHAL {
 #endif
     std::queue<PendingRequest> CommandExecutor::g_pending;
 
+    // Command frame parsing is intentionally layered to preserve routing integrity.
+    //
+    // Format:
+    //   <type>/<uid>#<cmd>/<params>
+    //
+    // Parsing rules:
+    // 1. First '/' splits transport layer (type) from the rest.
+    // 2. Second '/' splits device routing layer (uid + possible cmd/params).
+    // 3. '#' is ONLY valid inside the routing segment and separates UID from function name.
+    // 4. Everything after '#' is treated as opaque function parameters.
+    //
+    // Important design rule:
+    // - '/' defines protocol boundaries (scoped split order)
+    // - '#' defines execution boundary (function dispatch)
+    // - parameters are never parsed at routing level to avoid delimiter collisions
+    //
+    // This ordering ensures payload content cannot corrupt UID or command resolution.
     CommandExecutor::ReadWriteCmdParameters::ReadWriteCmdParameters(ZeroCopyString& zcStr) {
         zcType = zcStr.SplitOffHead('/');
         zcUid = zcStr.SplitOffHead('/');
-        zcValue = zcStr; // the value is the rest
+        zcCmd = zcUid.SplitOffTail('#');
+        zcParameters = zcStr; // the value is the rest
     }
     
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -455,7 +473,7 @@ namespace DALHAL {
             return false;
         }
         // write need a value
-        if (params.zcValue.Length() == 0) {
+        if (params.zcParameters.Length() == 0) {
             GlobalLogger.Error(F("No value provided for writing."));
 
             return false;
@@ -472,9 +490,9 @@ namespace DALHAL {
         if (params.zcType == DALHAL_CMD_EXEC_BOOL_TYPE) {
             uint32_t uintValue = 0;
 
-            if (params.zcValue.EqualsIC(F("true")) || params.zcValue.Equals('1')) {
+            if (params.zcParameters.EqualsIC(F("true")) || params.zcParameters.Equals('1')) {
                 uintValue = 1;
-            } else if (params.zcValue.EqualsIC(F("false")) || params.zcValue.Equals('0')) {
+            } else if (params.zcParameters.EqualsIC(F("false")) || params.zcParameters.Equals('0')) {
                 uintValue = 0;
             } else {
 
@@ -497,7 +515,7 @@ namespace DALHAL {
         else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
             // Convert value to integer
             uint32_t uintValue = 0;
-            if (params.zcValue.ConvertTo_uint32(uintValue) == false) {
+            if (params.zcParameters.ConvertTo_uint32(uintValue) == false) {
                 GlobalLogger.Error(F("Invalid uint32 value."));
 
             } else {
@@ -515,7 +533,7 @@ namespace DALHAL {
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
             // Convert value to integer
             float floatValue = 0.0f;
-            if (params.zcValue.ConvertTo_float(floatValue) == false) {
+            if (params.zcParameters.ConvertTo_float(floatValue) == false) {
                 GlobalLogger.Error(F("Invalid float value."));
             } else {
 
@@ -531,23 +549,23 @@ namespace DALHAL {
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
-            HALWriteStringRequestValue strHalValue(params.zcValue, sbs);
+            HALWriteStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 sbs.write_json_object_begin();
-                sbs.write_jsonString(F("String written"), params.zcValue);
+                sbs.write_jsonString(F("String written"), params.zcParameters);
                 sbs.write_json_object_end();
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
             
-            HALWriteStringRequestValue strHalValue(params.zcValue, sbs);
+            HALWriteStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
 
             writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 sbs.write_json_object_begin();
-                sbs.write_jsonString(F("Json string written"), params.zcValue);
+                sbs.write_jsonString(F("Json string written"), params.zcParameters);
                 sbs.write_json_object_end();
             }
         }
@@ -613,7 +631,7 @@ namespace DALHAL {
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
 
-            if (params.zcValue.Length() == 0) {
+            if (params.zcParameters.Length() == 0) {
                 HALValue halValue;
 
                 readResult = outDevice->read(halValue);
@@ -624,7 +642,7 @@ namespace DALHAL {
             }
             else {
                 HALValue halValue;
-                HALReadValueByCmd valByCmd(halValue, params.zcValue);
+                HALReadValueByCmd valByCmd(halValue, params.zcCmd);
 
                 readResult = outDevice->read(valByCmd);
 
@@ -634,13 +652,13 @@ namespace DALHAL {
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
             
-            HALReadStringRequestValue strHalValue(params.zcValue, sbs);
+            HALReadStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
 
             readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
 
-            HALReadStringRequestValue strHalValue(params.zcValue, sbs);
+            HALReadStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
   
             readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
 

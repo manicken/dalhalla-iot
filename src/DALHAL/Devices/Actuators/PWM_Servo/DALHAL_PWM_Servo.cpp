@@ -236,26 +236,24 @@ namespace DALHAL {
 
     /*virtual override*/
     HALOperationResult PWM_Servo::write(const HALWriteStringRequestValue& val) {
-        
-        ZeroCopyString zcStr = val.value;
-        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.IsEmpty() || zcStr.IsEmpty() || (zcStr.ValidNumber() == false)) {
+
+        if (val.parameters.IsEmpty() || val.parameters.IsEmpty() || (val.parameters.ValidNumber() == false)) {
             return HALOperationResult::InvalidArgument;
         }
 
-        auto entry = GetDeviceFunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, zcCmd);
+        auto entry = GetDeviceFunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, val.cmd);
         if (entry == nullptr) { return HALOperationResult::UnsupportedCommand; }
 
         if (FunctionValueType::HasFlag(entry->rwTypeMask, FunctionValueType::_UInt_)) {
             uint32_t iVal;
-            if (zcStr.ConvertTo_uint32(iVal) == false) {
+            if (val.parameters.ConvertTo_uint32(iVal) == false) {
                 return HALOperationResult::InvalidArgument;
             }
             return entry->fn(this, iVal);
         }
         else if (FunctionValueType::HasAnyFlag(entry->rwTypeMask, FunctionValueType::_Number_)) {
             float fVal;
-            if (zcStr.ConvertTo_float(fVal) == false) {
+            if (val.parameters.ConvertTo_float(fVal) == false) {
                 return HALOperationResult::InvalidArgument;
             }
             return entry->fn(this, fVal);

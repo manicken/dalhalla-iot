@@ -43,6 +43,8 @@
 #include <HTTPClient.h>
 #endif
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include "DALHAL_ThingSpeakField.h"
 
 #define DALHAL_THINGSPEAK_MAX_FIELDS 8
@@ -66,6 +68,13 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+
+        static HALOperationResult getLastUrlApi(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult simulateSend(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
 
     private:
         FlexibleString ts_root_url;

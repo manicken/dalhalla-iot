@@ -27,6 +27,7 @@
 
 #include <string>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 #include "DALHAL_Display_SSD1306_Element.h"
 
@@ -56,6 +57,17 @@ namespace DALHAL {
         static const I2C_RegistryDefine RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
         static bool HasAddress(uint8_t addr);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+
+        static HALOperationResult display_update(Device* device);
+        static HALOperationResult display_clear(Device* device);
+        static HALOperationResult setCursor(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult addText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult printText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
 
     private:
         Adafruit_SSD1306* display = nullptr;

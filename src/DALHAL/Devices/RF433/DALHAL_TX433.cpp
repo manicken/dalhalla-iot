@@ -71,7 +71,7 @@ namespace DALHAL {
 
     HALOperationResult TX433::write(const HALWriteStringRequestValue &val) {
         RF433::init(pin); // this only sets the pin and set the pin to output
-        std::string stdStrCmd = val.value.ToString();
+        std::string stdStrCmd = val.parameters.ToString();
         
         RF433::DecodeFromJSON(stdStrCmd); // TODO make this function take ZeroCopyString as argument, even thu it's copied internally
         // TODO better error check from DecodeFromJSON
