@@ -47,7 +47,13 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
         &JsonSchema::TX433_Unit_TypeLC::Extractors::Apply,
     };
-    //volatile const void* keep_TX433_Unit_LCTypeRegistryDefine = &DALHAL::TX433_Unit::LCTypeRegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* TX433_Unit::GetRegistryDefine() {
+        // calling it like this is safe as type is allways defined
+        // in every instance
+        return Registry::GetItem(TX433_UnitTypeRegistry, this->Type).def;
+    }
     
     __attribute__((used, externally_visible))
     constexpr TX433_UNIT_RegistryDefine TX433_Unit::SFCTypeRegistryDefine = {

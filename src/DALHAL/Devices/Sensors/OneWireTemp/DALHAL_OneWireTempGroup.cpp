@@ -38,9 +38,35 @@ namespace DALHAL {
     constexpr Registry::DefineBase OneWireTempGroup::RegistryDefine = {
         Create,
         &JsonSchema::OneWireTempGroup::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP)
+        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_GROUP),
+        &OneWireTempGroup::FunctionTable
     };
-    //volatile const void* keep_OneWireTempGroup = &DALHAL::OneWireTempGroup::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* OneWireTempGroup::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> OneWireTempGroup::readStringFunctions[] = {
+        {"getAllNewDevices", &OneWireTempGroup::readString_getAllNewDevices_Function, "get all new devices present on all busses according to the current cfg"},
+        {"getAllNewDevicesWithTemp", &OneWireTempGroup::readString_getAllNewDevicesWithTemp_Function, "get all new devices on all busses with current temperature present on the bus according to the current cfg"},
+        {"getAllDevices", &OneWireTempGroup::readString_getAllDevices_Function, "get all devices (even new) present on all busses"},
+        {"getAllTemperatures", &OneWireTempGroup::readString_getAllTemperatures_Function, "get all devices (even new) present on all busses with temperature printed"}
+    };
+
+    constexpr DeviceFunctionTable OneWireTempGroup::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
 
     Device* OneWireTempGroup::Create(DeviceCreateContext& context) {
         return new OneWireTempGroup(context);
@@ -72,67 +98,51 @@ namespace DALHAL {
         return Device::findInArray(busses, busCount, path, this, outDevice);
     }
 
-    HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
-        StringBuilderStreamer& sbs = val.sbs;
-
-        if (val.cmd.EqualsIC(F("getAllNewDevices"))) { // (as json) return a list of all new devices found for all busses (this will compare against the current ones and only print new ones)
-            sbs.write_json_array_begin();
-            for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
-                if (bus == nullptr) continue;
-                bus->read(val);
-                if (i<busCount-1) {
-                    sbs.write_json_value_separator();
-                }
-            }
-            sbs.write_json_array_end();
+    HALOperationResult OneWireTempGroup::readString_getAllNewDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_array_begin();
+        OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
+        for (int i=0;i<self.busCount;i++) {
+            if (i>0) { sbs.write_json_value_separator(); }
+            OneWireTempBus::readString_getAllNewDevices_Function(self.busses[i], zcStrParameters, sbs);
         }
-        else if (val.cmd.EqualsIC(F("getAllNewDevicesWithTemp"))) {
-            sbs.write_json_array_begin();
-            for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
-                if (bus == nullptr) continue;
-                bus->read(val);
-                if (i<busCount-1) {
-                    sbs.write_json_value_separator();
-                }
-            }
-            sbs.write_json_array_end();
-
-        }
-        else if (val.cmd.EqualsIC(F("getAllDevices"))) { // (as json) return a complete list of all devices found for all busses
-            sbs.write_json_array_begin();
-            for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
-                if (bus == nullptr) continue;
-                bus->read(val);
-                if (i<busCount-1) {
-                    sbs.write_json_value_separator();
-                }
-            }
-            sbs.write_json_array_end();
-
-        }
-        else if (val.cmd.EqualsIC(F("getAllTemperatures"))) { // (as json) return a complete list of all temperatures each with it's uid as the keyname and the temp as the value
-            sbs.write_json_array_begin();
-            for (int i=0;i<busCount;i++) {
-                OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast for direct call not using vtable lockup
-                if (bus == nullptr) continue;
-                bus->read(val);
-                if (i<busCount-1) {
-                    sbs.write_json_value_separator();
-                }
-            }
-            sbs.write_json_array_end();
-            
-        } else {
-            GlobalLogger.Warn(F("OneWireTempGroup::read - cmd not found: "), val.cmd); // this can then be read by getting the last entry from logger
-            return HALOperationResult::UnsupportedCommand;  // cmd not found
-        }
-#if HAS_REACTIVE_READ(ONE_WIRE_TEMP_GROUP)
-        triggerRead();
-#endif
+        sbs.write_json_array_end();
         return HALOperationResult::Success;
+    }
+    HALOperationResult OneWireTempGroup::readString_getAllNewDevicesWithTemp_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_array_begin();
+        OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
+        for (int i=0;i<self.busCount;i++) {
+            if (i>0) { sbs.write_json_value_separator(); }
+            OneWireTempBus::readString_getAllNewDevicesWithTemp_Function(self.busses[i], zcStrParameters, sbs);
+        }
+        sbs.write_json_array_end();
+        return HALOperationResult::Success;
+    }
+    HALOperationResult OneWireTempGroup::readString_getAllDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_array_begin();
+        OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
+        for (int i=0;i<self.busCount;i++) {
+            if (i>0) { sbs.write_json_value_separator(); }
+            OneWireTempBus::readString_getAllDevices_Function(self.busses[i], zcStrParameters, sbs);
+        }
+        sbs.write_json_array_end();
+        return HALOperationResult::Success;
+    }
+    HALOperationResult OneWireTempGroup::readString_getAllTemperatures_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_array_begin();
+        OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
+        for (int i=0;i<self.busCount;i++) {
+            if (i>0) { sbs.write_json_value_separator(); }
+            OneWireTempBus::readString_getAllTemperatures_Function(self.busses[i], zcStrParameters, sbs);
+        }
+        sbs.write_json_array_end();
+        return HALOperationResult::Success;
+    }
+
+    HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.parameters, val.sbs);
     }
 
     void OneWireTempGroup::requestTemperatures() {

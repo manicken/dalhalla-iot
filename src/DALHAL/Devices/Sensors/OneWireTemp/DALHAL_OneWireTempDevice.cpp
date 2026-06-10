@@ -37,11 +37,15 @@ namespace DALHAL {
     
     __attribute__((used, externally_visible))
     constexpr Registry::DefineBase OneWireTempDeviceAtRoot::RegistryDefine = {
-        Create,
+        OneWireTempDeviceAtRoot::Create,
         &JsonSchema::OneWireTempDeviceAtRoot::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
     };
-    //volatile const void* keep_OneWireTempDeviceAtRoot = &DALHAL::OneWireTempDeviceAtRoot::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* OneWireTempDeviceAtRoot::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     //   ██████  ███    ██ ███████     ██     ██ ██ ██████  ███████     ████████ ███████ ███    ███ ██████      ██████  ███████ ██    ██ ██  ██████ ███████ 
     //  ██    ██ ████   ██ ██          ██     ██ ██ ██   ██ ██             ██    ██      ████  ████ ██   ██     ██   ██ ██      ██    ██ ██ ██      ██      
@@ -49,6 +53,22 @@ namespace DALHAL {
     //  ██    ██ ██  ██ ██ ██          ██ ███ ██ ██ ██   ██ ██             ██    ██      ██  ██  ██ ██          ██   ██ ██       ██  ██  ██ ██      ██      
     //   ██████  ██   ████ ███████      ███ ███  ██ ██   ██ ███████        ██    ███████ ██      ██ ██          ██████  ███████   ████   ██  ██████ ███████ 
     //                                                                                                                                                     
+
+    __attribute__((used, externally_visible))
+    constexpr Registry::DefineBase OneWireTempDevice::RegistryDefine = {
+        OneWireTempDevice::Create,
+        &JsonSchema::OneWireTempDevice::Root,
+        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
+    };
+
+    /* override */
+    const Registry::DefineBase* OneWireTempDevice::GetRegistryDefine() {
+        return &OneWireTempDevice::RegistryDefine;
+    }
+
+    Device* OneWireTempDevice::Create(DeviceCreateContext& context) {
+        return new OneWireTempDevice(context);
+    }
 
     OneWireTempDevice::OneWireTempDevice(DeviceCreateContext& context) : OneWireTempDevice_DeviceBase(context.deviceType) {
         JsonSchema::OneWireTempDevice::Extractors::Apply(context, this);

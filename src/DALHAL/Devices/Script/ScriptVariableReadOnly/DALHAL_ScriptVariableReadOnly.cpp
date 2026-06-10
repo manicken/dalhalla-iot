@@ -37,7 +37,11 @@ namespace DALHAL {
         &JsonSchema::ScriptVariableReadOnly::Root,
         /*nullptr*/ /* no events available */
     };
-    //volatile const void* keep_ScriptVariableReadOnly = &DALHAL::ScriptVariableReadOnly::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* ScriptVariableReadOnly::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     ScriptVariableReadOnly::ScriptVariableReadOnly(DeviceCreateContext& context) : Device(context.deviceType) {
         JsonSchema::ScriptVariableReadOnly::Extractors::Apply(context, this);

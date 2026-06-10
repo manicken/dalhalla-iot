@@ -79,6 +79,8 @@ namespace DALHAL {
         Display_SSD1306(I2C_Master_CreateFunctionContext& context);
         ~Display_SSD1306() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void loop() override;

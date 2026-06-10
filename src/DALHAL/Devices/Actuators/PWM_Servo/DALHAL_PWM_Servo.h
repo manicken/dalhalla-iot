@@ -103,6 +103,8 @@ namespace DALHAL {
     public:
         PWM_Servo(DeviceCreateContext& context);
         ~PWM_Servo() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         void begin() override;
         void loop() override;

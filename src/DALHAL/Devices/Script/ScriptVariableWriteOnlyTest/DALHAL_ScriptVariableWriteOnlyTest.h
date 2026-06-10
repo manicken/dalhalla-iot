@@ -58,6 +58,8 @@ namespace DALHAL {
         ScriptVariableWriteOnlyTest(DeviceCreateContext& context);
         ~ScriptVariableWriteOnlyTest() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult write(const HALValue& val) override;
 
         

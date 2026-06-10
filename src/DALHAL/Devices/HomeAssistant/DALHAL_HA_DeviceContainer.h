@@ -57,6 +57,8 @@ namespace DALHAL {
         HA_DeviceContainer(HA_CreateFunctionContext& context);
         ~HA_DeviceContainer() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void begin() override;
         void loop() override;
 

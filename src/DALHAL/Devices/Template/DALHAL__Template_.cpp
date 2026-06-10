@@ -39,7 +39,11 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_),
         &_Template_::FunctionTable
     };
-    //volatile const void* keep__Template_ = &DALHAL::_Template_::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* _Template_::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> _Template_::execFunctions[] = {

@@ -63,6 +63,8 @@ namespace DALHAL {
         HA_Number(HA_CreateFunctionContext& context);
         ~HA_Number() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 

@@ -61,6 +61,8 @@ namespace DALHAL {
         TX433(DeviceCreateContext& context);
         ~TX433() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         HALOperationResult write(const HALWriteStringRequestValue &val) override;
 

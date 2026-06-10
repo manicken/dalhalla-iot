@@ -44,7 +44,11 @@ namespace DALHAL {
         &JsonSchema::REST_Cmd::Root,
         /*nullptr*/ // no events available on obsolete device
     };
-    //volatile const void* keep_REST_Cmd = &DALHAL::REST_Cmd::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* REST_Cmd::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     Device* REST_Cmd::Create(DeviceCreateContext& context) {
         return new REST_Cmd(context);

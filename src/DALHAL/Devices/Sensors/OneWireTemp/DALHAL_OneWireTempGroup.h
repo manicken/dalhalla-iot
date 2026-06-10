@@ -33,6 +33,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_GROUP)
 #include "DALHAL_OneWireTempGroup_Reactive.h"
@@ -53,6 +55,15 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+
+        static HALOperationResult readString_getAllNewDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllNewDevicesWithTemp_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllTemperatures_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+
+    private:
         OneWireTempAutoRefresh autoRefresh;
         Device **busses;
         int busCount = 0;
@@ -63,6 +74,8 @@ namespace DALHAL {
     public:
         OneWireTempGroup(DeviceCreateContext& context);
         ~OneWireTempGroup() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         /** this function will search the busses and their devices to find the device with the uid */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;

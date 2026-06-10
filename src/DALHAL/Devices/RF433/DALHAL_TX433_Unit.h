@@ -74,11 +74,9 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     public: // public static fields and exposed external structures
-        //static bool VerifyJSON(const JsonVariant &jsonObj);
+
 
     private:
-        //static bool VerifyFC_JSON(const JsonVariant &jsonObj);
-        //static bool VerifyLC_JSON(const JsonVariant &jsonObj);
 
         /** this is set from root TX433 device and used when sending */
         const uint32_t pin;
@@ -94,6 +92,8 @@ namespace DALHAL {
     public:
         TX433_Unit(TX433_Unit_CreateFunctionContext& context);
         ~TX433_Unit() override = default;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
 
         HALOperationResult write(const HALValue &val) override;
 

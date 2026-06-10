@@ -51,6 +51,8 @@ namespace DALHAL {
     public:
         REST_Value(DeviceCreateContext& context);
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         DALHAL::HALOperationResult read(DALHAL::HALValue& val) override;
         void loop() override;
     };

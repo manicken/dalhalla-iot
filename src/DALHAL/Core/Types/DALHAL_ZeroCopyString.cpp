@@ -419,7 +419,7 @@ namespace DALHAL {
             return false;
 
         size_t len = Length();
-        if (len == 0) return false;
+        //if (len == 0) return false;
         return std::strlen(cstr) == len && std::memcmp(start, cstr, len) == 0;
     }
     bool ZeroCopyString::Equals(const __FlashStringHelper* fstr) const {
@@ -441,9 +441,9 @@ namespace DALHAL {
     }
     bool ZeroCopyString::EqualsIC(const ZeroCopyString& other) const {
         int thisLen = Length();
-        if (thisLen == 0) return false;
+        //if (thisLen == 0) return false;
         int otherLen = other.Length();
-        if (otherLen == 0) return false;
+        //if (otherLen == 0) return false;
         if (thisLen != otherLen) return false;
         const char* a = start;
         const char* endA = end;
@@ -465,10 +465,10 @@ namespace DALHAL {
         if (!cstr) return false;
 
         int thisLen = Length();
-        if (thisLen == 0) return false;
+        //if (thisLen == 0) return false;
 
         int cstrLen = strlen(cstr);
-        if (cstrLen == 0) return false;
+        //if (cstrLen == 0) return false;
 
         if (thisLen != cstrLen) return false;
         const char* a = start;

@@ -64,6 +64,8 @@ namespace DALHAL {
         ButtonInput(DeviceCreateContext& context);
         ~ButtonInput() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue &val) override;
 
         void loop();

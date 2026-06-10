@@ -35,7 +35,11 @@ namespace DALHAL {
         &JsonSchema::AnalogInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
     };
-    //volatile const void* keep_AnalogInput = &DALHAL::AnalogInput::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* AnalogInput::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     Device* AnalogInput::Create(DeviceCreateContext& context) {
         return new AnalogInput(context);

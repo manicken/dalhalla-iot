@@ -37,6 +37,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_BUS)
 #include "DALHAL_OneWireTempBus_Reactive.h"
@@ -53,7 +55,12 @@ namespace DALHAL {
         friend struct JsonSchema::OneWireTempBus::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
-        //static bool VerifyJSON(const JsonVariant &jsonObj);
+        static const Registry::DefineBase RegistryDefine;
+        static const DeviceFunctionTable FunctionTable;
+
+    private:
+        static Device* Create(DeviceCreateContext& context);
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
 
     private:
         uint8_t pin;
@@ -68,6 +75,8 @@ namespace DALHAL {
         OneWireTempBus(DeviceCreateContext& context);
         ~OneWireTempBus() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         /** this function will search the devices to find the device with the uid */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void requestTemperatures();
@@ -78,6 +87,11 @@ namespace DALHAL {
         
         
         void PrintTo(StringBuilderStreamer& sbs) override;
+
+        static HALOperationResult readString_getAllNewDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllNewDevicesWithTemp_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllDevices_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_getAllTemperatures_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
     
     };
 
@@ -88,6 +102,8 @@ namespace DALHAL {
 
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
+    
+    private:
         static Device* Create(DeviceCreateContext& context);
 
     private:
@@ -96,6 +112,8 @@ namespace DALHAL {
     public:
         OneWireTempBusAtRoot(DeviceCreateContext& context);
         ~OneWireTempBusAtRoot() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
 
         void loop() override;
         

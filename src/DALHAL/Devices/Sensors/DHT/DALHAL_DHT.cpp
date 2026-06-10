@@ -40,9 +40,13 @@ namespace DALHAL {
     constexpr Registry::DefineBase DHT::RegistryDefine = {
         Create,
         &JsonSchema::DHT::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(DHT)
+        DALHAL_REACTIVE_EVENT_TABLE(DHT),
+        &DHT::FunctionTable
     };
-    //volatile const void* keep_DHT = &DALHAL::DHT::RegistryDefine;
+    /* override */
+    const Registry::DefineBase* DHT::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> DHT::readValueFunctions[] = {
@@ -157,7 +161,7 @@ namespace DALHAL {
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
         DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        if (fn == nullptr) { GlobalLogger.Error(F("DHT - unsupported cmd:"), val.cmd); return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }
 

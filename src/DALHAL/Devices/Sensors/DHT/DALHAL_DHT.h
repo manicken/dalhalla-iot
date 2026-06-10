@@ -80,6 +80,8 @@ namespace DALHAL {
         DHT(DeviceCreateContext& context);
         ~DHT() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void loop() override; // will need loop for automatic polling as this device is slow
 
         ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;

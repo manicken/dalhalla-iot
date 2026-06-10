@@ -44,7 +44,12 @@ namespace DALHAL {
         Create,
         &JsonSchema::HA_Switch::Root,
     };
-    //volatile const void* keep_HA_Switch = &DALHAL::HA_Switch::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* HA_Switch::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
+
     #define DALHAL_HA_SWITCH_PAYLOAD_OFF "OFF"
     #define DALHAL_HA_SWITCH_PAYLOAD_ON "ON"
     const char* HA_Switch::PAYLOAD_OFF = DALHAL_HA_SWITCH_PAYLOAD_OFF;

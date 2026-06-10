@@ -43,9 +43,14 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptArray::RegistryDefine = {
         Create,
         &JsonSchema::ScriptArray::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY),
+        &ScriptArray::FunctionTable
     };
-    //volatile const void* keep_ScriptArray = &DALHAL::ScriptArray::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* ScriptArray::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> ScriptArray::bracketOpReadFunctions[] = {
@@ -96,11 +101,7 @@ namespace DALHAL {
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
         DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        HALOperationResult res = fn(this, val.parameters, val.sbs);
-        if (res != HALOperationResult::Success) {
-            return res;
-        }
-        return HALOperationResult::Success;
+        return fn(this, val.parameters, val.sbs);
     }
 
     HALOperationResult ScriptArray::read(const HALValue& bracketSubscriptVal, HALValue& val) {

@@ -39,7 +39,11 @@ namespace DALHAL {
         &Display_SSD1306::FunctionTable,
         HasAddress,
     };
-    //volatile const void* keep_Display_SSD1306 = &DALHAL::Display_SSD1306::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* Display_SSD1306::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> Display_SSD1306::writeStringFunctions[] = {
         {"setCursor", &setCursor, "sets the cursor"},

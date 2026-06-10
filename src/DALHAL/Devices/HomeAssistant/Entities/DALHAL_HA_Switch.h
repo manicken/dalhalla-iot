@@ -62,6 +62,8 @@ namespace DALHAL {
         HA_Switch(HA_CreateFunctionContext& context);
         ~HA_Switch() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 

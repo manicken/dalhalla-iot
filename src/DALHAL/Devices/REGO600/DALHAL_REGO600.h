@@ -69,6 +69,8 @@ namespace DALHAL {
         REGO600(DeviceCreateContext& context);
         ~REGO600() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void begin() override;
         void loop() override;
         

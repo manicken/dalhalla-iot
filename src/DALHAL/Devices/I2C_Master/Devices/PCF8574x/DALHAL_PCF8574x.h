@@ -61,6 +61,8 @@ namespace DALHAL {
         PCF8574x(I2C_Master_CreateFunctionContext& context);
         ~PCF8574x() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 

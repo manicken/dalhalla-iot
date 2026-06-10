@@ -60,6 +60,8 @@ namespace DALHAL {
         HA_Button(HA_CreateFunctionContext& context);
         ~HA_Button() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult exec(const ZeroCopyString& cmd) override;
         HALOperationResult exec() override;
 

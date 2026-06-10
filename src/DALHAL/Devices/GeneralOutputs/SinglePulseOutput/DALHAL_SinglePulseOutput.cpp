@@ -37,7 +37,11 @@ namespace DALHAL {
         &JsonSchema::SinglePulseOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
     };
-    //volatile const void* keep_SinglePulseOutput = &DALHAL::SinglePulseOutput::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* SinglePulseOutput::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     Device* SinglePulseOutput::Create(DeviceCreateContext& context) {
         return new SinglePulseOutput(context);

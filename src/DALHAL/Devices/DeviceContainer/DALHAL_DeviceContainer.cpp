@@ -34,7 +34,11 @@ namespace DALHAL {
         Create,
         &JsonSchema::DeviceContainer::Root
     };
-    //volatile const void* keep_DeviceContainer = &DALHAL::DeviceContainer::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* DeviceContainer::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     DeviceContainer::~DeviceContainer() {
         if (devices) {

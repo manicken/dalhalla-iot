@@ -71,6 +71,8 @@ namespace DALHAL {
         HA_Sensor(HA_CreateFunctionContext& context);
         ~HA_Sensor() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void begin() override;
         void loop() override;
 

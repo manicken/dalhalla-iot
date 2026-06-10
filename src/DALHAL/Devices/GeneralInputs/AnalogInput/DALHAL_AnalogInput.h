@@ -55,6 +55,8 @@ namespace DALHAL {
     public:
         AnalogInput(DeviceCreateContext& context);
         ~AnalogInput() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         void loop() override;
         HALOperationResult read(HALValue &val) override;

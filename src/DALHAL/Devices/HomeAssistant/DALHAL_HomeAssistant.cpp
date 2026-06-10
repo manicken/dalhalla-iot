@@ -55,7 +55,11 @@ namespace DALHAL {
         &JsonSchema::HomeAssistant::Root,
         /*nullptr*/ /* no events available */
     };
-    //volatile const void* keep_HomeAssistant = &DALHAL::HomeAssistant::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* HomeAssistant::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     Device* HomeAssistant::Create(DeviceCreateContext& context) {
         return new HomeAssistant(context);

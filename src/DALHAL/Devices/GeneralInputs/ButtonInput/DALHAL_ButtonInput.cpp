@@ -42,7 +42,11 @@ namespace DALHAL {
         &JsonSchema::ButtonInput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
     };
-    //volatile const void* keep_ButtonInput = &DALHAL::ButtonInput::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* ButtonInput::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     // Factory method
     Device* ButtonInput::Create(DeviceCreateContext& context) {

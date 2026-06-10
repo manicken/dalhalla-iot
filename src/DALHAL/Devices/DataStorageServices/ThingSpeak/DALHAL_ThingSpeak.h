@@ -93,6 +93,8 @@ namespace DALHAL {
     public:
         ThingSpeak(DeviceCreateContext& context);
         ~ThingSpeak() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         HALOperationResult exec() override;
         HALOperationResult read(const HALReadStringRequestValue& val) override;

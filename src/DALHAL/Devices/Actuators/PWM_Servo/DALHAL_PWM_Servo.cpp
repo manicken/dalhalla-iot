@@ -43,7 +43,11 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(PWM_SERVO),
         &PWM_Servo::FunctionTable
     };
-    //volatile const void* keep_PWM_Servo = &DALHAL::PWM_Servo::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* PWM_Servo::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> PWM_Servo::writeValueFunctions[] = {
         {"ratio", &writeAsRatio, "set value explicit as ratio", FunctionValueType::_Number_},

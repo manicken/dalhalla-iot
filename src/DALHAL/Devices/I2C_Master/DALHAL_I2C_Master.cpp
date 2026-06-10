@@ -43,7 +43,11 @@ namespace DALHAL {
         &JsonSchema::I2C_Master::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_MASTER)
     };
-    //volatile const void* keep_I2C_Master = &DALHAL::I2C_Master::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* I2C_Master::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> I2C_Master::readStringFunctions[] = {
         {"raw", &read_raw, "read raw data"},

@@ -37,7 +37,11 @@ namespace DALHAL {
         &JsonSchema::ScriptVariable::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
     };
-    //volatile const void* keep_ScriptVariable = &DALHAL::ScriptVariable::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* ScriptVariable::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariable::Extractors::Apply(context, this);

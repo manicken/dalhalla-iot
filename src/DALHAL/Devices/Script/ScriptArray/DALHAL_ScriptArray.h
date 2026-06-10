@@ -73,6 +73,8 @@ namespace DALHAL {
         ScriptArray(DeviceCreateContext& context);
         ~ScriptArray() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void begin() override;
 
         HALOperationResult read(const HALReadStringRequestValue& val) override;

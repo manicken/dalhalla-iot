@@ -43,7 +43,11 @@ namespace DALHAL {
         Create,
         &JsonSchema::HA_DeviceContainer::Root,
     };
-    //volatile const void* keep_HA_DeviceContainer = &DALHAL::HA_DeviceContainer::RegistryDefine;
+
+    /* override */
+    const Registry::DefineBase* HA_DeviceContainer::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     Device* HA_DeviceContainer::Create(DeviceCreateContext& context) {
         return new HA_DeviceContainer(static_cast<HA_CreateFunctionContext&>(context));

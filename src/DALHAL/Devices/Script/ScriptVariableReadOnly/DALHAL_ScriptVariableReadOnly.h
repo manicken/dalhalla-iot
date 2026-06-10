@@ -51,6 +51,8 @@ namespace DALHAL {
         ScriptVariableReadOnly(DeviceCreateContext& context);
         ~ScriptVariableReadOnly() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue& val) override;
 
         

@@ -75,7 +75,7 @@ namespace DALHAL {
 
         HAL_UID uid;
 
-        virtual const Registry::DefineBase* GetRegistryDefine();
+        virtual const Registry::DefineBase* GetRegistryDefine() = 0;
         
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);

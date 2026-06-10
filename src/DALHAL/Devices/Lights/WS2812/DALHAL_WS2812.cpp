@@ -39,7 +39,11 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(WS2812),
         &WS2812::FunctionTable
     };
-    //volatile const void* keep_WS2812 = &DALHAL::WS2812::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* WS2812::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> WS2812::execFunctions[] = {

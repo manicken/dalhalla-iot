@@ -89,7 +89,8 @@ namespace DALHAL {
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
                     createContext.jsonObjItem = &item;
-                    out->devices[index++] = new DALHAL::OneWireTempDevice(createContext);
+                    out->devices[index++] = DALHAL::OneWireTempDevice::RegistryDefine.Create_Function(createContext);
+                    //out->devices[index++] = new DALHAL::OneWireTempDevice(createContext);
                 }
             }
 

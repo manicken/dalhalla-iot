@@ -50,6 +50,8 @@ namespace DALHAL {
         DeviceContainer(DeviceCreateContext& context);
         ~DeviceContainer() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         /** called regulary from the main loop */
         void loop() override;
         /** called when all hal devices has been loaded */

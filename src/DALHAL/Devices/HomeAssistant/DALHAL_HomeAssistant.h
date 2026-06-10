@@ -82,6 +82,8 @@ namespace DALHAL {
     public:
         HomeAssistant(DeviceCreateContext& context);
         ~HomeAssistant() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         void begin() override;
         void loop() override;

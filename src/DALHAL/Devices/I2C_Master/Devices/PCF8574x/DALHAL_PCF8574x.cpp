@@ -41,7 +41,11 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(I2C_DEVICE_PCF8574X),
         HasAddress
     };
-    //volatile const void* keep_PCF8574x = &DALHAL::PCF8574x::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* PCF8574x::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     bool PCF8574x::HasAddress(uint8_t addr) {
         return (addr >= 0x20 && addr <= 0x27) || // PCF8574

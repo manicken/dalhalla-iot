@@ -50,7 +50,11 @@ namespace DALHAL {
         Create,
         &JsonSchema::HA_BinarySensor::Root,
     };
-    //volatile const void* keep_HA_BinarySensor = &DALHAL::HA_BinarySensor::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* HA_BinarySensor::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx); // adds , before

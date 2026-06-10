@@ -28,6 +28,11 @@
 #include "DALHAL_Display_SSD1306_Element_JSON_Schema.h"
 
 namespace DALHAL {
+
+    /* override */
+    const Registry::DefineBase* Display_SSD1306_Element::GetRegistryDefine() {
+        return nullptr;
+    }
     
     Display_SSD1306_Element::Display_SSD1306_Element(DeviceCreateContext& context) : Device(context.deviceType) {
         JsonSchema::Display_SSD1306_Element::Extractors::Apply(context, this);

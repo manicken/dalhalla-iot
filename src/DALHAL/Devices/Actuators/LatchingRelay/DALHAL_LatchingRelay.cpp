@@ -36,9 +36,8 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(RELAY_LATCHING),
         &LatchingRelay::FunctionTable
     };
-    //volatile const void* keep_LatchingRelay = &DALHAL::LatchingRelay::RegistryDefine;
 
-    /*virtual override*/
+    /* override */
     const Registry::DefineBase* LatchingRelay::GetRegistryDefine() {
         return &RegistryDefine;
     }

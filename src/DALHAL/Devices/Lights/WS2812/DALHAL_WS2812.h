@@ -80,6 +80,8 @@ namespace DALHAL {
         WS2812(DeviceCreateContext& context);
         ~WS2812() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void loop() override;
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;

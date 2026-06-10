@@ -37,7 +37,11 @@ namespace DALHAL {
         &JsonSchema::ScriptEventDispatcher::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
     };
-    //volatile const void* keep_ScriptEventDispatcher = &DALHAL::ScriptEventDispatcher::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* ScriptEventDispatcher::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
         JsonSchema::ScriptEventDispatcher::Extractors::Apply(context, this);

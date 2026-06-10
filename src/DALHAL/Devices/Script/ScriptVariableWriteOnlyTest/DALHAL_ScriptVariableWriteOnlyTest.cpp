@@ -37,7 +37,11 @@ namespace DALHAL {
         &JsonSchema::ScriptVariableWriteOnlyTest::Root,
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR)
     };
-    //volatile const void* keep_ScriptVariableWriteOnlyTest = &DALHAL::ScriptVariableWriteOnlyTest::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* ScriptVariableWriteOnlyTest::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(DeviceCreateContext& context) : ScriptVariableWriteOnlyTest_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariableWriteOnlyTest::Extractors::Apply(context, this);

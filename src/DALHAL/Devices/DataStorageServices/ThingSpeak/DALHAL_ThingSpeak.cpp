@@ -46,8 +46,11 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(THINGSPEAK),
         &ThingSpeak::FunctionTable
     };
-    //volatile const void* keep_ThingSpeak = &DALHAL::ThingSpeak::RegistryDefine;
 
+    /* override */
+    const Registry::DefineBase* ThingSpeak::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> ThingSpeak::readStringFunctions[] = {
         {"getLastUrlApi", &getLastUrlApi, "get the last url api string"},

@@ -72,7 +72,8 @@ namespace DALHAL {
         friend struct JsonSchema::OneWireTempDevice::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
-        //static bool VerifyJSON(const JsonVariant &jsonObj);
+        static const Registry::DefineBase RegistryDefine;
+        static Device* Create(DeviceCreateContext& context);
     
     private:
         bool dataValid = false;
@@ -86,6 +87,8 @@ namespace DALHAL {
         using Device::read; // make compiler warnings go away
         OneWireTempDevice(DeviceCreateContext& context);
         ~OneWireTempDevice() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         HALOperationResult read(HALValue& val) override;
 
@@ -103,7 +106,8 @@ namespace DALHAL {
 
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
-        //static bool VerifyJSON(const JsonVariant &jsonObj);
+
+    private:
         static Device* Create(DeviceCreateContext& context);
 
     private:
@@ -118,6 +122,8 @@ namespace DALHAL {
     public:
         OneWireTempDeviceAtRoot(DeviceCreateContext& context);
         ~OneWireTempDeviceAtRoot() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         HALOperationResult write(const HALValue& val) override;

@@ -42,7 +42,11 @@ namespace DALHAL {
         Create,
         &JsonSchema::HA_Button::Root,
     };
-    //volatile const void* keep_HA_Button = &DALHAL::HA_Button::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* HA_Button::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
 
     void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendCommandTopicCfg(mqtt, ctx); // adds , before

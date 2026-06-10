@@ -32,6 +32,11 @@
 #include "DALHAL_REGO600_Register_JSON_Schema.h"
 
 namespace DALHAL {
+
+    /* override */
+    const Registry::DefineBase* REGO600_Register::GetRegistryDefine() {
+        return nullptr;
+    }
     
     REGO600_Register::REGO600_Register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
         JsonSchema::REGO600_Register::Extractors::Apply(context, this);

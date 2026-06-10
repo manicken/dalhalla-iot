@@ -77,6 +77,8 @@ namespace DALHAL {
         I2C_Master(DeviceCreateContext& context);
         ~I2C_Master() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         void loop() override;
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;

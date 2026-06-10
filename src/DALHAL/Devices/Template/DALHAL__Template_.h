@@ -75,6 +75,8 @@ namespace DALHAL {
         _Template_(DeviceCreateContext& context);
         ~_Template_() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         /** called when all hal devices has been loaded */
         void begin() override;
         /** called regulary from the main loop */

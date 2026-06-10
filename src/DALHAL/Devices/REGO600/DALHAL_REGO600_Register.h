@@ -61,6 +61,8 @@ namespace DALHAL {
         REGO600_Register(DeviceCreateContext& context);
         ~REGO600_Register() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue& val) override;
         
         

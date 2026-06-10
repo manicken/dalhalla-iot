@@ -38,7 +38,11 @@ namespace DALHAL {
         &JsonSchema::DigitalOutput::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
     };
-    //volatile const void* keep_DigitalOutput = &DALHAL::DigitalOutput::RegistryDefine;
+    
+    /* override */
+    const Registry::DefineBase* DigitalOutput::GetRegistryDefine() {
+        return &RegistryDefine;
+    }
     
     Device* DigitalOutput::Create(DeviceCreateContext& context) {
         return new DigitalOutput(context);

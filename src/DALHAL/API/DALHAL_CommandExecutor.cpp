@@ -631,7 +631,7 @@ namespace DALHAL {
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
 
-            if (params.zcParameters.Length() == 0) {
+            if (params.zcCmd.Length() == 0) {
                 HALValue halValue;
 
                 readResult = outDevice->read(halValue);

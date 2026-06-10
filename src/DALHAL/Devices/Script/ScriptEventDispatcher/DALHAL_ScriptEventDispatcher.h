@@ -58,6 +58,8 @@ namespace DALHAL {
         ScriptEventDispatcher(DeviceCreateContext& context);
         ~ScriptEventDispatcher() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult exec() override;
         
         Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;

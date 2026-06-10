@@ -58,6 +58,8 @@ namespace DALHAL {
         DigitalOutput(DeviceCreateContext& context);
         ~DigitalOutput() override;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue &val) override;
         HALOperationResult write(const HALValue &val) override;
 

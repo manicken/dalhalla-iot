@@ -56,6 +56,8 @@ namespace DALHAL {
         DigitalInput(DeviceCreateContext& context);
         ~DigitalInput() override = default;
 
+        const Registry::DefineBase* GetRegistryDefine() override;
+
         HALOperationResult read(HALValue &val) override;
         
         

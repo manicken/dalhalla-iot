@@ -38,7 +38,6 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(ACTUATOR),
         &Actuator::FunctionTable
     };
-    //volatile const void* keep_Actuator = &DALHAL::Actuator::RegistryDefine;
 
     /*virtual override*/
     const Registry::DefineBase* Actuator::GetRegistryDefine() {

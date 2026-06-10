@@ -72,6 +72,8 @@ namespace DALHAL {
     public:
         HA_BinarySensor(HA_CreateFunctionContext& context);
         ~HA_BinarySensor() override;
+
+        const Registry::DefineBase* GetRegistryDefine() override;
         
         void begin() override;
         void loop() override;
