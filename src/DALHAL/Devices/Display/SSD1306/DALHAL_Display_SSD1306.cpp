@@ -45,26 +45,26 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
-    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> Display_SSD1306::writeStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteString> Display_SSD1306::writeStringFunctions[] = {
         {"setCursor", &setCursor, "sets the cursor"},
         {"addText", &addText, "add text to the buffer data"},
         {"printText", &printText, "add text and display the buffer data"}
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Display_SSD1306::execFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::Exec> Display_SSD1306::execFunctions[] = {
         {"update", &display_update, "display the data in the buffer"},
         {"clear", &display_clear, "clear the display"}
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable Display_SSD1306::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
         {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
     };
 
@@ -149,7 +149,7 @@ namespace DALHAL {
     }
 
     HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {
-        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

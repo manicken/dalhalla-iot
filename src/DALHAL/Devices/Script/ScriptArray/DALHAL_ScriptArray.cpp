@@ -53,30 +53,30 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> ScriptArray::bracketOpReadFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::BracketOpRead> ScriptArray::bracketOpReadFunctions[] = {
         {"", &ScriptArray::BracketRead_Func, "default"}
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> ScriptArray::bracketOpWriteFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::BracketOpWrite> ScriptArray::bracketOpWriteFunctions[] = {
         {"", &ScriptArray::BracketWrite_Func, "default"}
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> ScriptArray::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> ScriptArray::readStringFunctions[] = {
         {"valuelist", &ScriptArray::readString_valuelist_Function, "get the whole list of values"},
         {"", &ScriptArray::readString__default__Function, "get a item given by the first parameter as the index"}
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable ScriptArray::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
         {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])},
         {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
@@ -99,7 +99,7 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }
@@ -171,14 +171,5 @@ namespace DALHAL {
     HALOperationResult ScriptArray::BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val) {
         return static_cast<ScriptArray*>(device)->write(bracketSubscriptVal, val);
     }
-    
-    Device::BracketOpRead_FuncType ScriptArray::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) {
-        return GetDeviceFunction<DeviceFunctionTable::BracketOpRead_FuncType>(FunctionTable.bracketOpRead, zcFuncName);
-    }
-
-    Device::BracketOpWrite_FuncType ScriptArray::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) {
-        return GetDeviceFunction<DeviceFunctionTable::BracketOpWrite_FuncType>(FunctionTable.bracketOpWrite, zcFuncName);
-    }
-
 
 }

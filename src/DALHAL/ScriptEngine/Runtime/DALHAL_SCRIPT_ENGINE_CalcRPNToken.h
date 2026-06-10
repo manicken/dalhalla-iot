@@ -39,7 +39,7 @@ namespace DALHAL {
         struct ReadToHALValue_Function_Context
         {
             Device* device;
-            Device::ReadToHALValue_FuncType handler;
+            FunctionTypes::ReadToHALValue handler;
         };
         
         using RPNHandler = HALOperationResult(*)(void*);

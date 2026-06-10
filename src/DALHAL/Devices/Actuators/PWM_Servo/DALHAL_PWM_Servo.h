@@ -62,7 +62,7 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
 
     private:
         // private structures/enums/types

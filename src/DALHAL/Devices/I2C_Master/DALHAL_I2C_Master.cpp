@@ -49,23 +49,23 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> I2C_Master::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> I2C_Master::readStringFunctions[] = {
         {"raw", &read_raw, "read raw data"},
         {"list", &list_devices, "list all devices found by using adress scan"},
     };
 
-    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> I2C_Master::writeStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteString> I2C_Master::writeStringFunctions[] = {
         {"raw", &write_raw, "write raw data"},
         {"speed", &set_speed, "set i2c speed"},
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable I2C_Master::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
         {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
     };
@@ -130,14 +130,14 @@ namespace DALHAL {
 
     HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
         
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }
 
     HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
         
-        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

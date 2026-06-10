@@ -71,7 +71,7 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
 
         static HALOperationResult getLastUrlApi(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
         static HALOperationResult simulateSend(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);

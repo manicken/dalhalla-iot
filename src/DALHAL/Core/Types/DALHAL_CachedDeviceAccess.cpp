@@ -85,16 +85,12 @@ namespace DALHAL {
         //    printf("create cached device access: %s#%s\n", uidPath.ToString().c_str(), zcStrFuncName.ToString().c_str());
         //else
         //    printf("create cached device access: %s\n", uidPath.ToString().c_str());
-        readToHalValueFunc = device->GetReadToHALValue_Function(zcStrFuncName);
-        // the following commented out is the new way, to be implemented when all devices use the new way
-        // and when i can remove all Get....._Function 
-        //const DALHAL::Registry::DefineBase* devdef = device->GetRegistryDefine();
-        //DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(devdef->functionTable->readValue, zcStrFuncName);
-        //writeFromHalValueFunc = fn;
-        writeFromHalValueFunc = device->GetWriteFromHALValue_Function(zcStrFuncName); // old way
-        execFunc = device->GetExec_Function(zcStrFuncName);
-        bracketReadFunc = device->GetBracketOpRead_Function(zcStrFuncName);
-        bracketWriteFunc = device->GetBracketOpWrite_Function(zcStrFuncName);
+        
+        readToHalValueFunc = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, zcStrFuncName);
+        writeFromHalValueFunc = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, zcStrFuncName);
+        execFunc = GetDeviceFunction<FunctionTypes::Exec>(device, zcStrFuncName);
+        bracketReadFunc = GetDeviceFunction<FunctionTypes::BracketOpRead>(device, zcStrFuncName);
+        bracketWriteFunc = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, zcStrFuncName);
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
         return true;

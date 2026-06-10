@@ -46,7 +46,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> _Template_::execFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::Exec> _Template_::execFunctions[] = {
         {"_Template_", &_Template_::exec_Template_Function, "help"}
     };
     HALOperationResult _Template_::exec_Template_Function(Device* device) {
@@ -58,7 +58,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> _Template_::readValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> _Template_::readValueFunctions[] = {
         {"_Template_", &_Template_::readValue_Template_Function, "help"}
     };
     HALOperationResult _Template_::readValue_Template_Function(Device* device, HALValue& val) {
@@ -70,7 +70,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> _Template_::writeValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> _Template_::writeValueFunctions[] = {
         {"_Template_", &_Template_::writeValue_Template_Function, "help"}
     };
     HALOperationResult _Template_::writeValue_Template_Function(Device* device, const HALValue& val) {
@@ -82,7 +82,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> _Template_::bracketOpReadFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::BracketOpRead> _Template_::bracketOpReadFunctions[] = {
         {"_Template_", &_Template_::bracketOpRead_Template_Function, "help"}
     };
     HALOperationResult _Template_::bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue) {
@@ -94,7 +94,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> _Template_::bracketOpWriteFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::BracketOpWrite> _Template_::bracketOpWriteFunctions[] = {
         {"_Template_", &_Template_::bracketOpWrite_Template_Function, "help"}
     };
     HALOperationResult _Template_::bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
@@ -106,7 +106,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> _Template_::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> _Template_::readStringFunctions[] = {
         {"_Template_", &_Template_::readString_Template_Function, "help"}
     };
     HALOperationResult _Template_::readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
@@ -120,7 +120,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> _Template_::writeStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteString> _Template_::writeStringFunctions[] = {
         {"_Template_", &_Template_::writeString_Template_Function, "help"}
     };
     HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
@@ -148,16 +148,16 @@ namespace DALHAL {
     };
 
     constexpr DeviceFunctionTable _Template_::FunctionTable2 = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
 
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
 
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
-        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
 
@@ -249,12 +249,5 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation;
     }
 
-    Device::ReadToHALValue_FuncType _Template_::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType _Template_::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType _Template_::GetExec_Function(ZeroCopyString& zcFuncName) {return nullptr; } 
-
-    Device::BracketOpRead_FuncType _Template_::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType _Template_::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    
     HALValue* _Template_::GetValueDirectAccessPtr() { return nullptr; }
 }

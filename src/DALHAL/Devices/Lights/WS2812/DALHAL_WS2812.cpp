@@ -46,7 +46,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> WS2812::execFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::Exec> WS2812::execFunctions[] = {
         {"pause", &WS2812::exec_pause_Function, "pause fx operation"},
         {"resume", &WS2812::exec_resume_Function, "resume fx operation"},
         {"stop", &WS2812::exec_stop_Function, "stop fx operation"},
@@ -70,7 +70,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> WS2812::writeValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> WS2812::writeValueFunctions[] = {
         {"brightness", &WS2812::writeBrightness, "sets the brightness"},
         {"color", &WS2812::writeColor, "sets the color for the first pixel"},
         {"mode", &WS2812::writeMode, "sets the mode by index"},
@@ -78,7 +78,7 @@ namespace DALHAL {
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> WS2812::writeStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteString> WS2812::writeStringFunctions[] = {
         {"setpixel", &WS2812::writeString_setpixel_Function, "help"}
     };
     HALOperationResult WS2812::writeString_setpixel_Function(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
@@ -113,11 +113,11 @@ namespace DALHAL {
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable WS2812::FunctionTable = {
         {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
         {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
         {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
     };
 
@@ -183,20 +183,16 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    Device::WriteHALValue_FuncType WS2812::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) {
-        return GetDeviceFunction<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, zcFuncName);
-    }
-
     HALOperationResult WS2812::write(const HALWriteValueByCmd& val) {
 
-        DeviceFunctionTable::WriteHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, val.cmd);
+        FunctionTypes::WriteHALValue fn = GetDeviceFunction<FunctionTypes::WriteHALValue>(FunctionTable.writeValue, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.value);
     }
 
     HALOperationResult WS2812::write(const HALWriteStringRequestValue& val) {
 
-        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

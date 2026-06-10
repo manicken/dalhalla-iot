@@ -52,6 +52,7 @@
 
 //#define DALHAL_CommandExecutor_DEBUG_CMD
 
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/API/DALHAL_CommandCallback.h>
 
 namespace DALHAL {
@@ -59,6 +60,18 @@ namespace DALHAL {
     struct PendingRequest {
         std::string command;
         CommandCallback cb;
+    };
+
+    struct CommandNode {
+        const char* name;
+        const char* help;
+
+        HALOperationResult (*execute)(
+            ZeroCopyString& args,
+            CommandCallback cb
+        );
+
+        const CommandNode* children;
     };
 
     class CommandExecutor {

@@ -33,6 +33,8 @@
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SINGLE_PULSE_OUTPUT)
 #include "DALHAL_SinglePulseOutput_Reactive.h"
@@ -51,6 +53,10 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
 
     private:
         static void pulseTicker_Callback(SinglePulseOutput* context);
@@ -72,9 +78,7 @@ namespace DALHAL {
 
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
-        HALOperationResult exec() override;
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-        
+        HALOperationResult exec(const ZeroCopyString& cmd) override;        
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

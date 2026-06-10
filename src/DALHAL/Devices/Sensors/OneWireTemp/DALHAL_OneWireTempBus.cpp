@@ -48,7 +48,7 @@ namespace DALHAL {
 
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> OneWireTempBus::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> OneWireTempBus::readStringFunctions[] = {
         {"getAllNewDevices", &OneWireTempBus::readString_getAllNewDevices_Function, "get all new devices present on the bus according to the current cfg"},
         {"getAllNewDevicesWithTemp", &OneWireTempBus::readString_getAllNewDevicesWithTemp_Function, "get all new devices with current temperature present on the bus according to the current cfg"},
         {"getAllDevices", &OneWireTempBus::readString_getAllDevices_Function, "get all devices (even new) present on the bus"},
@@ -56,16 +56,16 @@ namespace DALHAL {
     };
 
     constexpr DeviceFunctionTable OneWireTempBus::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
 
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
 
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
     __attribute__((used, externally_visible))
@@ -142,7 +142,7 @@ namespace DALHAL {
     }
 
     HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(OneWireTempBusAtRoot::FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(OneWireTempBusAtRoot::FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

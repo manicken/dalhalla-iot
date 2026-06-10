@@ -49,7 +49,7 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
-    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> PWM_Servo::writeValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> PWM_Servo::writeValueFunctions[] = {
         {"ratio", &writeAsRatio, "set value explicit as ratio", FunctionValueType::_Number_},
         {"pulse", &writeAsPulseLength, "set value explicit as pulse", FunctionValueType::_UInt_},
         {"", &writeByInternalMode, "general write using the preselected mode", FunctionValueType::_Number_}
@@ -57,13 +57,13 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable PWM_Servo::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
         {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
     Device* PWM_Servo::Create(DeviceCreateContext& context) {
@@ -245,7 +245,7 @@ namespace DALHAL {
             return HALOperationResult::InvalidArgument;
         }
 
-        auto entry = GetDeviceFunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, val.cmd);
+        auto entry = GetDeviceFunctionEntry<FunctionTypes::WriteHALValue>(FunctionTable.writeValue, val.cmd);
         if (entry == nullptr) { return HALOperationResult::UnsupportedCommand; }
 
         if (FunctionValueType::HasFlag(entry->rwTypeMask, FunctionValueType::_UInt_)) {

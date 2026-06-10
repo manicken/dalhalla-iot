@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_EVENT_DISPATCHER)
 #include "DALHAL_ScriptEventDispatcher_Reactive.h"
@@ -52,6 +54,10 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+
+    private:
         static HALOperationResult static_exec(Device* dev);
         
     public:
@@ -60,10 +66,7 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult exec() override;
-        
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-
+        HALOperationResult exec(const ZeroCopyString& cmd) override;
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

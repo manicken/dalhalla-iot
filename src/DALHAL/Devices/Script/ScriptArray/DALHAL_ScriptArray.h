@@ -54,9 +54,9 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> bracketOpReadFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> bracketOpWriteFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpRead> bracketOpReadFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpWrite> bracketOpWriteFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
 
         static HALOperationResult readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
@@ -81,11 +81,7 @@ namespace DALHAL {
 
         HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
         HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
-
-        BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
-        BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-
-        
+       
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

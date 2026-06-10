@@ -39,6 +39,8 @@
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTypes.h> // TODO remove when all getter functions are removed from all devices
+
 namespace DALHAL {
 
     // forward declaration
@@ -64,11 +66,6 @@ namespace DALHAL {
         
     public:
         const char* const Type;
-        using Exec_FuncType = HALOperationResult (*)(Device*);
-        using ReadToHALValue_FuncType = HALOperationResult (*)(Device* device, HALValue& outValue);
-        using WriteHALValue_FuncType = HALOperationResult (*)(Device* device, const HALValue& value);
-        using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
-        using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
 
         Device(const char* const type);
         virtual ~Device();
@@ -82,15 +79,17 @@ namespace DALHAL {
         virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
         virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
         /* TODO START: remove following functions in favor of function table */
+        /* they are only used by the CLI API so it should be easy */
+        /* yes they cannot be used by the script engine or any other runtime stuff as
+         * strings should not be stored and/or parsed at runtime unless there is no other option
+         * actually the use lockup internally so moving that into CLI API would save some flash
+         * and also make the code cleaner as there is not much to reason about
+         */
         virtual HALOperationResult read(const HALReadStringRequestValue& val);
         virtual HALOperationResult write(const HALWriteStringRequestValue& val);
         virtual HALOperationResult read(const HALReadValueByCmd& val);
         virtual HALOperationResult write(const HALWriteValueByCmd& val);
-        virtual ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName);
-        virtual WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName);
-        virtual Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName);
-        virtual BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName);
-        virtual BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName);
+   
         /** 
          * Executes a device action with a provided command string, 
          * only used when doing remote cmd:s, i.e. not used by script.

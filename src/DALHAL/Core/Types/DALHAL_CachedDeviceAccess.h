@@ -47,12 +47,12 @@ namespace DALHAL {
          * allows direct access to functions by name, 
          * or actually sub values defined by using # in uidPath#subItem
          */
-        Device::ReadToHALValue_FuncType readToHalValueFunc;
-        Device::WriteHALValue_FuncType writeFromHalValueFunc;
-        Device::Exec_FuncType execFunc;
+        FunctionTypes::ReadToHALValue readToHalValueFunc;
+        FunctionTypes::WriteHALValue writeFromHalValueFunc;
+        FunctionTypes::Exec execFunc;
         
-        Device::BracketOpRead_FuncType bracketReadFunc;
-        Device::BracketOpWrite_FuncType bracketWriteFunc;
+        FunctionTypes::BracketOpRead bracketReadFunc;
+        FunctionTypes::BracketOpWrite bracketWriteFunc;
         CachedDeviceAccess* bracketAccessSubscriptOperand;
         
     public:

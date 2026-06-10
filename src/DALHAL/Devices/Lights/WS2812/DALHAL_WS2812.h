@@ -56,9 +56,9 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
 
         static HALOperationResult exec_pause_Function(Device* device);
         static HALOperationResult exec_resume_Function(Device* device);
@@ -86,8 +86,6 @@ namespace DALHAL {
 
         HALOperationResult write(const HALWriteValueByCmd& val) override;
         HALOperationResult write(const HALWriteStringRequestValue& val) override;
-        Device::WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

@@ -42,6 +42,24 @@ namespace DALHAL {
     const Registry::DefineBase* ScriptEventDispatcher::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::Exec> ScriptEventDispatcher::execFunctions[] = {
+        {"", &ScriptEventDispatcher::static_exec, "execute event"}
+    };
+
+    constexpr DeviceFunctionTable ScriptEventDispatcher::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     ScriptEventDispatcher::ScriptEventDispatcher(DeviceCreateContext& context) : ScriptEventDispatcher_DeviceBase(context.deviceType) {
         JsonSchema::ScriptEventDispatcher::Extractors::Apply(context, this);
@@ -51,7 +69,7 @@ namespace DALHAL {
         return new ScriptEventDispatcher(context);
     }
 
-    HALOperationResult ScriptEventDispatcher::exec() {
+    HALOperationResult ScriptEventDispatcher::exec(const ZeroCopyString& cmd) {
 #if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
         triggerExec();
 #endif
@@ -64,11 +82,6 @@ namespace DALHAL {
 #endif
         return HALOperationResult::Success;
     }
-
-    Device::Exec_FuncType ScriptEventDispatcher::GetExec_Function(ZeroCopyString& zcFuncName) {
-        return ScriptEventDispatcher::static_exec;
-    }
-
 
     void ScriptEventDispatcher::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);

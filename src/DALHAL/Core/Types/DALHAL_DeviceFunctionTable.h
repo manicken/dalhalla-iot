@@ -25,6 +25,9 @@
 
 #include <stddef.h>
 #include <string>
+#include <DALHAL/Core/Types/DALHAL_Device.h> // can include complete definition
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTypes.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
@@ -33,7 +36,6 @@
 namespace DALHAL {
 
     // forward declarations
-    class Device; 
     class HALValue;
     enum class HALOperationResult;
     struct HALReadStringRequestValue;
@@ -93,6 +95,8 @@ namespace DALHAL {
         0
     };
 
+    
+
     template<typename Fn>
     static Fn GetDeviceFunction(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
         for (size_t i = 0; i<funcTable.count; ++i) {
@@ -134,30 +138,24 @@ namespace DALHAL {
 
     struct DeviceFunctionTable {
 
-        using Exec_FuncType = HALOperationResult (*)(Device*);
-        using ReadToHALValue_FuncType = HALOperationResult (*)(Device* device, HALValue& outValue);
-        using WriteHALValue_FuncType = HALOperationResult (*)(Device* device, const HALValue& value);
-        using BracketOpRead_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
-        using BracketOpWrite_FuncType = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
-        using ReadString_FuncType = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
-        using WriteString_FuncType = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        
 
-        const FunctionTable_t<Exec_FuncType> exec;
-        const FunctionTable_t<ReadToHALValue_FuncType> readValue;
-        const FunctionTable_t<WriteHALValue_FuncType> writeValue;
-        const FunctionTable_t<BracketOpRead_FuncType> bracketOpRead;
-        const FunctionTable_t<BracketOpWrite_FuncType> bracketOpWrite;
-        const FunctionTable_t<ReadString_FuncType> readString;
-        const FunctionTable_t<WriteString_FuncType> writeString;
+        const FunctionTable_t<FunctionTypes::Exec> exec;
+        const FunctionTable_t<FunctionTypes::ReadToHALValue> readValue;
+        const FunctionTable_t<FunctionTypes::WriteHALValue> writeValue;
+        const FunctionTable_t<FunctionTypes::BracketOpRead> bracketOpRead;
+        const FunctionTable_t<FunctionTypes::BracketOpWrite> bracketOpWrite;
+        const FunctionTable_t<FunctionTypes::ReadString> readString;
+        const FunctionTable_t<FunctionTypes::WriteString> writeString;
 
         constexpr DeviceFunctionTable(
-            const FunctionTable_t<Exec_FuncType> exec,
-            const FunctionTable_t<ReadToHALValue_FuncType> readValue,
-            const FunctionTable_t<WriteHALValue_FuncType> writeValue,
-            const FunctionTable_t<BracketOpRead_FuncType> bracketOpRead,
-            const FunctionTable_t<BracketOpWrite_FuncType> bracketOpWrite,
-            const FunctionTable_t<ReadString_FuncType> readString,
-            const FunctionTable_t<WriteString_FuncType> writeString
+            const FunctionTable_t<FunctionTypes::Exec> exec,
+            const FunctionTable_t<FunctionTypes::ReadToHALValue> readValue,
+            const FunctionTable_t<FunctionTypes::WriteHALValue> writeValue,
+            const FunctionTable_t<FunctionTypes::BracketOpRead> bracketOpRead,
+            const FunctionTable_t<FunctionTypes::BracketOpWrite> bracketOpWrite,
+            const FunctionTable_t<FunctionTypes::ReadString> readString,
+            const FunctionTable_t<FunctionTypes::WriteString> writeString
         ) : 
             exec(exec), 
             readValue(readValue), 
@@ -171,4 +169,46 @@ namespace DALHAL {
         void PrintTo(DALHAL::StringBuilderStreamer& sbs) const;
 
     };
+
+    template<typename Fn>
+    static const FunctionTable_t<Fn>* GetTable(const DeviceFunctionTable* t)
+    {
+        // the following check seems a little overkill 
+        // as this function will never be used outside of GetDeviceFunction context anyway
+        //if (t == nullptr) {
+        //    return nullptr;
+        //}
+
+        if constexpr (std::is_same_v<Fn, FunctionTypes::Exec>) {
+            return &t->exec;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::ReadToHALValue>) {
+            return &t->readValue;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::WriteHALValue>) {
+            return &t->writeValue;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::BracketOpRead>) {
+            return &t->bracketOpRead;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::BracketOpWrite>) {
+            return &t->bracketOpWrite;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::ReadString>) {
+            return &t->readString;
+        } else if constexpr (std::is_same_v<Fn, FunctionTypes::WriteString>) {
+            return &t->writeString;
+        }
+
+        return nullptr;
+    }
+
+    template<typename Fn>
+    static Fn GetDeviceFunction(Device* device, const ZeroCopyString& zcFuncName) {
+        if (device == nullptr) return nullptr; // absolute failsafe
+        const Registry::DefineBase* regDef = device->GetRegistryDefine();
+        if (regDef == nullptr) return nullptr;
+        const DeviceFunctionTable* devFuncTable = regDef->functionTable;
+        if (devFuncTable == nullptr) return nullptr;
+
+        const FunctionTable_t<Fn>* table = GetTable<Fn>(devFuncTable);
+        if (!table) return nullptr;
+
+        return GetDeviceFunction(*table, zcFuncName);  // delegate to the existing overload
+    }
 }

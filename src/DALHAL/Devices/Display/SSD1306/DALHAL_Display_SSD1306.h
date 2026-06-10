@@ -60,8 +60,8 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
 
         static HALOperationResult display_update(Device* device);
         static HALOperationResult display_clear(Device* device);

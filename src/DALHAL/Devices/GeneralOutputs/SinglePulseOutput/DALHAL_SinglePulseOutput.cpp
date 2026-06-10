@@ -35,13 +35,32 @@ namespace DALHAL {
     constexpr Registry::DefineBase SinglePulseOutput::RegistryDefine = {
         Create,
         &JsonSchema::SinglePulseOutput::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT)
+        DALHAL_REACTIVE_EVENT_TABLE(SINGLE_PULSE_OUTPUT),
+        &SinglePulseOutput::FunctionTable
     };
-    
+
     /* override */
     const Registry::DefineBase* SinglePulseOutput::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::Exec> SinglePulseOutput::execFunctions[] = {
+        {"", &SinglePulseOutput::static_exec, "execute a pulse"}
+    };
+
+    constexpr DeviceFunctionTable SinglePulseOutput::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     Device* SinglePulseOutput::Create(DeviceCreateContext& context) {
         return new SinglePulseOutput(context);
@@ -89,25 +108,24 @@ namespace DALHAL {
 #endif
             pulseLength = t;
         }
+        ZeroCopyString zcDummy;
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, WRITE)
-        HALOperationResult res = exec();
+        HALOperationResult res = exec(zcDummy);
         if (res == HALOperationResult::Success) {
             triggerWrite();
         }
         return res;
 #else
-        return exec();
+        return exec(zcDummy);
 #endif
     }
-    Device::Exec_FuncType SinglePulseOutput::GetExec_Function(ZeroCopyString& zcFuncName) {
-        return SinglePulseOutput::static_exec;
-    } 
 
     HALOperationResult SinglePulseOutput::static_exec(Device* device) {
-        return static_cast<SinglePulseOutput*>(device)->exec(); // direct call no vtable
+        ZeroCopyString zcDummy;
+        return static_cast<SinglePulseOutput*>(device)->exec(zcDummy); // direct call no vtable
     }
 
-    HALOperationResult SinglePulseOutput::exec() {
+    HALOperationResult SinglePulseOutput::exec(const ZeroCopyString& cmd) {
         if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
         pulseTicker.detach();
         digitalWrite(pin, activeLevel);

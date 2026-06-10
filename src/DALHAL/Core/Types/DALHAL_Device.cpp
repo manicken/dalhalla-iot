@@ -124,13 +124,6 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation; 
     }
 
-    Device::ReadToHALValue_FuncType Device::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::WriteHALValue_FuncType Device::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::Exec_FuncType Device::GetExec_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-
-    Device::BracketOpRead_FuncType Device::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-    Device::BracketOpWrite_FuncType Device::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) { return nullptr; }
-
     HALOperationResult Device::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** ReactiveEvent) {
         if (ReactiveEvent != nullptr) {
             *ReactiveEvent = nullptr;

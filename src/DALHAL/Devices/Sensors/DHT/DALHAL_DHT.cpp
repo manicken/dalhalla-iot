@@ -49,30 +49,30 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> DHT::readValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> DHT::readValueFunctions[] = {
         {"temp", &DHT::readTemperature, "read the temperature part of DHT"},
         {"humidity", &DHT::readHumidity, "read the humidity part of DHT"},
         {"", &DHT::readHumidity, "read the default 'humidity' part of DHT"},
     };
 
      __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> DHT::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> DHT::readStringFunctions[] = {
         {"temp", &DHT::readString_temperature_Function, "read the temperature part of DHT, returned as json object"},
         {"humidity", &DHT::readString_humidity_Function, "read the humidity part of DHT, returned as json object"},
         {"", &DHT::readString__default__Function, "read both humidity and temperature, returned as json object"},
     };
 
     constexpr DeviceFunctionTable DHT::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
 
         {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
 
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
     DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
@@ -119,20 +119,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    Device::ReadToHALValue_FuncType DHT::GetReadToHALValue_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName.EqualsIC(F("temp"))) {
-            return DHT::readTemperature;
-        } else if (zcFuncName.EqualsIC(F("humidity"))) {
-            return DHT::readHumidity;
-        }
-        else {
-            if (zcFuncName.Length() != 0) {
-                GlobalLogger.Warn(F("DHT::read - cmd not found: "), zcFuncName.ToString().c_str()); // this can then be read by getting the last entry from logger
-            }
-            return nullptr;
-        }
-    }
-
     /* static */
     HALOperationResult DHT::readTemperature(Device* device, HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
@@ -154,13 +140,13 @@ namespace DALHAL {
         if (val.out_value.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
         if (!dataValid) return HALOperationResult::DataNotReady;
 
-        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        FunctionTypes::ReadToHALValue fn = GetDeviceFunction<FunctionTypes::ReadToHALValue>(FunctionTable.readValue, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.out_value);
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { GlobalLogger.Error(F("DHT - unsupported cmd:"), val.cmd); return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

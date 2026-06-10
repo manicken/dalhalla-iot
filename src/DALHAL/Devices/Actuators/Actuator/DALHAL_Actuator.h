@@ -58,9 +58,9 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
 
     private:
         union DrivePins {
@@ -147,7 +147,6 @@ namespace DALHAL {
         HALOperationResult read(const HALReadValueByCmd& val) override;
         HALOperationResult read(const HALReadStringRequestValue& val) override;
 
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
         /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
         HALOperationResult exec(const ZeroCopyString& cmd) override;
 

@@ -52,13 +52,13 @@ namespace DALHAL {
     private:
         static const DeviceFunctionTable FunctionTable;
         static const DeviceFunctionTable FunctionTable2;
-        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> bracketOpReadFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> bracketOpWriteFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpRead> bracketOpReadFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpWrite> bracketOpWriteFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
 
         static HALOperationResult exec_Template_Function(Device* device);
         static HALOperationResult readValue_Template_Function(Device* device, HALValue& val);
@@ -94,12 +94,7 @@ namespace DALHAL {
         HALOperationResult write(const HALWriteValueByCmd& val) override;
 
         HALValue* GetValueDirectAccessPtr() override;
-        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
-        WriteHALValue_FuncType GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) override;
-        Exec_FuncType GetExec_Function(ZeroCopyString& zcFuncName) override;
-        BracketOpRead_FuncType GetBracketOpRead_Function(ZeroCopyString& zcFuncName) override;
-        BracketOpWrite_FuncType GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) override;
-        
+
         /** Executes a device action that requires no parameters. */
         HALOperationResult exec() override ;
         /** Executes a device action with a provided command string. */

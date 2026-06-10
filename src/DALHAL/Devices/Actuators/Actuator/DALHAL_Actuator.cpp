@@ -45,7 +45,7 @@ namespace DALHAL {
     }
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> Actuator::execFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::Exec> Actuator::execFunctions[] = {
         
         {"close", &exec_drive_to_min, "drive to close/min"},
         {"open", &exec_drive_to_max, "drive to open/max"},
@@ -56,12 +56,12 @@ namespace DALHAL {
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> Actuator::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> Actuator::readStringFunctions[] = {
         {"endstops", &getEndstops, "gets the endstops"}
     };
 
     __attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> Actuator::readValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> Actuator::readValueFunctions[] = {
         {"minEndStop", &getMinEndstop, "get min endstop state", FunctionValueType::_Bool_},
         {"maxEndStop", &getMaxEndstop, "get max endstop state", FunctionValueType::_Bool_}
     };
@@ -70,11 +70,11 @@ namespace DALHAL {
     constexpr DeviceFunctionTable Actuator::FunctionTable = {
         {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
         {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>
+        EmptyFunctionTable<FunctionTypes::WriteString>
     };
     
     /*static*/
@@ -373,15 +373,9 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-
-    /*virtual override*/ 
-    Device::Exec_FuncType Actuator::GetExec_Function(ZeroCopyString& zcFuncName) {
-       return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
-    }
-
     /*virtual override*/ 
     HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
+        FunctionTypes::Exec fn = GetDeviceFunction<FunctionTypes::Exec>(FunctionTable.exec, cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this);
     }
@@ -412,14 +406,14 @@ namespace DALHAL {
 
     /*virtual override*/ 
     HALOperationResult Actuator::read(const HALReadValueByCmd& val) {
-        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        FunctionTypes::ReadToHALValue fn = GetDeviceFunction<FunctionTypes::ReadToHALValue>(FunctionTable.readValue, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.out_value);
     }
 
     /*virtual override*/
     HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
 
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);

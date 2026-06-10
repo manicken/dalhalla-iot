@@ -52,20 +52,20 @@ namespace DALHAL {
         return &RegistryDefine;
     }
     
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> ThingSpeak::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> ThingSpeak::readStringFunctions[] = {
         {"getLastUrlApi", &getLastUrlApi, "get the last url api string"},
         {"simulateSend", &simulateSend, "simulate a send by generating the url api post string"}
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable ThingSpeak::FunctionTable = {
-        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>, 
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
     Device* ThingSpeak::Create(DeviceCreateContext& context) {
@@ -179,7 +179,7 @@ namespace DALHAL {
     }
 
     HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

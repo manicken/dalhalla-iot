@@ -58,8 +58,8 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
-        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
  
         static HALOperationResult readString_temperature_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult readString_humidity_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
@@ -84,8 +84,6 @@ namespace DALHAL {
 
         void loop() override; // will need loop for automatic polling as this device is slow
 
-        ReadToHALValue_FuncType GetReadToHALValue_Function(ZeroCopyString& zcFuncName) override;
-        
         HALOperationResult read(HALValue &val) override;
         HALOperationResult read(const HALReadValueByCmd &val) override;
         HALOperationResult read(const HALReadStringRequestValue &val) override;

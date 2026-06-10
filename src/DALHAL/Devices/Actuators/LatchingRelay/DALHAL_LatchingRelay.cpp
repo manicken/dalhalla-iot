@@ -45,7 +45,7 @@ namespace DALHAL {
     const static char help_exec_drive_to_reset[] PROGMEM = "drive relay state to reset";
 
     //__attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> LatchingRelay::execFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::Exec> LatchingRelay::execFunctions[] = {
         {"reset", &exec_drive_to_reset, /*help_exec_drive_to_reset*/ "drive relay state to reset"},
         {"set", &exec_drive_to_set, "drive relay state to set"},
         {"toA", &exec_drive_to_set, "drive relay state to A"},
@@ -55,12 +55,12 @@ namespace DALHAL {
     };
 
     //__attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> LatchingRelay::readStringFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadString> LatchingRelay::readStringFunctions[] = {
         {"states", &getRelayStates, "gets the endstops"}
     };
 
     //__attribute__((used, externally_visible))
-    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> LatchingRelay::readValueFunctions[] = {
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> LatchingRelay::readValueFunctions[] = {
         {"resetActive", &getResetActive, "get if reset state is active", FunctionValueType::_Bool_},
         {"setActive", &getSetActive, "get if set state is active", FunctionValueType::_Bool_}
     };
@@ -69,11 +69,11 @@ namespace DALHAL {
     constexpr DeviceFunctionTable LatchingRelay::FunctionTable = {
         {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
         {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
-        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
-        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>
+        EmptyFunctionTable<FunctionTypes::WriteString>
     };
 
     /*static*/
@@ -372,13 +372,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
-    Device::Exec_FuncType LatchingRelay::GetExec_Function(ZeroCopyString& zcFuncName) {
-        return GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, zcFuncName);
-    }
-
     /*virtual override*/
     HALOperationResult LatchingRelay::exec(const ZeroCopyString& cmd) {
-        Exec_FuncType fn = GetDeviceFunction<Exec_FuncType>(FunctionTable.exec, cmd);
+        FunctionTypes::Exec fn = GetDeviceFunction<FunctionTypes::Exec>(FunctionTable.exec, cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this);
     }
@@ -412,14 +408,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     /*virtual override*/ 
     HALOperationResult LatchingRelay::read(const HALReadValueByCmd& val) /*override*/ {
-        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        FunctionTypes::ReadToHALValue fn = GetDeviceFunction<FunctionTypes::ReadToHALValue>(FunctionTable.readValue, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.out_value);
     }
 
     /*virtual override*/
     HALOperationResult LatchingRelay::read(const HALReadStringRequestValue& val) {
-        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
         return fn(this, val.parameters, val.sbs);
     }

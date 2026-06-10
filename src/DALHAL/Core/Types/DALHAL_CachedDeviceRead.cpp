@@ -28,6 +28,7 @@
 #include <DALHAL/Core/Types/DALHAL_UID_Path.h>
 
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 namespace DALHAL {
 
@@ -37,12 +38,12 @@ namespace DALHAL {
 
     struct FuncContext {
         Device* device;
-        Device::ReadToHALValue_FuncType func;
+        FunctionTypes::ReadToHALValue func;
     };
 
     struct BracketContext {
         Device* device;
-        Device::BracketOpRead_FuncType bracketFunc;
+        FunctionTypes::BracketOpRead bracketFunc;
         CachedDeviceRead* subscriptOperand; // owned
         ~BracketContext() {
             if (subscriptOperand)
@@ -122,7 +123,7 @@ namespace DALHAL {
         }
 
         // Func read
-        Device::ReadToHALValue_FuncType readFunc = outDevice->GetReadToHALValue_Function(funcName);
+        FunctionTypes::ReadToHALValue readFunc = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, funcName);
         if (readFunc == nullptr && funcName.NotEmpty()) {
             // this mean we requested to use a function name 
             // that did not exist thus the default is no op
@@ -168,7 +169,7 @@ namespace DALHAL {
             return false;
         }
 
-        Device::BracketOpRead_FuncType bracketFunc = outDevice->GetBracketOpRead_Function(zcStrUidPathAndFuncName);
+        FunctionTypes::BracketOpRead bracketFunc = GetDeviceFunction<FunctionTypes::BracketOpRead>(outDevice, zcStrUidPathAndFuncName);
         
         if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
             GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);

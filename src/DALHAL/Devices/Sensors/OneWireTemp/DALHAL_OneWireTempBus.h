@@ -60,7 +60,7 @@ namespace DALHAL {
 
     private:
         static Device* Create(DeviceCreateContext& context);
-        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
 
     private:
         uint8_t pin;

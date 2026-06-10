@@ -25,6 +25,8 @@
 #include "DALHAL_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
+#include <DALHAL/Core/Types/DALHAL_Registry.h>
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
@@ -72,7 +74,7 @@ namespace DALHAL {
                 // only a funcname call
                 ReadToHALValue_Function_Context* ctx = new ReadToHALValue_Function_Context();
                 ctx->device = device;
-                ctx->handler = device->GetReadToHALValue_Function(funcName);
+                ctx->handler = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName);
                 // Assign context, handler, and deleter
                 context = ctx;
                 deleter = DeleteAs<ReadToHALValue_Function_Context>;
