@@ -33,6 +33,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(_TEMPLATE_)
 #include "DALHAL__Template__Reactive.h"
@@ -46,6 +48,24 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> bracketOpReadFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> bracketOpWriteFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+
+        static HALOperationResult exec_Template_Function(Device* device);
+        static HALOperationResult readValue_Template_Function(Device* device, HALValue& val);
+        static HALOperationResult writeValue_Template_Function(Device* device, const HALValue& val);
+        static HALOperationResult bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue);
+        static HALOperationResult bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue);
+        static HALOperationResult readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
 
     private:
         uint8_t pin = 0; // if pin would be used

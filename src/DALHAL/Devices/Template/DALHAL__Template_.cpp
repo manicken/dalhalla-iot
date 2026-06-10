@@ -32,14 +32,85 @@
 
 namespace DALHAL {
 
-        __attribute__((used, externally_visible))
-        constexpr Registry::DefineBase _Template_::RegistryDefine = {
-                
-                Create,
-                &JsonSchema::_Template_,
-                DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_)
-        };
-        //volatile const void* keep__Template_ = &DALHAL::_Template_::RegistryDefine;
+    __attribute__((used, externally_visible))
+    constexpr Registry::DefineBase _Template_::RegistryDefine = {
+        Create,
+        &JsonSchema::_Template_,
+        DALHAL_REACTIVE_EVENT_TABLE(_TEMPLATE_),
+        &_Template_::FunctionTable
+    };
+    //volatile const void* keep__Template_ = &DALHAL::_Template_::RegistryDefine;
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> _Template_::execFunctions[] = {
+        {"_Template_", &_Template_::exec_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::exec_Template_Function(Device* device) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> _Template_::readValueFunctions[] = {
+        {"_Template_", &_Template_::readValue_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::readValue_Template_Function(Device* device, HALValue& val) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> _Template_::writeValueFunctions[] = {
+        {"_Template_", &_Template_::writeValue_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::writeValue_Template_Function(Device* device, const HALValue& val) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> _Template_::bracketOpReadFunctions[] = {
+        {"_Template_", &_Template_::bracketOpRead_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> _Template_::bracketOpWriteFunctions[] = {
+        {"_Template_", &_Template_::bracketOpWrite_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> _Template_::readStringFunctions[] = {
+        {"_Template_", &_Template_::readString_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> _Template_::writeStringFunctions[] = {
+        {"_Template_", &_Template_::writeString_Template_Function, "help"}
+    };
+    HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable _Template_::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
+
+        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
+        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])}, 
+
+        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])}, 
+        {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
+
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])}, 
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])}, 
+    };
+        
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {
         //const JsonVariant& jsonObj = *(context.jsonObjItem);
