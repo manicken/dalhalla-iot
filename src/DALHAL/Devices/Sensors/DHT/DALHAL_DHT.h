@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
  /* set to 2 sec to be safe, this also defines the minimum refreshrate possible */
 #define DALHAL_TYPE_DHT_DEFAULT_REFRESHRATE_MS 2000
 
@@ -55,7 +57,15 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
-        static bool isValidDHTModel(const char* model);
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+ 
+        static HALOperationResult readString_temperature_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_humidity_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+
+    private:
         static HALOperationResult readTemperature(Device* context, HALValue &val);
         static HALOperationResult readHumidity(Device* context, HALValue &val);
 

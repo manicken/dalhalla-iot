@@ -44,6 +44,33 @@ namespace DALHAL {
     };
     //volatile const void* keep_DHT = &DALHAL::DHT::RegistryDefine;
 
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> DHT::readValueFunctions[] = {
+        {"temp", &DHT::readTemperature, "read the temperature part of DHT"},
+        {"humidity", &DHT::readHumidity, "read the humidity part of DHT"},
+        {"", &DHT::readHumidity, "read the default 'humidity' part of DHT"},
+    };
+
+     __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> DHT::readStringFunctions[] = {
+        {"temp", &DHT::readString_temperature_Function, "read the temperature part of DHT, returned as json object"},
+        {"humidity", &DHT::readString_humidity_Function, "read the humidity part of DHT, returned as json object"},
+        {"", &DHT::readString__default__Function, "read both humidity and temperature, returned as json object"},
+    };
+
+    constexpr DeviceFunctionTable DHT::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+
+        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
+
     DHT::DHT(DeviceCreateContext& context) : DHTDeviceBase(context.deviceType) {
         JsonSchema::DHT::Extractors::Apply(context, this);
         lastUpdateMs = millis()-refreshTimeMs; // direct update
@@ -102,16 +129,18 @@ namespace DALHAL {
         }
     }
 
-    HALOperationResult DHT::readTemperature(Device* context, HALValue& val) {
+    /* static */
+    HALOperationResult DHT::readTemperature(Device* device, HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
-        DHT& dht = *static_cast<DHT*>(context);
+        DHT& dht = *static_cast<DHT*>(device);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.temperature;
         return HALOperationResult::Success;
     }
-    HALOperationResult DHT::readHumidity(Device* context, HALValue& val) {
+    /* static */
+    HALOperationResult DHT::readHumidity(Device* device, HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
-        DHT& dht = *static_cast<DHT*>(context);
+        DHT& dht = *static_cast<DHT*>(device);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.humidity;
         return HALOperationResult::Success;
@@ -120,39 +149,39 @@ namespace DALHAL {
     HALOperationResult DHT::read(const HALReadValueByCmd &val) {
         if (val.out_value.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
         if (!dataValid) return HALOperationResult::DataNotReady;
-        if (val.cmd.EqualsIC(F("temp"))) {
-            val.out_value = data.temperature;
-            return HALOperationResult::Success;
-        } else if (val.cmd.EqualsIC(F("humidity"))) {
-            val.out_value = data.humidity;
-            return HALOperationResult::Success;
-        }
-        else {
-            GlobalLogger.Warn(F("DHT::read - cmd not found: "), val.cmd); // this can then be read by getting the last entry from logger
-            return HALOperationResult::UnsupportedCommand;
-        }
+
+        DeviceFunctionTable::ReadToHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadToHALValue_FuncType>(FunctionTable.readValue, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.out_value);
     }
 
     HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
-        StringBuilderStreamer& sbs = val.sbs;
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.parameters, val.sbs);
+    }
 
-        if (!dataValid) return HALOperationResult::DataNotReady;
-        if (val.cmd.EqualsIC(F("temp"))) {
-            sbs.write_json_object_begin();
-            sbs.write_jsonNumber(F("temp"), data.temperature);
-            sbs.write_json_object_end();
-            return HALOperationResult::Success;
-        } else if (val.cmd.EqualsIC(F("humidity"))) {
-            sbs.write_json_object_begin();
-            sbs.write_jsonNumber(F("humidity"), data.humidity);
-            sbs.write_json_object_end();
-            return HALOperationResult::Success;
-        }
-        else {
-            std::string stdStrCmd = val.cmd.ToString();
-            GlobalLogger.Warn(F("DHT::read - cmd not found: "), stdStrCmd.c_str()); // this can then be read by getting the last entry from logger
-            return HALOperationResult::UnsupportedCommand;
-        }
+    HALOperationResult DHT::readString_temperature_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_object_begin();
+        sbs.write_jsonNumber(F("temp"),  static_cast<DHT*>(device)->data.temperature);
+        sbs.write_json_object_end();
+        return HALOperationResult::Success;
+    }
+
+    HALOperationResult DHT::readString_humidity_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_object_begin();
+        sbs.write_jsonNumber(F("humidity"), static_cast<DHT*>(device)->data.humidity);
+        sbs.write_json_object_end();
+        return HALOperationResult::Success;
+    }
+
+    HALOperationResult DHT::readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        sbs.write_json_object_begin();
+        sbs.write_jsonNumber(F("humidity"), static_cast<DHT*>(device)->data.humidity);
+        sbs.write_json_value_separator();
+        sbs.write_jsonNumber(F("temp"),  static_cast<DHT*>(device)->data.temperature);
+        sbs.write_json_object_end();
+        return HALOperationResult::Success;
     }
     
 }

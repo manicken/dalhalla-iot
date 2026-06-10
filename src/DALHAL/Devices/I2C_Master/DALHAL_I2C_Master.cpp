@@ -125,36 +125,17 @@ namespace DALHAL {
     }
 
     HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
-        StringBuilderStreamer& sbs = val.sbs;
-        ZeroCopyString zcStr = val.cmd; // make copy
-        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
-        if (zcCmd.EqualsIC(F("raw"))) { // this is more likely to be called
-            
-        }
-        else if (zcCmd.EqualsIC(F("list"))) {
-            
-            
-        } else {
-            return HALOperationResult::UnsupportedCommand;
-        }
-#if HAS_REACTIVE_READ(I2C_MASTER)
-        triggerRead();
-#endif
-        return HALOperationResult::Success;
+        
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.parameters, val.sbs);
     }
 
     HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
         
         DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        HALOperationResult res = fn(this, val.parameters, val.sbs);
-        if (res != HALOperationResult::Success) {
-            return res;
-        }
-#if HAS_REACTIVE_WRITE(I2C_MASTER)
-        triggerWrite();
-#endif
-        return HALOperationResult::Success;
+        return fn(this, val.parameters, val.sbs);
     }
 
     /* static */

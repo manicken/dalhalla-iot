@@ -147,14 +147,7 @@ namespace DALHAL {
     HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {
         DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
         if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        HALOperationResult res = fn(this, val.parameters, val.sbs);
-        if (res != HALOperationResult::Success) {
-            return res;
-        }
-#if HAS_REACTIVE_WRITE(DISPLAY_SSD1306)
-        triggerWrite();
-#endif
-        return HALOperationResult::Success;
+        return fn(this, val.parameters, val.sbs);
     }
 
     void Display_SSD1306::loop() {

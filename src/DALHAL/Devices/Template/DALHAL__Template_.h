@@ -51,6 +51,7 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
+        static const DeviceFunctionTable FunctionTable2;
         static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
         static const FunctionEntry<DeviceFunctionTable::ReadToHALValue_FuncType> readValueFunctions[];
         static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];

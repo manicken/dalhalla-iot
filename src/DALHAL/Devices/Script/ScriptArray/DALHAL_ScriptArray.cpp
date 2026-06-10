@@ -46,6 +46,33 @@ namespace DALHAL {
         DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_ARRAY)
     };
     //volatile const void* keep_ScriptArray = &DALHAL::ScriptArray::RegistryDefine;
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> ScriptArray::bracketOpReadFunctions[] = {
+        {"", &ScriptArray::BracketRead_Func, "default"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> ScriptArray::bracketOpWriteFunctions[] = {
+        {"", &ScriptArray::BracketWrite_Func, "default"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::ReadString_FuncType> ScriptArray::readStringFunctions[] = {
+        {"valuelist", &ScriptArray::readString_valuelist_Function, "get the whole list of values"},
+        {"", &ScriptArray::readString__default__Function, "get a item given by the first parameter as the index"}
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ScriptArray::FunctionTable = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])},
+        {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
     
     ScriptArray::ScriptArray(DeviceCreateContext& context) : ScriptArray_DeviceBase(context.deviceType) {
         JsonSchema::ScriptArray::Extractors::Apply(context, this);
@@ -67,37 +94,12 @@ namespace DALHAL {
     }
 
     HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
-        StringBuilderStreamer& sbs = val.sbs;
-
-        if (val.cmd.EqualsIC(F("valuelist"))) {
-            
-            sbs.write_json_array_begin();
-            for (int i=0;i<valueCount;i++) {
-                values[i].toString(sbs);
-                if (i<valueCount-1) {sbs.write_json_value_separator();}
-            }
-            sbs.write_json_array_end();
-
-        } else if (val.cmd.ValidNumber()) {
-            int32_t index = 0;
-            if (val.cmd.ConvertTo_int32(index) == false) {
-                sbs.write(F("invalid index not a integer"));
-                return HALOperationResult::BracketOpSubscriptInvalid;
-            }
-
-            if (index < 0 || index >= valueCount) {
-                sbs.write(F("invalid index out of range"));
-                return HALOperationResult::BracketOpSubscriptOutOffRange;
-            }
-            values[index].toString(sbs);
-            //val.out_value = values[index].toString();
-        } else {
-            sbs.write(F("unknown command"));
-            return HALOperationResult::UnsupportedCommand;
+        DeviceFunctionTable::ReadString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::ReadString_FuncType>(FunctionTable.readString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        HALOperationResult res = fn(this, val.parameters, val.sbs);
+        if (res != HALOperationResult::Success) {
+            return res;
         }
-#if HAS_REACTIVE_READ(SCRIPT_ARRAY)
-        triggerRead();
-#endif
         return HALOperationResult::Success;
     }
 
@@ -129,6 +131,39 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
+    HALOperationResult ScriptArray::readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        ScriptArray& self = *static_cast<ScriptArray*>(device);
+        sbs.write_json_array_begin();
+        for (int i=0;i<self.valueCount;i++) {
+            if (i>0) {
+                sbs.write_json_value_separator();
+            }
+            self.values[i].toString(sbs);
+        }
+        sbs.write_json_array_end();
+
+        return HALOperationResult::Success;
+    }
+    HALOperationResult ScriptArray::readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        ZeroCopyString zcIndex = zcStrParameters.SplitOffHead('/');
+        if (zcIndex.ValidNumber() == false) { return HALOperationResult::InvalidArgument; }
+        ScriptArray& self = *static_cast<ScriptArray*>(device);
+
+        int32_t index = 0;
+        if (zcIndex.ConvertTo_int32(index) == false) {
+            sbs.write(F("invalid index not a integer"));
+            return HALOperationResult::BracketOpSubscriptInvalid;
+        }
+
+        if (index < 0 || index >= self.valueCount) {
+            sbs.write(F("invalid index out of range"));
+            return HALOperationResult::BracketOpSubscriptOutOffRange;
+        }
+        self.values[index].toString(sbs);
+        //val.out_value = values[index].toString();
+        return HALOperationResult::Success;
+    }
+
     HALOperationResult ScriptArray::BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val) {
         return static_cast<ScriptArray*>(device)->read(bracketSubscriptVal, val);
     }
@@ -137,11 +172,11 @@ namespace DALHAL {
     }
     
     Device::BracketOpRead_FuncType ScriptArray::GetBracketOpRead_Function(ZeroCopyString& zcFuncName) {
-        return ScriptArray::BracketRead_Func; // functionname not used at the moment
+        return GetDeviceFunction<DeviceFunctionTable::BracketOpRead_FuncType>(FunctionTable.bracketOpRead, zcFuncName);
     }
 
     Device::BracketOpWrite_FuncType ScriptArray::GetBracketOpWrite_Function(ZeroCopyString& zcFuncName) {
-        return ScriptArray::BracketWrite_Func; // functionname not used at the moment
+        return GetDeviceFunction<DeviceFunctionTable::BracketOpWrite_FuncType>(FunctionTable.bracketOpWrite, zcFuncName);
     }
 
 

@@ -36,9 +36,86 @@ namespace DALHAL {
     constexpr Registry::DefineBase WS2812::RegistryDefine = {
         Create,
         &JsonSchema::WS2812::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(WS2812)
+        DALHAL_REACTIVE_EVENT_TABLE(WS2812),
+        &WS2812::FunctionTable
     };
     //volatile const void* keep_WS2812 = &DALHAL::WS2812::RegistryDefine;
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::Exec_FuncType> WS2812::execFunctions[] = {
+        {"pause", &WS2812::exec_pause_Function, "pause fx operation"},
+        {"resume", &WS2812::exec_resume_Function, "resume fx operation"},
+        {"stop", &WS2812::exec_stop_Function, "stop fx operation"},
+        {"restart", &WS2812::exec_start_Function, "restart fx operation"},
+    };
+    HALOperationResult WS2812::exec_pause_Function(Device* device) {
+        static_cast<WS2812*>(device)->ws2812fx->pause();
+        return HALOperationResult::Success;
+    }
+    HALOperationResult WS2812::exec_resume_Function(Device* device) {
+        static_cast<WS2812*>(device)->ws2812fx->resume();
+        return HALOperationResult::Success;
+    }
+    HALOperationResult WS2812::exec_stop_Function(Device* device) {
+        static_cast<WS2812*>(device)->ws2812fx->stop();
+        return HALOperationResult::Success;
+    }
+    HALOperationResult WS2812::exec_start_Function(Device* device) {
+        static_cast<WS2812*>(device)->ws2812fx->start();
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> WS2812::writeValueFunctions[] = {
+        {"brightness", &WS2812::writeBrightness, "sets the brightness"},
+        {"color", &WS2812::writeColor, "sets the color for the first pixel"},
+        {"mode", &WS2812::writeMode, "sets the mode by index"},
+        {"fxspeed", &WS2812::writeFxSpeed, "sets the fx speed (0-65535)"},
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<DeviceFunctionTable::WriteString_FuncType> WS2812::writeStringFunctions[] = {
+        {"setpixel", &WS2812::writeString_setpixel_Function, "help"}
+    };
+    HALOperationResult WS2812::writeString_setpixel_Function(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        WS2812& self = *static_cast<WS2812*>(device);
+        self.ws2812fx->pause();
+        // ws2812fx->setSpeed(0);
+        ZeroCopyString zcIndex = zcParams.SplitOffHead('/');
+        ZeroCopyString zcR = zcParams.SplitOffHead('/');
+        ZeroCopyString zcG = zcParams.SplitOffHead('/');
+        ZeroCopyString zcB = zcParams.SplitOffHead('/');
+        uint32_t index,r,g,b;
+        zcIndex.ConvertTo_uint32(index);
+        zcR.ConvertTo_uint32(r);
+        zcG.ConvertTo_uint32(g);
+        zcB.ConvertTo_uint32(b);
+        if (zcParams.IsEmpty()) {// simple rgb
+            
+            self.ws2812fx->setPixelColor(index,r,g,b);
+            //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d\n",index,r,g,b);
+        }
+        else {
+            uint32_t w;
+            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            zcUval.ConvertTo_uint32(w);
+            self.ws2812fx->setPixelColor(index,r,g,b,w);
+            //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d, w=%d\n",index,r,g,b,w);
+        }
+        self.ws2812fx->execShow();
+        return HALOperationResult::Success;
+    }
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable WS2812::FunctionTable = {
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
+        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+    };
 
     Device* WS2812::Create(DeviceCreateContext& context) {
         return new WS2812(context);
@@ -52,23 +129,50 @@ namespace DALHAL {
         //if (ws2812fx->getMode() != 0) // only service when non static mode
         ws2812fx->service();
     }
-
-    HALOperationResult WS2812::writeBrightness(Device* context, const HALValue& val) {
+    /* static */
+    HALOperationResult WS2812::writeBrightness(Device* device, const HALValue& val) {
         //printf("\nWS2812::writeBrightness\n");
-        WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(device);
         
         ws2812_hal_device->ws2812fx->setBrightness(val.toUInt());
+
 #if HAS_REACTIVE_WRITE(WS2812)
         ws2812_hal_device->triggerWrite();
 #endif
         return HALOperationResult::Success;
     }
-    HALOperationResult WS2812::writeColor(Device* context, const HALValue& val) {
+    /* static */
+    HALOperationResult WS2812::writeColor(Device* device, const HALValue& val) {
         //printf("\nWS2812::writeColor\n");
-        WS2812* ws2812_hal_device = static_cast<WS2812*>(context);
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(device);
         ws2812_hal_device->ws2812fx->pause();
         ws2812_hal_device->ws2812fx->setPixelColor(0, val.toUInt());
         ws2812_hal_device->ws2812fx->execShow();
+
+#if HAS_REACTIVE_WRITE(WS2812)
+        ws2812_hal_device->triggerWrite();
+#endif
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult WS2812::writeMode(Device* device, const HALValue& val) {
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(device);
+        
+        ws2812_hal_device->ws2812fx->setMode(val.toUInt());
+
+#if HAS_REACTIVE_WRITE(WS2812)
+        ws2812_hal_device->triggerWrite();
+#endif
+        return HALOperationResult::Success;
+    }
+
+    /* static */
+    HALOperationResult WS2812::writeFxSpeed(Device* device, const HALValue& val) {
+        WS2812* ws2812_hal_device = static_cast<WS2812*>(device);
+        
+        ws2812_hal_device->ws2812fx->setSpeed(val.toUInt());
+
 #if HAS_REACTIVE_WRITE(WS2812)
         ws2812_hal_device->triggerWrite();
 #endif
@@ -76,104 +180,21 @@ namespace DALHAL {
     }
 
     Device::WriteHALValue_FuncType WS2812::GetWriteFromHALValue_Function(ZeroCopyString& zcFuncName) {
-        if (zcFuncName.EqualsIC(F("brightness")))
-            return WS2812::writeBrightness;
-        else if (zcFuncName.EqualsIC(F("color")))
-            return WS2812::writeColor;
-        else
-            return nullptr;
+        return GetDeviceFunction<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, zcFuncName);
     }
 
     HALOperationResult WS2812::write(const HALWriteValueByCmd& val) {
-        if (val.cmd.EqualsIC(F("brightness")))
-            ws2812fx->setBrightness(val.value.toUInt());
-        else if (val.cmd.EqualsIC(F("mode")))
-            ws2812fx->setMode(val.value.toUInt());
-        else if (val.cmd.EqualsIC(F("fxspeed")))
-            ws2812fx->setSpeed(val.value.toUInt());
-        else if (val.cmd.EqualsIC(F("color")))
-            WS2812::writeColor(this, val.value);
-        else
-            return HALOperationResult::UnsupportedCommand;
-#if HAS_REACTIVE_WRITE(WS2812)
-        triggerWrite();
-#endif
-        return HALOperationResult::Success;
+
+        DeviceFunctionTable::WriteHALValue_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteHALValue_FuncType>(FunctionTable.writeValue, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.value);
     }
 
     HALOperationResult WS2812::write(const HALWriteStringRequestValue& val) {
-        ZeroCopyString zcParams = val.parameters;
 
-        if (val.cmd.EqualsIC(F("brightness"))) {
-            uint32_t uval;
-            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
-            zcUval.ConvertTo_uint32(uval);
-            ws2812fx->setBrightness(uval);
-        }
-        else if (val.cmd.EqualsIC(F("mode"))) {
-            uint32_t uval;
-            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
-            zcUval.ConvertTo_uint32(uval);
-            ws2812fx->setMode(uval);
-            ws2812fx->resume();
-        }
-        else if (val.cmd.EqualsIC(F("fxspeed"))) {
-            uint32_t uval;
-            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
-            zcUval.ConvertTo_uint32(uval);
-            ws2812fx->setSpeed(uval);
-        }
-        else if (val.cmd.EqualsIC(F("setpixel"))) {
-            ws2812fx->pause();
-           // ws2812fx->setSpeed(0);
-            ZeroCopyString zcIndex = zcParams.SplitOffHead('/');
-            ZeroCopyString zcR = zcParams.SplitOffHead('/');
-            ZeroCopyString zcG = zcParams.SplitOffHead('/');
-            ZeroCopyString zcB = zcParams.SplitOffHead('/');
-            uint32_t index,r,g,b;
-            zcIndex.ConvertTo_uint32(index);
-            zcR.ConvertTo_uint32(r);
-            zcG.ConvertTo_uint32(g);
-            zcB.ConvertTo_uint32(b);
-            if (zcParams.IsEmpty()) {// simple rgb
-                
-                ws2812fx->setPixelColor(index,r,g,b);
-                //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d\n",index,r,g,b);
-            }
-            else {
-                uint32_t w;
-                ZeroCopyString zcUval = zcParams.SplitOffHead('/');
-                zcUval.ConvertTo_uint32(w);
-                ws2812fx->setPixelColor(index,r,g,b,w);
-                //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d, w=%d\n",index,r,g,b,w);
-            }
-            ws2812fx->execShow();
-        }
-        else if (val.cmd.EqualsIC(F("color"))) {
-            uint32_t halval = 0;
-            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
-            zcUval.ConvertTo_uint32(halval);
-            const HALValue cVal = halval;
-            WS2812::writeColor(this, cVal);
-        }
-        else if (val.cmd.EqualsIC(F("pause"))) {
-            ws2812fx->pause();
-        }
-        else if (val.cmd.EqualsIC(F("resume"))) {
-            ws2812fx->resume();
-        }
-        else if (val.cmd.EqualsIC(F("stop"))) {
-            ws2812fx->stop();
-        }
-        else if (val.cmd.EqualsIC(F("start"))) {
-            ws2812fx->start();
-        }
-        else
-            return HALOperationResult::UnsupportedCommand;
-#if HAS_REACTIVE_WRITE(WS2812)
-        triggerWrite();
-#endif
-        return HALOperationResult::Success;
+        DeviceFunctionTable::WriteString_FuncType fn = GetDeviceFunction<DeviceFunctionTable::WriteString_FuncType>(FunctionTable.writeString, val.cmd);
+        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
+        return fn(this, val.parameters, val.sbs);
     }
 
     void WS2812::PrintTo(StringBuilderStreamer& sbs) {

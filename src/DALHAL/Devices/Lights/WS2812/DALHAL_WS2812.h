@@ -31,6 +31,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <WS2812FX.h>
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
@@ -53,8 +55,23 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::Exec_FuncType> execFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteHALValue_FuncType> writeValueFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::WriteString_FuncType> writeStringFunctions[];
+
+        static HALOperationResult exec_pause_Function(Device* device);
+        static HALOperationResult exec_resume_Function(Device* device);
+        static HALOperationResult exec_stop_Function(Device* device);
+        static HALOperationResult exec_start_Function(Device* device);
+        static HALOperationResult writeString_setpixel_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+
+
+    private:
         static HALOperationResult writeBrightness(Device* context, const HALValue& val);
         static HALOperationResult writeColor(Device* context, const HALValue& val);
+        static HALOperationResult writeMode(Device* context, const HALValue& val);
+        static HALOperationResult writeFxSpeed(Device* context, const HALValue& val);
 
     public:
         WS2812FX* ws2812fx; // need to be public

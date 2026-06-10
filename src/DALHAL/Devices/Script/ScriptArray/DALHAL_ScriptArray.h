@@ -31,6 +31,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_ARRAY)
 #include "DALHAL_ScriptArray_Reactive.h"
@@ -49,6 +51,15 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<DeviceFunctionTable::BracketOpRead_FuncType> bracketOpReadFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::BracketOpWrite_FuncType> bracketOpWriteFunctions[];
+        static const FunctionEntry<DeviceFunctionTable::ReadString_FuncType> readStringFunctions[];
+
+        static HALOperationResult readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
 
     private:
         static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);

@@ -46,6 +46,10 @@ namespace DALHAL {
         {"_Template_", &_Template_::exec_Template_Function, "help"}
     };
     HALOperationResult _Template_::exec_Template_Function(Device* device) {
+
+#if HAS_REACTIVE_EXEC(TEMPLATE)
+        triggerExec();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -54,6 +58,10 @@ namespace DALHAL {
         {"_Template_", &_Template_::readValue_Template_Function, "help"}
     };
     HALOperationResult _Template_::readValue_Template_Function(Device* device, HALValue& val) {
+
+#if HAS_REACTIVE_READ(TEMPLATE)
+        triggerRead();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -62,6 +70,10 @@ namespace DALHAL {
         {"_Template_", &_Template_::writeValue_Template_Function, "help"}
     };
     HALOperationResult _Template_::writeValue_Template_Function(Device* device, const HALValue& val) {
+
+#if HAS_REACTIVE_WRITE(TEMPLATE)
+        triggerWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -70,6 +82,10 @@ namespace DALHAL {
         {"_Template_", &_Template_::bracketOpRead_Template_Function, "help"}
     };
     HALOperationResult _Template_::bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue) {
+
+#if HAS_REACTIVE_BRACKET_READ(TEMPLATE)
+        triggerBracketRead();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -78,6 +94,10 @@ namespace DALHAL {
         {"_Template_", &_Template_::bracketOpWrite_Template_Function, "help"}
     };
     HALOperationResult _Template_::bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
+
+#if HAS_REACTIVE_BRACKET_WRITE(TEMPLATE)
+        triggerBracketWrite();
+#endif
         return HALOperationResult::Success;
     }
 
@@ -86,6 +106,12 @@ namespace DALHAL {
         {"_Template_", &_Template_::readString_Template_Function, "help"}
     };
     HALOperationResult _Template_::readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+
+        // Note here about trigger, 
+        // dont think there is any practicular reason to exmit events on string read function
+        // as events are mostly emitted to make scripting easier
+        // and to link updates
+        // this is a CLI API function only and thus there is no reason to emit events here
         return HALOperationResult::Success;
     }
 
@@ -94,22 +120,43 @@ namespace DALHAL {
         {"_Template_", &_Template_::writeString_Template_Function, "help"}
     };
     HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+
+        // Note here about trigger, 
+        // dont think there is any practicular reason to exmit events on string write function
+        // as events are mostly emitted to make scripting easier
+        // and to link updates
+        // this is a CLI API function only and thus there is no reason to emit events here
         return HALOperationResult::Success;
     }
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable _Template_::FunctionTable = {
-        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
+        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
 
-        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
-        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])}, 
+        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])},
+        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
 
-        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])}, 
+        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])},
         {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
 
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])}, 
-        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])}, 
+        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
     };
+
+    constexpr DeviceFunctionTable _Template_::FunctionTable2 = {
+        EmptyFunctionTable<DeviceFunctionTable::Exec_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::ReadToHALValue_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::WriteHALValue_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpRead_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::BracketOpWrite_FuncType>,
+
+        EmptyFunctionTable<DeviceFunctionTable::ReadString_FuncType>,
+        EmptyFunctionTable<DeviceFunctionTable::WriteString_FuncType>,
+    };
+
+
         
 
     _Template_::_Template_(DeviceCreateContext& context) : _Template__DeviceBase(context.deviceType) {

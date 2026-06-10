@@ -69,7 +69,8 @@ namespace DALHAL {
         constexpr FunctionEntry(const char* name, Fn fn, const char* help) 
             : name(name), fn(fn), help(help), rwTypeMask(FunctionValueType::_None_), bracketTypeMask(FunctionValueType::_None_) {}
         
-        constexpr FunctionEntry(const char* name, Fn fn, const char* help, DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE rwTypeMask) 
+        constexpr FunctionEntry(const char* name, Fn fn, const char* help, 
+                DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE rwTypeMask) 
             : name(name), fn(fn), help(help), rwTypeMask(rwTypeMask), bracketTypeMask(FunctionValueType::_None_) {}
 
         constexpr FunctionEntry(const char* name, Fn fn, const char* help, 

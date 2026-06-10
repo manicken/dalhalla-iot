@@ -426,7 +426,7 @@ namespace DALHAL {
         return fn(this, val.parameters, val.sbs);
     }
 
-    /*virtual override*/
+    /*override*/
     HALOperationResult Actuator::read(HALValue& val) {
         if (state == State::TimeoutFault) {
             return HALOperationResult::Timeout;
