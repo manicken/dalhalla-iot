@@ -22,11 +22,7 @@ This part may later evolve into something more like **Tasmota** or **ESPEasy**, 
 
 ## Key Features
 
-- **Modular and lightweight architecture** — significantly smaller codebase than ESPEasy or Tasmota.
-  - ~14,000 lines of code (VS Code Counter)
-  - Tasmota: ~240,000 LOC
-  - ESPEasy: ~200,000 LOC
-- On ESP32, current firmware uses ~100 kB of flash (with room for optimization).
+- **Modular and lightweight architecture** 
 - **HAL/DAL configuration via JSON**, mapped to an internal tree structure.
 - Devices can be added/removed **without firmware rebuild** or even restarting the system.
 - Unified **device abstraction layer** — each device has a unique **UID** (8-character ASCII, mapped internally to `uint64_t` for fast access).
@@ -70,7 +66,7 @@ A custom lightweight string type (similar to `std::string_view`) with additional
 
 ## Script Engine
 
-Inspired by **ESPEasy Rules**, with plans for **event-driven execution** (not yet implemented).
+Inspired by **ESPEasy Rules**, with plans for **event-driven execution** (not yet fully implemented, it's in a beta stage).
 
 Scripts interact with devices via their UIDs, as defined in the JSON configuration.
 
@@ -95,7 +91,7 @@ Scripts interact with devices via their UIDs, as defined in the JSON configurati
 - `CommandExecutor` (`DALHAL_CommandExecutor.cpp`) handles:
   - Config/script reload
   - Device commands
-  - External access via REST
+  - External access via Serial/WebSocket
 
 ### Websocket (port 82)/Serial(UART) API
 Please note that the old REST API has been deprecated because its synchronous structure is incompatible with AsyncWebServer. In the future, it might be possible to make it work using the standard synchronous WebServer.
@@ -117,7 +113,7 @@ However the new Websocket API is accessed on <deviceIP>:82/ws but <deviceIP>:82 
 | `system/info` | Get System Info |
 | `system/reset` or `system/restart` | Execute a system restart |
 | `ver` | gets build version, is not currently not updated regulary as the software is still in major development |
-| `help` | Show some built in basic help |
+| `help` | Show the whole command tree |
 
 **Types:** `bool`, `uint`, `float`, `string`, `json`  
 **Device-specific commands:** e.g. read `temp` from DHT sensor.
@@ -195,12 +191,11 @@ Open for discussion whether the entire project should remain GPLv3 or switch ful
 
 ## Future Plans
 
-- Full event-driven script execution.
-- MQTT and WebSocket command sources.
-- Integration with **Home Assistant**.
+- Full event-driven script execution (beta state)
+- MQTT and WebSocket(implemented) command sources.
 - More advanced web UI for configuration and file management.
 - Optional BSON configuration storage to eliminate heap fragmentation.
-- Extended device capability introspection and GUI auto-documentation.
+- Extended device capability introspection and GUI auto-documentation (is in a beta stage).
 
 ---
 
