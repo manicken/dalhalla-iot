@@ -374,13 +374,6 @@ namespace DALHAL {
     }
 
     /*virtual override*/ 
-    HALOperationResult Actuator::exec(const ZeroCopyString& cmd) {
-        FunctionTypes::Exec fn = GetDeviceFunction<FunctionTypes::Exec>(FunctionTable.exec, cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this);
-    }
-
-    /*virtual override*/ 
     HALOperationResult Actuator::write(const HALValue& val) {
         if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
         if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
@@ -402,21 +395,6 @@ namespace DALHAL {
         triggerWrite();
 #endif
         return HALOperationResult::Success;
-    }
-
-    /*virtual override*/ 
-    HALOperationResult Actuator::read(const HALReadValueByCmd& val) {
-        FunctionTypes::ReadToHALValue fn = GetDeviceFunction<FunctionTypes::ReadToHALValue>(FunctionTable.readValue, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.out_value);
-    }
-
-    /*virtual override*/
-    HALOperationResult Actuator::read(const HALReadStringRequestValue& val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
     }
 
     /*override*/

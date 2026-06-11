@@ -70,6 +70,11 @@ namespace DALHAL {
         /** script engine specific error */
         BracketOpSubscriptInvalid = 30,
 
+        RegistryDefineNotFound = 50,
+        FunctionTableNotFound = 51,
+        FunctionTable_t_NotFound = 52,
+
+
         NotSet = 99,
     };
     const __FlashStringHelper* HALOperationResultToString(HALOperationResult result);

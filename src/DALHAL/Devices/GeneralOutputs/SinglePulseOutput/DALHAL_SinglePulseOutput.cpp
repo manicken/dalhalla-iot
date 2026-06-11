@@ -108,24 +108,22 @@ namespace DALHAL {
 #endif
             pulseLength = t;
         }
-        ZeroCopyString zcDummy;
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, WRITE)
-        HALOperationResult res = exec(zcDummy);
+        HALOperationResult res = exec();
         if (res == HALOperationResult::Success) {
             triggerWrite();
         }
         return res;
 #else
-        return exec(zcDummy);
+        return exec();
 #endif
     }
 
     HALOperationResult SinglePulseOutput::static_exec(Device* device) {
-        ZeroCopyString zcDummy;
-        return static_cast<SinglePulseOutput*>(device)->exec(zcDummy); // direct call no vtable
+        return static_cast<SinglePulseOutput*>(device)->exec(); // direct call no vtable
     }
 
-    HALOperationResult SinglePulseOutput::exec(const ZeroCopyString& cmd) {
+    HALOperationResult SinglePulseOutput::exec() {
         if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
         pulseTicker.detach();
         digitalWrite(pin, activeLevel);

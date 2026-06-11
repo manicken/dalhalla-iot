@@ -38,8 +38,6 @@ namespace DALHAL {
     // forward declarations
     class HALValue;
     enum class HALOperationResult;
-    struct HALReadStringRequestValue;
-    struct HALWriteStringRequestValue;
 
     namespace FunctionValueType {
         constexpr DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE _UInt_ = 0x01;
@@ -173,12 +171,6 @@ namespace DALHAL {
     template<typename Fn>
     static const FunctionTable_t<Fn>* GetTable(const DeviceFunctionTable* t)
     {
-        // the following check seems a little overkill 
-        // as this function will never be used outside of GetDeviceFunction context anyway
-        //if (t == nullptr) {
-        //    return nullptr;
-        //}
-
         if constexpr (std::is_same_v<Fn, FunctionTypes::Exec>) {
             return &t->exec;
         } else if constexpr (std::is_same_v<Fn, FunctionTypes::ReadToHALValue>) {
@@ -193,22 +185,45 @@ namespace DALHAL {
             return &t->readString;
         } else if constexpr (std::is_same_v<Fn, FunctionTypes::WriteString>) {
             return &t->writeString;
+        } else {
+            static_assert(sizeof(Fn) == 0,
+              "GetTable<Fn>: unsupported FunctionTypes specialization");
         }
 
         return nullptr;
     }
 
     template<typename Fn>
-    static Fn GetDeviceFunction(Device* device, const ZeroCopyString& zcFuncName) {
-        if (device == nullptr) return nullptr; // absolute failsafe
+    struct FunctionLookupResult {
+        HALOperationResult result;
+        Fn fn;
+    };
+
+    template<typename Fn>
+    static FunctionLookupResult<Fn> GetDeviceFunction(Device* device, const ZeroCopyString& zcFuncName) {
+        if (device == nullptr) {// absolute failsafe
+            return { HALOperationResult::DeviceNotFound, nullptr }; 
+        } 
         const Registry::DefineBase* regDef = device->GetRegistryDefine();
-        if (regDef == nullptr) return nullptr;
+        if (regDef == nullptr) { 
+            return { HALOperationResult::RegistryDefineNotFound, nullptr };
+        }
         const DeviceFunctionTable* devFuncTable = regDef->functionTable;
-        if (devFuncTable == nullptr) return nullptr;
+        if (devFuncTable == nullptr) {
+            return { HALOperationResult::FunctionTableNotFound, nullptr };
+        }
 
         const FunctionTable_t<Fn>* table = GetTable<Fn>(devFuncTable);
-        if (!table) return nullptr;
-
-        return GetDeviceFunction(*table, zcFuncName);  // delegate to the existing overload
+        if (!table) {
+            return { HALOperationResult::FunctionTable_t_NotFound, nullptr };
+        }
+        if (table->items == nullptr || table->count == 0) {
+            return { HALOperationResult::UnsupportedOperation, nullptr };
+        }
+        Fn fn = GetDeviceFunction(*table, zcFuncName);
+        if (fn == nullptr) {
+            return { HALOperationResult::UnsupportedCommand, nullptr };
+        }
+        return { HALOperationResult::Success, fn };
     }
 }

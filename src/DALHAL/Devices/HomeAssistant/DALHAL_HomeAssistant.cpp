@@ -123,7 +123,7 @@ namespace DALHAL {
             }
             const ZeroCopyString zcPayload((const char*)payloadData, (const char*)payloadData+payload_len);
 
-            HALOperationResult res = item->exec(zcPayload);
+            HALOperationResult res = item->ha_apply(zcPayload);
 
             if (res != HALOperationResult::Success) {
                 // really need to modify so that the second parameter given to GlobalLogger.Error can be annother FlashStringHelper
@@ -312,18 +312,18 @@ namespace DALHAL {
     }
 
     // debug entry
-    HALOperationResult HomeAssistant::exec(const ZeroCopyString& cmd) {
-        if (cmd.EqualsIC(F("ddTest"))) {
+    /*HALOperationResult HomeAssistant::exec_ddTest(Device* device) {
+        //if (cmd.EqualsIC(F("ddTest"))) {
             StaticJsonDocument<256> jsonDoc;
             JsonObject root = jsonDoc.to<JsonObject>();
             root["unit_of_measurement"] = "°C";
             root["device_class"] = "temperature";
 
             HA_DD_Context ha_dd_ctx = {"uid", "deviceId", "sensor", "deviceName", "groupID", "groupName", root};  
-            DALHAL::HA_DeviceDiscovery::SendDiscovery(mqttClient, ha_dd_ctx, nullptr);
+            DALHAL::HA_DeviceDiscovery::SendDiscovery(static_cast<HomeAssistant*>(device)->mqttClient, ha_dd_ctx, nullptr);
             return HALOperationResult::Success;
-        }
-        return HALOperationResult::UnsupportedCommand;
-    }
+        //}
+        //return HALOperationResult::UnsupportedCommand;
+    }*/
 
 }

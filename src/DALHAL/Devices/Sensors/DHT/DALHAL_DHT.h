@@ -85,9 +85,6 @@ namespace DALHAL {
         void loop() override; // will need loop for automatic polling as this device is slow
 
         HALOperationResult read(HALValue &val) override;
-        HALOperationResult read(const HALReadValueByCmd &val) override;
-        HALOperationResult read(const HALReadStringRequestValue &val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 

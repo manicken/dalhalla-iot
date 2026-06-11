@@ -139,12 +139,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult OneWireTempGroup::read(const HALReadStringRequestValue& val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     void OneWireTempGroup::requestTemperatures() {
         for (int i=0;i<busCount;i++) {
             OneWireTempBus* bus = static_cast<OneWireTempBus*>(busses[i]); // cast because need of non generic function

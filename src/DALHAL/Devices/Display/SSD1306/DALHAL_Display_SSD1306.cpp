@@ -148,12 +148,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult Display_SSD1306::write(const HALWriteStringRequestValue& val) {
-        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     void Display_SSD1306::loop() {
         display->clearDisplay();
         for (int i=0;i<elementCount;i++) {

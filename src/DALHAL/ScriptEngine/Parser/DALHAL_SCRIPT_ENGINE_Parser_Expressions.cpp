@@ -546,10 +546,17 @@ namespace DALHAL {
                 if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
                     HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
                     if (funcName.NotEmpty()) {
-                        if (GetDeviceFunction<FunctionTypes::BracketOpRead>(device, funcName) == nullptr) {
-                            operandToken.ReportTokenError(String(F("BracketOpRead Function not found: ")).c_str(), funcName.ToString().c_str());
+
+                        auto getFunRes = GetDeviceFunction<FunctionTypes::BracketOpRead>(device, funcName);
+                        if (getFunRes.result != HALOperationResult::Success) {
+                            if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
+                                operandToken.ReportTokenError(String(F("Get BracketOpRead Function not found: ")).c_str(), funcName.ToString().c_str());
+                            } else {
+                                operandToken.ReportTokenError(String(F("Get BracketOpRead other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                            }
                             anyError = true;
                         }
+
                     } else {
                         HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
                         HALValue halValue(HALValue::Type::TEST); // unset TEST type
@@ -563,10 +570,17 @@ namespace DALHAL {
                 if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                     HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
                     if (funcName.NotEmpty()) {
-                        if (GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, funcName) == nullptr) {
-                            operandToken.ReportTokenError(String(F("BracketOpWrite Function not found: ")).c_str(), funcName.ToString().c_str());
+
+                        auto getFunRes = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, funcName);
+                        if (getFunRes.result != HALOperationResult::Success) {
+                            if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
+                                operandToken.ReportTokenError(String(F("Get BracketOpWrite Function not found: ")).c_str(), funcName.ToString().c_str());
+                            } else {
+                                operandToken.ReportTokenError(String(F("Get BracketOpWrite other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                            }
                             anyError = true;
                         }
+
                     } else {
                         HALValue halBracketSubscriptValue((uint32_t)0); // just need a dummy value
                         HALValue halValue(HALValue::Type::TEST); // unset TEST type
@@ -581,18 +595,28 @@ namespace DALHAL {
             }
 
             if (mode == ValidateOperandMode::Exec) {
-                if (GetDeviceFunction<FunctionTypes::Exec>(device, funcName) == nullptr) {
-                    operandToken.ReportTokenError(String(F("Exec Function not found: ")).c_str(), funcName.ToString().c_str());
+                auto getFunRes = GetDeviceFunction<FunctionTypes::Exec>(device, funcName);
+                if (getFunRes.result != HALOperationResult::Success) {
+                    if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
+                        operandToken.ReportTokenError(String(F("Get Exec Function not found: ")).c_str(), funcName.ToString().c_str());
+                    } else {
+                        operandToken.ReportTokenError(String(F("Get Exec other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                    }
                     anyError = true;
+                    return;
                 }
-                return;
             }
 
             if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult readResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.NotEmpty()) {
-                    if (GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName) == nullptr) {
-                        operandToken.ReportTokenError(String(F("ReadToHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+                    auto getFunRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName);
+                    if (getFunRes.result != HALOperationResult::Success) {
+                        if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
+                            operandToken.ReportTokenError(String(F("Get ReadToHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+                        } else {
+                            operandToken.ReportTokenError(String(F("Get ReadToHALValue other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                        }
                         anyError = true;
                     }
                 } else {
@@ -607,10 +631,17 @@ namespace DALHAL {
             if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                 HALOperationResult writeResult = HALOperationResult::UnsupportedOperation;
                 if (funcName.NotEmpty()) {
-                    if (GetDeviceFunction<FunctionTypes::WriteHALValue>(device, funcName) == nullptr) {
-                        operandToken.ReportTokenError(String(F("WriteHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+
+                    auto getFunRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, funcName);
+                    if (getFunRes.result != HALOperationResult::Success) {
+                        if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
+                            operandToken.ReportTokenError(String(F("WriteHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+                        } else {
+                            operandToken.ReportTokenError(String(F("WriteHALValue other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                        }
                         anyError = true;
                     }
+
                 } else {
                     HALValue halValue(HALValue::Type::TEST); // unset TEST type
                     //printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());

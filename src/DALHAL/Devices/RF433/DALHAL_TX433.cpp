@@ -39,13 +39,32 @@ namespace DALHAL {
     constexpr Registry::DefineBase TX433::RegistryDefine = {
         Create,
         &JsonSchema::TX433::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(TX433)
+        DALHAL_REACTIVE_EVENT_TABLE(TX433),
+        &TX433::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* TX433::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::WriteString> TX433::writeStringFunctions[] = {
+        {"", &TX433::writeByString, "write raw by json object"}
+    };
+
+    constexpr DeviceFunctionTable TX433::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+    };
 
     Device* TX433::Create(DeviceCreateContext& context) {
         return new TX433(context);
@@ -73,14 +92,14 @@ namespace DALHAL {
         return Device::findInArray(units, unitCount, path, this, outDevice);
     }
 
-    HALOperationResult TX433::write(const HALWriteStringRequestValue &val) {
-        RF433::init(pin); // this only sets the pin and set the pin to output
-        std::string stdStrCmd = val.parameters.ToString();
+    HALOperationResult TX433::writeByString(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+        RF433::init(static_cast<TX433*>(device)->pin); // this only sets the pin and set the pin to output
+        std::string stdStrCmd = zcParams.ToString();
         
         RF433::DecodeFromJSON(stdStrCmd); // TODO make this function take ZeroCopyString as argument, even thu it's copied internally
         // TODO better error check from DecodeFromJSON
 #if HAS_REACTIVE_WRITE(TX433)
-        triggerWrite();
+        static_cast<TX433*>(device)->triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

@@ -123,16 +123,21 @@ namespace DALHAL {
         }
 
         // Func read
-        FunctionTypes::ReadToHALValue readFunc = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, funcName);
-        if (readFunc == nullptr && funcName.NotEmpty()) {
+        auto readFunc_GetRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, funcName);
+        if (readFunc_GetRes.result != HALOperationResult::Success && funcName.NotEmpty()) {
+
+            if (readFunc_GetRes.result == HALOperationResult::UnsupportedCommand) {
+                GlobalLogger.Error(F("CachedDeviceRead - could not find source device function: "), funcName);
+            } else {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), String(HALOperationResultToString(readFunc_GetRes.result)).c_str());
+            }
             // this mean we requested to use a function name 
             // that did not exist thus the default is no op
-            GlobalLogger.Error(F("CachedDeviceRead - could not find source device function: "), funcName.ToString().c_str());
             handler = &CachedDeviceRead::Handler_Invalid;
             return false;
         }
-        if (readFunc) {
-            auto* ctx = new FuncContext{outDevice, readFunc};
+        if (readFunc_GetRes.result == HALOperationResult::Success) {
+            auto* ctx = new FuncContext{outDevice, readFunc_GetRes.fn};
             context = ctx;
             handler = &CachedDeviceRead::Handler_Func;
             deleter = DeleteAs<FuncContext>;
@@ -169,10 +174,16 @@ namespace DALHAL {
             return false;
         }
 
-        FunctionTypes::BracketOpRead bracketFunc = GetDeviceFunction<FunctionTypes::BracketOpRead>(outDevice, zcStrUidPathAndFuncName);
+        auto bracketFunc_GetRes = GetDeviceFunction<FunctionTypes::BracketOpRead>(outDevice, zcStrUidPathAndFuncName);
         
-        if (bracketFunc == nullptr && zcStrUidPathAndFuncName.NotEmpty()) {
-            GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
+        if (bracketFunc_GetRes.result != HALOperationResult::Success && zcStrUidPathAndFuncName.NotEmpty()) {
+            if (bracketFunc_GetRes.result == HALOperationResult::UnsupportedCommand) {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
+            } else {
+                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), String(HALOperationResultToString(bracketFunc_GetRes.result)).c_str());
+            }
+
+            
             handler = &CachedDeviceRead::Handler_Invalid;
             return false;
         }
@@ -186,7 +197,7 @@ namespace DALHAL {
         }
         
 
-        auto* ctx = new BracketContext{outDevice, bracketFunc, subOperand};
+        auto* ctx = new BracketContext{outDevice, bracketFunc_GetRes.fn, subOperand};
 
         context = ctx;
         handler = &CachedDeviceRead::Handler_Bracket;

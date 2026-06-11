@@ -86,11 +86,11 @@ namespace DALHAL {
         //else
         //    printf("create cached device access: %s\n", uidPath.ToString().c_str());
         
-        readToHalValueFunc = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, zcStrFuncName);
-        writeFromHalValueFunc = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, zcStrFuncName);
-        execFunc = GetDeviceFunction<FunctionTypes::Exec>(device, zcStrFuncName);
-        bracketReadFunc = GetDeviceFunction<FunctionTypes::BracketOpRead>(device, zcStrFuncName);
-        bracketWriteFunc = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, zcStrFuncName);
+        readToHalValueFunc = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, zcStrFuncName).fn;
+        writeFromHalValueFunc = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, zcStrFuncName).fn;
+        execFunc = GetDeviceFunction<FunctionTypes::Exec>(device, zcStrFuncName).fn;
+        bracketReadFunc = GetDeviceFunction<FunctionTypes::BracketOpRead>(device, zcStrFuncName).fn;
+        bracketWriteFunc = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, zcStrFuncName).fn;
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
         return true;

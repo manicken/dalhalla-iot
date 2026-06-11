@@ -39,6 +39,8 @@ namespace DALHAL {
         PubSubClient& mqttClient;
         std::string hass_uid;
 
+        virtual HALOperationResult ha_apply(const ZeroCopyString& zcVal);
+
         HA_DeviceEntity* findHassDevice(const ZeroCopyString& zcHassUid) override;
     };
 

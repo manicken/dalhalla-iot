@@ -99,28 +99,8 @@ namespace DALHAL {
         PrintWriteFailOperation("HALValue&, HALValue&"); 
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult Device::read(const HALReadStringRequestValue& val) { 
-        PrintReadFailOperation("HALReadStringRequestValue&"); 
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult Device::write(const HALWriteStringRequestValue& val) { 
-        PrintWriteFailOperation("HALWriteStringRequestValue&"); 
-        return HALOperationResult::UnsupportedOperation; 
-    }
-    HALOperationResult Device::read(const HALReadValueByCmd& val) { 
-        PrintReadFailOperation("HALReadValueByCmd&"); 
-        return HALOperationResult::UnsupportedOperation; 
-    }
-    HALOperationResult Device::write(const HALWriteValueByCmd& val) { 
-        PrintWriteFailOperation("HALWriteValueByCmd&"); 
-        return HALOperationResult::UnsupportedOperation; 
-    }
     HALOperationResult Device::exec() { 
         PrintExecFailOperation(""); 
-        return HALOperationResult::UnsupportedOperation; 
-    }
-    HALOperationResult Device::exec(const ZeroCopyString& zcStr) { 
-        PrintExecFailOperation("ZeroCopyString&"); 
         return HALOperationResult::UnsupportedOperation; 
     }
 

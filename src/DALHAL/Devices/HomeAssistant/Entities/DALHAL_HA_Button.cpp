@@ -70,7 +70,7 @@ namespace DALHAL {
         //return ret;
     }
 
-    HALOperationResult HA_Button::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Button::ha_apply(const ZeroCopyString& zcVal) {
         return cda->Exec();
     }
 

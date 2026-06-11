@@ -55,6 +55,9 @@ namespace DALHAL {
             case HALOperationResult::ReactiveEventsNotSupported: return F("ReactiveEventsNotSupported");
             case HALOperationResult::ReactiveEventByNameNotFound: return F("ReactiveEventByNameNotFound");
             case HALOperationResult::DataNotReady: return F("DataNotReady");
+            case HALOperationResult::RegistryDefineNotFound: return F("RegistryDefineNotFound");
+            case HALOperationResult::FunctionTableNotFound: return F("FunctionTableNotFound");
+            case HALOperationResult::FunctionTable_t_NotFound: return F("FunctionTable_t_NotFound");
             
             default:
                 Serial.print("");// force the compiler to not use lockup table which consume 400 bytes ram

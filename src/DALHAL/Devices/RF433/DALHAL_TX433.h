@@ -31,6 +31,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #define DALHAL_KEYNAME_TX433_UNITS "units"
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
@@ -53,6 +55,10 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
+
+    private:
         uint8_t pin = 0; // if pin would be used
         Device** units;
         int unitCount;
@@ -64,7 +70,7 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-        HALOperationResult write(const HALWriteStringRequestValue &val) override;
+        static HALOperationResult writeByString(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
 
         
         void PrintTo(StringBuilderStreamer& sbs) override;

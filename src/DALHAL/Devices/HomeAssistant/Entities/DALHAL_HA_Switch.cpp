@@ -111,14 +111,14 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation;
     };
 
-    HALOperationResult HA_Switch::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Switch::ha_apply(const ZeroCopyString& zcVal) {
         if (momentary == false) {
             HALValue valState;
             HALOperationResult res = HALOperationResult::NotSet;
             //const char* stateTopicStr = topicBasePath.SetAndGet(TopicBasePathMode::State);
-            if (cmd.Equals(HA_Switch::PAYLOAD_ON)) {
+            if (zcVal.Equals(HA_Switch::PAYLOAD_ON)) {
                 valState.set(true);
-            } else if (cmd.Equals(HA_Switch::PAYLOAD_OFF)) {
+            } else if (zcVal.Equals(HA_Switch::PAYLOAD_OFF)) {
                 valState.set(false);
             } else {
                 return HALOperationResult::UnsupportedCommand; // or some error code

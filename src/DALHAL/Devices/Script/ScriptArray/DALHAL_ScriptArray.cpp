@@ -98,12 +98,6 @@ namespace DALHAL {
 
     }
 
-    HALOperationResult ScriptArray::read(const HALReadStringRequestValue& val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     HALOperationResult ScriptArray::read(const HALValue& bracketSubscriptVal, HALValue& val) {
         int index = bracketSubscriptVal.toInt();
         if (index < 0 || index >= valueCount) {

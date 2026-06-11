@@ -74,7 +74,7 @@ namespace DALHAL {
                 // only a funcname call
                 ReadToHALValue_Function_Context* ctx = new ReadToHALValue_Function_Context();
                 ctx->device = device;
-                ctx->handler = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName);
+                ctx->handler = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName).fn;
                 // Assign context, handler, and deleter
                 context = ctx;
                 deleter = DeleteAs<ReadToHALValue_Function_Context>;

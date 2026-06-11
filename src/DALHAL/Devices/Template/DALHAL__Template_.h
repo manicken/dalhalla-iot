@@ -88,19 +88,12 @@ namespace DALHAL {
         HALOperationResult write(const HALValue& val) override;
         HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
         HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
-        HALOperationResult read(const HALReadStringRequestValue& val) override;
-        HALOperationResult write(const HALWriteStringRequestValue& val) override;
-        HALOperationResult read(const HALReadValueByCmd& val) override;
-        HALOperationResult write(const HALWriteValueByCmd& val) override;
 
         HALValue* GetValueDirectAccessPtr() override;
 
         /** Executes a device action that requires no parameters. */
         HALOperationResult exec() override ;
-        /** Executes a device action with a provided command string. */
-        HALOperationResult exec(const ZeroCopyString& cmd) override ;
-
-        
+                
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

@@ -35,7 +35,6 @@
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_UID_Path.h>
 #include <DALHAL/Core/Types/DALHAL_OperationResult.h>
-#include <DALHAL/Core/Types/DALHAL_Operations.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveEvent.h>
 
@@ -74,31 +73,12 @@ namespace DALHAL {
 
         virtual const Registry::DefineBase* GetRegistryDefine() = 0;
         
+        /** Executes a device action that requires no parameters. */
+        virtual HALOperationResult exec();
         virtual HALOperationResult read(HALValue& val);
         virtual HALOperationResult write(const HALValue& val);
         virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
         virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
-        /* TODO START: remove following functions in favor of function table */
-        /* they are only used by the CLI API so it should be easy */
-        /* yes they cannot be used by the script engine or any other runtime stuff as
-         * strings should not be stored and/or parsed at runtime unless there is no other option
-         * actually the use lockup internally so moving that into CLI API would save some flash
-         * and also make the code cleaner as there is not much to reason about
-         */
-        virtual HALOperationResult read(const HALReadStringRequestValue& val);
-        virtual HALOperationResult write(const HALWriteStringRequestValue& val);
-        virtual HALOperationResult read(const HALReadValueByCmd& val);
-        virtual HALOperationResult write(const HALWriteValueByCmd& val);
-   
-        /** 
-         * Executes a device action with a provided command string, 
-         * only used when doing remote cmd:s, i.e. not used by script.
-         * a special note: Home Assistant currently is using it to decode 
-         * state update
-         */
-        
-        virtual HALOperationResult exec(const ZeroCopyString& cmd);
-        /* TODO END: remove following functions in favor of function table */
 
         virtual HALValue* GetValueDirectAccessPtr();
 
@@ -111,10 +91,6 @@ namespace DALHAL {
         /** used to find sub/leaf devices @ "group devices" */
         virtual DeviceFindResult findDevice(UIDPath& path, Device*& outDevice);
 
-        /** Executes a device action that requires no parameters. */
-        virtual HALOperationResult exec();
-        
-        //virtual String ToString();
         virtual void PrintTo(StringBuilderStreamer& sbs);
 
         static bool DisabledOrCommentItem(const JsonVariant& jsonObj);

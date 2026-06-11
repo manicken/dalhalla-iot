@@ -36,7 +36,6 @@
 #include <string>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_UID_Path.h>
-#include <DALHAL/Core/Types/DALHAL_Operations.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>

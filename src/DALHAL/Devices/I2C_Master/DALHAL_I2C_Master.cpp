@@ -128,20 +128,6 @@ namespace DALHAL {
         }
     }
 
-    HALOperationResult I2C_Master::read(const HALReadStringRequestValue& val) {
-        
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
-    HALOperationResult I2C_Master::write(const HALWriteStringRequestValue& val) {
-        
-        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     /* static */
     HALOperationResult I2C_Master::write_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
         if (zcParams.IsEmpty()) {

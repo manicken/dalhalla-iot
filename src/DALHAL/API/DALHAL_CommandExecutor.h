@@ -43,7 +43,7 @@
 #define DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS      "printlog"
 
 
-
+#define DALHAL_CMD_EXEC_INT32_TYPE        "int32"
 #define DALHAL_CMD_EXEC_UINT32_TYPE        "uint32"
 #define DALHAL_CMD_EXEC_BOOL_TYPE          "bool"
 #define DALHAL_CMD_EXEC_FLOAT_TYPE         "float"
@@ -108,6 +108,13 @@ namespace DALHAL {
             ZeroCopyString zcCmd;
             ZeroCopyString zcParameters;
             ReadWriteCmdParameters(ZeroCopyString& zcStr);
+
+        };
+
+        struct ExecCmdParameters {
+            ZeroCopyString zcUid;
+            ZeroCopyString zcCmd;
+            ExecCmdParameters(ZeroCopyString& zcStr);
 
         };
         static bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);

@@ -33,4 +33,9 @@ namespace DALHAL {
         }
         return nullptr;
     }
+
+    HALOperationResult HA_DeviceEntity::ha_apply(const ZeroCopyString& zcVal) {
+        return HALOperationResult::UnsupportedOperation;
+    }
+
 }

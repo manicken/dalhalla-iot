@@ -212,37 +212,7 @@ namespace DALHAL {
 #endif
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult _Template_::read(const HALReadStringRequestValue& val) {
-#if HAS_REACTIVE_READ(TEMPLATE)
-        triggerRead();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::write(const HALWriteStringRequestValue& val) {
-#if HAS_REACTIVE_WRITE(TEMPLATE)
-        triggerWrite();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::read(const HALReadValueByCmd& val) {
-#if HAS_REACTIVE_READ(TEMPLATE)
-        triggerRead();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::write(const HALWriteValueByCmd& val) {
-#if HAS_REACTIVE_WRITE(TEMPLATE)
-        triggerWrite();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
     HALOperationResult _Template_::exec() {
-#if HAS_REACTIVE_EXEC(TEMPLATE)
-        triggerExec();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::exec(const ZeroCopyString& cmd) {
 #if HAS_REACTIVE_EXEC(TEMPLATE)
         triggerExec();
 #endif

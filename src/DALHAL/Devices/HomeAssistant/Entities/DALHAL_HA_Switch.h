@@ -67,7 +67,7 @@ namespace DALHAL {
         HALOperationResult read(HALValue& val) override;
         HALOperationResult write(const HALValue& val) override;
 
-        HALOperationResult exec(const ZeroCopyString& cmd) override;
+        HALOperationResult ha_apply(const ZeroCopyString& zcVal) override;
 
         
         void PrintTo(StringBuilderStreamer& sbs) override;

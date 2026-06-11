@@ -83,9 +83,6 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
 
         void loop() override;
-
-        HALOperationResult write(const HALWriteValueByCmd& val) override;
-        HALOperationResult write(const HALWriteStringRequestValue& val) override;
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

@@ -183,20 +183,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult WS2812::write(const HALWriteValueByCmd& val) {
-
-        FunctionTypes::WriteHALValue fn = GetDeviceFunction<FunctionTypes::WriteHALValue>(FunctionTable.writeValue, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.value);
-    }
-
-    HALOperationResult WS2812::write(const HALWriteStringRequestValue& val) {
-
-        FunctionTypes::WriteString fn = GetDeviceFunction<FunctionTypes::WriteString>(FunctionTable.writeString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     void WS2812::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
 

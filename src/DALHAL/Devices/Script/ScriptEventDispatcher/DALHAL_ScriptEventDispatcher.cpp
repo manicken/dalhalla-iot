@@ -69,7 +69,7 @@ namespace DALHAL {
         return new ScriptEventDispatcher(context);
     }
 
-    HALOperationResult ScriptEventDispatcher::exec(const ZeroCopyString& cmd) {
+    HALOperationResult ScriptEventDispatcher::exec() {
 #if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
         triggerExec();
 #endif

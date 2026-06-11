@@ -110,7 +110,6 @@ namespace DALHAL {
         void loop() override;
 
         HALOperationResult write(const HALValue& val) override;
-        HALOperationResult write(const HALWriteStringRequestValue& val) override;
 
         HALOperationResult read(HALValue& val) override;
 

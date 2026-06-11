@@ -178,10 +178,4 @@ namespace DALHAL {
 
     }
 
-    HALOperationResult ThingSpeak::read(const HALReadStringRequestValue& val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
 }

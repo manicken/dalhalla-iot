@@ -94,9 +94,9 @@ namespace DALHAL {
         return HALOperationResult::UnsupportedOperation;
     };
 
-    HALOperationResult HA_Number::exec(const ZeroCopyString& cmd) {
+    HALOperationResult HA_Number::ha_apply(const ZeroCopyString& zcVal) {
 
-        NumberResult numberRes = cmd.ConvertStringToNumber();     
+        NumberResult numberRes = zcVal.ConvertStringToNumber();     
         HALValue valState;
         switch (numberRes.type) {
             case NumberType::UINT32:

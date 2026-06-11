@@ -62,7 +62,7 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult exec(const ZeroCopyString& cmd) override;
+        HALOperationResult ha_apply(const ZeroCopyString& zcVal) override;
         HALOperationResult exec() override;
 
         

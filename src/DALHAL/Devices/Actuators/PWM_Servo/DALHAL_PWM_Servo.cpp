@@ -239,33 +239,6 @@ namespace DALHAL {
     }
 
     /*virtual override*/
-    HALOperationResult PWM_Servo::write(const HALWriteStringRequestValue& val) {
-
-        if (val.parameters.IsEmpty() || val.parameters.IsEmpty() || (val.parameters.ValidNumber() == false)) {
-            return HALOperationResult::InvalidArgument;
-        }
-
-        auto entry = GetDeviceFunctionEntry<FunctionTypes::WriteHALValue>(FunctionTable.writeValue, val.cmd);
-        if (entry == nullptr) { return HALOperationResult::UnsupportedCommand; }
-
-        if (FunctionValueType::HasFlag(entry->rwTypeMask, FunctionValueType::_UInt_)) {
-            uint32_t iVal;
-            if (val.parameters.ConvertTo_uint32(iVal) == false) {
-                return HALOperationResult::InvalidArgument;
-            }
-            return entry->fn(this, iVal);
-        }
-        else if (FunctionValueType::HasAnyFlag(entry->rwTypeMask, FunctionValueType::_Number_)) {
-            float fVal;
-            if (val.parameters.ConvertTo_float(fVal) == false) {
-                return HALOperationResult::InvalidArgument;
-            }
-            return entry->fn(this, fVal);
-        }
-        return HALOperationResult::InvalidArgument;
-    }
-
-    /*virtual override*/
     HALOperationResult PWM_Servo::read(HALValue& val) {
         val = lastValue;
 #if HAS_REACTIVE(PWM_SERVO, READ)

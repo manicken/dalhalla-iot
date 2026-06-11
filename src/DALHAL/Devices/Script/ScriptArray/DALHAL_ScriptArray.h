@@ -77,8 +77,6 @@ namespace DALHAL {
 
         void begin() override;
 
-        HALOperationResult read(const HALReadStringRequestValue& val) override;
-
         HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
         HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
        

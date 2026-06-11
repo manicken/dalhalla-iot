@@ -144,11 +144,6 @@ namespace DALHAL {
 
         HALOperationResult write(const HALValue& val) override;
         HALOperationResult read(HALValue& val) override;
-        HALOperationResult read(const HALReadValueByCmd& val) override;
-        HALOperationResult read(const HALReadStringRequestValue& val) override;
-
-        /** Executes a device action with a provided command string, only used when doing remote cmd:s, i.e. not used by script. */
-        HALOperationResult exec(const ZeroCopyString& cmd) override;
 
         void PrintTo(StringBuilderStreamer& sbs) override;
         

@@ -81,8 +81,6 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
         void loop() override;
-        HALOperationResult read(const HALReadStringRequestValue &val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 

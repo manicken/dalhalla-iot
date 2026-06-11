@@ -136,21 +136,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult DHT::read(const HALReadValueByCmd &val) {
-        if (val.out_value.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
-        if (!dataValid) return HALOperationResult::DataNotReady;
-
-        FunctionTypes::ReadToHALValue fn = GetDeviceFunction<FunctionTypes::ReadToHALValue>(FunctionTable.readValue, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.out_value);
-    }
-
-    HALOperationResult DHT::read(const HALReadStringRequestValue &val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { GlobalLogger.Error(F("DHT - unsupported cmd:"), val.cmd); return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     HALOperationResult DHT::readString_temperature_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
         sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("temp"),  static_cast<DHT*>(device)->data.temperature);

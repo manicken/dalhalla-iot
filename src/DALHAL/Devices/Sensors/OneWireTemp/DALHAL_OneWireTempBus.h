@@ -81,7 +81,6 @@ namespace DALHAL {
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
         void requestTemperatures();
         void readAll();
-        HALOperationResult read(const HALReadStringRequestValue& val) override;
 
         void getAllDevices(bool printTemp, bool onlyNewDevices, StringBuilderStreamer& sbs);
         

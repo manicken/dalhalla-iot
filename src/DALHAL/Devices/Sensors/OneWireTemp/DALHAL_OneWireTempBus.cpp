@@ -141,12 +141,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult OneWireTempBus::read(const HALReadStringRequestValue& val) {
-        FunctionTypes::ReadString fn = GetDeviceFunction<FunctionTypes::ReadString>(OneWireTempBusAtRoot::FunctionTable.readString, val.cmd);
-        if (fn == nullptr) { return HALOperationResult::UnsupportedCommand; }
-        return fn(this, val.parameters, val.sbs);
-    }
-
     bool OneWireTempBus::haveDeviceWithRomID(OneWireAddress addr) {
         if (deviceCount == 0 || devices == nullptr) return false;
         for (int i=0;i<deviceCount;i++) {

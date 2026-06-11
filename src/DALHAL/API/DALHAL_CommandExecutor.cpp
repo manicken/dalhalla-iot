@@ -33,6 +33,9 @@
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
+
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #if defined(ESP8266) || defined(ESP32)
@@ -94,6 +97,11 @@ namespace DALHAL {
         zcUid = zcStr.SplitOffHead('/');
         zcCmd = zcUid.SplitOffTail('#');
         zcParameters = zcStr; // the value is the rest
+    }
+
+    CommandExecutor::ExecCmdParameters::ExecCmdParameters(ZeroCopyString& zcStr) {
+        zcUid = zcStr.SplitOffHead('/');
+        zcCmd = zcUid.SplitOffTail('#');
     }
     
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -504,7 +512,17 @@ namespace DALHAL {
 
             HALValue halValue = uintValue;
 
-            writeResult = outDevice->write(halValue);
+            if (params.zcCmd.IsEmpty()) {
+                writeResult = outDevice->write(halValue);
+            } else {
+                auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(outDevice, params.zcCmd);
+                if (fnRes.result == HALOperationResult::Success) {
+                    writeResult = fnRes.fn(outDevice, halValue);
+                } else {
+                    writeResult = fnRes.result;
+                }
+            }
+
             if (writeResult == HALOperationResult::Success) {
                 sbs.write_json_object_begin();
                 sbs.write_jsonNumber(F("Value written"), uintValue);
@@ -522,7 +540,18 @@ namespace DALHAL {
 
                 HALValue halValue = uintValue;
 
-                writeResult = outDevice->write(halValue);
+                if (params.zcCmd.IsEmpty()) {
+                    writeResult = outDevice->write(halValue);
+                } else {
+                    auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(outDevice, params.zcCmd);
+                    if (fnRes.result == HALOperationResult::Success) {
+                        writeResult = fnRes.fn(outDevice, halValue);
+                    } else {
+                        writeResult = fnRes.result;
+                    }
+                }
+
+
                 if (writeResult == HALOperationResult::Success) {
                     sbs.write_json_object_begin();
                     sbs.write_jsonNumber(F("Value written"), uintValue);
@@ -539,7 +568,18 @@ namespace DALHAL {
 
                 HALValue halValue = floatValue;
 
-                writeResult = outDevice->write(halValue);
+                if (params.zcCmd.IsEmpty()) {
+                    writeResult = outDevice->write(halValue);
+                } else {
+                    auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(outDevice, params.zcCmd);
+                    if (fnRes.result == HALOperationResult::Success) {
+                        writeResult = fnRes.fn(outDevice, halValue);
+                    } else {
+                        writeResult = fnRes.result;
+                    }
+                }
+
+
                 if (writeResult == HALOperationResult::Success) {
                     
                     sbs.write_json_object_begin();
@@ -549,9 +589,14 @@ namespace DALHAL {
             }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
-            HALWriteStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
+            
+            auto fnRes = GetDeviceFunction<FunctionTypes::WriteString>(outDevice, params.zcCmd);
+            if (fnRes.result == HALOperationResult::Success) {
+                writeResult = fnRes.fn(outDevice, params.zcParameters, sbs);
+            } else {
+                writeResult = fnRes.result;
+            }
 
-            writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 sbs.write_json_object_begin();
                 sbs.write_jsonString(F("String written"), params.zcParameters);
@@ -560,9 +605,13 @@ namespace DALHAL {
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
             
-            HALWriteStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
+            auto fnRes = GetDeviceFunction<FunctionTypes::WriteString>(outDevice, params.zcCmd);
+            if (fnRes.result == HALOperationResult::Success) {
+                writeResult = fnRes.fn(outDevice, params.zcParameters, sbs);
+            } else {
+                writeResult = fnRes.result;
+            }
 
-            writeResult = outDevice->write(strHalValue);
             if (writeResult == HALOperationResult::Success) {
                 sbs.write_json_object_begin();
                 sbs.write_jsonString(F("Json string written"), params.zcParameters);
@@ -615,52 +664,93 @@ namespace DALHAL {
 
         if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_BOOL_TYPE))) {
             HALValue halValue;
-
-            readResult = outDevice->read(halValue);
+            
+            if (params.zcCmd.IsEmpty()) {
+                readResult = outDevice->read(halValue);
+            }
+            else {
+                auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, params.zcCmd);
+                if (fnRes.result == HALOperationResult::Success) {
+                    readResult = fnRes.fn(outDevice, halValue);
+                } else {
+                    readResult = fnRes.result;
+                }
+            }
 
             if (readResult == HALOperationResult::Success) {
-                sbs.write(halValue.toUInt());
+                sbs.write(halValue.toBool());
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_UINT32_TYPE))) {
             HALValue halValue;
-
-            readResult = outDevice->read(halValue);
+            
+            if (params.zcCmd.IsEmpty()) {
+                readResult = outDevice->read(halValue);
+            }
+            else {
+                auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, params.zcCmd);
+                if (fnRes.result == HALOperationResult::Success) {
+                    readResult = fnRes.fn(outDevice, halValue);
+                } else {
+                    readResult = fnRes.result;
+                }
+            }
 
             if (readResult == HALOperationResult::Success) {
                 sbs.write(halValue.toUInt());
             }
-        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
-
-            if (params.zcCmd.Length() == 0) {
-                HALValue halValue;
-
+        }  else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_INT32_TYPE))) {
+            HALValue halValue;
+            
+            if (params.zcCmd.IsEmpty()) {
                 readResult = outDevice->read(halValue);
-
-                if (readResult == HALOperationResult::Success) {
-                    sbs.write(halValue.toFloat());
-                }
             }
             else {
-                HALValue halValue;
-                HALReadValueByCmd valByCmd(halValue, params.zcCmd);
-
-                readResult = outDevice->read(valByCmd);
-
-                if (readResult == HALOperationResult::Success) {
-                    sbs.write(halValue.toFloat());
+                auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, params.zcCmd);
+                if (fnRes.result == HALOperationResult::Success) {
+                    readResult = fnRes.fn(outDevice, halValue);
+                } else {
+                    readResult = fnRes.result;
                 }
+            }
+
+            if (readResult == HALOperationResult::Success) {
+                sbs.write(halValue.toInt());
+            }
+        } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_FLOAT_TYPE))) {
+            HALValue halValue;
+
+            if (params.zcCmd.IsEmpty()) {
+                readResult = outDevice->read(halValue);
+            }
+            else {
+                auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(outDevice, params.zcCmd);
+                if (fnRes.result == HALOperationResult::Success) {
+                    readResult = fnRes.fn(outDevice, halValue);
+                } else {
+                    readResult = fnRes.result;
+                }
+            }
+
+            if (readResult == HALOperationResult::Success) {
+                sbs.write(halValue.toFloat());
             }
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_STRING_TYPE))) {
             
-            HALReadStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
-
-            readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
+            auto fnRes = GetDeviceFunction<FunctionTypes::ReadString>(outDevice, params.zcCmd);
+            if (fnRes.result == HALOperationResult::Success) {
+                readResult = fnRes.fn(outDevice, params.zcParameters, sbs);
+            } else {
+                readResult = fnRes.result;
+            }
 
         } else if (params.zcType.EqualsIC(F(DALHAL_CMD_EXEC_JSON_STR_TYPE))) {
 
-            HALReadStringRequestValue strHalValue(params.zcCmd, params.zcParameters, sbs);
-  
-            readResult = outDevice->read(strHalValue); // the result if any is directly written to sbs
+            auto fnRes = GetDeviceFunction<FunctionTypes::ReadString>(outDevice, params.zcCmd);
+            if (fnRes.result == HALOperationResult::Success) {
+                readResult = fnRes.fn(outDevice, params.zcParameters, sbs);
+            } else {
+                readResult = fnRes.result;
+            }
 
         } else {
             GlobalLogger.Error(F("Unknown type for reading."));
@@ -679,28 +769,31 @@ namespace DALHAL {
     }
 
     bool CommandExecutor::execCmd(ZeroCopyString& zcStr, CommandCallback cb) {
-        ZeroCopyString zcPath = zcStr.SplitOffHead('/');
+        ExecCmdParameters params(zcStr);
         // check if have uid given
-        if (zcPath.IsEmpty()) {
+        if (params.zcUid.IsEmpty()) {
             GlobalLogger.Error(F("uid path empty"));
             return false;
         }
         // first check if device exists
-        UIDPath uidPath(zcPath);
+        UIDPath uidPath(params.zcUid);
         Device* outDevice = nullptr;
         DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, outDevice);
         if (devFindRes != DeviceFindResult::Success) {
-            GlobalLogger.Error(F("device not found: "), zcPath);
+            GlobalLogger.Error(F("device not found: "), params.zcUid);
             GlobalLogger.setLastEntrySource(DeviceFindResultToString(devFindRes));
             return false;
         }
 
         HALOperationResult res = HALOperationResult::NotSet;
-        if (zcStr.NotEmpty()) {
-            res = outDevice->exec(zcStr);
+
+        auto fnRes = GetDeviceFunction<FunctionTypes::Exec>(outDevice, params.zcCmd);
+        if (fnRes.result == HALOperationResult::Success) {
+            res = fnRes.fn(outDevice);
         } else {
-            res = outDevice->exec();
+            res = outDevice->exec(); // try fallback
         }
+
         if (res != HALOperationResult::Success) {
             GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(res)).c_str());
             GlobalLogger.setLastEntrySource(outDevice->Type);
