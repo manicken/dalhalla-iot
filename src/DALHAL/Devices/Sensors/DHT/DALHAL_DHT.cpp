@@ -137,25 +137,25 @@ namespace DALHAL {
     }
 
     HALOperationResult DHT::readString_temperature_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
-        sbs.write_json_object_begin();
+        //sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("temp"),  static_cast<DHT*>(device)->data.temperature);
-        sbs.write_json_object_end();
+        //sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
 
     HALOperationResult DHT::readString_humidity_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
-        sbs.write_json_object_begin();
+        //sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("humidity"), static_cast<DHT*>(device)->data.humidity);
-        sbs.write_json_object_end();
+        //sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
 
     HALOperationResult DHT::readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
-        sbs.write_json_object_begin();
+        //sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("humidity"), static_cast<DHT*>(device)->data.humidity);
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("temp"),  static_cast<DHT*>(device)->data.temperature);
-        sbs.write_json_object_end();
+        //sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
     

@@ -122,9 +122,8 @@ namespace DALHAL {
          * as that would be useful when passing it to other parsing functions
          */
         static bool execute(ZeroCopyString& zcStr, CommandCallback cb);
-    private:
+
         struct ReadWriteCmdParameters {
-            ZeroCopyString zcType;
             ZeroCopyString zcUid;
             ZeroCopyString zcCmd;
             ZeroCopyString zcParameters;
@@ -138,11 +137,6 @@ namespace DALHAL {
             ExecCmdParameters(ZeroCopyString& zcStr);
 
         };
-        static bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);
-        static bool writeCmd(ZeroCopyString& zcStr, CommandCallback cb);
-        static bool readCmd(ZeroCopyString& zcStr, CommandCallback cb);
-        static bool execCmd(ZeroCopyString& zcStr, CommandCallback cb);
-
-        static void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
+        
     };
 }

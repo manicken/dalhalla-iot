@@ -128,6 +128,7 @@ namespace DALHAL {
 
     HALOperationResult ScriptArray::readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
         ScriptArray& self = *static_cast<ScriptArray*>(device);
+        sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
         for (int i=0;i<self.valueCount;i++) {
             if (i>0) {
@@ -146,12 +147,12 @@ namespace DALHAL {
 
         int32_t index = 0;
         if (zcIndex.ConvertTo_int32(index) == false) {
-            sbs.write(F("invalid index not a integer"));
+            sbs.write_jsonString(F("error"), F("invalid index not a integer"));
             return HALOperationResult::BracketOpSubscriptInvalid;
         }
 
         if (index < 0 || index >= self.valueCount) {
-            sbs.write(F("invalid index out of range"));
+            sbs.write_jsonString(F("error"), F("invalid index out of range"));
             return HALOperationResult::BracketOpSubscriptOutOffRange;
         }
         self.values[index].toString(sbs);

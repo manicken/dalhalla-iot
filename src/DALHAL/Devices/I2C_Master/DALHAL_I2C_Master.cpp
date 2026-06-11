@@ -205,7 +205,7 @@ namespace DALHAL {
         }
         uint32_t addr;
         zcAddr.ConvertTo_uint32(addr);
-        
+        sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
 
         uint8_t received = static_cast<I2C_Master*>(device)->wire->requestFrom((uint8_t)addr, (uint8_t)bytesToRead);
@@ -224,7 +224,8 @@ namespace DALHAL {
 
     /* static */
     HALOperationResult I2C_Master::list_devices(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
-        sbs.write_json_object_begin();
+        sbs.write_jsonMemberStart(F("items"));
+        sbs.write_json_array_begin();
         I2C_Master& self = *static_cast<I2C_Master*>(device);
         for (uint8_t addr=1; addr<127; ++addr) {
             self.wire->beginTransmission(addr);
@@ -237,7 +238,7 @@ namespace DALHAL {
                 sbs.write_char('"');
             }
         }
-        sbs.write_json_object_end();
+        sbs.write_json_array_end();
         return HALOperationResult::Success;
     }
 

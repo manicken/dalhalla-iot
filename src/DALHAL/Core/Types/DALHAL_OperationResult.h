@@ -74,6 +74,7 @@ namespace DALHAL {
         FunctionTableNotFound = 51,
         FunctionTable_t_NotFound = 52,
 
+        DeviceUIDPathEmpty = 60,
 
         NotSet = 99,
     };

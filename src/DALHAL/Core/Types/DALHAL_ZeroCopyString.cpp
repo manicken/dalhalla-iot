@@ -606,6 +606,17 @@ namespace DALHAL {
         return true;
     }
 
+    bool ZeroCopyString::ConvertTo_bool(bool& outValue) const {
+        if (EqualsIC(F("true")) || Equals('1')) {
+            outValue = true;
+            return true;
+        } else if (EqualsIC(F("false")) || Equals('0')) {
+            outValue = false;
+            return true;
+        }
+        return false;
+    }
+
     bool ZeroCopyString::ConvertTo_uint32(uint32_t& outValue, bool allowMinusSign/* = false*/) const {
         if (Length() == 0) return false;
 

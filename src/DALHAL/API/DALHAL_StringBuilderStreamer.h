@@ -114,9 +114,13 @@ namespace DALHAL {
         void write_jsonQuoted(const __FlashStringHelper* fstr, size_t len);
         void write_jsonQuoted(const char* cstr, size_t len);
         void write_jsonQuoted_cStr(const char* cstr);
+        /** write a key followed by a colon : */
         void write_jsonMemberStart(const __FlashStringHelper* fstr);
+        /** write a key followed by a colon : */
         void write_jsonMemberStart(const __FlashStringHelper* fstr, size_t len);
+        /** write a key followed by a colon : */
         void write_jsonMemberStart(const char* cstr, size_t len);
+        /** write a key followed by a colon : */
         void write_jsonMemberStart(const char* cstr);
 
         void write_jsonString(const __FlashStringHelper* key, const char* cstr);

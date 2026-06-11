@@ -103,7 +103,9 @@ namespace DALHAL {
         OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
         for (int i=0;i<self.busCount;i++) {
             if (i>0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             OneWireTempBus::readString_getAllNewDevices_Function(self.busses[i], zcStrParameters, sbs);
+            sbs.write_json_object_end();
         }
         sbs.write_json_array_end();
         return HALOperationResult::Success;
@@ -113,7 +115,9 @@ namespace DALHAL {
         OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
         for (int i=0;i<self.busCount;i++) {
             if (i>0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             OneWireTempBus::readString_getAllNewDevicesWithTemp_Function(self.busses[i], zcStrParameters, sbs);
+            sbs.write_json_object_end();
         }
         sbs.write_json_array_end();
         return HALOperationResult::Success;
@@ -123,7 +127,9 @@ namespace DALHAL {
         OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
         for (int i=0;i<self.busCount;i++) {
             if (i>0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             OneWireTempBus::readString_getAllDevices_Function(self.busses[i], zcStrParameters, sbs);
+            sbs.write_json_object_end();
         }
         sbs.write_json_array_end();
         return HALOperationResult::Success;
@@ -133,7 +139,9 @@ namespace DALHAL {
         OneWireTempGroup& self = *static_cast<OneWireTempGroup*>(device);
         for (int i=0;i<self.busCount;i++) {
             if (i>0) { sbs.write_json_value_separator(); }
+            sbs.write_json_object_begin();
             OneWireTempBus::readString_getAllTemperatures_Function(self.busses[i], zcStrParameters, sbs);
+            sbs.write_json_object_end();
         }
         sbs.write_json_array_end();
         return HALOperationResult::Success;

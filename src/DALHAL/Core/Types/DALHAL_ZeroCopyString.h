@@ -187,6 +187,7 @@ namespace DALHAL {
         bool ConvertTo_uint32(uint32_t& outValue, bool allowMinusSign = false) const;
         bool ConvertTo_int32(int32_t& outValue) const;
         bool ConvertTo_float(float& outValue) const;
+        bool ConvertTo_bool(bool& outValue) const;
         NumberResult ConvertStringToNumber() const;
 
         char operator[](size_t idx) const;

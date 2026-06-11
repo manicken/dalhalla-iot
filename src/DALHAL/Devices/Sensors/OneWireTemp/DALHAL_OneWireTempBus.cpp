@@ -155,7 +155,7 @@ namespace DALHAL {
         uint8_t done = 0;
         OneWireAddress addr;
         bool first = true;
-        sbs.write_json_object_begin();
+        //sbs.write_json_object_begin();
         sbs.write_jsonNumber(F("pin"), pin);
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("items"));
@@ -201,7 +201,7 @@ namespace DALHAL {
             }
         }
         sbs.write_json_array_end();
-        sbs.write_json_object_end();
+        //sbs.write_json_object_end();
     }
 
     void OneWireTempBus::PrintTo(StringBuilderStreamer& sbs) {
