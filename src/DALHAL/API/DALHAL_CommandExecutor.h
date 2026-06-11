@@ -66,18 +66,39 @@ namespace DALHAL {
         const char* name;
         const char* help;
 
-        HALOperationResult (*execute)(
-            ZeroCopyString& args,
-            CommandCallback cb
-        );
+        using Execute = HALOperationResult (*)(ZeroCopyString& args, CommandCallback cb);
+        
+        Execute execute;
 
         const CommandNode* children;
+        const size_t children_count;
+
+        constexpr CommandNode(const char* name, const char* help, Execute execute, const CommandNode* children, const size_t children_count) 
+            : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
+
+        constexpr CommandNode(const char* name, const char* help, const CommandNode* children, const size_t children_count) 
+            : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
+
+        constexpr CommandNode(const char* name, const char* help, Execute execute) 
+            : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
+
+        // easier to read variants with help at the end
+        constexpr CommandNode(const char* name, Execute execute, const CommandNode* children, const size_t children_count, const char* help) 
+            : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
+
+        constexpr CommandNode(const char* name, const CommandNode* children, const size_t children_count, const char* help) 
+            : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
+
+        constexpr CommandNode(const char* name, Execute execute, const char* help) 
+            : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
     };
 
     class CommandExecutor {
     public:
 
         static std::queue<PendingRequest> g_pending;
+
+        
         
 
 #if defined(ESP32)

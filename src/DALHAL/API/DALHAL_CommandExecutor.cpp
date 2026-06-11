@@ -23,6 +23,8 @@
 
 #include "DALHAL_CommandExecutor.h"
 
+#include <DALHAL/Support/DALHAL_MACROS.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <BUILD_INFO.h>
@@ -103,7 +105,113 @@ namespace DALHAL {
         zcUid = zcStr.SplitOffHead('/');
         zcCmd = zcUid.SplitOffTail('#');
     }
+
+#define DALHAL_CMD_CHILDREN(n) n, DALHAL_ARRAY_COUNT(n)
+
+    HALOperationResult Exec_Scheduler_Cmd(ZeroCopyString& args, CommandCallback cb); // TODO to be implemented as a device
+
+    HALOperationResult Exec_Help_Cmd(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_System_Info(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_System_Heap(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_System_Reset_Restart(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_System_HeartbeatLed(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_System_Build_Ver_Print(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_WiFi_Scan(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_WiFi_Set_b64(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_WiFi_Set_Json(ZeroCopyString& args, CommandCallback cb);
+
+    HALOperationResult Exec_Hal_Exec(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_String(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_UInt32(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_Int32(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_Bool(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_Float(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_String(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_UInt32(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_Int32(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_Bool(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_Float(ZeroCopyString& args, CommandCallback cb);
+
+    HALOperationResult Exec_Hal_Config_Reload(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& args, CommandCallback cb);
+
+    HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& args, CommandCallback cb);
+    HALOperationResult Exec_Hal_Scripts_Start(ZeroCopyString& args, CommandCallback cb);
+
+    static constexpr CommandNode HalWriteItems[] = {
+        { "string", Exec_Hal_Write_String, "hal write string" },
+        { "uint32", Exec_Hal_Write_UInt32, "hal write uint32" },
+        { "int32", Exec_Hal_Write_Int32, "hal write int32" },
+        { "bool", Exec_Hal_Write_Bool, "hal write bool" },
+        { "float", Exec_Hal_Write_Float, "hal write float" },
+    };
+
+    static constexpr CommandNode HalReadItems[] = {
+        { "string", Exec_Hal_Read_String, "hal read string" },
+        { "uint32", Exec_Hal_Read_UInt32, "hal read uint32" },
+        { "int32", Exec_Hal_Read_Int32, "hal read int32" },
+        { "bool", Exec_Hal_Read_Bool, "hal read bool" },
+        { "float", Exec_Hal_Read_Float, "hal read float" },
+    };
+
+    static constexpr CommandNode HalScriptItems[] = {
+        { "reload", Exec_Hal_Scripts_Reload, "scripts reload" },
+        { "stop", Exec_Hal_Scripts_Stop, "scripts stop/pause execution" },
+        { "start", Exec_Hal_Scripts_Start, "scripts start/resume execution" },
+    };
+
+    static constexpr CommandNode HalConfigItems[] = {
+        { "reload", Exec_Hal_Config_Reload, "hal config first validate cfg from file and if success, 1. unloads the current cfg. 2. load new cfg " },
+        { "unload", Exec_Hal_Config_Unload, "hal config unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config" },
+    };
+
+    static constexpr CommandNode HalItems[] = {
+        { "exec", Exec_Hal_Exec, "run device exec cmd" },
+        { "write", DALHAL_CMD_CHILDREN(HalWriteItems), "run device write cmds" },
+        { "read", DALHAL_CMD_CHILDREN(HalReadItems), "run device read cmds" },
+        { "config", DALHAL_CMD_CHILDREN(HalConfigItems), "hal config cmds" },
+        { "scripts", DALHAL_CMD_CHILDREN(HalScriptItems), "script specific commands" }
+    };
+
+    static constexpr CommandNode WiFiItems[] = {
+        { "scan", Exec_WiFi_Scan, "Scan WiFi for AP:s" },
+        { "set_b64", Exec_WiFi_Set_b64, "Set current WiFi settings from the given b64 encoded string" },
+        { "set_json", Exec_WiFi_Set_Json, "Set current WiFi settings from the given json encoded string" },
+    };
+
+    static constexpr CommandNode SystemItems[] = {
+        
+        { "info", Exec_System_Info, "System info" },
+        { "heap", Exec_System_Heap, "Print heap info" },
+        { "reset", Exec_System_Reset_Restart, "Reset the system" },
+        { "restart", Exec_System_Reset_Restart, "Restart the system (same as reset)" },
+        { "HeartbeatLed", Exec_System_HeartbeatLed, "HeartBeatLed set timings" },
+        { "ver", Exec_System_Build_Ver_Print, "Print current build version" },
+    };
+
+    static constexpr CommandNode RootItems[] = {
+        { "hal", DALHAL_CMD_CHILDREN(HalItems), "HAL subsystem" },
+        { "system", DALHAL_CMD_CHILDREN(SystemItems), "System commands" },
+        { "wifi", DALHAL_CMD_CHILDREN(WiFiItems), "WiFi management" },
+        { "schedule", Exec_Scheduler_Cmd, "Schedule commands" }, // to be removed in the future as it would be implemented as a device
+        { "help", Exec_Help_Cmd, "Show help" }
+    };
+    const size_t RootItems_count = sizeof(RootItems) / sizeof(RootItems[0]);
     
+    HALOperationResult walk(const CommandNode* items, size_t items_count, ZeroCopyString& zcStr, CommandCallback cb) {
+        ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
+        for (size_t i=0;i<items_count;++i) {
+            const CommandNode& item = items[i];
+            if (zcCmd.EqualsIC(item.name)) {
+                if (item.execute != nullptr) {
+                    
+                }
+            }
+        }
+        return HALOperationResult::UnsupportedCommand;
+    }
+
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
 
         ZeroCopyString zcCommand = zcStr.SplitOffHead('/');
@@ -111,16 +219,16 @@ namespace DALHAL {
         bool anyErrors = false;
         if (zcCommand.EqualsIC(F("hal"))) {
             zcCommand = zcStr.SplitOffHead('/');
-            if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_WRITE_CMD))) {
+            if (zcCommand.EqualsIC(F("write"))) {
                 anyErrors = writeCmd(zcStr, cb) == false;
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_READ_CMD))) {
+            else if (zcCommand.EqualsIC(F("read"))) {
                 anyErrors = readCmd(zcStr, cb) == false;
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_CMD))) {
+            else if (zcCommand.EqualsIC(F("exec"))) {
                 anyErrors = execCmd(zcStr, cb) == false;
             }
-            else if (zcCommand.EqualsIC(F(DALHAL_CMD_EXEC_RELOAD_CFG_JSON))) {
+            else if (zcCommand.EqualsIC(F("reloadcfg"))) {
                 //long startMillis = millis();
                 anyErrors = reloadJSON(zcStr, cb) == false;
                 
