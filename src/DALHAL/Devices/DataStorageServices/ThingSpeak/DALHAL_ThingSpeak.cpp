@@ -53,8 +53,8 @@ namespace DALHAL {
     }
     
     constexpr FunctionEntry<FunctionTypes::ReadString> ThingSpeak::readStringFunctions[] = {
-        {"getLastUrlApi", &getLastUrlApi, "get the last url api string"},
-        {"simulateSend", &simulateSend, "simulate a send by generating the url api post string"}
+        {CE_MATCH_EMIT_STR("getLastUrlApi"), &getLastUrlApi, CE_EMIT_STR("get the last url api string")},
+        {CE_MATCH_EMIT_STR("simulateSend"), &simulateSend, CE_EMIT_STR("simulate a send by generating the url api post string")}
     };
 
     __attribute__((used, externally_visible))

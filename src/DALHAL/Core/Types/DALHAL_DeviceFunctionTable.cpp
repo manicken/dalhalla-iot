@@ -28,23 +28,23 @@ namespace DALHAL {
     
     void DeviceFunctionTable::PrintTo(DALHAL::StringBuilderStreamer& sbs) const{
         
-        sbs.write("\"readValue\":"); GetDeviceFunctions(readValue, sbs);
-        sbs.write(",\"writeValue\":"); GetDeviceFunctions(writeValue, sbs);
-        sbs.write(",\"exec\":"); GetDeviceFunctions(exec, sbs);
-        sbs.write(",\"readString\":"); GetDeviceFunctions(readString, sbs);
-        sbs.write(",\"writeString\":"); GetDeviceFunctions(writeString, sbs);
-        sbs.write(",\"bracketOpRead\":"); GetDeviceFunctions(bracketOpRead, sbs);
-        sbs.write(",\"bracketOpWrite\":"); GetDeviceFunctions(bracketOpWrite, sbs);
+        sbs.write(F("\"readValue\":")); GetDeviceFunctions(readValue, sbs);
+        sbs.write(F(",\"writeValue\":")); GetDeviceFunctions(writeValue, sbs);
+        sbs.write(F(",\"exec\":")); GetDeviceFunctions(exec, sbs);
+        sbs.write(F(",\"readString\":")); GetDeviceFunctions(readString, sbs);
+        sbs.write(F(",\"writeString\":")); GetDeviceFunctions(writeString, sbs);
+        sbs.write(F(",\"bracketOpRead\":")); GetDeviceFunctions(bracketOpRead, sbs);
+        sbs.write(F(",\"bracketOpWrite\":")); GetDeviceFunctions(bracketOpWrite, sbs);
     }
 
     void FunctionValueType::PrintTo(DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE mask, DALHAL::StringBuilderStreamer& sbs) {
 
         bool notFirst = false;
         sbs.write_json_array_begin();
-        if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; sbs.write("\"uint\""); }
-        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { notFirst = true; sbs.write("\"int\""); }
-        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { notFirst = true; sbs.write("\"float\""); }
-        if (notFirst) { sbs.write_json_value_separator(); } if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { notFirst = true; sbs.write("\"bool\""); }
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_UInt_)) { notFirst = true; sbs.write_jsonQuoted(F("uint")); }
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_Int_)) { if (notFirst) { sbs.write_json_value_separator(); } notFirst = true; sbs.write_jsonQuoted(F("int")); }
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_Float_)) { if (notFirst) { sbs.write_json_value_separator(); } notFirst = true; sbs.write_jsonQuoted(F("float")); }
+        if (FunctionValueType::HasFlag(mask, FunctionValueType::_Bool_)) { if (notFirst) { sbs.write_json_value_separator(); } notFirst = true; sbs.write_jsonQuoted(F("bool")); }
         sbs.write_json_array_end();
     }
 }

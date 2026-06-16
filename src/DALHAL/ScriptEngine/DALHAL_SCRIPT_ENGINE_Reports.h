@@ -24,10 +24,12 @@
 #pragma once
 
 #include <string>
+#include <WString.h> // __FlashStringHelper
 
 namespace DALHAL {
     namespace ScriptEngine {
         void ReportError(const char* msg);
+        void ReportError(const __FlashStringHelper* msg);
         void ReportWarning(const char* msg, const char* param = nullptr);
 #if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(DEBUG_PRINT_SCRIPT_ENGINE) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
         void ReportInfo(std::string msg);

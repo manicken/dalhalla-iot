@@ -116,17 +116,17 @@ namespace DALHAL {
         
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("romId"));
-        sbs.write_char('"');
+        sbs.write_doublequote();
         sbs.write_asHex(romid.bytes, 8, ':');
-        sbs.write_char('"');
+        sbs.write_doublequote();
 
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("format"));
-        sbs.write_char('"');
+        sbs.write_doublequote();
         if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write('C'); }
         else if (format == OneWireTempDeviceTempFormat::Fahrenheit) { sbs.write('F'); }
         else { sbs.write(F("other")); }
-        sbs.write_char('"');
+        sbs.write_doublequote();
 
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("value"));

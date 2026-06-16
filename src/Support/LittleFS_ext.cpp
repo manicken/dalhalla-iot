@@ -130,26 +130,34 @@ namespace LittleFS_ext
         return size;
     }
 
-    std::string GetNrSpaces(int count, bool isHtml) {
+    void GetNrSpaces(Stream &printStream, int count, bool isHtml) {
+        while (count-- > 0) {
+            if (isHtml) printStream.printf_P(PSTR("&nbsp;"));
+            else printStream.write(' ');
+        }
+    }
+
+    /*std::string GetNrSpaces(int count, bool isHtml) {
         std::string str;
         while (count-- > 0) {
             if (isHtml) str.append("&nbsp;");
-            else str.append(" ");
+            else str += ' ';
         }
         return str;
-    }
-    void listDir(Stream &printStream, const char *dirname, uint8_t level) {
-        printStream.printf(GetNrSpaces(level, false).c_str());
-        printStream.printf("Listing directory: %s\r\n", dirname);
+    }*/
+    /*void listDir(Stream &printStream, const char *dirname, uint8_t level) {
+        GetNrSpaces(printStream, level, false);
+        //printStream.printf(GetNrSpaces(level, false).c_str());
+        printStream.printf_P(PSTR("Listing directory: %s\r\n"), dirname);
         level+=2;
 
         File root = LittleFS.open(dirname, "r");
         if (!root) {
-            printStream.println(" - failed to open directory");
+            printStream.printf_P(PSTR(" - failed to open directory"));
             return;
         }
         if (!root.isDirectory()) {
-            printStream.println(" - not a directory");
+            printStream.printf_P(PSTR(" - not a directory"));
             return;
         }
 
@@ -157,8 +165,9 @@ namespace LittleFS_ext
         
         while (file) {
             if (file.isDirectory()) {
-                printStream.printf(GetNrSpaces(level, false).c_str());
-                printStream.print("DIR : ");
+                GetNrSpaces(printStream, level, false);
+               // printStream.printf(GetNrSpaces(level, false).c_str());
+                printStream.printf_P(PSTR("DIR : "));
                 printStream.println(file.name());
 #if defined(ESP32)
                 listDir(printStream, file.path(), level + 2);
@@ -167,21 +176,22 @@ namespace LittleFS_ext
 #endif
                 
             } else {
-                printStream.printf(GetNrSpaces(level, false).c_str());
-                printStream.print("FILE: ");
+                GetNrSpaces(printStream, level, false);
+                //printStream.printf(GetNrSpaces(level, false).c_str());
+                printStream.printf_P(PSTR("FILE: "));
                 printStream.print(file.name());
-                printStream.print("\tSIZE: ");
+                printStream.printf_P(PSTR("\tSIZE: "));
                 printStream.println(file.size());
             }
             file = root.openNextFile();
         }
         printStream.println();
-    }
+    }*/
     
     
 
-    void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level/* = 0*/) {
-        // Indentation helper
+    //void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level/* = 0*/) {
+    /*    // Indentation helper
         auto indent = [&](uint8_t l) -> std::string {
             std::string s;
             for (uint8_t i = 0; i < l; i++) s += (mode == ListMode::HTML ? "&nbsp;" : " ");
@@ -261,7 +271,7 @@ namespace LittleFS_ext
 
         if (mode == ListMode::JSON) str.append("]}");
         else str.append(mode == ListMode::HTML ? "<br>" : "\r\n");
-    }
+    }*/
 }
 
 #endif

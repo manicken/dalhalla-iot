@@ -45,7 +45,8 @@ namespace DALHAL {
             for (int i=0;i<itemsCount;i++) {
                 StatementBlock& statementItem = items[i];
                 if (statementItem.handler == nullptr) {
-                    printf("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n");
+                    
+                    GlobalLogger.Error(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
                     break;
                 }
                 HALOperationResult res = statementItem.handler(statementItem.context);
@@ -107,7 +108,7 @@ namespace DALHAL {
             //when consumed we are at the then
             ScriptToken& thenToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
             if (thenToken.type != ScriptTokenType::Then) {
-                thenToken.ReportTokenError(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR: is not a then token: ");
+                thenToken.ReportTokenError(F(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR: is not a then token: "));
                 return;
             }
             // here extract the itemsCount
@@ -119,7 +120,7 @@ namespace DALHAL {
 
             for (int i=0;i<itemsCount;i++) {
                 if (tokens.SkipIgnoresAndEndIf() == false) {
-                    printf("SERIOUS ERROR - reached end\n");
+                    GlobalLogger.Error(F("SERIOUS ERROR - reached end\n"));
                     break;
                 }
                 items[i].Set(tokens); // each call should consume all tokens
@@ -138,7 +139,7 @@ namespace DALHAL {
 
             for (int i=0;i<itemsCount;i++) {
                 if (tokens.SkipIgnoresAndEndIf() == false) {
-                    printf("SERIOUS ERROR - reached end\n");
+                    GlobalLogger.Error(F("SERIOUS ERROR - reached end\n"));
                     break;
                 }
                 items[i].Set(tokens);
@@ -153,7 +154,7 @@ namespace DALHAL {
         {
             elseBranchFound = false;
             ScriptToken& ifToken = tokens.Current(); // this now points to the if-type token
-            if (ifToken.type != ScriptTokenType::If) { printf("\nERROR ----- ifToken.type != TokenType::If\n");}
+            if (ifToken.type != ScriptTokenType::If) { GlobalLogger.Error(F("\nERROR ----- ifToken.type != TokenType::If\n"));}
             branchItemsCount = ifToken.itemsInBlock;
             if (ifToken.hasElse == 1) branchItemsCount--; // minus one as the else case is handled separately
             //printf("\n----------------------------------------------------------------- branchItemsCount:%d\n",branchItemsCount);
@@ -166,7 +167,7 @@ namespace DALHAL {
                 //printf("\n---------------------------- loading brachitem:%d\n",i);
                 ScriptToken& token = tokens.Current();
                 if (token.type != ScriptTokenType::ElseIf) {
-                    printf("\n ERROR ----  TOKEN IS NOT A ELSEIF\n");
+                    GlobalLogger.Error(F("\n ERROR ----  TOKEN IS NOT A ELSEIF\n"));
                     break;
                 }
                 // this will consume all tokens that actually belongs to this block
@@ -201,12 +202,12 @@ namespace DALHAL {
 
         HALOperationResult IfStatement::Handler(void* context) {
             if (context == nullptr) {
-                printf("\n IfStatement::Handler ContextWasNullPtr\n");
+                GlobalLogger.Error(F("\n IfStatement::Handler ContextWasNullPtr\n"));
                 return HALOperationResult::ContextWasNullPtr;
             }
             IfStatement* ifStatement = static_cast<IfStatement*>(context);
             if (ifStatement == nullptr) {
-                printf("\n IfStatement::Handler ifStatement was nullprtr\n");
+               GlobalLogger.Error(F("\n IfStatement::Handler ifStatement was nullprtr\n"));
                 return HALOperationResult::ContextWasNullPtr;
             }
             int ifStatementBranchItemsCount = ifStatement->branchItemsCount;

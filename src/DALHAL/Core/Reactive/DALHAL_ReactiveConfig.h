@@ -212,12 +212,13 @@
 #define DALHAL_REACTIVE_EVENT_TABLE(name) \
     ((DALHAL_REACTIVE_CFG_##name) ? (ReactiveEventTable) : nullptr)
 
-#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {#FEATURE_VAR_NAME, &CLASS_NAME::reactiveEventGetCounterPtr##FEATURE_VAR_NAME}
+#define DALHAL_REACTIVE_ENTRY(CLASS_NAME, FEATURE_VAR_NAME) {CLASS_NAME::reactive_type_str_##FEATURE_VAR_NAME, &CLASS_NAME::reactiveEventGetCounterPtr##FEATURE_VAR_NAME}
 
 
 #define DALHAL_DECLARE_REACTIVE_FEATURE(CLASS_NAME, FEATURE_NAME) \
 public: \
     uint32_t reactiveEventCounter##FEATURE_NAME = 0; \
+    static constexpr char reactive_type_str_##FEATURE_NAME[] PROGMEM = #FEATURE_NAME; \
     inline void trigger##FEATURE_NAME() { reactiveEventCounter##FEATURE_NAME++; } \
     inline static uint32_t* reactiveEventGetCounterPtr##FEATURE_NAME(Device* device) { return &(static_cast<CLASS_NAME*>(device)->reactiveEventCounter##FEATURE_NAME); }
 

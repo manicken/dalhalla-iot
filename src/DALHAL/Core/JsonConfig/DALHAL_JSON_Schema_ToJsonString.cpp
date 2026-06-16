@@ -107,10 +107,10 @@ namespace DALHAL {
                     }
                     if (reg.items[i].typeName == nullptr) {
                         Serial.println("reg.items[i].typeName == nullptr");
-                        sbs.write_char('"');
+                        sbs.write_doublequote();
                         sbs.write(F("typeName null_"));
                         sbs.write((uint32_t)i);
-                        sbs.write_char('"');
+                        sbs.write_doublequote();
                         sbs.write(F(":null"));
                         continue;
                     }
@@ -138,10 +138,10 @@ namespace DALHAL {
                 for (size_t i=0; i < registers.size(); i++) {
                     if (i > 0) { sbs.write_json_value_separator(); }
                     if (registers[i].regPath == nullptr) {
-                        sbs.write_char('"');
+                        sbs.write_doublequote();
                         sbs.write(F("regPath null_"));
                         sbs.write((uint32_t)i);
-                        sbs.write_char('"');
+                        sbs.write_doublequote();
                         sbs.write(F(":null"));
                     } else {
                         sbs.write_jsonMemberStart(registers[i].regPath);

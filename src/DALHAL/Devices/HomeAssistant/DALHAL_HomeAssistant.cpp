@@ -136,7 +136,9 @@ namespace DALHAL {
         {
             ZeroCopyString zcEntityID = zcTmp.SplitOffTail('/');
             
-            Serial.printf("PSCP Complete CB - rx cleanup check for: %.*s\r\n", zcEntityID.Length(), zcEntityID.start);
+            Serial.print(F("PSCP Complete CB - rx cleanup check for:"));
+            Serial.write(zcEntityID.start, zcEntityID.Length());
+            Serial.println();
 
         } else {
             // failsafe warning, this will likely never happend
@@ -198,8 +200,12 @@ namespace DALHAL {
                     overriddenRemove = true;
                 }
             }
+            Serial1.print(F("PSCP HEAD CB - rx cleanup check for: "));
+            Serial1.write(zcEntityID.start, zcEntityID.Length());
+            Serial1.print(F(" type:"));
+            Serial1.write(zcType.start, zcType.Length());
+            Serial1.println();
             
-            Serial1.printf("PSCP HEAD CB - rx cleanup check for: %.*s type:%.*s\r\n", zcEntityID.Length(), zcEntityID.start, zcType.Length(), zcType.start);
 
             const HA_DeviceEntity* item = nullptr;
             if (!overriddenRemove) {

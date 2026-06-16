@@ -47,7 +47,8 @@ namespace DALHAL {
 
             void Set(const char* _start, const char* _end, int line, int column);
             void ReportTokenInfo(const char* msg, const char* param = nullptr) const;
-            void ReportTokenError(const char* msg, const char* param = nullptr) const;
+            void ReportTokenError(const __FlashStringHelper* msg, const char* param = nullptr) const;
+            void ReportTokenError(const __FlashStringHelper* msg, const __FlashStringHelper* param) const;
             void ReportTokenWarning(const char* msg, const char* param = nullptr) const;
 
             Token();

@@ -104,15 +104,15 @@ namespace DALHAL {
 
             sbs.write_json_value_separator();
             sbs.write_jsonMemberStart(F("opcode"));
-            sbs.write_char('"');
+            sbs.write_doublequote();
             sbs.write_asHex((uint8_t)requestList[i]->info.opcode);
-            sbs.write_char('"');
+            sbs.write_doublequote();
 
             sbs.write_json_value_separator();
             sbs.write_jsonMemberStart(F("addr"));
-            sbs.write_char('"');
+            sbs.write_doublequote();
             sbs.write_asHex(requestList[i]->def.address);
-            sbs.write_char('"');
+            sbs.write_doublequote();
 
             sbs.write_json_object_end();
         }

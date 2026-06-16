@@ -32,28 +32,13 @@
 #include <mutex>
 #endif
 
-#define DALHAL_CMD_EXEC_WRITE_CMD               "write"
-#define DALHAL_CMD_EXEC_READ_CMD                "read"
-#define DALHAL_CMD_EXEC_CMD                     "exec"
-#define DALHAL_CMD_EXEC_RELOAD_CFG_JSON         "reloadcfg"
-#define DALHAL_CMD_EXEC_RELOAD_CFG_JSON_SAFE    "reloadcfgsafe"
-#define DALHAL_CMD_EXEC_RELOAD_SCRIPTS          "reloadscripts"
-#define DALHAL_CMD_EXEC_PRINT_DEVICES           "printDevices"
-#define DALHAL_CMD_EXEC_GET_AVAILABLE_GPIO_LIST "getAvailableGPIOs"
-#define DALHAL_CMD_EXEC_PRINT_LOG_CONTENTS      "printlog"
-
-
-#define DALHAL_CMD_EXEC_INT32_TYPE        "int32"
-#define DALHAL_CMD_EXEC_UINT32_TYPE        "uint32"
-#define DALHAL_CMD_EXEC_BOOL_TYPE          "bool"
-#define DALHAL_CMD_EXEC_FLOAT_TYPE         "float"
-#define DALHAL_CMD_EXEC_JSON_STR_TYPE      "json"
-#define DALHAL_CMD_EXEC_STRING_TYPE        "string"
 
 //#define DALHAL_CommandExecutor_DEBUG_CMD
 
 #include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/API/DALHAL_CommandCallback.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+#include <DALHAL/Core/Types/DALHAL_ConstExpressionConstStrings.h>
 
 namespace DALHAL {
 
@@ -63,8 +48,8 @@ namespace DALHAL {
     };
 
     struct CommandNode {
-        const char* name;
-        const char* help;
+        ConstExpressionStringComparableFn name;
+        ConstExpressionStringFn help;
 
         using Execute = HALOperationResult (*)(ZeroCopyString& args, CommandCallback cb);
         
@@ -73,23 +58,23 @@ namespace DALHAL {
         const CommandNode* children;
         const size_t children_count;
 
-        constexpr CommandNode(const char* name, const char* help, Execute execute, const CommandNode* children, const size_t children_count) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, Execute execute, const CommandNode* children, const size_t children_count) 
             : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
 
-        constexpr CommandNode(const char* name, const char* help, const CommandNode* children, const size_t children_count) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, const CommandNode* children, const size_t children_count) 
             : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
 
-        constexpr CommandNode(const char* name, const char* help, Execute execute) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, Execute execute) 
             : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
 
         // easier to read variants with help at the end
-        constexpr CommandNode(const char* name, Execute execute, const CommandNode* children, const size_t children_count, const char* help) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, const CommandNode* children, const size_t children_count, ConstExpressionStringFn help) 
             : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
 
-        constexpr CommandNode(const char* name, const CommandNode* children, const size_t children_count, const char* help) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, const CommandNode* children, const size_t children_count, ConstExpressionStringFn help) 
             : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
 
-        constexpr CommandNode(const char* name, Execute execute, const char* help) 
+        constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, ConstExpressionStringFn help) 
             : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
     };
 

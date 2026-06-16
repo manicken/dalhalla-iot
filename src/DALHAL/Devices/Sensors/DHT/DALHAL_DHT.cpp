@@ -50,16 +50,16 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> DHT::readValueFunctions[] = {
-        {"temp", &DHT::readTemperature, "read the temperature part of DHT"},
-        {"humidity", &DHT::readHumidity, "read the humidity part of DHT"},
-        {"", &DHT::readHumidity, "read the default 'humidity' part of DHT"},
+        {CE_MATCH_EMIT_STR("temp"), &DHT::readTemperature, CE_EMIT_STR("read the temperature part of DHT")},
+        {CE_MATCH_EMIT_STR("humidity"), &DHT::readHumidity, CE_EMIT_STR("read the humidity part of DHT")},
+        {CE_MATCH_EMIT_STR(""), &DHT::readHumidity, CE_EMIT_STR("read the default 'humidity' part of DHT")},
     };
 
      __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> DHT::readStringFunctions[] = {
-        {"temp", &DHT::readString_temperature_Function, "read the temperature part of DHT, returned as json object"},
-        {"humidity", &DHT::readString_humidity_Function, "read the humidity part of DHT, returned as json object"},
-        {"", &DHT::readString__default__Function, "read both humidity and temperature, returned as json object"},
+        {CE_MATCH_EMIT_STR("temp"), &DHT::readString_temperature_Function, CE_EMIT_STR("read the temperature part of DHT, returned as json object")},
+        {CE_MATCH_EMIT_STR("humidity"), &DHT::readString_humidity_Function, CE_EMIT_STR("read the humidity part of DHT, returned as json object")},
+        {CE_MATCH_EMIT_STR(""), &DHT::readString__default__Function, CE_EMIT_STR("read both humidity and temperature, returned as json object")},
     };
 
     constexpr DeviceFunctionTable DHT::FunctionTable = {

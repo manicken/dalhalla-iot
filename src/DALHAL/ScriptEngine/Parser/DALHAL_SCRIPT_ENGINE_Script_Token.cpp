@@ -77,25 +77,25 @@ namespace DALHAL {
             return ScriptTokenType::NotSet;
         }
 
-        const char* ScriptTokenTypeToString(ScriptTokenType type) {
+        const __FlashStringHelper* ScriptTokenTypeToString(ScriptTokenType type) {
             switch (type) {
-                case ScriptTokenType::NotSet: return "NotSet";
-                case ScriptTokenType::On: return "On";
-                case ScriptTokenType::EndOn: return "EndOn";
-                case ScriptTokenType::If: return "If";
-                case ScriptTokenType::EndIf: return "EndIf";
-                case ScriptTokenType::IfCondition: return "IfCondition";
-                case ScriptTokenType::Else: return "Else";
-                case ScriptTokenType::ElseIf: return "ElseIf";
-                case ScriptTokenType::Then: return "Then";
-                case ScriptTokenType::And: return "And";
-                case ScriptTokenType::Or: return "Or";
-                case ScriptTokenType::ActionSeparator: return "ActionSeparator";
-                case ScriptTokenType::ActionJoiner: return "ActionJoiner";
-                case ScriptTokenType::Action: return "Action";
-                case ScriptTokenType::Merged: return "Merged";
-                case ScriptTokenType::Ignore: return "Ignore";
-                default: return "Unknown";
+                case ScriptTokenType::NotSet: return F("NotSet");
+                case ScriptTokenType::On: return F("On");
+                case ScriptTokenType::EndOn: return F("EndOn");
+                case ScriptTokenType::If: return F("If");
+                case ScriptTokenType::EndIf: return F("EndIf");
+                case ScriptTokenType::IfCondition: return F("IfCondition");
+                case ScriptTokenType::Else: return F("Else");
+                case ScriptTokenType::ElseIf: return F("ElseIf");
+                case ScriptTokenType::Then: return F("Then");
+                case ScriptTokenType::And: return F("And");
+                case ScriptTokenType::Or: return F("Or");
+                case ScriptTokenType::ActionSeparator: return F("ActionSeparator");
+                case ScriptTokenType::ActionJoiner: return F("ActionJoiner");
+                case ScriptTokenType::Action: return F("Action");
+                case ScriptTokenType::Merged: return F("Merged");
+                case ScriptTokenType::Ignore: return F("Ignore");
+                default: return F("Unknown");
             }
         }
 
@@ -300,7 +300,7 @@ namespace DALHAL {
                     String(F("(line:")).c_str() + std::to_string(tok.line) + 
                     String(F(", col:")).c_str() + std::to_string(tok.column) + 
                     String(F(", count:")).c_str() + std::to_string(tok.itemsInBlock) + 
-                    String(F(", type:")).c_str() + ScriptTokenTypeToString(tok.type) +
+                    String(F(", type:")).c_str() + String(ScriptTokenTypeToString(tok.type)).c_str() +
                     ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?String(F(", hasElse:true")).c_str():String(F(", hasElse:false")).c_str()):"")+
                     "): ";
 

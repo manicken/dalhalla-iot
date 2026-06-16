@@ -212,7 +212,7 @@ namespace DALHAL {
         void describePinFunctions(DALHAL_GPIO_MGR_PINFUNC_TYPE pinFuncMask, StringBuilderStreamer& sbs) {
 
             bool anyFunc = false;
-            sbs.write_char('"');
+            sbs.write_doublequote();
             for (int i=0; i < (int)PinModeStrings_size; ++i) {
                 const PinFuncDef& pinModeDef = PinModeStrings[i];
                 if (pinModeDef.Name == nullptr) continue; // failsafe
@@ -227,7 +227,7 @@ namespace DALHAL {
             if (anyFunc == false) {
                 sbs.write(F("None"));
             }
-            sbs.write_char('"');
+            sbs.write_doublequote();
         }
 
         const gpio_pin& GetPinInfo(uint8_t pin, int& index) {
@@ -371,7 +371,7 @@ namespace DALHAL {
                     if (i>0) { sbs.write_json_value_separator(); }
                     sbs.write_jsonMemberStart(PinModeStrings[i].Name);
 
-                    sbs.write_char('"');
+                    sbs.write_doublequote();
                     DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = PinModeStrings[i].func;
                     if (listMode == PrintListMode::Binary) {
                         sbs.write_asBin(modeMask);
@@ -379,7 +379,7 @@ namespace DALHAL {
                     else {
                         sbs.write_asHex(modeMask);
                     }
-                    sbs.write_char('"');
+                    sbs.write_doublequote();
                     
                 }
                 sbs.write_json_object_end(); 
@@ -391,11 +391,11 @@ namespace DALHAL {
             {
                 if (i>0) { sbs.write_json_value_separator(); }
                 
-                sbs.write_char('"');
+                sbs.write_doublequote();
                 sbs.write(available_gpio_list[i].pin);
-                sbs.write_char('"');
+                sbs.write_doublequote();
                 sbs.write_char(':');
-                sbs.write_char('"');
+                sbs.write_doublequote();
                 DALHAL_GPIO_MGR_PINFUNC_TYPE modeMask = available_gpio_list[i].func;
                 if (listMode == PrintListMode::String) {
                     describePinFunctions(modeMask, sbs);
@@ -405,7 +405,7 @@ namespace DALHAL {
                 else { // (listMode == PrintListMode::Hex) 
                     sbs.write_asHex(modeMask);
                 }
-                sbs.write_char('"');                      
+                sbs.write_doublequote();                      
             }
             sbs.write_json_object_end();
 

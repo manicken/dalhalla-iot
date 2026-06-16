@@ -75,7 +75,7 @@ namespace Scheduler
     bool LoadJson(const char* filePath)
     {
 
-        printf("TAFJ LJ start");
+        //printf("TAFJ LJ start");
 
         if (LittleFS.exists(filePath) == false) { printf("LJ FNF:%s\r\n", filePath); return false; }
         
@@ -83,7 +83,7 @@ namespace Scheduler
         char *buff = nullptr;
 
         if (LittleFS_ext::load_text_file(filePath, &buff, &fileSize) != LittleFS_ext::FileResult::Success) {
-            printf("LJ LFSe LFFE"); // LoadJson LittleFS_ext::load_from_file error
+            //printf("LJ LFSe LFFE"); // LoadJson LittleFS_ext::load_from_file error
             return false;
         }
         size_t jsonDocBufferSize = (size_t)((float)fileSize * 1.5f);
@@ -93,11 +93,11 @@ namespace Scheduler
         if (jsonStatus != DeserializationError::Ok) {
             delete[] buff;
             std::string strCode = std::to_string((int)jsonStatus.code());
-            printf("LJ err:%s\r\n", strCode.c_str());
+            //printf("LJ err:%s\r\n", strCode.c_str());
             return false;
         }
         size_t itemCount = jsonDoc.size();
-        printf(" items count: %d", itemCount);
+        //printf(" items count: %d", itemCount);
         
         // clear both timers and alarms (ALL)
         //for (uint8_t id = 0; id < dtNBR_ALARMS; id++) {
@@ -134,7 +134,7 @@ namespace Scheduler
         for (uint8_t i = 0; i < itemCount; i++) {
             ParseItem(jsonDoc[i]);
         }
-        printf("TAFJ LJ E"); // TimeAlarmsFromJson LoadJson en
+        //printf("TAFJ LJ E"); // TimeAlarmsFromJson LoadJson en
 
         delete[] buff;
         return true;
@@ -286,37 +286,43 @@ namespace Scheduler
         DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F(SCHEDULER_URL_REFRESH))) {
             if (LoadJson(SCHEDULER_CFG_FILE_PATH)) {
-                res = "\"info\":\"schedule ld OK\"";
+                res = String(F("\"info\":\"schedule ld OK\"")).c_str();
                 return true;
             }
             else {
-                res = "\"error\":\"schedule ld err\"";
+                res = String(F("\"error\":\"schedule ld err\"")).c_str();
                 return false;
             }
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS))) {
-            res = "\"count\":\"" + std::to_string(dtNBR_ALARMS) + "\"";
+            res = String(F("\"count\":\"")).c_str() + std::to_string(dtNBR_ALARMS) + '"';
             return true;
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_FUNCTION_NAMES))) {
-            std::string jsonStr = "{";
+            std::string jsonStr;
+            jsonStr = '{';
 
             for (int i=0;i<FuncCount;i++) {
-                jsonStr += "\""; jsonStr += nameToFuncList[i].name; jsonStr += "\":\""; jsonStr += ((nameToFuncList[i].onTickExt!=nullptr)?"p":""); jsonStr += "\"";
+                jsonStr += '"'; jsonStr += nameToFuncList[i].name; jsonStr += '"'; jsonStr += ':'; jsonStr += '"'; 
+                if (nameToFuncList[i].onTickExt!=nullptr) {
+                    jsonStr += 'p';
+                }
+                jsonStr += '"';
 
-                if (i < (FuncCount-1)) jsonStr += ",";
+                if (i < (FuncCount-1)) jsonStr += ',';
             }
-            jsonStr += "}";
+            jsonStr += '}';
             res = jsonStr;
             return true;
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_SHORT_DOWS))) {
             res = GetShortFormDowListAsJson();
             return true;
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_TIME))) {
-            std::string nowstr = "{\n\"now\":\"" + Time_ext::GetTimeAsString(now()) + "\",\n";
-            nowstr += "\"next trigger\":\"" + Time_ext::GetTimeAsString(Scheduler->getNextTrigger()) + "\"\n}";
+            std::string nowstr = String(F("{\n\"now\":\"")).c_str() + Time_ext::GetTimeAsString(now());
+            nowstr += String(F("\",\"next trigger\":\"")).c_str() + Time_ext::GetTimeAsString(Scheduler->getNextTrigger());
+            nowstr += '"'; nowstr += '}';
             res = nowstr;
             return true;
         } else {
-            res = "\"error\":\"schedule unknown cmd >>>"+zcCmd.ToString()+"<<<\"";
+            res = String(F("\"error\":\"schedule unknown cmd >>>")).c_str()+zcCmd.ToString()+String(F("<<<\"")).c_str();
             return false;
         }
     }

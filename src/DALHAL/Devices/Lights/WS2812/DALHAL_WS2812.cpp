@@ -47,10 +47,10 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> WS2812::execFunctions[] = {
-        {"pause", &WS2812::exec_pause_Function, "pause fx operation"},
-        {"resume", &WS2812::exec_resume_Function, "resume fx operation"},
-        {"stop", &WS2812::exec_stop_Function, "stop fx operation"},
-        {"restart", &WS2812::exec_start_Function, "restart fx operation"},
+        {CE_MATCH_EMIT_STR("pause"), &WS2812::exec_pause_Function, CE_EMIT_STR("pause fx operation")},
+        {CE_MATCH_EMIT_STR("resume"), &WS2812::exec_resume_Function, CE_EMIT_STR("resume fx operation")},
+        {CE_MATCH_EMIT_STR("stop"), &WS2812::exec_stop_Function, CE_EMIT_STR("stop fx operation")},
+        {CE_MATCH_EMIT_STR("restart"), &WS2812::exec_start_Function, CE_EMIT_STR("restart fx operation")},
     };
     HALOperationResult WS2812::exec_pause_Function(Device* device) {
         static_cast<WS2812*>(device)->ws2812fx->pause();
@@ -71,15 +71,15 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteHALValue> WS2812::writeValueFunctions[] = {
-        {"brightness", &WS2812::writeBrightness, "sets the brightness"},
-        {"color", &WS2812::writeColor, "sets the color for the first pixel"},
-        {"mode", &WS2812::writeMode, "sets the mode by index"},
-        {"fxspeed", &WS2812::writeFxSpeed, "sets the fx speed (0-65535)"},
+        {CE_MATCH_EMIT_STR("brightness"), &WS2812::writeBrightness, CE_EMIT_STR("sets the brightness")},
+        {CE_MATCH_EMIT_STR("color"), &WS2812::writeColor, CE_EMIT_STR("sets the color for the first pixel")},
+        {CE_MATCH_EMIT_STR("mode"), &WS2812::writeMode, CE_EMIT_STR("sets the mode by index")},
+        {CE_MATCH_EMIT_STR("fxspeed"), &WS2812::writeFxSpeed, CE_EMIT_STR("sets the fx speed (0-65535)")},
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteString> WS2812::writeStringFunctions[] = {
-        {"setpixel", &WS2812::writeString_setpixel_Function, "help"}
+        {CE_MATCH_EMIT_STR("setpixel"), &WS2812::writeString_setpixel_Function, CE_EMIT_STR("sets a specific pixel the arguments are <xPos>/<yPos>/colorcode")}
     };
     HALOperationResult WS2812::writeString_setpixel_Function(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
         WS2812& self = *static_cast<WS2812*>(device);

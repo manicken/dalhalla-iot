@@ -50,9 +50,9 @@ namespace DALHAL {
     }
 
     constexpr FunctionEntry<FunctionTypes::WriteHALValue> PWM_Servo::writeValueFunctions[] = {
-        {"ratio", &writeAsRatio, "set value explicit as ratio", FunctionValueType::_Number_},
-        {"pulse", &writeAsPulseLength, "set value explicit as pulse", FunctionValueType::_UInt_},
-        {"", &writeByInternalMode, "general write using the preselected mode", FunctionValueType::_Number_}
+        {CE_MATCH_EMIT_STR("ratio"), &writeAsRatio, CE_EMIT_STR("set value explicit as ratio"), FunctionValueType::_Number_},
+        {CE_MATCH_EMIT_STR("pulse"), &writeAsPulseLength, CE_EMIT_STR("set value explicit as pulse"), FunctionValueType::_UInt_},
+        {CE_MATCH_EMIT_STR(""), &writeByInternalMode, CE_EMIT_STR("general write using the preselected mode"), FunctionValueType::_Number_}
     };
 
     __attribute__((used, externally_visible))

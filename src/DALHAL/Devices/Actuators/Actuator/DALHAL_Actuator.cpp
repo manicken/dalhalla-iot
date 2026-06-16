@@ -47,23 +47,23 @@ namespace DALHAL {
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> Actuator::execFunctions[] = {
         
-        {"close", &exec_drive_to_min, "drive to close/min"},
-        {"open", &exec_drive_to_max, "drive to open/max"},
-        {"toMin", &exec_drive_to_min, "drive to min"},
-        {"toMax", &exec_drive_to_max, "drive to max"},
-        {"stop", &exec_stop, "stops the actuator"},
-        {"resetmode", &exec_reset, "stop the actuator and reset the internal states"},
+        {CE_MATCH_EMIT_STR("close"), &exec_drive_to_min, CE_EMIT_STR("drive to close/min")},
+        {CE_MATCH_EMIT_STR("open"), &exec_drive_to_max, CE_EMIT_STR("drive to open/max")},
+        {CE_MATCH_EMIT_STR("toMin"), &exec_drive_to_min, CE_EMIT_STR("drive to min")},
+        {CE_MATCH_EMIT_STR("toMax"), &exec_drive_to_max, CE_EMIT_STR("drive to max")},
+        {CE_MATCH_EMIT_STR("stop"), &exec_stop, CE_EMIT_STR("stops the actuator")},
+        {CE_MATCH_EMIT_STR("resetmode"), &exec_reset, CE_EMIT_STR("stop the actuator and reset the internal states")},
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> Actuator::readStringFunctions[] = {
-        {"endstops", &getEndstops, "gets the endstops"}
+        {CE_MATCH_EMIT_STR("endstops"), &getEndstops, CE_EMIT_STR("gets the endstops")}
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> Actuator::readValueFunctions[] = {
-        {"minEndStop", &getMinEndstop, "get min endstop state", FunctionValueType::_Bool_},
-        {"maxEndStop", &getMaxEndstop, "get max endstop state", FunctionValueType::_Bool_}
+        {CE_MATCH_EMIT_STR("minEndStop"), &getMinEndstop, CE_EMIT_STR("get min endstop state"), FunctionValueType::_Bool_},
+        {CE_MATCH_EMIT_STR("maxEndStop"), &getMaxEndstop, CE_EMIT_STR("get max endstop state"), FunctionValueType::_Bool_}
     };
 
     __attribute__((used, externally_visible))

@@ -49,10 +49,23 @@ namespace DALHAL {
             //GlobalLogger.Info(F("Token:"), message.c_str());
     #endif
         }
-        void Token::ReportTokenError(const char* msg, const char* param) const {
-            std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): " + msg;
+        void Token::ReportTokenError(const __FlashStringHelper* msg, const char* param) const {
+            std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): ";
+            message += String(msg).c_str();
             if (param != nullptr)
                 message += param;
+    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+            std::cerr << "Error " << message << std::endl;
+    #else
+            GlobalLogger.Error(F("Token:"), message.c_str());
+    #endif
+        }
+
+        void Token::ReportTokenError(const __FlashStringHelper* msg, const __FlashStringHelper* param) const {
+            std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): ";
+            message += String(msg).c_str();
+            if (param != nullptr)
+                message += String(param).c_str();
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             std::cerr << "Error " << message << std::endl;
     #else

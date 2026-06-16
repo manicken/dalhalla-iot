@@ -456,11 +456,11 @@ namespace RF433
         if (jsonObj.containsKey(DALHAL_KEYNAME_TX433_HEXID)) {
             if (DALHAL::ValidateJsonStringField_noContains(jsonObj, DALHAL_KEYNAME_TX433_HEXID) == false) return false;
             const char * hexidStr = DALHAL::GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_HEXID);
-            if (strlen(hexidStr) != 6) { GlobalLogger.Error(F("error hexid lenght != 6")); GlobalLogger.setLastEntrySource("TX433 VJ");  return false; }
+            if (strlen(hexidStr) != 6) { GlobalLogger.Error(F("error hexid lenght != 6")); GlobalLogger.setLastEntrySource(F("TX433 VJ"));  return false; }
         } else if (jsonObj.containsKey(DALHAL_KEYNAME_TX433_ALPHA_NUMERIC_ID)) {
             if (DALHAL::ValidateJsonStringField_noContains(jsonObj, DALHAL_KEYNAME_TX433_ALPHA_NUMERIC_ID) == false) return false;
             const char * hexidStr = DALHAL::GetAsConstChar(jsonObj, DALHAL_KEYNAME_TX433_ALPHA_NUMERIC_ID);
-            if (strlen(hexidStr) > 4) { GlobalLogger.Error(F("error anid lenght > 4")); GlobalLogger.setLastEntrySource("TX433 VJ");  return false; }
+            if (strlen(hexidStr) > 4) { GlobalLogger.Error(F("error anid lenght > 4")); GlobalLogger.setLastEntrySource(F("TX433 VJ"));  return false; }
         } else {
             GlobalLogger.Error(F("TX433unit - LC - no unit id defined"));
             return false;

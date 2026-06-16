@@ -34,12 +34,33 @@
 
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+
 #include <WS2812FX.h>
 #include "DALHAL_WS2812.h"
 
 #if !defined(ESP8266) && !defined(ESP32)
 #define MODE_COUNT 80
 #endif
+
+#define DALHAL_WS2812_MODES_DEFAULT "RGB"
+
+#define DALHAL_WS2812_MODES \
+    X(RGB) X(RBG) \
+    X(GRB) X(GBR) \
+    X(BRG) X(BGR) \
+    X(WRGB) X(WRBG) \
+    X(WGRB) X(WGBR) \
+    X(WBRG) X(WBGR) \
+    X(RWGB) X(RWBG) \
+    X(GWRB) X(GWBR) \
+    X(BWRG) X(BWGR) \
+    X(RGWB) X(RBWG) \
+    X(GRWB) X(GBWR) \
+    X(BRWG) X(BGWR) \
+    X(RGBW) X(RBGW) \
+    X(GRBW) X(GBRW) \
+    X(BRGW) X(BGRW)
 
 namespace DALHAL {
 
@@ -48,47 +69,46 @@ namespace DALHAL {
         namespace WS2812 {
 
             struct LedFormatDefine {
-                const char* name;
+                PGM_P name;
                 uint16_t value;
             };
 
+
             constexpr LedFormatDefine notFoundItem = {nullptr, 0};
 
-            constexpr const char* LED_FORMAT_RGB = "RGB";
+#if defined(ESP8266) || defined(AVR)
+            #define X(name) static const char type_str_##name[] PROGMEM = #name;
+            DALHAL_WS2812_MODES
+            #undef X
+
             constexpr LedFormatDefine formatsTable[] = {
-                {LED_FORMAT_RGB, NEO_RGB}, {"RBG", NEO_RBG}, 
-                {"GRB", NEO_GRB}, {"GBR", NEO_GBR}, 
-                {"BRG", NEO_BRG}, {"BGR", NEO_BGR},
-                {"WRGB", NEO_WRGB}, {"WRBG", NEO_WRBG}, 
-                {"WGRB", NEO_WGRB}, {"WGBR", NEO_WGBR}, 
-                {"WBRG", NEO_WBRG}, {"WBGR", NEO_WBGR},
-                {"RWGB", NEO_RWGB}, {"RWBG", NEO_RWBG}, 
-                {"GWRB", NEO_GWRB}, {"GWBR", NEO_GWBR}, 
-                {"BWRG", NEO_BWRG}, {"BWGR", NEO_BWGR},
-                {"RGWB", NEO_RGWB}, {"RBWG", NEO_RBWG},
-                {"GRWB", NEO_GRWB}, {"GBWR", NEO_GBWR},
-                {"BRWG", NEO_BRWG}, {"BGWR", NEO_BGWR},
-                {"RGBW", NEO_RGBW}, {"RBGW", NEO_RBGW},
-                {"GRBW", NEO_GRBW}, {"GBRW", NEO_GBRW},
-                {"BRGW", NEO_BRGW}, {"BGRW", NEO_BGRW}
+            #define X(name) {type_str_##name, NEO_##name},
+                DALHAL_WS2812_MODES
+            #undef X
+#else
+            #define X(name) {#name, NEO_##name},
+                DALHAL_WS2812_MODES
+            #undef X
+#endif 
             };
             constexpr size_t formatsTableSize = sizeof(formatsTable)/sizeof(formatsTable[0]);
 
-            const LedFormatDefine& GetFormat(const char* name) {
+            const LedFormatDefine* GetFormat(const char* name) {
+                ZeroCopyString zcName(name);
                 for (int i=0; i<(int)formatsTableSize; ++i) {
-                    if (strcasecmp(formatsTable[i].name, name) == 0) {
-                        return formatsTable[i];
+#if defined(ESP8266) || defined(AVR)
+                    if (zcName.EqualsIC_P(formatsTable[i].name)) {
+#else
+                    if (zcName.EqualsIC(formatsTable[i].name)) {
+#endif
+                        return &formatsTable[i];
                     }
                 }
-                return notFoundItem;
+                return nullptr;
             }
 
             bool CheckFormatType(void* ctx, const char* type) { // here ctx is not used as we can access the table directly
-                const LedFormatDefine& def = GetFormat(type);
-                if (def.name != nullptr) {
-                    return true;
-                }
-                return false;
+                return GetFormat(type) != nullptr;
             }
 
             void GetFormatStrings(void* ctx, StringBuilderStreamer& sbs) { // here ctx is not used as we can access the table directly
@@ -98,7 +118,13 @@ namespace DALHAL {
                     if (i>0) {
                         sbs.write_json_value_separator();
                     }
-                    sbs.write_jsonQuoted_cStr(formatsTable[i].name);
+                    sbs.write_doublequote();
+#if defined(ESP8266) || defined(AVR)
+                    sbs.write_P(formatsTable[i].name);
+#else
+                    sbs.write(formatsTable[i].name);
+#endif
+                    sbs.write_doublequote();
                 }
                 sbs.write_json_array_end();
             }
@@ -112,7 +138,7 @@ namespace DALHAL {
             
 
             // note here the context is not used as the source is known
-            constexpr SchemaStringAnyOfByFuncConstrained formatField = {"format", FieldPolicy::Required, LED_FORMAT_RGB, CheckFormatType, GetFormatStrings, nullptr};
+            constexpr SchemaStringAnyOfByFuncConstrained formatField = {"format", FieldPolicy::Required, DALHAL_WS2812_MODES_DEFAULT, CheckFormatType, GetFormatStrings, nullptr};
 
             constexpr ByArrayConstraints ifspeedFieldConstraints = {ifspeeds, ByArrayConstraints::Policy::IgnoreCase};
             constexpr SchemaStringAnyOfArrayConstrained ifspeedField = {"ifspeed", FieldPolicy::Optional, INTERFACE_SPEED_KHZ800, &ifspeedFieldConstraints};
@@ -149,7 +175,7 @@ namespace DALHAL {
 
                 neoPixelType ws2812cfgData = 0; // basically a uint16_t
                 const char* ledFormat_cStr = JsonSchema::WS2812::formatField.ExtractFrom(*(context.jsonObjItem));
-                ws2812cfgData |= GetFormat(ledFormat_cStr).value; // as this is prevalidated there is no situation where this returns the unknown default
+                ws2812cfgData |= GetFormat(ledFormat_cStr)->value; // as this is prevalidated there is no situation where this returns the unknown default
 
                 const char* speedStr = JsonSchema::WS2812::ifspeedField.ExtractFrom(*(context.jsonObjItem));
                 // no speedStr null check is needed here as getting a field string allways returns a empty string "",

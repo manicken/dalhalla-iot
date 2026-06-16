@@ -42,27 +42,25 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
-    const static char help_exec_drive_to_reset[] PROGMEM = "drive relay state to reset";
-
     //__attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> LatchingRelay::execFunctions[] = {
-        {"reset", &exec_drive_to_reset, /*help_exec_drive_to_reset*/ "drive relay state to reset"},
-        {"set", &exec_drive_to_set, "drive relay state to set"},
-        {"toA", &exec_drive_to_set, "drive relay state to A"},
-        {"toB", &exec_drive_to_reset, "drive relay state to B"},
-        {"stop", &exec_stop, "stops the relay action"},
-        {"resetmode", &exec_resetMode, "stop the relay action and reset the internal states"},
+        {CE_MATCH_EMIT_STR("reset"), &exec_drive_to_reset, CE_EMIT_STR("drive relay state to reset")},
+        {CE_MATCH_EMIT_STR("set"), &exec_drive_to_set, CE_EMIT_STR("drive relay state to set")},
+        {CE_MATCH_EMIT_STR("toA"), &exec_drive_to_set, CE_EMIT_STR("drive relay state to A")},
+        {CE_MATCH_EMIT_STR("toB"), &exec_drive_to_reset, CE_EMIT_STR("drive relay state to B")},
+        {CE_MATCH_EMIT_STR("stop"), &exec_stop, CE_EMIT_STR("stops the relay action")},
+        {CE_MATCH_EMIT_STR("resetmode"), &exec_resetMode, CE_EMIT_STR("stop the relay action and reset the internal states")},
     };
 
     //__attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> LatchingRelay::readStringFunctions[] = {
-        {"states", &getRelayStates, "gets the endstops"}
+        {CE_MATCH_EMIT_STR("states"), &getRelayStates, CE_EMIT_STR("gets the endstops")}
     };
 
     //__attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> LatchingRelay::readValueFunctions[] = {
-        {"resetActive", &getResetActive, "get if reset state is active", FunctionValueType::_Bool_},
-        {"setActive", &getSetActive, "get if set state is active", FunctionValueType::_Bool_}
+        {CE_MATCH_EMIT_STR("resetActive"), &getResetActive, CE_EMIT_STR("get if reset state is active"), FunctionValueType::_Bool_},
+        {CE_MATCH_EMIT_STR("setActive"), &getSetActive, CE_EMIT_STR("get if set state is active"), FunctionValueType::_Bool_}
     };
 
     //__attribute__((used, externally_visible))

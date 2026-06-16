@@ -72,7 +72,7 @@ namespace DALHAL {
         };
 
 
-        const char* ScriptTokenTypeToString(ScriptTokenType type);
+        const __FlashStringHelper* ScriptTokenTypeToString(ScriptTokenType type);
         
         ScriptTokenType GetFundamentalScriptTokenType(ZeroCopyString& zcStrType);
 

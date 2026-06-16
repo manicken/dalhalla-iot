@@ -50,13 +50,13 @@ namespace DALHAL {
     }
 
     constexpr FunctionEntry<FunctionTypes::ReadString> I2C_Master::readStringFunctions[] = {
-        {"raw", &read_raw, "read raw data"},
-        {"list", &list_devices, "list all devices found by using adress scan"},
+        {CE_MATCH_EMIT_STR("raw"), &read_raw, CE_EMIT_STR("read raw data")},
+        {CE_MATCH_EMIT_STR("list"), &list_devices, CE_EMIT_STR("list all devices found by using adress scan")},
     };
 
     constexpr FunctionEntry<FunctionTypes::WriteString> I2C_Master::writeStringFunctions[] = {
-        {"raw", &write_raw, "write raw data"},
-        {"speed", &set_speed, "set i2c speed"},
+        {CE_MATCH_EMIT_STR("raw"), &write_raw, CE_EMIT_STR("write raw data")},
+        {CE_MATCH_EMIT_STR("speed"), &set_speed, CE_EMIT_STR("set i2c speed")},
     };
 
     __attribute__((used, externally_visible))
@@ -216,7 +216,7 @@ namespace DALHAL {
 
             sbs.write(F("\"0x"));
             sbs.write_asHex(byte);
-            sbs.write_char('"');
+            sbs.write_doublequote();
         }
         sbs.write_json_array_end();
         return HALOperationResult::Success;
@@ -233,9 +233,9 @@ namespace DALHAL {
                 if (addr > 1) { sbs.write_json_value_separator(); }
                 sbs.write(F("\"0x"));
                 sbs.write_asHex(addr);
-                sbs.write_char('"'); sbs.write_char(':'); sbs.write_char('"');
+                sbs.write_doublequote(); sbs.write_char(':'); sbs.write_doublequote();
                 describeI2CAddress(addr, sbs);
-                sbs.write_char('"');
+                sbs.write_doublequote();
             }
         }
         sbs.write_json_array_end();

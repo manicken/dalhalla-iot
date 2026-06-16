@@ -113,9 +113,9 @@ namespace DALHAL {
         
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("data"));
-        sbs.write_char('"');
+        sbs.write_doublequote();
         sbs.write_asHex(staticData);
-        sbs.write_char('"');
+        sbs.write_doublequote();
     }
 
 }

@@ -27,6 +27,7 @@
 #ifdef DALHAL_H_
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 #endif
 
 #if defined(ESP32)
@@ -208,6 +209,32 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
 /**************************************************************************/
 /**************************************************************************/
 
+
+using FlashStringGetter = void (*)(DALHAL::StringBuilderStreamer& sbs);
+
+struct DeviceInfo {
+    FlashStringGetter fstr;
+
+};
+#if defined(ESP8266)
+#define FLASH_STRING(str) \
+    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted(F(str));}
+#elif defined (ESP32)
+#define FLASH_STRING(str) \
+    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted_cStr(str); }
+#endif
+
+constexpr DeviceInfo devices[] = {
+    { FLASH_STRING("Temperature") },
+    { FLASH_STRING("Humidity") }
+};
+const size_t devices_count = sizeof(devices) / sizeof(devices[0]);
+
+bool DebugPrint(const char* str, size_t len) {
+    DEBUG_UART.write(str, len);
+    return true;
+}
+
 void setup() {
     WiFi.setAutoReconnect(true);
     WiFi.persistent(true);
@@ -225,12 +252,20 @@ void setup() {
     DEBUG_UART.begin(115200);
     DEBUG_UART.setDebugOutput(true);
 
+    DALHAL::StringBuilderStreamer sbs(DebugPrint);
+    for (size_t i=0;i<devices_count;i++) {
+        devices[i].fstr(sbs);
+        sbs.write('\r');
+        sbs.write('\n');
+    }
+    sbs.flush();
+
     OTA::pre_setup();
 
     DEBUG_UART.println(F("\r\n!!!!!Start of MAIN Setup!!!!!\r\n"));
     Info::PrintHeapInfo();
 
-    DEBUG_UART.println(Info::getResetReasonStr());
+    DEBUG_UART.printf_P(Info::getResetReasonStr());
 
     System::Setup(); // only littlefs init
 

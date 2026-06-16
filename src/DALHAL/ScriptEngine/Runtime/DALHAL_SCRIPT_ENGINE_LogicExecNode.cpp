@@ -48,7 +48,7 @@ namespace DALHAL {
         HALOperationResult LogicExecNode::Eval_Calc(void* context) { // this is when root node is calc compare only
             CalcRPN* calcRpn = static_cast<CalcRPN*>(context);
             if (calcRpn == nullptr) {
-                printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   CALC RPN WAS NULLPTR\n");
+                GlobalLogger.Error(F("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   CALC RPN WAS NULLPTR\n"));
                 return HALOperationResult::ContextWasNullPtr;
             }
             HALOperationResult res = calcRpn->DoCalc();

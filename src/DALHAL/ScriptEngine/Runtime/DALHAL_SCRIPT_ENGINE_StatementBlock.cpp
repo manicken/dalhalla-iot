@@ -67,9 +67,10 @@ namespace DALHAL {
                 
                 deleter = DeleteAs<ActionStatement>;
                 //handler = dummyActionHandler;
+                
             }
             else {
-                token.ReportTokenError("StatementBlock::Set !!!! very big issue found unknown type:", ScriptTokenTypeToString(token.type));
+                token.ReportTokenError(F("StatementBlock::Set !!!! very big issue found unknown type:"), ScriptTokenTypeToString(token.type));
             }
             
         }

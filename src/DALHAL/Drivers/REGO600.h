@@ -110,7 +110,7 @@ namespace Drivers {
         };
 
         struct RegoLookupEntry {
-            const char* name;
+            PGM_P name;
             uint16_t address;
             //REGO600::OpCodes opcode; this is determined by if it's read/write and set elsewhere
             ValueLimit minVal;      // including minimum

@@ -45,7 +45,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> ScriptEventDispatcher::execFunctions[] = {
-        {"", &ScriptEventDispatcher::static_exec, "execute event"}
+        {CE_MATCH_EMIT_STR(""), &ScriptEventDispatcher::static_exec, CE_EMIT_STR("execute event")}
     };
 
     constexpr DeviceFunctionTable ScriptEventDispatcher::FunctionTable = {

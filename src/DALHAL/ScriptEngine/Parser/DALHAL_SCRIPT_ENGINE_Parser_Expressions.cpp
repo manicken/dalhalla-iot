@@ -181,10 +181,10 @@ namespace DALHAL {
 
         bool Expressions::IsDoubleOperator(const char* c) {
             if (c == nullptr) {
-                ReportError(String(F("IsDoubleOperator c - was nullptr")).c_str());
+                ReportError(F("IsDoubleOperator c - was nullptr"));
                 return false;
             } else if (*c == '\n') {
-                ReportError(String(F("IsDoubleOperator *c - was empty str")).c_str());
+                ReportError(F("IsDoubleOperator *c - was empty str"));
                 return false;
             } else if (*(c+1) == '\n') {
                 // not really a error
@@ -241,7 +241,7 @@ namespace DALHAL {
                     else if (ch == ')') {
                         rightParen++;
                         if (rightParen > leftParen) {
-                            ReportError(String(F("unexpected ')' without matching '('")).c_str());
+                            ReportError(F("unexpected ')' without matching '('"));
                             anyError = true;
                         }
                         prevWasOperator = false;
@@ -250,10 +250,10 @@ namespace DALHAL {
                     // --- Brackets for [] accessor ---
                     else if (ch == '[') {
                         if (p == token.start) {
-                            ReportError(String(F("'[' cannot start an expression")).c_str());
+                            ReportError(F("'[' cannot start an expression"));
                             anyError = true;
                         } else if (!token.ContainsPtr(p - 1)) {
-                            ReportError(String(F("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)")).c_str());
+                            ReportError(F("whitespace before '[' is not allowed (e.g. 'map [x]' is invalid)"));
                             anyError = true;
                         }
                         leftBracket++;
@@ -262,7 +262,7 @@ namespace DALHAL {
                     else if (ch == ']') {
                         rightBracket++;
                         if (rightBracket > leftBracket) {
-                            ReportError(String(F("unexpected ']' without matching '['")).c_str());
+                            ReportError(F("unexpected ']' without matching '['"));
                             anyError = true;
                         }
                         prevWasOperator = false;
@@ -271,7 +271,7 @@ namespace DALHAL {
                     // --- Operators ---
                     else if (IsDoubleOperator(p)) {
                         if (prevWasOperator) {
-                            ReportError(String(F("double operator detected")).c_str());
+                            ReportError(F("double operator detected"));
                             anyError = true;
                         }
                         p++; // skip next char since it's part of a double op
@@ -279,7 +279,7 @@ namespace DALHAL {
                     }
                     else if (IsSingleOperator(ch)) {
                         if (prevWasOperator) {
-                            ReportError(String(F("double operator detected")).c_str());
+                            ReportError(F("double operator detected"));
                             anyError = true;
                         }
                         prevWasOperator = true;
@@ -294,11 +294,11 @@ namespace DALHAL {
 
             // --- Final structural checks ---
             if (leftParen != rightParen) {
-                ReportError(String(F("mismatched parentheses detected")).c_str());
+                ReportError(F("mismatched parentheses detected"));
                 anyError = true;
             }
             if (leftBracket != rightBracket) {
-                ReportError(String(F("mismatched brackets detected")).c_str());
+                ReportError(F("mismatched brackets detected"));
                 anyError = true;
             }
         }
@@ -318,7 +318,7 @@ namespace DALHAL {
         bool Expressions::IsExpressionEmpty(const ScriptTokens& tokens) {
             // Check for null pointer or invalid structure
             if (tokens.items == nullptr || tokens.count <= 0) {
-                ReportError(String(F("ExpressionEmpty: tokens are null or count == 0")).c_str());
+                ReportError(F("ExpressionEmpty: tokens are null or count == 0"));
                 return true; // Consider null/zero count as empty
             }
 
@@ -326,7 +326,7 @@ namespace DALHAL {
             if (tokens.currIndex >= tokens.count ||
                 tokens.currentEndIndex > tokens.count ||
                 tokens.currIndex >= tokens.currentEndIndex) {
-                ReportError(String(F("ExpressionEmpty: invalid range")).c_str());
+                ReportError(F("ExpressionEmpty: invalid range"));
                 return true;
             }
             int startIndex = tokens.currIndex;
@@ -351,12 +351,12 @@ namespace DALHAL {
 
             // early checks
             if (tokens.count == 0) {
-                ReportError(String(F("tokens.count == 0")).c_str());
+                ReportError(F("tokens.count == 0"));
                 return false;
             }
 
             if (tokens.currIndex == tokens.currentEndIndex) {
-                ReportError(String(F("tokens.currIndex == tokens.currentEndIndex")).c_str());
+                ReportError(F("tokens.currIndex == tokens.currentEndIndex"));
                 return false;
             }
 
@@ -367,7 +367,7 @@ namespace DALHAL {
                 firstTokenStart = tokens.Current().start;
 
             if(IsDoubleOperator(firstTokenStart) || IsSingleOperator(*firstTokenStart)) { // this only checks the two first characters in the Expression
-                ReportError(String(F("expr. cannot start with a operator")).c_str());
+                ReportError(F("expr. cannot start with a operator"));
                 anyError = true;
             }
             //printf("\nValidateExpression:%s\n",tokens.SliceToString().c_str());
@@ -489,7 +489,7 @@ namespace DALHAL {
                 // Only support one token inside brackets for now
                 if (*(varOperand.end-1) != ']' ) { // actually not needed as ValidateStructure do it beforehand
                     anyError = true;
-                    operandToken.ReportTokenError(String(F("bracket operator missing closing ]")).c_str());
+                    operandToken.ReportTokenError(F("bracket operator missing closing ]"));
                 }
                 ScriptToken bracketVarOperand(bracketPos+1, varOperand.end-1);
                 ValidateOperand(bracketVarOperand, anyError, ValidateOperandMode::Read);
@@ -518,7 +518,7 @@ namespace DALHAL {
 #endif
 
             if (UIDPath::Validate(varOperand) == false) {
-                operandToken.ReportTokenError(String(F("Operand name invalid")).c_str());
+                operandToken.ReportTokenError(F("Operand name invalid"));
                 anyError = true;
             }
 
@@ -526,8 +526,9 @@ namespace DALHAL {
             DeviceFindResult devFindRes = DeviceManager::findDevice(path, outInfo.device);
             if (devFindRes != DeviceFindResult::Success) {
                 std::string msg = varOperand.ToString();
-                msg += " because: " + std::string(DeviceFindResultToString(devFindRes));
-                operandToken.ReportTokenError(String(F("Could not find device: ")).c_str(), msg.c_str());
+                msg += String(F(" because: ")).c_str();
+                msg += String(DeviceFindResultToString(devFindRes)).c_str();
+                operandToken.ReportTokenError(F("Could not find device: "), msg.c_str());
                 anyError = true;
                 return OperandTargetInfoResult::DeviceNotFound;
             }
@@ -550,9 +551,9 @@ namespace DALHAL {
                         auto getFunRes = GetDeviceFunction<FunctionTypes::BracketOpRead>(device, funcName);
                         if (getFunRes.result != HALOperationResult::Success) {
                             if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
-                                operandToken.ReportTokenError(String(F("Get BracketOpRead Function not found: ")).c_str(), funcName.ToString().c_str());
+                                operandToken.ReportTokenError(F("Get BracketOpRead Function not found: "), funcName.ToString().c_str());
                             } else {
-                                operandToken.ReportTokenError(String(F("Get BracketOpRead other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                                operandToken.ReportTokenError(F("Get BracketOpRead other error: "), HALOperationResultToString(getFunRes.result));
                             }
                             anyError = true;
                         }
@@ -562,7 +563,7 @@ namespace DALHAL {
                         HALValue halValue(HALValue::Type::TEST); // unset TEST type
                         readResult = device->read(halBracketSubscriptValue, halValue);
                         if (readResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), String(F(": bracket op read")).c_str());
+                            operandToken.ReportTokenError(HALOperationResultToString(readResult), F(": bracket op read"));
                             anyError = true;
                         }
                     }
@@ -574,9 +575,9 @@ namespace DALHAL {
                         auto getFunRes = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, funcName);
                         if (getFunRes.result != HALOperationResult::Success) {
                             if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
-                                operandToken.ReportTokenError(String(F("Get BracketOpWrite Function not found: ")).c_str(), funcName.ToString().c_str());
+                                operandToken.ReportTokenError(F("Get BracketOpWrite Function not found: "), funcName.ToString().c_str());
                             } else {
-                                operandToken.ReportTokenError(String(F("Get BracketOpWrite other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                                operandToken.ReportTokenError(F("Get BracketOpWrite other error: "), HALOperationResultToString(getFunRes.result));
                             }
                             anyError = true;
                         }
@@ -586,7 +587,7 @@ namespace DALHAL {
                         HALValue halValue(HALValue::Type::TEST); // unset TEST type
                         writeResult = device->write(halBracketSubscriptValue, halValue);
                         if (writeResult != HALOperationResult::Success) {
-                            operandToken.ReportTokenError(String(HALOperationResultToString(writeResult)).c_str(), String(F(": bracket op write")).c_str());
+                            operandToken.ReportTokenError(HALOperationResultToString(writeResult), F(": bracket op write"));
                             anyError = true;
                         }
                     }
@@ -598,9 +599,9 @@ namespace DALHAL {
                 auto getFunRes = GetDeviceFunction<FunctionTypes::Exec>(device, funcName);
                 if (getFunRes.result != HALOperationResult::Success) {
                     if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
-                        operandToken.ReportTokenError(String(F("Get Exec Function not found: ")).c_str(), funcName.ToString().c_str());
+                        operandToken.ReportTokenError(F("Get Exec Function not found: "), funcName.ToString().c_str());
                     } else {
-                        operandToken.ReportTokenError(String(F("Get Exec other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                        operandToken.ReportTokenError(F("Get Exec other error: "), HALOperationResultToString(getFunRes.result));
                     }
                     anyError = true;
                     return;
@@ -613,9 +614,9 @@ namespace DALHAL {
                     auto getFunRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName);
                     if (getFunRes.result != HALOperationResult::Success) {
                         if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
-                            operandToken.ReportTokenError(String(F("Get ReadToHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+                            operandToken.ReportTokenError(F("Get ReadToHALValue Function not found: "), funcName.ToString().c_str());
                         } else {
-                            operandToken.ReportTokenError(String(F("Get ReadToHALValue other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                            operandToken.ReportTokenError(F("Get ReadToHALValue other error: "), HALOperationResultToString(getFunRes.result));
                         }
                         anyError = true;
                     }
@@ -623,7 +624,7 @@ namespace DALHAL {
                     HALValue halValue(HALValue::Type::TEST); // unset TEST type
                     readResult = device->read(halValue);
                     if (readResult != HALOperationResult::Success) {
-                        operandToken.ReportTokenError(String(HALOperationResultToString(readResult)).c_str(), ": read");
+                        operandToken.ReportTokenError(HALOperationResultToString(readResult), F(": read"));
                         anyError = true;
                     }
                 }
@@ -635,9 +636,9 @@ namespace DALHAL {
                     auto getFunRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, funcName);
                     if (getFunRes.result != HALOperationResult::Success) {
                         if (getFunRes.result == HALOperationResult::UnsupportedCommand) {
-                            operandToken.ReportTokenError(String(F("WriteHALValue Function not found: ")).c_str(), funcName.ToString().c_str());
+                            operandToken.ReportTokenError(F("WriteHALValue Function not found: "), funcName.ToString().c_str());
                         } else {
-                            operandToken.ReportTokenError(String(F("WriteHALValue other error: ")).c_str(), String(HALOperationResultToString(getFunRes.result)).c_str());
+                            operandToken.ReportTokenError(F("WriteHALValue other error: "), HALOperationResultToString(getFunRes.result));
                         }
                         anyError = true;
                     }
@@ -647,7 +648,7 @@ namespace DALHAL {
                     //printf("\nPARSE EXPRESSION TEST WRITE FUNCTION %d\n", (int)halValue.getType());
                     writeResult = device->write(halValue);
                     if (writeResult != HALOperationResult::Success) {
-                        operandToken.ReportTokenError(String(HALOperationResultToString(writeResult)).c_str(), ": write");
+                        operandToken.ReportTokenError(HALOperationResultToString(writeResult), F(": write"));
                         anyError = true;
                     }
                 }
@@ -929,7 +930,7 @@ namespace DALHAL {
                         if (opStackIndex != 0)
                             opStackIndex--; // discard the LeftParenthesis
                         else
-                            ReportError(String(F("Mismatched parenthesis")).c_str()); // should never happend
+                            ReportError(F("Mismatched parenthesis")); // should never happend
                     }
                     else {
                         ExpTokenType twoCharOpType = ExpTokenType::NotSet;

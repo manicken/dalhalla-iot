@@ -34,6 +34,14 @@ namespace DALHAL {
 #endif
         }
 
+        void ReportError(const __FlashStringHelper* msg) {
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+            std::cout << "Error: " << msg << std::endl;
+#else
+            GlobalLogger.Error(F("Report:"), String(msg).c_str());
+#endif
+        }
+
         void ReportWarning(const char* msg, const char* param) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             std::cout << "Warning: " << msg << " " << ((param!=nullptr)?param:"") << std::endl;

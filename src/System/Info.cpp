@@ -81,10 +81,10 @@ namespace Info
         printf("\n%s\n", ret.c_str());
 
 #elif defined(ESP8266)
-        Serial.printf("Heap: %u, Max block: %u\n",
+        Serial.printf_P(PSTR("Heap: %u, Max block: %u\n"),
             ESP.getFreeHeap(),
             ESP.getMaxFreeBlockSize());
-        Serial1.printf("Heap: %u, Max block: %u\n",
+        Serial1.printf_P(PSTR("Heap: %u, Max block: %u\n"),
             ESP.getFreeHeap(),
             ESP.getMaxFreeBlockSize());
 #endif
@@ -143,38 +143,38 @@ namespace Info
         rst_info *info = system_get_rst_info();
         uint32 reason = info->reason;
         if (reason == rst_reason::REASON_DEFAULT_RST)
-            return "normal startup by power on";
+            return PSTR("normal startup by power on");
         else if (reason == rst_reason::REASON_WDT_RST)
-            return "hardware watch dog reset";
+            return PSTR("hardware watch dog reset");
         else if (reason == rst_reason::REASON_EXCEPTION_RST)
-            return "exception reset";
+            return PSTR("exception reset");
         else if (reason == rst_reason::REASON_SOFT_WDT_RST)
-            return "software watch dog reset";
+            return PSTR("software watch dog reset");
         else if (reason == rst_reason::REASON_SOFT_RESTART)
-            return "software restart/system_restart";
+            return PSTR("software restart/system_restart");
         else if (reason == rst_reason::REASON_DEEP_SLEEP_AWAKE)
-            return "wake up from deep-sleep";
+            return PSTR("wake up from deep-sleep");
         else if (reason == rst_reason::REASON_EXT_SYS_RST)
-            return "external system reset";
+            return PSTR("external system reset");
         else
-            return "undefined reset cause";
+            return PSTR("undefined reset cause");
 #elif defined(ESP32)
         esp_reset_reason_t reset_reason = esp_reset_reason();
         switch (reset_reason) {
-            case ESP_RST_POWERON: return "Power-on reset";
-            case ESP_RST_EXT: return "External reset";
-            case ESP_RST_SW: return "Software reset";
-            case ESP_RST_PANIC: return "Software reset due to panic";
-            case ESP_RST_INT_WDT: return "Interrupt watchdog reset";
-            case ESP_RST_TASK_WDT: return "Task watchdog reset";
-            case ESP_RST_WDT: return "Other watchdog reset";
-            case ESP_RST_DEEPSLEEP: return "Reset after deep sleep";
-            case ESP_RST_BROWNOUT: return "Brownout reset";
-            case ESP_RST_SDIO: return "SDIO reset";
-            default: return "Unknown reset reason";
+            case ESP_RST_POWERON: return PSTR("Power-on reset");
+            case ESP_RST_EXT: return PSTR("External reset");
+            case ESP_RST_SW: return PSTR("Software reset");
+            case ESP_RST_PANIC: return PSTR("Software reset due to panic");
+            case ESP_RST_INT_WDT: return PSTR("Interrupt watchdog reset");
+            case ESP_RST_TASK_WDT: return PSTR("Task watchdog reset");
+            case ESP_RST_WDT: return PSTR("Other watchdog reset");
+            case ESP_RST_DEEPSLEEP: return PSTR("Reset after deep sleep");
+            case ESP_RST_BROWNOUT: return PSTR("Brownout reset");
+            case ESP_RST_SDIO: return PSTR("SDIO reset");
+            default: return PSTR("Unknown reset reason");
         }
 #endif
-        return "undefined reset cause"; 
+        return PSTR("undefined reset cause"); 
     }
 
     uint64_t reverseBytes(uint64_t value) {

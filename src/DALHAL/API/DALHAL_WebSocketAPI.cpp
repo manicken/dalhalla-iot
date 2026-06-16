@@ -54,29 +54,35 @@ namespace DALHAL {
         switch (type) {
 
         case WS_EVT_CONNECT:
-            Serial.printf("WS client #%u connected from %s\r\n",
-                        client->id(),
-                        client->remoteIP().toString().c_str());
-                        if (failsafeMode) {
-                            client->text("failsafe/recovery mode is active");
-                        } else {
-                            client->text("normal mode");
-                        }
+            Serial.print(F("WS client #"));
+            Serial.print(client->id());
+            Serial.print(F(" connected from "));
+            Serial.print(client->remoteIP().toString().c_str());
+            Serial.println();
+            
+            if (failsafeMode) {
+                client->text(F("failsafe/recovery mode is active"));
+            } else {
+                client->text(F("normal mode"));
+            }
             break;
 
         case WS_EVT_DISCONNECT:
-            Serial.printf("WS client #%u disconnected\r\n", client->id());
+            Serial.print(F("WS client #"));
+            Serial.print(client->id());
+            Serial.print(F(" disconnected"));
+            
             break;
 
         case WS_EVT_DATA: {
             AwsFrameInfo *info = (AwsFrameInfo*)arg;
 
             if (!info->final || info->index != 0 || info->len != len) {
-                Serial.println("WS EVT_DATA rx error");
+                Serial.println(F("WS EVT_DATA rx error"));
                 return;
             }
             if (info->opcode != WS_TEXT) {
-                Serial.println("info->opcode != WS_TEXT");
+                Serial.println(F("info->opcode != WS_TEXT"));
                 return;
             }
 
@@ -84,7 +90,9 @@ namespace DALHAL {
             //Serial.printf("WS RX: %s\n", cmd.c_str());
 #if defined(DALHAL_SYSTEM_H_)
             // absolute failsafe command as WS run througth AsyncWebServer and runs in the BG it's mostly allways available
-            if (strcasecmp(cmd.c_str(), "system/EnterRecoveryMode")==0) {
+            ZeroCopyString zcCmd((char*)data, len);
+            
+            if (zcCmd.EqualsIC(F("system/EnterRecoveryMode"))) {
                 System::EnterRecoveryMode();
             }
 #endif
@@ -146,14 +154,14 @@ namespace DALHAL {
 
     void WebSocketAPI::GetRootPage_Handler(AsyncWebServerRequest* request) {
 
-        const char* path = "/api/index.html";
+        const __FlashStringHelper* path = F("/api/index.html");
 
         if (LittleFS.exists(path)) {
-            request->send(LittleFS, path, "text/html");
+            request->send(LittleFS, path, F("text/html"));
             return;
         }
 
-        request->send_P(200, "text/html", HTML_WS_CONSOLE);
+        request->send_P(200, F("text/html"), HTML_WS_CONSOLE);
     }
 
     void WebSocketAPI::setup(bool failsafeMode) {

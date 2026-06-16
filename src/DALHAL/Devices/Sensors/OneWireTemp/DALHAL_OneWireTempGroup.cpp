@@ -49,10 +49,10 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> OneWireTempGroup::readStringFunctions[] = {
-        {"getAllNewDevices", &OneWireTempGroup::readString_getAllNewDevices_Function, "get all new devices present on all busses according to the current cfg"},
-        {"getAllNewDevicesWithTemp", &OneWireTempGroup::readString_getAllNewDevicesWithTemp_Function, "get all new devices on all busses with current temperature present on the bus according to the current cfg"},
-        {"getAllDevices", &OneWireTempGroup::readString_getAllDevices_Function, "get all devices (even new) present on all busses"},
-        {"getAllTemperatures", &OneWireTempGroup::readString_getAllTemperatures_Function, "get all devices (even new) present on all busses with temperature printed"}
+        {CE_MATCH_EMIT_STR("getAllNewDevices"), &OneWireTempGroup::readString_getAllNewDevices_Function, CE_EMIT_STR("get all new devices present on all busses according to the current cfg")},
+        {CE_MATCH_EMIT_STR("getAllNewDevicesWithTemp"), &OneWireTempGroup::readString_getAllNewDevicesWithTemp_Function, CE_EMIT_STR("get all new devices on all busses with current temperature present on the bus according to the current cfg")},
+        {CE_MATCH_EMIT_STR("getAllDevices"), &OneWireTempGroup::readString_getAllDevices_Function, CE_EMIT_STR("get all devices (even new) present on all busses")},
+        {CE_MATCH_EMIT_STR("getAllTemperatures"), &OneWireTempGroup::readString_getAllTemperatures_Function, CE_EMIT_STR("get all devices (even new) present on all busses with temperature printed")}
     };
 
     constexpr DeviceFunctionTable OneWireTempGroup::FunctionTable = {

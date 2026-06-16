@@ -67,7 +67,10 @@ namespace DALHAL {
                 DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
                 if (devFindRes != DeviceFindResult::Success) { // failsafe
-                    printf("@CalcRPNToken - CachedDeviceAccess - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
+                    String str = DeviceFindResultToString(devFindRes);
+                    str += uidPath.ToString().c_str();
+                    GlobalLogger.Error(F("@CalcRPNToken - CachedDeviceAccess - "), str.c_str());
+                    //printf("@CalcRPNToken - CachedDeviceAccess - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;
                     return;
                 }
@@ -87,7 +90,14 @@ namespace DALHAL {
                 DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
 
                 if (devFindRes != DeviceFindResult::Success) {  // failsafe
-                    printf("\nCalcRPNToken - @non bracket non funcname accessor - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
+
+                    String str = DeviceFindResultToString(devFindRes);
+                    str += F(":>>");
+                    str += uidPath.ToString().c_str();
+                    str += F("<<");
+                    GlobalLogger.Error(F("@CalcRPNToken - @non bracket non funcname accessor - "), str.c_str());
+
+                    //printf("\nCalcRPNToken - @non bracket non funcname accessor - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;
                     return;
                 }

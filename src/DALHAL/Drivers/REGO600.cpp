@@ -105,46 +105,68 @@ namespace Drivers {
         }
         return OpCodeInfoTable[0]; // Not found
     }
+#if defined(ESP8266) || defined(AVR)
+#define STRING_PLACEMENT_POLICY PROGMEM
+#else
+#define STRING_PLACEMENT_POLICY
+#endif
 
-    // Tabellen placeras lämpligen i Flash (PROGMEM på ESP)
-    const REGO600::RegoLookupEntry SystemRegisterTable[] = {
+    static const char type_str_GT1[] STRING_PLACEMENT_POLICY = "GT1";
+    static const char type_str_GT2[] STRING_PLACEMENT_POLICY = "GT2";
+    static const char type_str_GT3[] STRING_PLACEMENT_POLICY = "GT3";
+    static const char type_str_GT4[] STRING_PLACEMENT_POLICY = "GT4";
+    static const char type_str_GT5[] STRING_PLACEMENT_POLICY = "GT5";
+    static const char type_str_GT6[] STRING_PLACEMENT_POLICY = "GT6";
+    static const char type_str_GT8[] STRING_PLACEMENT_POLICY = "GT8";
+    static const char type_str_GT9[] STRING_PLACEMENT_POLICY = "GT9";
+    static const char type_str_GT10[] STRING_PLACEMENT_POLICY = "GT10";
+    static const char type_str_GT11[] STRING_PLACEMENT_POLICY = "GT11";
+    static const char type_str_GT3x[] STRING_PLACEMENT_POLICY = "GT3x";
+
+    static const char type_str_P3[] STRING_PLACEMENT_POLICY = "P3";
+    static const char type_str_COMP[] STRING_PLACEMENT_POLICY = "COMP";
+    static const char type_str_EL3[] STRING_PLACEMENT_POLICY = "EL3";
+    static const char type_str_EL6[] STRING_PLACEMENT_POLICY = "EL6";
+    static const char type_str_P1[] STRING_PLACEMENT_POLICY = "P1";
+    static const char type_str_P2[] STRING_PLACEMENT_POLICY = "P2";
+    static const char type_str_VXV[] STRING_PLACEMENT_POLICY = "VXV";
+    static const char type_str_ALARM[] STRING_PLACEMENT_POLICY = "ALARM";
+
+
+    constexpr REGO600::RegoLookupEntry SystemRegisterTable[] = {
         // Namn,   Adr,    Opcode,                Min,    Max,   Signed, Multiplier
         // temperature sensor registers
-        {"GT1",  0x0209,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Radiator return (GT1)
-        {"GT2",  0x020A,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Outdoor (GT2)
-        {"GT3",  0x020B,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Hot water (GT3)
-        {"GT4",  0x020C,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Forward (GT4)
-        {"GT5",  0x020D,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Room (GT5)
-        {"GT6",  0x020E,  {.s16 = 10},  {.s16 = 1500},  REGO600::ValueType::Float,  0.1f}, // Compressor (GT6) 
-        {"GT8",  0x020F,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid out (GT8)
-        {"GT9",  0x0210,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid in (GT9)
-        {"GT10", 0x0211,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid in (GT10)
-        {"GT11", 0x0212,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid out (GT11)
-        {"GT3x", 0x0213,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // External hot water (GT3x)
+        {type_str_GT1,  0x0209,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Radiator return (GT1)
+        {type_str_GT2,  0x020A,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Outdoor (GT2)
+        {type_str_GT3,  0x020B,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Hot water (GT3)
+        {type_str_GT4,  0x020C,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Forward (GT4)
+        {type_str_GT5,  0x020D,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Room (GT5)
+        {type_str_GT6,  0x020E,  {.s16 = 10},  {.s16 = 1500},  REGO600::ValueType::Float,  0.1f}, // Compressor (GT6) 
+        {type_str_GT8,  0x020F,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid out (GT8)
+        {type_str_GT9,  0x0210,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Heat fluid in (GT9)
+        {type_str_GT10, 0x0211,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid in (GT10)
+        {type_str_GT11, 0x0212,  {.s16 = -500},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // Cold fluid out (GT11)
+        {type_str_GT3x, 0x0213,  {.s16 = 10},  {.s16 = 1200},  REGO600::ValueType::Float,  0.1f}, // External hot water (GT3x)
         // state registers
-        {"P3",    0x01FD, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Ground loop pump [P3]
-        {"COMP",  0x01FE, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Compresor
-        {"EL3",   0x01FF, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 3kW
-        {"EL6",   0x0200, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 6kW
-        {"P1",    0x0203, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Radiator pump [P1]
-        {"P2",    0x0204, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Heat carrier pump [P2]
-        {"VXV",   0x0205, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Tree-way valve [VXV]
-        {"ALARM", 0x0206, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Alarm
+        {type_str_P3,    0x01FD, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Ground loop pump [P3]
+        {type_str_COMP,  0x01FE, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Compresor
+        {type_str_EL3,   0x01FF, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 3kW
+        {type_str_EL6,   0x0200, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Additional heat 6kW
+        {type_str_P1,    0x0203, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Radiator pump [P1]
+        {type_str_P2,    0x0204, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Heat carrier pump [P2]
+        {type_str_VXV,   0x0205, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Tree-way valve [VXV]
+        {type_str_ALARM, 0x0206, {.u16 = 0}, {.u16 = 1},  REGO600::ValueType::Bool, 1.0f}, // Alarm
+    };
+    constexpr size_t SystemRegisterTableSize = sizeof(SystemRegisterTable)/sizeof(SystemRegisterTable[0]);
 
-        /** terminator element should allways be last and present */
-        {nullptr, 0, 0, 0, REGO600::ValueType::Unset, 0.0f}
-    };
-    const REGO600::RegoLookupEntry REGO600::ManualRawEntry = {
-        "MANUAL", 
-        0x0000,
-        {.u16 = 0}, 
-        {.u16 = 0xFFFF}, 
-        REGO600::ValueType::Unsigned,
-        1.0f
-    };
     const REGO600::RegoLookupEntry* REGO600::SystemRegisterTableLockup(const char* name) {
-        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
-            if (strcasecmp(SystemRegisterTable[i].name, name) == 0) {
+        DALHAL::ZeroCopyString zcName(name);
+        for (size_t i = 0; i < SystemRegisterTableSize; i++) {
+#if defined(ESP8266) || defined(AVR)
+            if (zcName.EqualsIC_P(SystemRegisterTable[i].name)) {
+#else
+            if (zcName.EqualsIC(SystemRegisterTable[i].name)) {
+#endif
                 return &SystemRegisterTable[i];
             }
         }
@@ -152,20 +174,14 @@ namespace Drivers {
     }
 
     bool REGO600::SystemRegisterTable_ItemExists(void* ctx, const char* name) { // ctx not used here as this is a static table
-        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
-            if (strcasecmp(SystemRegisterTable[i].name, name) == 0) {
-                return true;
-            }
-        }
-        return false;
+        return SystemRegisterTableLockup(name) != nullptr;
     }
     void REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs) { // ctx not used here as this is a static table
         sbs.write_json_array_begin();
-        bool first = true;
-        for (size_t i = 0; SystemRegisterTable[i].name != nullptr; i++) {
-            if (first == false) {
+        for (size_t i = 0; i < SystemRegisterTableSize; i++) {
+            if (i > 0) {
                 sbs.write_json_value_separator();
-            } else { first = false; }
+            }
             sbs.write_jsonQuoted_cStr(SystemRegisterTable[i].name);
         }
         sbs.write_json_array_end();

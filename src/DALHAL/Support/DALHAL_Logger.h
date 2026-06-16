@@ -44,7 +44,7 @@ struct LogEntry {
           const __FlashStringHelper* message;
       };
       char* text;
-      const char* source;
+      const __FlashStringHelper* source;
       bool isCode;
       bool isNew = false;
       /** used when the same exact error happens repetitively */
@@ -99,7 +99,7 @@ class Logger {
     const LogEntry& getLastEntry() const;
     bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag);
     bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr, bool codeFlag);
-    void setLastEntrySource(const char* src);
+    void setLastEntrySource(const __FlashStringHelper* src);
 
   private:
 #if defined(ESP32) 

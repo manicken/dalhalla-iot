@@ -115,7 +115,7 @@ namespace DALHAL {
                         // set current Token
                         _tokens.currIndex = i;
                         if (false == ExtractAssignmentParts(_tokens)) {
-                            token.ReportTokenError(String(F("Invalid assignment in action block")).c_str());
+                            token.ReportTokenError(F("Invalid assignment in action block"));
                             anyError = true;
                             continue;
                         }
@@ -142,13 +142,13 @@ namespace DALHAL {
                             continue;
                         }
                         if (Expressions::IsExpressionEmpty(AssignmentParts::rhs)) {
-                            token.ReportTokenError(String(F("RHS expression cannot be empty")).c_str());
+                            token.ReportTokenError(F("RHS expression cannot be empty"));
                             anyError = true;
                             continue;
                         }
                         // Validate RHS
                         if (false == Expressions::ValidateExpression(AssignmentParts::rhs)) {
-                            token.ReportTokenError(String(F("RHS expression validation failed")).c_str());
+                            token.ReportTokenError(F("RHS expression validation failed"));
                             anyError = true;
                         }
 
@@ -190,7 +190,7 @@ namespace DALHAL {
                         const char* match = tokensItems[startIndex].FindChar('(');
                         if (match == nullptr) {
                             // no operator found, no function call found
-                            currentStartToken.ReportTokenError(String(F("!!!!!!!!!!!!!!!!!! (assignment operator)/(func call)  not found")).c_str());
+                            currentStartToken.ReportTokenError(F("!!!!!!!!!!!!!!!!!! (assignment operator)/(func call)  not found"));
                             return false;
                         }
                        
@@ -221,7 +221,7 @@ namespace DALHAL {
                             if (*prevChar == '<' || *prevChar == '>') {
                                 // Ensure previous char is also same operator, otherwise invalid
                                 if (!foundAssignmentOperatorToken->ContainsPtr(prevChar - 1) || *(prevChar - 1) != *prevChar) {
-                                    foundAssignmentOperatorToken->ReportTokenError(String(F("Invalid compound shift assignment (expected <<= or >>=)")).c_str());
+                                    foundAssignmentOperatorToken->ReportTokenError(F("Invalid compound shift assignment (expected <<= or >>=)"));
                                     return false;
                                 }
                             }
@@ -276,7 +276,7 @@ namespace DALHAL {
                         // someVar =5 or someVar +=5
                         if (foundAssignmentOperatorToken->ContainsPtr(foundAssignmentOperator+1)) {
                             if (assignmentTokenIndex != startIndex) {
-                                currentStartToken.ReportTokenError(String(F("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch")).c_str());
+                                currentStartToken.ReportTokenError(F("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch"));
                                 return false;
                             }
                             // this mean that there are characters after the assignment operator
@@ -286,7 +286,7 @@ namespace DALHAL {
                         // someVar = 6 or someVar += 5 
                         else {
                             if (assignmentTokenIndex != startIndex+1) {
-                                currentStartToken.ReportTokenError(String(F("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch")).c_str());
+                                currentStartToken.ReportTokenError(F("!!!!!!!!!!!!!!!!!! ExtractAssignmentParts expected assignmentTokenIndex mismatch"));
                                 return false;
                             }
                             AssignmentParts::rhs.currIndex = startIndex+2;

@@ -46,7 +46,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> SinglePulseOutput::execFunctions[] = {
-        {"", &SinglePulseOutput::static_exec, "execute a pulse"}
+        {CE_MATCH_EMIT_STR(""), &SinglePulseOutput::static_exec, CE_EMIT_STR("execute a pulse")}
     };
 
     constexpr DeviceFunctionTable SinglePulseOutput::FunctionTable = {

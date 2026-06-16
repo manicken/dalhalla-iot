@@ -68,6 +68,10 @@ namespace DALHAL {
         inline void write(const char* str) {
             write(str, strlen(str));
         }
+        /** write simple " */
+        inline void write_doublequote() {
+            write_char('"');
+        }
         void write(const __FlashStringHelper* fstr);
         void write(const __FlashStringHelper* fstr, size_t len);
         void write_P(PGM_P pstr, size_t len);
@@ -111,13 +115,10 @@ namespace DALHAL {
         void write_json_object_end();
         void write_json(float v);
         void write_jsonQuoted(const __FlashStringHelper* fstr);
-        void write_jsonQuoted(const __FlashStringHelper* fstr, size_t len);
         void write_jsonQuoted(const char* cstr, size_t len);
         void write_jsonQuoted_cStr(const char* cstr);
         /** write a key followed by a colon : */
         void write_jsonMemberStart(const __FlashStringHelper* fstr);
-        /** write a key followed by a colon : */
-        void write_jsonMemberStart(const __FlashStringHelper* fstr, size_t len);
         /** write a key followed by a colon : */
         void write_jsonMemberStart(const char* cstr, size_t len);
         /** write a key followed by a colon : */

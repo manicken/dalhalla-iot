@@ -79,24 +79,24 @@ namespace DALHAL {
 
                             // check that no Else has already been found
                             if (currentIf->hasElse) {
-                                token.ReportTokenError(String(F("'elseif' cannot appear after 'else'")).c_str());
+                                token.ReportTokenError(F("'elseif' cannot appear after 'else'"));
                                 otherErrors = true;
                             }
                         }
                         else if (token.type == ScriptTokenType::Then) {
                             if (!expecting_do_then) {
-                                token.ReportTokenError(String(F("'do/then' without preceding 'if' or 'on'")).c_str());
+                                token.ReportTokenError(F("'do/then' without preceding 'if' or 'on'"));
                                 otherErrors = true;
                             }
                             else if (last_If_or_On_Index + 1 == i) {
-                                token.ReportTokenError(String(F("Missing condition between 'if/on/elseif' and 'then/do'")).c_str());
+                                token.ReportTokenError(F("Missing condition between 'if/on/elseif' and 'then/do'"));
                                 otherErrors = true;
                             }
                             expecting_do_then = false;
                         }
                         else if (token.type == ScriptTokenType::EndIf) {
                             if (ifLevel == 0) {
-                                token.ReportTokenError(String(F("'endif' without matching 'if'")).c_str());
+                                token.ReportTokenError(F("'endif' without matching 'if'"));
                                 otherErrors = true;
                             }
                             else {
@@ -106,7 +106,7 @@ namespace DALHAL {
                             }
 
                             if (expecting_do_then) {
-                                token.ReportTokenError(String(F("missing 'do/then' after last 'if'")).c_str());
+                                token.ReportTokenError(F("missing 'do/then' after last 'if'"));
                                 otherErrors = true;
                             }
                         }
@@ -115,7 +115,7 @@ namespace DALHAL {
 
                             // check for multiple Else
                             if (currentIf->hasElse) {
-                                token.ReportTokenError(String(F("Multiple 'else' blocks in the same 'if'")).c_str());
+                                token.ReportTokenError(F("Multiple 'else' blocks in the same 'if'"));
                                 otherErrors = true;
                             } else {
                                 currentIf->hasElse = 1;
@@ -123,7 +123,7 @@ namespace DALHAL {
                         } 
                         else if (token.type == ScriptTokenType::On) {
                             if (ifLevel != 0 || onLevel != 0) {
-                                token.ReportTokenError(String(F("'on' block cannot be nested")).c_str());
+                                token.ReportTokenError(F("'on' block cannot be nested"));
                                 otherErrors = true;
                             } else {
                                 lastOn = &token;
@@ -134,31 +134,31 @@ namespace DALHAL {
                         }
                         else if (token.type == ScriptTokenType::EndOn) {
                             if (onLevel == 0) {
-                                token.ReportTokenError(String(F("'endon' without matching 'on'")).c_str());
+                                token.ReportTokenError(F("'endon' without matching 'on'"));
                                 otherErrors = true;
                             } else
                                 onLevel--;
 
                             if (expecting_do_then) {
-                                token.ReportTokenError(String(F("missing 'do' after last 'on'")).c_str());
+                                token.ReportTokenError(F("missing 'do' after last 'on'"));
                                 otherErrors = true;
                             }
                         }
                         else if (onLevel == 0 && ifLevel == 0) {
-                            token.ReportTokenError(String(F("action/assigment expression tokens cannot be outside root blocks")).c_str());
+                            token.ReportTokenError(F("action/assigment expression tokens cannot be outside root blocks"));
                             otherErrors = true;
                         }
                     }
 
                     if (ifLevel != 0) {
                         for (int i=0;i<ifStackIndex;i++) { // only print last 'errors'
-                            ifStack[i]->ReportTokenError(String(F("Unmatched 'if' block")).c_str());
+                            ifStack[i]->ReportTokenError(F("Unmatched 'if' block"));
                         }
                         
                     }
                     if (onLevel != 0) {
                         if (lastOn)
-                            lastOn->ReportTokenError(String(F("Unmatched 'on' block: ")).c_str());
+                            lastOn->ReportTokenError(F("Unmatched 'on' block: "));
                         else
                             ReportError(String(F("Unmatched 'on' block: <null>")).c_str());
                     }
@@ -256,7 +256,7 @@ namespace DALHAL {
                         const ScriptToken& token = tokens[i];
                         if (((token.type == ScriptTokenType::Then) || (token.type == ScriptTokenType::Else)) == false) continue;
                         if (token.itemsInBlock == 0) {
-                            token.ReportTokenError(String(F("EnsureActionBlocksContainItems - empty action(s) block detected")).c_str());
+                            token.ReportTokenError(F("EnsureActionBlocksContainItems - empty action(s) block detected"));
                             anyError = true;
                         }
                     }

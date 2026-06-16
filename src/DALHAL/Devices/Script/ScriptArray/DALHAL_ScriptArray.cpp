@@ -54,18 +54,18 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpRead> ScriptArray::bracketOpReadFunctions[] = {
-        {"", &ScriptArray::BracketRead_Func, "default"}
+        {CE_MATCH_EMIT_STR(""), &ScriptArray::BracketRead_Func, CE_EMIT_STR("default")}
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpWrite> ScriptArray::bracketOpWriteFunctions[] = {
-        {"", &ScriptArray::BracketWrite_Func, "default"}
+        {CE_MATCH_EMIT_STR(""), &ScriptArray::BracketWrite_Func, CE_EMIT_STR("default")}
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> ScriptArray::readStringFunctions[] = {
-        {"valuelist", &ScriptArray::readString_valuelist_Function, "get the whole list of values"},
-        {"", &ScriptArray::readString__default__Function, "get a item given by the first parameter as the index"}
+        {CE_MATCH_EMIT_STR("valuelist"), &ScriptArray::readString_valuelist_Function, CE_EMIT_STR("get the whole list of values")},
+        {CE_MATCH_EMIT_STR(""), &ScriptArray::readString__default__Function, CE_EMIT_STR("get a item given by the first parameter as the index")}
     };
 
     __attribute__((used, externally_visible))

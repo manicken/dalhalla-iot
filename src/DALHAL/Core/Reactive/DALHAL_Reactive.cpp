@@ -36,14 +36,15 @@ namespace DALHAL {
             return false;
         }
         // check if name exists
+        ZeroCopyString zcName(checkName);
         for (size_t i = 0; table[i].name != nullptr; ++i) {
-            if (strcasecmp(table[i].name, checkName) == 0) {
+            if (zcName.EqualsIC_P(table[i].name)) {
                 return true;
             }
         }
         return false;
     }
-
+/*
     size_t Reactive::GetDeviceEvents( 
             const EventDescriptor* table, 
             const char** outNames, // caller-provided array
@@ -61,7 +62,7 @@ namespace DALHAL {
         if (idx < maxNames) outNames[idx] = nullptr; // null-terminate
         return idx; // success if idx != 0
     }
-        
+      */  
     HALOperationResult Reactive::GetSimpleReactiveEventImpl(
         DALHAL::Device* device, 
         ZeroCopyString& name, 
@@ -70,7 +71,7 @@ namespace DALHAL {
     {
         for (const EventDescriptor* entry = table; entry->name != nullptr; ++entry)
         {
-            if (name.EqualsIC(entry->name) == false) {
+            if (name.EqualsIC_P(entry->name) == false) {
                 continue;
             }
             if (out) {

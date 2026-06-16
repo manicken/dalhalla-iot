@@ -459,7 +459,7 @@ void Logger::advance() {
     if (head == 0) wrapped = true;
 }
 
-void Logger::setLastEntrySource(const char* src) {
+void Logger::setLastEntrySource(const __FlashStringHelper* src) {
     if (!wrapped && head == 0) {
         // No entries yet, handle appropriately (return a dummy or assert)
         return;

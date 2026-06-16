@@ -44,17 +44,17 @@ namespace DALHAL {
 
     
 
-    const char* DeviceFindResultToString(DeviceFindResult res) {
+    const __FlashStringHelper* DeviceFindResultToString(DeviceFindResult res) {
         switch (res)
         {
-            case DeviceFindResult::DeviceNotFound: return "DeviceNotFound";
-            case DeviceFindResult::EmptyUIDPath: return "EmptyUIDPath";
-            case DeviceFindResult::InvalidUID: return "InvalidUID";
-            case DeviceFindResult::PathTooDeep: return "PathTooDeep";
-            case DeviceFindResult::SubDevicesNotSupported: return "SubDevicesNotSupported";
-            case DeviceFindResult::SubDeviceListEmpty: return "SubDeviceListEmpty";
-            case DeviceFindResult::Success: return "Success";
-            default: return "Unknown";
+            case DeviceFindResult::DeviceNotFound: return F("DeviceNotFound");
+            case DeviceFindResult::EmptyUIDPath: return F("EmptyUIDPath");
+            case DeviceFindResult::InvalidUID: return F("InvalidUID");
+            case DeviceFindResult::PathTooDeep: return F("PathTooDeep");
+            case DeviceFindResult::SubDevicesNotSupported: return F("SubDevicesNotSupported");
+            case DeviceFindResult::SubDeviceListEmpty: return F("SubDeviceListEmpty");
+            case DeviceFindResult::Success: return F("Success");
+            default: return F("Unknown");
         }
     }
 
@@ -75,9 +75,9 @@ namespace DALHAL {
 
     void Device::PrintTo(StringBuilderStreamer& sbs) {
         sbs.write_jsonMemberStart(F("uid"));
-        sbs.write_char('"');
+        sbs.write_doublequote();
         decodeUID(uid, sbs);
-        sbs.write_char('"');
+        sbs.write_doublequote();
         sbs.write_json_value_separator();
         sbs.write_jsonString(F("type"), this->Type);
         

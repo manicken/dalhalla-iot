@@ -341,23 +341,14 @@ namespace DALHAL {
         write_char('}');
     }
 
-    void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr, size_t len) {
-        if (fstr == nullptr || len == 0) {
-            write(F("null"));
-            return;
-        }
-        write_char('"');
-        write(fstr, len);
-        write_char('"');
-    }
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr) {
         if (fstr == nullptr) {
             write(F("null"));
             return;
         }
-        write_char('"');
-        write(fstr);
-        write_char('"');
+        write_doublequote();
+        write_escapedChars_P(reinterpret_cast<PGM_P>(fstr));
+        write_doublequote();
     }
     void StringBuilderStreamer::write_jsonQuoted(const char* cstr, size_t len) {
         if (!cstr || len == 0)
@@ -365,7 +356,7 @@ namespace DALHAL {
             write(F("null"));
             return;
         }
-        write_char('"');
+        write_doublequote();
         if ((uint32_t)cstr >= 0x40200000) {
             write_escapedChars_P(cstr, len);
         } else {
@@ -376,7 +367,7 @@ namespace DALHAL {
             }
         }
 
-        write_char('"');
+        write_doublequote();
     }
     void StringBuilderStreamer::write_jsonQuoted_cStr(const char* cstr) {
         if (!cstr)
@@ -385,7 +376,7 @@ namespace DALHAL {
             return;
         }
 
-        write_char('"');
+        write_doublequote();
         //Serial1.printf("cstr = %p\n", cstr);
         if ((uint32_t)cstr >= 0x40200000) {
             write_escapedChars_P(cstr);
@@ -397,13 +388,9 @@ namespace DALHAL {
             }
         }
 
-        write_char('"');
+        write_doublequote();
     }
 
-    void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr, size_t len) {
-        write_jsonQuoted(fstr, len);
-        write_json_member_separator();
-    }
     void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr) {
         write_jsonQuoted(fstr);
         write_json_member_separator();

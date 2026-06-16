@@ -93,9 +93,9 @@ namespace DALHAL {
             auto fs = static_cast<const SchemaArrayOfPrimitives&>(fieldSchema);
             // TODO do proper convertion into bool fields
             sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("primitiveTypeFlags"));
-            sbs.write_char('"');
+            sbs.write_doublequote();
             sbs.write_asHex(fs.primitiveTypeFlags);
-            sbs.write_char('"');
+            sbs.write_doublequote();
             
             if (fieldSchema.type == FieldType::ArrayOfPrimitives) { 
                 sbs.write_json_object_end(); // add the object finalizer if this is the actual object

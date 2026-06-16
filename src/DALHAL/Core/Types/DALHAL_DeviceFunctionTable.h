@@ -30,6 +30,7 @@
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTypes.h>
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+#include <DALHAL/Core/Types/DALHAL_ConstExpressionConstStrings.h>
 
 #define DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE             uint32_t
 
@@ -60,20 +61,20 @@ namespace DALHAL {
 
     template<typename Fn>
     struct FunctionEntry {
-        const char* name;
+        ConstExpressionStringComparableFn name;
         Fn fn;
-        const char* help;
+        ConstExpressionStringFn help;
         DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE rwTypeMask;
         DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE bracketTypeMask;
 
-        constexpr FunctionEntry(const char* name, Fn fn, const char* help) 
+        constexpr FunctionEntry(ConstExpressionStringComparableFn name, Fn fn, ConstExpressionStringFn help) 
             : name(name), fn(fn), help(help), rwTypeMask(FunctionValueType::_None_), bracketTypeMask(FunctionValueType::_None_) {}
-        
-        constexpr FunctionEntry(const char* name, Fn fn, const char* help, 
+
+        constexpr FunctionEntry(ConstExpressionStringComparableFn name, Fn fn, ConstExpressionStringFn help, 
                 DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE rwTypeMask) 
             : name(name), fn(fn), help(help), rwTypeMask(rwTypeMask), bracketTypeMask(FunctionValueType::_None_) {}
 
-        constexpr FunctionEntry(const char* name, Fn fn, const char* help, 
+        constexpr FunctionEntry(ConstExpressionStringComparableFn name, Fn fn, ConstExpressionStringFn help, 
                 DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE rwTypeMask,
                 DALHAL_FUNCTIONTABLE_VALUETYPE_TYPE bracketTypeMask) 
             : name(name), fn(fn), help(help), rwTypeMask(rwTypeMask), bracketTypeMask(bracketTypeMask) {}
@@ -93,14 +94,15 @@ namespace DALHAL {
         0
     };
 
-    
-
     template<typename Fn>
     static Fn GetDeviceFunction(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
         for (size_t i = 0; i<funcTable.count; ++i) {
-            if (zcFuncName.EqualsIC(funcTable.items[i].name)) {
+            if (funcTable.items[i].name(&zcFuncName, nullptr)) {
                 return funcTable.items[i].fn;
             }
+            /*if (zcFuncName.EqualsIC(funcTable.items[i].name)) {
+                return funcTable.items[i].fn;
+            }*/
         }
         return nullptr;
     }
@@ -108,9 +110,12 @@ namespace DALHAL {
     template<typename Fn>
     static const FunctionEntry<Fn>* GetDeviceFunctionEntry(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
         for (size_t i = 0; i<funcTable.count; ++i) {
-            if (zcFuncName.EqualsIC(funcTable.items[i].name)) {
-                return &funcTable.items[i];
+            if (funcTable.items[i].name(&zcFuncName, nullptr)) {
+                return funcTable.items[i];
             }
+            /*if (zcFuncName.EqualsIC(funcTable.items[i].name)) {
+                return &funcTable.items[i];
+            }*/
         }
         return nullptr;
     }
@@ -121,14 +126,25 @@ namespace DALHAL {
         sbs.write_json_array_begin();
         for (size_t i = 0; i<funcTable.count; ++i) {
             if (i>0) { sbs.write_json_value_separator(); }
-            sbs.write(F("{\"name\":\"")); if (funcTable.items[i].name) { sbs.write(funcTable.items[i].name); } sbs.write_char('"'); // yes name can be nullptr or empty as that signal to use the standard read/write function if available
-            sbs.write(F(",\"help\":\"")); if (funcTable.items[i].help) { sbs.write(funcTable.items[i].help); } sbs.write_char('"');
+            sbs.write_json_object_begin();
+
+            sbs.write_jsonMemberStart(F("name"));
+            funcTable.items[i].name(nullptr, &sbs);
+            sbs.write_json_value_separator();
+            sbs.write_jsonMemberStart(F("help"));
+            funcTable.items[i].help(sbs);
+
             if (funcTable.items[i].rwTypeMask != FunctionValueType::_None_) {
-                sbs.write(F(",\"rwTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].rwTypeMask, sbs);
+                sbs.write_json_value_separator();
+                sbs.write_jsonMemberStart("rwTypeMask");
+                FunctionValueType::PrintTo(funcTable.items[i].rwTypeMask, sbs);
             }
             if (funcTable.items[i].bracketTypeMask != FunctionValueType::_None_) {
-                sbs.write(F(",\"bracketTypeMask\":")); FunctionValueType::PrintTo(funcTable.items[i].bracketTypeMask, sbs);
+                sbs.write_json_value_separator();
+                sbs.write_jsonMemberStart("bracketTypeMask");
+                FunctionValueType::PrintTo(funcTable.items[i].bracketTypeMask, sbs);
             }
+
             sbs.write_json_object_end();
         }
         sbs.write_json_array_end();

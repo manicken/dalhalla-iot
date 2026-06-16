@@ -49,10 +49,10 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> OneWireTempBus::readStringFunctions[] = {
-        {"getAllNewDevices", &OneWireTempBus::readString_getAllNewDevices_Function, "get all new devices present on the bus according to the current cfg"},
-        {"getAllNewDevicesWithTemp", &OneWireTempBus::readString_getAllNewDevicesWithTemp_Function, "get all new devices with current temperature present on the bus according to the current cfg"},
-        {"getAllDevices", &OneWireTempBus::readString_getAllDevices_Function, "get all devices (even new) present on the bus"},
-        {"getAllTemperatures", &OneWireTempBus::readString_getAllTemperatures_Function, "get all devices (even new) present on the bus with temperature printed"}
+        {CE_MATCH_EMIT_STR("getAllNewDevices"), &OneWireTempBus::readString_getAllNewDevices_Function, CE_EMIT_STR("get all new devices present on the bus according to the current cfg")},
+        {CE_MATCH_EMIT_STR("getAllNewDevicesWithTemp"), &OneWireTempBus::readString_getAllNewDevicesWithTemp_Function, CE_EMIT_STR("get all new devices with current temperature present on the bus according to the current cfg")},
+        {CE_MATCH_EMIT_STR("getAllDevices"), &OneWireTempBus::readString_getAllDevices_Function, CE_EMIT_STR("get all devices (even new) present on the bus")},
+        {CE_MATCH_EMIT_STR("getAllTemperatures"), &OneWireTempBus::readString_getAllTemperatures_Function, CE_EMIT_STR("get all devices (even new) present on the bus with temperature printed")}
     };
 
     constexpr DeviceFunctionTable OneWireTempBus::FunctionTable = {
@@ -189,9 +189,9 @@ namespace DALHAL {
                 sbs.write_json_object_begin();
 
                 sbs.write_jsonMemberStart(F("romId"));
-                sbs.write_char('"');
+                sbs.write_doublequote();
                 sbs.write_asHex(addr.bytes, 8, ':');
-                sbs.write_char('"');
+                sbs.write_doublequote();
                 
                 if (printTemp) {
                     sbs.write_json_value_separator(); sbs.write_jsonNumber(F("tempC"), dTemp->getTempC(addr.bytes));

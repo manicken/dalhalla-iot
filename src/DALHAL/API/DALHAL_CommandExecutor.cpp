@@ -148,75 +148,75 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb);
 
     static constexpr CommandNode HalWriteItems[] = {
-        { "string", Exec_Hal_Write_String, "hal write string" },
-        { "uint32", Exec_Hal_Write_UInt32, "hal write uint32" },
-        { "int32", Exec_Hal_Write_Int32, "hal write int32" },
-        { "bool", Exec_Hal_Write_Bool, "hal write bool" },
-        { "float", Exec_Hal_Write_Float, "hal write float" },
+        { CE_MATCH_EMIT_STR("string"), Exec_Hal_Write_String, CE_EMIT_STR("hal write string") },
+        { CE_MATCH_EMIT_STR("uint32"), Exec_Hal_Write_UInt32, CE_EMIT_STR("hal write uint32") },
+        { CE_MATCH_EMIT_STR("int32"), Exec_Hal_Write_Int32, CE_EMIT_STR("hal write int32") },
+        { CE_MATCH_EMIT_STR("bool"), Exec_Hal_Write_Bool, CE_EMIT_STR("hal write bool") },
+        { CE_MATCH_EMIT_STR("float"), Exec_Hal_Write_Float, CE_EMIT_STR("hal write float") },
     };
 
     static constexpr CommandNode HalReadItems[] = {
-        { "string", Exec_Hal_Read_String, "hal read string" },
-        { "uint32", Exec_Hal_Read_UInt32, "hal read uint32" },
-        { "int32", Exec_Hal_Read_Int32, "hal read int32" },
-        { "bool", Exec_Hal_Read_Bool, "hal read bool" },
-        { "float", Exec_Hal_Read_Float, "hal read float" },
+        { CE_MATCH_EMIT_STR("string"), Exec_Hal_Read_String, CE_EMIT_STR("hal read string") },
+        { CE_MATCH_EMIT_STR("uint32"), Exec_Hal_Read_UInt32, CE_EMIT_STR("hal read uint32") },
+        { CE_MATCH_EMIT_STR("int32"), Exec_Hal_Read_Int32, CE_EMIT_STR("hal read int32") },
+        { CE_MATCH_EMIT_STR("bool"), Exec_Hal_Read_Bool, CE_EMIT_STR("hal read bool") },
+        { CE_MATCH_EMIT_STR("float"), Exec_Hal_Read_Float, CE_EMIT_STR("hal read float") },
     };
 
     static constexpr CommandNode HalScriptItems[] = {
-        { "reload", Exec_Hal_Scripts_Reload, "scripts reload" },
-        { "stop", Exec_Hal_Scripts_Stop, "scripts stop/pause execution" },
-        { "start", Exec_Hal_Scripts_Start, "scripts start/resume execution" },
+        { CE_MATCH_EMIT_STR("reload"), Exec_Hal_Scripts_Reload, CE_EMIT_STR("scripts reload") },
+        { CE_MATCH_EMIT_STR("stop"), Exec_Hal_Scripts_Stop, CE_EMIT_STR("scripts stop/pause execution") },
+        { CE_MATCH_EMIT_STR("start"), Exec_Hal_Scripts_Start, CE_EMIT_STR("scripts start/resume execution") },
     };
 
     static constexpr CommandNode HalConfigItems[] = {
-        { "reload", Exec_Hal_Config_Reload, "hal config first validate cfg from file and if success, 1. unloads the current cfg. 2. load new cfg. 3. reload/validate script." },
-        { "unload", Exec_Hal_Config_Unload, "hal config/script unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config" },
+        { CE_MATCH_EMIT_STR("reload"), Exec_Hal_Config_Reload, CE_EMIT_STR("hal config first validate cfg from file and if success, 1. unloads the current cfg. 2. load new cfg. 3. reload/validate script.") },
+        { CE_MATCH_EMIT_STR("unload"), Exec_Hal_Config_Unload, CE_EMIT_STR("hal config/script unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config") },
     };
 
     static constexpr CommandNode HalItems[] = {
-        { "exec", Exec_Hal_Exec, "run device exec cmd" },
-        { "write", DALHAL_CMD_CHILDREN(HalWriteItems), "run device write cmds" },
-        { "read", DALHAL_CMD_CHILDREN(HalReadItems), "run device read cmds" },
-        { "config", DALHAL_CMD_CHILDREN(HalConfigItems), "hal config cmds" },
-        { "scripts", DALHAL_CMD_CHILDREN(HalScriptItems), "script specific commands" },
-        { "getAvailableGPIOs", Exec_Hal_GetAvailableGPIOs, "get a list of available GPIO on this target and their functions" },
-        { "printDevices", Exec_Hal_PrintDevices, "print all current loaded devices" },
-        { "printLog", Exec_Hal_PrintLog, "print log" },
-        { "printRegistry", Exec_Hal_PrintRegistry, "print device type registry" },
-        { "printJsonSchemas", Exec_Hal_PrintJsonSchemas, "print config json schema" }
+        { CE_MATCH_EMIT_STR("exec"), Exec_Hal_Exec, CE_EMIT_STR("run device exec cmd") },
+        { CE_MATCH_EMIT_STR("write"), DALHAL_CMD_CHILDREN(HalWriteItems), CE_EMIT_STR("run device write cmds") },
+        { CE_MATCH_EMIT_STR("read"), DALHAL_CMD_CHILDREN(HalReadItems), CE_EMIT_STR("run device read cmds") },
+        { CE_MATCH_EMIT_STR("config"), DALHAL_CMD_CHILDREN(HalConfigItems), CE_EMIT_STR("hal config cmds") },
+        { CE_MATCH_EMIT_STR("scripts"), DALHAL_CMD_CHILDREN(HalScriptItems), CE_EMIT_STR("script specific commands") },
+        { CE_MATCH_EMIT_STR("getAvailableGPIOs"), Exec_Hal_GetAvailableGPIOs, CE_EMIT_STR("get a list of available GPIO on this target and their functions") },
+        { CE_MATCH_EMIT_STR("printDevices"), Exec_Hal_PrintDevices, CE_EMIT_STR("print all current loaded devices") },
+        { CE_MATCH_EMIT_STR("printLog"), Exec_Hal_PrintLog, CE_EMIT_STR("print log") },
+        { CE_MATCH_EMIT_STR("printRegistry"), Exec_Hal_PrintRegistry, CE_EMIT_STR("print device type registry") },
+        { CE_MATCH_EMIT_STR("printJsonSchemas"), Exec_Hal_PrintJsonSchemas, CE_EMIT_STR("print config json schema") }
     };
 #if defined(ESP8266) || defined(ESP32)
     static constexpr CommandNode WiFiItems[] = {
-        { "scan", Exec_WiFi_Scan, "Scan WiFi for AP:s" },
-        { "set_b64", Exec_WiFi_Set_b64, "Set current WiFi settings from the given b64 encoded string" },
-        { "set_json", Exec_WiFi_Set_Json, "Set current WiFi settings from the given json encoded string" },
+        { CE_MATCH_EMIT_STR("scan"), Exec_WiFi_Scan, CE_EMIT_STR("Scan WiFi for AP:s") },
+        { CE_MATCH_EMIT_STR("set_b64"), Exec_WiFi_Set_b64, CE_EMIT_STR("Set current WiFi settings from the given b64 encoded string") },
+        { CE_MATCH_EMIT_STR("set_json"), Exec_WiFi_Set_Json, CE_EMIT_STR("Set current WiFi settings from the given json encoded string") },
     };
 #endif
     static constexpr CommandNode SystemItems[] = {
         
-        { "info", Exec_System_Info, "System info" },
+        { CE_MATCH_EMIT_STR("info"), Exec_System_Info, CE_EMIT_STR("System info") },
 #if defined(ESP8266) || defined(ESP32)
-        { "heap", Exec_System_Heap, "Print heap info" },
-        { "reset", Exec_System_Reset_Restart, "Reset the system" },
-        { "restart", Exec_System_Reset_Restart, "Restart the system (same as reset)" },
+        { CE_MATCH_EMIT_STR("heap"), Exec_System_Heap, CE_EMIT_STR("Print heap info") },
+        { CE_MATCH_EMIT_STR("reset"), Exec_System_Reset_Restart, CE_EMIT_STR("Reset the system") },
+        { CE_MATCH_EMIT_STR("restart"), Exec_System_Reset_Restart, CE_EMIT_STR("Restart the system (same as reset)") },
 #endif
-        { "HeartbeatLed", Exec_System_HeartbeatLed, "HeartBeatLed set timings" },
-        { "ver", Exec_System_Build_Ver_Print, "Print current build version" },
+        { CE_MATCH_EMIT_STR("HeartbeatLed"), Exec_System_HeartbeatLed, CE_EMIT_STR("HeartBeatLed set timings") },
+        { CE_MATCH_EMIT_STR("ver"), Exec_System_Build_Ver_Print, CE_EMIT_STR("Print current build version") },
     };
 
     static constexpr CommandNode RootItems[] = {
-        { "hal", DALHAL_CMD_CHILDREN(HalItems), "HAL subsystem" },
-        { "system", DALHAL_CMD_CHILDREN(SystemItems), "System commands" },
+        { CE_MATCH_EMIT_STR("hal"), DALHAL_CMD_CHILDREN(HalItems), CE_EMIT_STR("HAL subsystem") },
+        { CE_MATCH_EMIT_STR("system"), DALHAL_CMD_CHILDREN(SystemItems), CE_EMIT_STR("System commands") },
 #if defined(ESP8266) || defined(ESP32)
-        { "wifi", DALHAL_CMD_CHILDREN(WiFiItems), "WiFi management" },
+        { CE_MATCH_EMIT_STR("wifi"), DALHAL_CMD_CHILDREN(WiFiItems), CE_EMIT_STR("WiFi management") },
 #endif
-        { "schedule", Exec_Scheduler_Cmd, "Schedule commands" }, // to be removed in the future as it would be implemented as a device
-        { "help", Exec_Help_Cmd, "Show help" }
+        { CE_MATCH_EMIT_STR("schedule"), Exec_Scheduler_Cmd, CE_EMIT_STR("Schedule commands") }, // to be removed in the future as it would be implemented as a device
+        { CE_MATCH_EMIT_STR("help"), Exec_Help_Cmd, CE_EMIT_STR("Show help") }
     };
 
     static constexpr CommandNode RootItem = {
-        "", DALHAL_CMD_CHILDREN(RootItems), "root item"
+        CE_MATCH_EMIT_STR(""), DALHAL_CMD_CHILDREN(RootItems), CE_EMIT_STR("root item")
     };
 
     void PrintOperationSuccess(const char* tag, CommandCallback cb) {
@@ -238,12 +238,14 @@ namespace DALHAL {
         sbs.write_json_object_begin();
 
         // name
-        sbs.write_jsonString(F("name"), node.name);
+        sbs.write_jsonMemberStart(F("name"));
+        node.name(nullptr, &sbs);
 
         sbs.write_json_value_separator();
 
         // help
-        sbs.write_jsonString(F("help"), node.help ? node.help : "");
+        sbs.write_jsonMemberStart(F("help"));
+        node.help(sbs);
 
         // children
         sbs.write_json_value_separator();
@@ -304,7 +306,7 @@ namespace DALHAL {
         for (size_t i = 0; i < node.children_count; i++) {
             const CommandNode& child = node.children[i];
 
-            if (next.EqualsIC(child.name)) {
+            if (child.name(&next, nullptr)) {
 
                 // If there is more path remaining, descend
                 if (zcStr.NotEmpty() && child.children_count > 0) {
@@ -593,8 +595,9 @@ namespace DALHAL {
         }
 
         if (res != HALOperationResult::Success) {
-            GlobalLogger.Error(F("HALOperationResult: "), String(HALOperationResultToString(res)).c_str());
-            GlobalLogger.setLastEntrySource(outDevice->Type);
+            String str = HALOperationResultToString(res);
+            str += outDevice->Type;
+            GlobalLogger.Error(F("HALOperationResult: "), str.c_str());
             return res;
         }
         return HALOperationResult::Success;

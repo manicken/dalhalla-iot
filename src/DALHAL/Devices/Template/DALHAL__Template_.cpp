@@ -47,7 +47,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> _Template_::execFunctions[] = {
-        {"_Template_", &_Template_::exec_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::exec_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::exec_Template_Function(Device* device) {
 
@@ -59,7 +59,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> _Template_::readValueFunctions[] = {
-        {"_Template_", &_Template_::readValue_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::readValue_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::readValue_Template_Function(Device* device, HALValue& val) {
 
@@ -71,7 +71,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteHALValue> _Template_::writeValueFunctions[] = {
-        {"_Template_", &_Template_::writeValue_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::writeValue_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::writeValue_Template_Function(Device* device, const HALValue& val) {
 
@@ -83,7 +83,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpRead> _Template_::bracketOpReadFunctions[] = {
-        {"_Template_", &_Template_::bracketOpRead_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::bracketOpRead_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue) {
 
@@ -95,7 +95,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpWrite> _Template_::bracketOpWriteFunctions[] = {
-        {"_Template_", &_Template_::bracketOpWrite_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::bracketOpWrite_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
 
@@ -107,7 +107,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> _Template_::readStringFunctions[] = {
-        {"_Template_", &_Template_::readString_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::readString_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
 
@@ -121,7 +121,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteString> _Template_::writeStringFunctions[] = {
-        {"_Template_", &_Template_::writeString_Template_Function, "help"}
+        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::writeString_Template_Function, CE_EMIT_STR("help")}
     };
     HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
 

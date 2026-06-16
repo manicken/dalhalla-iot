@@ -46,11 +46,11 @@ namespace DALHAL {
             const char* checkName
         );
 
-        static size_t GetDeviceEvents(
+        /*static size_t GetDeviceEvents(
             const EventDescriptor* table,
             const char** outNames,
             size_t maxNames
-        );
+        );*/
 
         static HALOperationResult GetSimpleReactiveEventImpl(
             Device* device,

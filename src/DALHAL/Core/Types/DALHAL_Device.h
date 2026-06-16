@@ -54,7 +54,7 @@ namespace DALHAL {
         EmptyUIDPath,
         InvalidUID
     };
-    const char* DeviceFindResultToString(DeviceFindResult res);
+    const __FlashStringHelper* DeviceFindResultToString(DeviceFindResult res);
 
     class Device {
         

@@ -46,7 +46,7 @@ namespace LittleFS_ext
     FileResult load_binary_file(const char* file_name, uint8_t** outBuffer, size_t* outSize);
 
     int getFileSize(const char* file_name);
-    void listDir(Stream &printStream, const char *dirname, uint8_t level);
-    void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level = 0);
+    //void listDir(Stream &printStream, const char *dirname, uint8_t level);
+    //void listDir(std::string &str, ListMode mode, const char *dirname, uint8_t level = 0);
 }
 #endif
