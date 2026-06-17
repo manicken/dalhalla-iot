@@ -120,11 +120,7 @@ namespace DALHAL {
                 }
             }
 
-            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb) {
-
-                DALHAL::BlockStreamer bs(cb, "schema", BlockStreamer::DataType::Json);
-                StringBuilderStreamer& sbs = bs.writer();
-
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, StringBuilderStreamer& sbs) {
                 clear();
 
                 addToRegistries("ROOT", reg);

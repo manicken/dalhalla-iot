@@ -45,12 +45,9 @@ namespace DALHAL {
             return Registry::TerminatorItem;
         }
 
-        void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb) {
+        void PrintTo(const Registry::DeviceRegistry& reg, PrintMode mode, StringBuilderStreamer& sbs) {
             const Registry::Item* items = reg.items;
             size_t itemCount = reg.count;
-
-            DALHAL::BlockStreamer bs(cb, "registry", DALHAL::BlockStreamer::DataType::Json);
-            DALHAL::StringBuilderStreamer& sbs = bs.writer();
 
             sbs.write(F("{\"regitems\":["));
 
@@ -59,34 +56,43 @@ namespace DALHAL {
                 const Registry::Item& regItem = items[i];
 
                 if (i > 0) { sbs.write_json_value_separator(); } 
-
-                sbs.write(F("{\"name\":\""));
-                sbs.write(regItem.typeName);
-                sbs.write(F("\",\"events\":["));
-
-                if (regItem.def->reactiveTable != nullptr) {
-                    bool first = true;
-                    for (const EventDescriptor* entry = regItem.def->reactiveTable; entry->name; entry++) {
-                    
-                        if (first == false) { sbs.write_json_value_separator(); }
-                        else { first = false; }
-                        sbs.write_doublequote(); sbs.write_P(entry->name); sbs.write_doublequote();
+                sbs.write_json_object_begin();
+                sbs.write_jsonString(F("name"), regItem.typeName);
+                if (mode == PrintMode::Events) {
+                    sbs.write(F(",\"events\":["));
+                    if (regItem.def->reactiveTable != nullptr) {
+                        
+                        bool first = true;
+                        for (const EventDescriptor* entry = regItem.def->reactiveTable; entry->name; entry++) {
+                        
+                            if (first == false) { sbs.write_json_value_separator(); }
+                            else { first = false; }
+                            sbs.write_doublequote(); sbs.write_P(entry->name); sbs.write_doublequote();
+                        }
+                        
                     }
+                    sbs.write_json_array_end();
                 }
-                sbs.write_json_array_end();
 
-                sbs.write(F(",\"functions\":{"));
-
-                if (regItem.def->functionTable != nullptr) {
-                    regItem.def->functionTable->PrintTo(sbs);
+                if (mode == PrintMode::Functions) {
+                    sbs.write(F(",\"functions\":{"));
+                    if (regItem.def->functionTable != nullptr) {
+                        regItem.def->functionTable->PrintTo(sbs);
+                    }
+                    sbs.write_json_object_end();
                 }
-                sbs.write_json_object_end();
+
+                if (regItem.def->subRegistry != nullptr) {
+                    sbs.write_json_value_separator();
+                    sbs.write_jsonMemberStart(F("subitems"));
+                    PrintTo(*(regItem.def->subRegistry), mode, sbs);
+                }
+                
                 sbs.write_json_object_end();
 
             }
             sbs.write_json_array_end();
             sbs.write_json_object_end();
-            sbs.flush();
         }
 
     }

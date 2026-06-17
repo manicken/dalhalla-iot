@@ -122,14 +122,18 @@ namespace DALHAL {
 
     template<typename Fn>
     static void GetDeviceFunctions(const FunctionTable_t<Fn>& funcTable, DALHAL::StringBuilderStreamer& sbs) {
-
+        const ZeroCopyString zcEmpty;
         sbs.write_json_array_begin();
         for (size_t i = 0; i<funcTable.count; ++i) {
             if (i>0) { sbs.write_json_value_separator(); }
             sbs.write_json_object_begin();
 
-            sbs.write_jsonMemberStart(F("name"));
-            funcTable.items[i].name(nullptr, &sbs);
+            if (funcTable.items[i].name(&zcEmpty, nullptr)) {
+                sbs.write_jsonString(F("primary"),F("true"));
+            } else {
+                sbs.write_jsonMemberStart(F("name"));
+                funcTable.items[i].name(nullptr, &sbs);
+            }
             sbs.write_json_value_separator();
             sbs.write_jsonMemberStart(F("help"));
             funcTable.items[i].help(sbs);

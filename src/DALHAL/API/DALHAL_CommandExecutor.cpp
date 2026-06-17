@@ -143,8 +143,10 @@ namespace DALHAL {
 
     HALOperationResult Exec_Hal_GetAvailableGPIOs(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintDevices(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_PrintLog(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_PrintRegistry(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_PrintLog(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_PrintRegistry_Types(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_PrintRegistry_Functions(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_PrintRegistry_Events(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb);
 
     static constexpr CommandNode HalWriteItems[] = {
@@ -174,17 +176,26 @@ namespace DALHAL {
         { CE_MATCH_EMIT_STR("unload"), Exec_Hal_Config_Unload, CE_EMIT_STR("hal config/script unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config") },
     };
 
+    static constexpr CommandNode HalMetaRegistryItems[] = {
+        { CE_MATCH_EMIT_STR("types"), Exec_Hal_PrintRegistry_Types, CE_EMIT_STR("print device type registry basedata") },
+        { CE_MATCH_EMIT_STR("functions"), Exec_Hal_PrintRegistry_Functions, CE_EMIT_STR("print device type registry with functions") },
+        { CE_MATCH_EMIT_STR("events"), Exec_Hal_PrintRegistry_Events, CE_EMIT_STR("print device type registry with events") },
+        { CE_MATCH_EMIT_STR("cfgschema"), Exec_Hal_PrintJsonSchemas, CE_EMIT_STR("print config json schema") }
+    };
+
+    static constexpr CommandNode HalMetaItems[] = {
+        { CE_MATCH_EMIT_STR("gpio"), Exec_Hal_GetAvailableGPIOs, CE_EMIT_STR("get a list of available GPIO on this target and their functions") },
+        { CE_MATCH_EMIT_STR("devices"), Exec_Hal_PrintDevices, CE_EMIT_STR("print all current loaded devices") },
+        { CE_MATCH_EMIT_STR("reg"), DALHAL_CMD_CHILDREN(HalMetaRegistryItems), CE_EMIT_STR("print registry metadata")}
+    };
+
     static constexpr CommandNode HalItems[] = {
         { CE_MATCH_EMIT_STR("exec"), Exec_Hal_Exec, CE_EMIT_STR("run device exec cmd") },
         { CE_MATCH_EMIT_STR("write"), DALHAL_CMD_CHILDREN(HalWriteItems), CE_EMIT_STR("run device write cmds") },
         { CE_MATCH_EMIT_STR("read"), DALHAL_CMD_CHILDREN(HalReadItems), CE_EMIT_STR("run device read cmds") },
         { CE_MATCH_EMIT_STR("config"), DALHAL_CMD_CHILDREN(HalConfigItems), CE_EMIT_STR("hal config cmds") },
         { CE_MATCH_EMIT_STR("scripts"), DALHAL_CMD_CHILDREN(HalScriptItems), CE_EMIT_STR("script specific commands") },
-        { CE_MATCH_EMIT_STR("getAvailableGPIOs"), Exec_Hal_GetAvailableGPIOs, CE_EMIT_STR("get a list of available GPIO on this target and their functions") },
-        { CE_MATCH_EMIT_STR("printDevices"), Exec_Hal_PrintDevices, CE_EMIT_STR("print all current loaded devices") },
-        { CE_MATCH_EMIT_STR("printLog"), Exec_Hal_PrintLog, CE_EMIT_STR("print log") },
-        { CE_MATCH_EMIT_STR("printRegistry"), Exec_Hal_PrintRegistry, CE_EMIT_STR("print device type registry") },
-        { CE_MATCH_EMIT_STR("printJsonSchemas"), Exec_Hal_PrintJsonSchemas, CE_EMIT_STR("print config json schema") }
+        { CE_MATCH_EMIT_STR("meta"), DALHAL_CMD_CHILDREN(HalMetaItems), CE_EMIT_STR("print metadata")}
     };
 #if defined(ESP8266) || defined(ESP32)
     static constexpr CommandNode WiFiItems[] = {
@@ -211,6 +222,7 @@ namespace DALHAL {
 #if defined(ESP8266) || defined(ESP32)
         { CE_MATCH_EMIT_STR("wifi"), DALHAL_CMD_CHILDREN(WiFiItems), CE_EMIT_STR("WiFi management") },
 #endif
+        { CE_MATCH_EMIT_STR("printLog"), Exec_PrintLog, CE_EMIT_STR("print log") },
         { CE_MATCH_EMIT_STR("schedule"), Exec_Scheduler_Cmd, CE_EMIT_STR("Schedule commands") }, // to be removed in the future as it would be implemented as a device
         { CE_MATCH_EMIT_STR("help"), Exec_Help_Cmd, CE_EMIT_STR("Show help") }
     };
@@ -962,31 +974,37 @@ namespace DALHAL {
 
     HALOperationResult Exec_Hal_GetAvailableGPIOs(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "getAvailableGPIOs", BlockStreamer::DataType::Json);
-        StringBuilderStreamer& sbs = bs.writer();
-        GPIO_manager::GetList(zcStr, sbs);
+        GPIO_manager::GetList(zcStr, bs.writer());
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_PrintDevices(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "printDevices", BlockStreamer::DataType::Json);
-        StringBuilderStreamer& sbs = bs.writer();
-
-        sbs.write_json_object_begin();
-        DeviceManager::PrintTo(sbs);
-        sbs.write_json_object_end();
+        DeviceManager::PrintTo(bs.writer());
         return HALOperationResult::Success;
     }
-    HALOperationResult Exec_Hal_PrintLog(ZeroCopyString& zcStr, CommandCallback cb) {
+    HALOperationResult Exec_PrintLog(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "logs", BlockStreamer::DataType::PlainText);
-        StringBuilderStreamer& sbs = bs.writer();
-        GlobalLogger.printAllLogs(sbs);
+        GlobalLogger.printAllLogs(bs.writer());
         return HALOperationResult::Success;
     }
-    HALOperationResult Exec_Hal_PrintRegistry(ZeroCopyString& zcStr, CommandCallback cb) {
-        Registry::PrintTo(RootDevicesRegistry, cb);
+    HALOperationResult Exec_Hal_PrintRegistry_Types(ZeroCopyString& zcStr, CommandCallback cb) {
+        DALHAL::BlockStreamer bs(cb, "registry", DALHAL::BlockStreamer::DataType::Json);
+        Registry::PrintTo(RootDevicesRegistry, Registry::PrintMode::Types, bs.writer());
+        return HALOperationResult::Success;
+    }
+    HALOperationResult Exec_Hal_PrintRegistry_Functions(ZeroCopyString& zcStr, CommandCallback cb) {
+        DALHAL::BlockStreamer bs(cb, "registry", DALHAL::BlockStreamer::DataType::Json);
+        Registry::PrintTo(RootDevicesRegistry, Registry::PrintMode::Functions, bs.writer());
+        return HALOperationResult::Success;
+    }
+    HALOperationResult Exec_Hal_PrintRegistry_Events(ZeroCopyString& zcStr, CommandCallback cb) {
+        DALHAL::BlockStreamer bs(cb, "registry", DALHAL::BlockStreamer::DataType::Json);
+        Registry::PrintTo(RootDevicesRegistry, Registry::PrintMode::Events, bs.writer());
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb) {
-        JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, cb);
+        DALHAL::BlockStreamer bs(cb, "schema", BlockStreamer::DataType::Json);
+        JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, bs.writer());
         return HALOperationResult::Success;
     }
 }

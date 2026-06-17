@@ -36,7 +36,9 @@
 namespace DALHAL {
 
     typedef bool (*I2C_HAL_DEVICE_HAS_ADDR_FUNC)(uint8_t addr);
-
+    namespace Registry {
+        struct DeviceRegistry; //  forward declare
+    }
     struct I2C_RegistryDefine : public Registry::DefineBase {
         I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function;
 
@@ -77,6 +79,52 @@ namespace DALHAL {
             I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
         ) : 
             Registry::DefineBase(Create_Function, jsonSchema, reactiveTable, functionTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        //  with subitems
+
+        constexpr I2C_RegistryDefine(
+            const Registry::DeviceRegistry* subRegistry,
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(subRegistry, Create_Function, jsonSchema),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            const Registry::DeviceRegistry* subRegistry,
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const EventDescriptor* reactiveTable,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(subRegistry, Create_Function, jsonSchema, reactiveTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            const Registry::DeviceRegistry* subRegistry,
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const DeviceFunctionTable* functionTable,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(subRegistry, Create_Function, jsonSchema, functionTable),
+            HasAddress_Function(HasAddress_Function)
+        {}
+
+        constexpr I2C_RegistryDefine(
+            const Registry::DeviceRegistry* subRegistry,
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const EventDescriptor* reactiveTable,
+            const DeviceFunctionTable* functionTable,
+            I2C_HAL_DEVICE_HAS_ADDR_FUNC HasAddress_Function
+        ) : 
+            Registry::DefineBase(subRegistry, Create_Function, jsonSchema, reactiveTable, functionTable),
             HasAddress_Function(HasAddress_Function)
         {}
 

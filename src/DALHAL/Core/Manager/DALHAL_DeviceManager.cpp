@@ -53,6 +53,8 @@ namespace DALHAL {
     }
 
     void DeviceManager::PrintTo(StringBuilderStreamer& sbs) {
+        sbs.write_json_object_begin();
+        
         sbs.write_jsonNumber(F("deviceCount"), deviceCount);
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("devices"));
@@ -65,6 +67,8 @@ namespace DALHAL {
             sbs.write_json_object_end();
         }
         sbs.write_json_array_end();
+
+        sbs.write_json_object_end();
     }
 
     Device* DeviceManager::CreateDeviceFromJSON(const JsonVariant& jsonObj) {

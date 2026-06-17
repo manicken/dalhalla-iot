@@ -24,6 +24,7 @@
 #include "DALHAL_Display_SSD1306.h"
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
+#include "DALHAL_Display_SSD1306_Element.h"
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
@@ -31,8 +32,17 @@
 
 namespace DALHAL {
 
+    constexpr Registry::Item SubItemTypeRegItems[] = {
+        {"element", &Display_SSD1306_Element::RegistryDefine}
+    };
+
+    constexpr Registry::DeviceRegistry SubItemTypeReg = {
+        SubItemTypeRegItems, sizeof(SubItemTypeRegItems)/sizeof(SubItemTypeRegItems[0]), "element", "ROOT:I2C_MASTER"
+    };
+
     __attribute__((used, externally_visible))
     constexpr I2C_RegistryDefine Display_SSD1306::RegistryDefine = {
+        &SubItemTypeReg,
         Create,
         &JsonSchema::Display_SSD1306::Root,
         DALHAL_REACTIVE_EVENT_TABLE(DISPLAY_SSD1306),

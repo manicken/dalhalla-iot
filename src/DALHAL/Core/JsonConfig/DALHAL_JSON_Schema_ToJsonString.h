@@ -61,7 +61,7 @@ namespace DALHAL {
             void addToObjects(const char* id, const JsonObjectSchema& schema);
             void addToByReference(const char* id, const SchemaTypeBase& schema);
 
-            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, CommandCallback cb);
+            void buildCompleteJsonSchemasStartingFrom(const Registry::DeviceRegistry& reg, StringBuilderStreamer& sbs);
 
             void clear();
 

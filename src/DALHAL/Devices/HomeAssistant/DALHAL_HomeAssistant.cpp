@@ -51,6 +51,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr Registry::DefineBase HomeAssistant::RegistryDefine = {
+        &HA_DeviceRegistry,
         Create,
         &JsonSchema::HomeAssistant::Root,
         /*nullptr*/ /* no events available */

@@ -46,11 +46,15 @@ namespace DALHAL {
         
         typedef Device* (*HAL_DEVICE_CREATE_FUNC)(DeviceCreateContext& context);
 
+        // forward declare
+        struct DeviceRegistry;
+
         struct DefineBase {
             HAL_DEVICE_CREATE_FUNC Create_Function;
             const JsonSchema::JsonObjectSchema* jsonSchema;
             const EventDescriptor* reactiveTable;
             const DeviceFunctionTable* functionTable;
+            const DeviceRegistry* subRegistry;
             
             constexpr DefineBase(
                 HAL_DEVICE_CREATE_FUNC Create_Function,
@@ -59,7 +63,8 @@ namespace DALHAL {
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
                 reactiveTable(nullptr),
-                functionTable(nullptr)              
+                functionTable(nullptr),
+                subRegistry(nullptr)         
             {}
 
             constexpr DefineBase(
@@ -70,7 +75,8 @@ namespace DALHAL {
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
                 reactiveTable(reactiveTable),
-                functionTable(nullptr)
+                functionTable(nullptr),
+                subRegistry(nullptr)
             {}
 
             constexpr DefineBase(
@@ -81,7 +87,8 @@ namespace DALHAL {
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
                 reactiveTable(nullptr),
-                functionTable(functionTable)              
+                functionTable(functionTable),
+                subRegistry(nullptr)         
             {}
 
             constexpr DefineBase(
@@ -93,7 +100,61 @@ namespace DALHAL {
                 Create_Function(Create_Function),
                 jsonSchema(jsonSchema),
                 reactiveTable(reactiveTable),
-                functionTable(functionTable)
+                functionTable(functionTable),
+                subRegistry(nullptr)
+            {}
+
+            // with subregistry ref.
+            constexpr DefineBase(
+                const DeviceRegistry* subRegistry,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(nullptr),
+                functionTable(nullptr),
+                subRegistry(subRegistry)         
+            {}
+
+            constexpr DefineBase(
+                const DeviceRegistry* subRegistry,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
+                const EventDescriptor* reactiveTable
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(reactiveTable),
+                functionTable(nullptr),
+                subRegistry(subRegistry)
+            {}
+
+            constexpr DefineBase(
+                const DeviceRegistry* subRegistry,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
+                const DeviceFunctionTable* functionTable
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(nullptr),
+                functionTable(functionTable),
+                subRegistry(subRegistry)         
+            {}
+
+            constexpr DefineBase(
+                const DeviceRegistry* subRegistry,
+                HAL_DEVICE_CREATE_FUNC Create_Function,
+                const JsonSchema::JsonObjectSchema* jsonSchema,
+                const EventDescriptor* reactiveTable,
+                const DeviceFunctionTable* functionTable
+            ) :
+                Create_Function(Create_Function),
+                jsonSchema(jsonSchema),
+                reactiveTable(reactiveTable),
+                functionTable(functionTable),
+                subRegistry(subRegistry)
             {}
         };
         
@@ -117,8 +178,12 @@ namespace DALHAL {
 
         const Registry::Item& GetItem(const Registry::DeviceRegistry& reg, const char* type);
 
-        void GetTypeNames(const Registry::DeviceRegistry& reg, CommandCallback cb);
-        void PrintTo(const Registry::DeviceRegistry& reg, CommandCallback cb);
+        enum class PrintMode {
+            Types,
+            Functions,
+            Events
+        };
+        void PrintTo(const Registry::DeviceRegistry& reg, PrintMode mode, StringBuilderStreamer& sbs);
     }
 
 }

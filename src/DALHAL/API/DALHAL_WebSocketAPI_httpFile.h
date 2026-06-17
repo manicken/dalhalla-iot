@@ -38,13 +38,15 @@ static const char HTML_WS_CONSOLE[] PROGMEM = R"rawliteral(
   <button onclick="ws.send('hal/reloadcfg');">reload cfg</button>
   <button onclick="ws.send('help');">help</button>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
-    <button onclick="ws.send('hal/printRegistry');">Print Device Registry</button>
-    <button onclick="ws.send('hal/printJsonSchemas');">Print Json Schemas</button>
-    <button onclick="ws.send('hal/getAvailableGPIOs');">get Available GPIOs</button>
+    <button onclick="ws.send('hal/meta/reg/types');">Print Device Registry Types</button>
+    <button onclick="ws.send('hal/meta/reg/functions');">Print Device Registry Functions</button>
+    <button onclick="ws.send('hal/meta/reg/events');">Print Device Registry Events</button>
+    <button onclick="ws.send('hal/meta/reg/cfgschema');">Print Json Schemas</button>
+    <button onclick="ws.send('hal/meta/gpio');">get Available GPIOs</button>
   </div>
   <div style="display:flex; flex-direction:row; gap: 0.5em;">
-    <button onclick="ws.send('hal/printDevices');">Print Devices</button>
-    <button onclick="ws.send('hal/printlog');">print log</button>
+    <button onclick="ws.send('hal/meta/devices');">Print Loaded Devices</button>
+    <button onclick="ws.send('printlog');">print log</button>
     <button onclick="ws.send('system/info');">get Info</button>
     <button onclick="ws.send('system/reset');">system restart</button>
   </div>

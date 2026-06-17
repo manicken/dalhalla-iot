@@ -37,6 +37,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr Registry::DefineBase TX433::RegistryDefine = {
+        &TX433_UnitTypeRegistry,
         Create,
         &JsonSchema::TX433::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433),
