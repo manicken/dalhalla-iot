@@ -35,13 +35,33 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariable::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariable::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE)
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_VARIABLE),
+        &ScriptVariable::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* ScriptVariable::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> ScriptVariable::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read value")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> ScriptVariable::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_write, "write value"),
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ScriptVariable::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     ScriptVariable::ScriptVariable(DeviceCreateContext& context) : ScriptVariable_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariable::Extractors::Apply(context, this);
@@ -57,20 +77,23 @@ namespace DALHAL {
     HALValue* ScriptVariable::GetValueDirectAccessPtr() {
         return &value;
     }
-
-    HALOperationResult ScriptVariable::read(HALValue& val) {
-        val = value;
+    /* static */
+    HALOperationResult ScriptVariable::HALValue_primary_read(Device* device, HALValue& val) {
+        ScriptVariable& self = static_cast<ScriptVariable&>(*device);
+        val = self.value;
 #if HAS_REACTIVE_READ(SCRIPT_VARIABLE)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }
-    HALOperationResult ScriptVariable::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    /* static */
+    HALOperationResult ScriptVariable::HALValue_primary_write(Device* device, const HALValue& val) {
+        ScriptVariable& self = static_cast<ScriptVariable&>(*device);
+
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        value = val;
+        self.value = val;
 #if HAS_REACTIVE_WRITE(SCRIPT_VARIABLE)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

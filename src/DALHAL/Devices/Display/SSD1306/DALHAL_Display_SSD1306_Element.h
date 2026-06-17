@@ -31,12 +31,25 @@
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace Display_SSD1306_Element { struct Extractors; } } // forward declaration
 
     class Display_SSD1306_Element : public Device {
         friend struct JsonSchema::Display_SSD1306_Element::Extractors; // allow access to private memebers of this class from the schema extractor
+
+    public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
 
     public:
         CachedDeviceAccess* cdaSource;
@@ -51,9 +64,6 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult write(const HALValue& val) override;
-
-        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

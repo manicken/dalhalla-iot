@@ -35,6 +35,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ONE_WIRE_TEMP_DEVICE)
 #include "DALHAL_OneWireTempDevice_Reactive.h"
@@ -74,6 +76,12 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
     
     private:
         bool dataValid = false;
@@ -84,13 +92,10 @@ namespace DALHAL {
         OneWireTempDevice_ValueBase value = 0.0f;
     
     public:
-        using Device::read; // make compiler warnings go away
         OneWireTempDevice(DeviceCreateContext& context);
         ~OneWireTempDevice() override;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-        
-        HALOperationResult read(HALValue& val) override;
 
         void read(DallasTemperature& dTemp);
 
@@ -125,9 +130,6 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
         
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-        HALOperationResult write(const HALValue& val) override;
-#endif
         void loop() override;
 
         

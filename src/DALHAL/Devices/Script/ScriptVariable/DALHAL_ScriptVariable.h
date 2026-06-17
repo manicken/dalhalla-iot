@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_VARIABLE)
 #include "DALHAL_ScriptVariable_Reactive.h"
@@ -61,17 +63,21 @@ namespace DALHAL {
     private:
         ScriptVariable_ValueBase value;
 
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
+
     public:
         ScriptVariable(DeviceCreateContext& context);
         ~ScriptVariable() override = default;
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult read(HALValue& val) override;
-        HALOperationResult write(const HALValue& val) override;
-
         HALValue* GetValueDirectAccessPtr() override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 

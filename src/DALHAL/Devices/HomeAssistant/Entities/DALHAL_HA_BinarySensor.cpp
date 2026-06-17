@@ -49,12 +49,34 @@ namespace DALHAL {
     constexpr Registry::DefineBase HA_BinarySensor::RegistryDefine = {
         Create,
         &JsonSchema::HA_BinarySensor::Root,
+        &HA_BinarySensor::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* HA_BinarySensor::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> HA_BinarySensor::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read from the source device, if it's defined")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> HA_BinarySensor::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write the value to HomeAssistant, if in manual mode", FunctionValueType::_Bool_),
+    };
+
+    constexpr DeviceFunctionTable HA_BinarySensor::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     void HA_BinarySensor::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx); // adds , before
@@ -149,27 +171,35 @@ namespace DALHAL {
     void HA_BinarySensor::begin() {
 
     }
-
-    HALOperationResult HA_BinarySensor::read(HALValue& val) {
-        if (cdr != nullptr) {
-            return cdr->ReadSimple(val);
+    /* static */
+    HALOperationResult HA_BinarySensor::HALValue_primary_read(Device* device, HALValue& val) {
+        HA_BinarySensor& self = static_cast<HA_BinarySensor&>(*device);
+        if (self.cdr != nullptr) {
+            return self.cdr->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
 
     }
-    HALOperationResult HA_BinarySensor::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
-        if (!wasOnline) {
-            HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
+    /* static */
+    HALOperationResult HA_BinarySensor::HALValue_primary_write(Device* device, const HALValue& val) {
+        HA_BinarySensor& self = static_cast<HA_BinarySensor&>(*device);
+
+        if (self.cdr != nullptr) {
+            // because we dont want to be able to write while a cdr is "connected"
+            return HALOperationResult::UnsupportedOperation; 
         }
-        if (!wasOnline) {
+
+        if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
+        if (!self.wasOnline) {
+            HA_DeviceDiscovery::SetAvailability(self.mqttClient, self.hass_uid.c_str(), self.wasOnline, true);
+        }
+        if (!self.wasOnline) {
             return HALOperationResult::ExecutionFailed;
         }
         bool state = val.toBool();
         uint32_t state_cStr_Length = (state ? sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON) : sizeof(DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF)) - 1;
         const char* state_cStr = state ? DALHAL_HA_BINARY_SENSOR_PAYLOAD_ON : DALHAL_HA_BINARY_SENSOR_PAYLOAD_OFF;
-        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), state_cStr, state_cStr_Length);
+        bool success = HA_DeviceDiscovery::SendState(self.mqttClient, self.hass_uid.c_str(), state_cStr, state_cStr_Length);
 
         return success ? HALOperationResult::Success: HALOperationResult::ExecutionFailed;
     };

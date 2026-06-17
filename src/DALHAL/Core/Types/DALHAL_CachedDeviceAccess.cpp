@@ -108,12 +108,13 @@ namespace DALHAL {
         if (bracketAccessSubscriptOperand != nullptr) {
             HALValue subscriptValue;
             HALOperationResult readRes = bracketAccessSubscriptOperand->ReadSimple(subscriptValue);
-            if (readRes != HALOperationResult::Success)
+            if (readRes != HALOperationResult::Success) {
                 return readRes;
-            if (bracketWriteFunc == nullptr)
-                return device->write(subscriptValue, val);
-            else
+            }
+            if (bracketWriteFunc != nullptr) {
                 return bracketWriteFunc(device, subscriptValue, val);
+            }
+            return HALOperationResult::UnsupportedOperation;
         }
         if (writeFromHalValueFunc != nullptr) {
             //printf("\nCDA WriteSimple - writeFromHalValueFunc\n");
@@ -124,20 +125,20 @@ namespace DALHAL {
             *valueDirectAccessPtr = val;
             return HALOperationResult::Success;
         }
-        //printf("\nCDA WriteSimple - device->write(val)\n");
-        return device->write(val);
+        return HALOperationResult::UnsupportedOperation;
     }
 
     HALOperationResult CachedDeviceAccess::ReadSimple(HALValue& val) {
         if (bracketAccessSubscriptOperand != nullptr) {
             HALValue subscriptValue;
             HALOperationResult readRes = bracketAccessSubscriptOperand->ReadSimple(subscriptValue);
-            if (readRes != HALOperationResult::Success)
+            if (readRes != HALOperationResult::Success) {
                 return readRes;
-            if (bracketReadFunc == nullptr)
-                return device->read(subscriptValue, val);
-            else
+            }
+            if (bracketReadFunc != nullptr) {
                 return bracketReadFunc(device, subscriptValue, val);
+            }
+            return HALOperationResult::UnsupportedOperation;
         }
         if (readToHalValueFunc != nullptr) {
             //printf("\nCDA ReadSimple - readToHalValueFunc\n");
@@ -148,7 +149,6 @@ namespace DALHAL {
             val = *valueDirectAccessPtr;
             return HALOperationResult::Success;
         }
-        //printf("\nCDA ReadSimple - device->read(val)\n");
-        return device->read(val);
+        return HALOperationResult::UnsupportedOperation;
     }
 }

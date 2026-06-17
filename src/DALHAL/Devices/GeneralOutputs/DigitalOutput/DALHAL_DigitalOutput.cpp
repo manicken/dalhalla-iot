@@ -36,13 +36,33 @@ namespace DALHAL {
     constexpr Registry::DefineBase DigitalOutput::RegistryDefine = {
         Create,
         &JsonSchema::DigitalOutput::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT)
+        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_OUTPUT),
+        &DigitalOutput::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* DigitalOutput::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> DigitalOutput::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read back the latest write value")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> DigitalOutput::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write binary state", FunctionValueType::_Bool_),
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable DigitalOutput::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     Device* DigitalOutput::Create(DeviceCreateContext& context) {
         return new DigitalOutput(context);
@@ -55,28 +75,30 @@ namespace DALHAL {
 
     DigitalOutput::~DigitalOutput() { pinMode(pin, INPUT); /*input*/ } // release the pin
 
-    HALOperationResult DigitalOutput::read(HALValue &val) {
-        //val.set(value); // read back the latest write value
-        val = value;
-#if HAS_REACTIVE(DIGITAL_OUTPUT, READ)
-        triggerRead();
+    HALOperationResult DigitalOutput::HALValue_primary_read(Device* device, HALValue& val) {
+        DigitalOutput& self = static_cast<DigitalOutput&>(*device);
+
+        val = self.value;
+#if HAS_REACTIVE_READ(DIGITAL_OUTPUT)
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }
 
-    HALOperationResult DigitalOutput::write(const HALValue &val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult DigitalOutput::HALValue_primary_write(Device* device, const HALValue& val) {
+        DigitalOutput& self = static_cast<DigitalOutput&>(*device);
+
         if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
         uint32_t newValue = val.toUInt();
 #if HAS_REACTIVE_VALUE_CHANGE(DIGITAL_OUTPUT)
-        if (value != newValue) {
-            triggerValueChange();
+        if (self.value != newValue) {
+            self.triggerValueChange();
         }
 #endif
-        value = newValue;
-        digitalWrite(pin, value);
+        self.value = newValue;
+        digitalWrite(self.pin, self.value);
 #if HAS_REACTIVE_WRITE(DIGITAL_OUTPUT)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

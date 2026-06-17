@@ -35,7 +35,8 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptEventDispatcher::RegistryDefine = {
         Create,
         &JsonSchema::ScriptEventDispatcher::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER)
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_EVENT_DISPATCHER),
+        &ScriptEventDispatcher::FunctionTable
     };
     
     /* override */
@@ -45,11 +46,11 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> ScriptEventDispatcher::execFunctions[] = {
-        {CE_MATCH_EMIT_STR(""), &ScriptEventDispatcher::static_exec, CE_EMIT_STR("execute event")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(ScriptEventDispatcher::exec, "execute event")
     };
 
     constexpr DeviceFunctionTable ScriptEventDispatcher::FunctionTable = {
-        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
 
         EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
@@ -68,15 +69,9 @@ namespace DALHAL {
     Device* ScriptEventDispatcher::Create(DeviceCreateContext& context) {
         return new ScriptEventDispatcher(context);
     }
-
-    HALOperationResult ScriptEventDispatcher::exec() {
-#if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
-        triggerExec();
-#endif
-        return HALOperationResult::Success;
-    }
     
-    /*static*/HALOperationResult ScriptEventDispatcher::static_exec(Device* device) {
+    /*static*/
+    HALOperationResult ScriptEventDispatcher::exec(Device* device) {
 #if HAS_REACTIVE_EXEC(SCRIPT_EVENT_DISPATCHER)
         static_cast<ScriptEventDispatcher*>(device)->triggerExec();
 #endif

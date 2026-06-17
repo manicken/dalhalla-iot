@@ -54,18 +54,18 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpRead> ScriptArray::bracketOpReadFunctions[] = {
-        {CE_MATCH_EMIT_STR(""), &ScriptArray::BracketRead_Func, CE_EMIT_STR("default")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(ScriptArray::BracketRead_Func, "primary")
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpWrite> ScriptArray::bracketOpWriteFunctions[] = {
-        {CE_MATCH_EMIT_STR(""), &ScriptArray::BracketWrite_Func, CE_EMIT_STR("default")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(ScriptArray::BracketWrite_Func, "primary")
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> ScriptArray::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("valuelist"), &ScriptArray::readString_valuelist_Function, CE_EMIT_STR("get the whole list of values")},
-        {CE_MATCH_EMIT_STR(""), &ScriptArray::readString__default__Function, CE_EMIT_STR("get a item given by the first parameter as the index")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(ScriptArray::readString_primary_Function, "get a item given by the first parameter as the index"),
+        DALHAL_FUNCTION_ENTRY("valuelist", ScriptArray::readString_valuelist_Function, "get the whole list of values")
     };
 
     __attribute__((used, externally_visible))
@@ -73,9 +73,9 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::Exec>,
         EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
-        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])},
-        {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(bracketOpReadFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(bracketOpWriteFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         EmptyFunctionTable<FunctionTypes::WriteString>,
     };
     
@@ -98,36 +98,9 @@ namespace DALHAL {
 
     }
 
-    HALOperationResult ScriptArray::read(const HALValue& bracketSubscriptVal, HALValue& val) {
-        int index = bracketSubscriptVal.toInt();
-        if (index < 0 || index >= valueCount) {
-            printf("\nScriptArray::read BracketOpSubscriptOutOffRange:%d\n", index);
-            return HALOperationResult::BracketOpSubscriptOutOffRange;
-        }
-        val = values[index];
-#if HAS_REACTIVE_BRACKET_READ(SCRIPT_ARRAY)
-        triggerBracketRead();
-#endif
-        return HALOperationResult::Success;
-    }
-
-    HALOperationResult ScriptArray::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
-        if (readOnly) return HALOperationResult::UnsupportedOperation;
-
-        int index = bracketSubscriptVal.toInt();
-        if (index < 0 || index >= valueCount) {
-            printf("\nScriptArray::write BracketOpSubscriptOutOffRange:%d\n", index);
-            return HALOperationResult::BracketOpSubscriptOutOffRange;
-        }
-        values[index] = val;
-#if HAS_REACTIVE_BRACKET_WRITE(SCRIPT_ARRAY)
-        triggerBracketWrite();
-#endif
-        return HALOperationResult::Success;
-    }
-
     HALOperationResult ScriptArray::readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
-        ScriptArray& self = *static_cast<ScriptArray*>(device);
+        ScriptArray& self = static_cast<ScriptArray&>(*device);
+        
         sbs.write_jsonMemberStart(F("items"));
         sbs.write_json_array_begin();
         for (int i=0;i<self.valueCount;i++) {
@@ -140,7 +113,8 @@ namespace DALHAL {
 
         return HALOperationResult::Success;
     }
-    HALOperationResult ScriptArray::readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+    /* static */
+    HALOperationResult ScriptArray::readString_primary_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
         ZeroCopyString zcIndex = zcStrParameters.SplitOffHead('/');
         if (zcIndex.ValidNumber() == false) { return HALOperationResult::InvalidArgument; }
         ScriptArray& self = *static_cast<ScriptArray*>(device);
@@ -159,12 +133,35 @@ namespace DALHAL {
         //val.out_value = values[index].toString();
         return HALOperationResult::Success;
     }
-
+    /* static */
     HALOperationResult ScriptArray::BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val) {
-        return static_cast<ScriptArray*>(device)->read(bracketSubscriptVal, val);
+        ScriptArray& self = static_cast<ScriptArray&>(*device);
+        int index = bracketSubscriptVal.toInt();
+        if (index < 0 || index >= self.valueCount) {
+            printf("\nScriptArray::read BracketOpSubscriptOutOffRange:%d\n", index);
+            return HALOperationResult::BracketOpSubscriptOutOffRange;
+        }
+        val = self.values[index];
+#if HAS_REACTIVE_BRACKET_READ(SCRIPT_ARRAY)
+        self.triggerBracketRead();
+#endif
+        return HALOperationResult::Success;
     }
+    /* static */
     HALOperationResult ScriptArray::BracketWrite_Func(Device* device, const HALValue& bracketSubscriptVal, const HALValue& val) {
-        return static_cast<ScriptArray*>(device)->write(bracketSubscriptVal, val);
+        ScriptArray& self = static_cast<ScriptArray&>(*device);
+        if (self.readOnly) return HALOperationResult::UnsupportedOperation;
+
+        int index = bracketSubscriptVal.toInt();
+        if (index < 0 || index >= self.valueCount) {
+            printf("\nScriptArray::write BracketOpSubscriptOutOffRange:%d\n", index);
+            return HALOperationResult::BracketOpSubscriptOutOffRange;
+        }
+        self.values[index] = val;
+#if HAS_REACTIVE_BRACKET_WRITE(SCRIPT_ARRAY)
+        self.triggerBracketWrite();
+#endif
+        return HALOperationResult::Success;
     }
 
 }

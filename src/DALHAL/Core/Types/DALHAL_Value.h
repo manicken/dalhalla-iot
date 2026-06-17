@@ -44,7 +44,6 @@ namespace DALHAL {
     class HALValue {
     public:
         enum class Type {
-            TEST, // test is a special type that is used check device functionality
             UNSET,
             INT,
             UINT,

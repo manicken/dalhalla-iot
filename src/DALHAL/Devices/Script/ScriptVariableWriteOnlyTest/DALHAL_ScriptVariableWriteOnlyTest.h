@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(SCRIPT_WRITEVAR)
 #include "DALHAL_ScriptVariableWriteOnlyTest_Reactive.h"
@@ -52,6 +54,12 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue &val);
+
+    private:
         HALValue value;
 
     public:
@@ -59,9 +67,6 @@ namespace DALHAL {
         ~ScriptVariableWriteOnlyTest() override = default;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-
-        HALOperationResult write(const HALValue& val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

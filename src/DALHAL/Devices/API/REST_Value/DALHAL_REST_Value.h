@@ -29,6 +29,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace REST_Value { struct Extractors; } } // forward declaration
@@ -39,6 +41,12 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+    
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
 
     private:
         DALHAL::HALValue cachedValue;
@@ -53,7 +61,6 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        DALHAL::HALOperationResult read(DALHAL::HALValue& val) override;
         void loop() override;
     };
 }

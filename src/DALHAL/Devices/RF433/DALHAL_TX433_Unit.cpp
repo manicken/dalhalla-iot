@@ -45,6 +45,7 @@ namespace DALHAL {
         &Create,
         &JsonSchema::TX433_Unit_TypeLC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &TX433_Unit::FunctionTable,
         &JsonSchema::TX433_Unit_TypeLC::Extractors::Apply,
     };
     
@@ -60,18 +61,33 @@ namespace DALHAL {
         &Create,
         &JsonSchema::TX433_Unit_TypeSFC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &TX433_Unit::FunctionTable,
         &JsonSchema::TX433_Unit_TypeSFC::Extractors::Apply,
     };
-    //volatile const void* keep_TX433_Unit_SFCTypeRegistryDefine = &DALHAL::TX433_Unit::SFCTypeRegistryDefine;
-    
+
     __attribute__((used, externally_visible))
     constexpr TX433_UNIT_RegistryDefine TX433_Unit::AFCTypeRegistryDefine = {
         &Create,
         &JsonSchema::TX433_Unit_TypeAFC::Root,
         DALHAL_REACTIVE_EVENT_TABLE(TX433_UNIT),
+        &TX433_Unit::FunctionTable,
         &JsonSchema::TX433_Unit_TypeAFC::Extractors::Apply,
     };
-    //volatile const void* keep_TX433_Unit_AFCTypeRegistryDefine = &DALHAL::TX433_Unit::AFCTypeRegistryDefine;
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> TX433_Unit::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_write, "write value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable TX433_Unit::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     Device* TX433_Unit::Create(DeviceCreateContext& context) {
         return new TX433_Unit(static_cast<TX433_Unit_CreateFunctionContext&>(context));
@@ -82,28 +98,28 @@ namespace DALHAL {
         context.ApplyFunction(context, this);
     }
 
-    HALOperationResult TX433_Unit::write(const HALValue &val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult TX433_Unit::HALValue_primary_write(Device* device, const HALValue &val) {
+        TX433_Unit& self = static_cast<TX433_Unit&>(*device);
         if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
-        RF433::init(pin); // ensure that the correct pin is used and that it's set to a output
-        if (model == TX433_MODEL::FixedCode) {
-            if (fixedState == false) {
-                RF433::SendTo433_FC(staticData, val.toUInt());
+        RF433::init(self.pin); // ensure that the correct pin is used and that it's set to a output
+        if (self.model == TX433_MODEL::FixedCode) {
+            if (self.fixedState == false) {
+                RF433::SendTo433_FC(self.staticData, val.toUInt());
             } else {
-                RF433::SendTo433_FC(staticData);
+                RF433::SendTo433_FC(self.staticData);
             }
         }
-        else if (model == TX433_MODEL::LearningCode) {
-            if (fixedState == false) {
-                RF433::SendTo433_LC(staticData, val.toUInt());
+        else if (self.model == TX433_MODEL::LearningCode) {
+            if (self.fixedState == false) {
+                RF433::SendTo433_LC(self.staticData, val.toUInt());
             } else {
-                RF433::SendTo433_LC(staticData);
+                RF433::SendTo433_LC(self.staticData);
             }
         } else {
             return HALOperationResult::ExecutionFailed; // this will never happend
         }
 #if HAS_REACTIVE_WRITE(TX433_UNIT)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

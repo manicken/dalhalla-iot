@@ -46,34 +46,39 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> Actuator::execFunctions[] = {
-        
-        {CE_MATCH_EMIT_STR("close"), &exec_drive_to_min, CE_EMIT_STR("drive to close/min")},
-        {CE_MATCH_EMIT_STR("open"), &exec_drive_to_max, CE_EMIT_STR("drive to open/max")},
-        {CE_MATCH_EMIT_STR("toMin"), &exec_drive_to_min, CE_EMIT_STR("drive to min")},
-        {CE_MATCH_EMIT_STR("toMax"), &exec_drive_to_max, CE_EMIT_STR("drive to max")},
-        {CE_MATCH_EMIT_STR("stop"), &exec_stop, CE_EMIT_STR("stops the actuator")},
-        {CE_MATCH_EMIT_STR("resetmode"), &exec_reset, CE_EMIT_STR("stop the actuator and reset the internal states")},
+        DALHAL_FUNCTION_ENTRY("close", exec_drive_to_min, "drive to close/min"),
+        DALHAL_FUNCTION_ENTRY("open", exec_drive_to_max, "drive to open/max"),
+        DALHAL_FUNCTION_ENTRY("toMin", exec_drive_to_min, "drive to min"),
+        DALHAL_FUNCTION_ENTRY("toMax", exec_drive_to_max, "drive to max"),
+        DALHAL_FUNCTION_ENTRY("stop", exec_stop, "stops the actuator"),
+        DALHAL_FUNCTION_ENTRY("resetmode", exec_reset, "stop the actuator and reset the internal states"),
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> Actuator::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("endstops"), &getEndstops, CE_EMIT_STR("gets the endstops")}
+        DALHAL_FUNCTION_ENTRY("endstops", getEndstops, "gets the endstops")
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> Actuator::readValueFunctions[] = {
-        {CE_MATCH_EMIT_STR("minEndStop"), &getMinEndstop, CE_EMIT_STR("get min endstop state"), FunctionValueType::_Bool_},
-        {CE_MATCH_EMIT_STR("maxEndStop"), &getMaxEndstop, CE_EMIT_STR("get max endstop state"), FunctionValueType::_Bool_}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "get current state"),
+        DALHAL_FUNCTION_ENTRY_WITH_VAL_TYPE("minEndStop", getMinEndstop, "get min endstop state", FunctionValueType::_Bool_),
+        DALHAL_FUNCTION_ENTRY_WITH_VAL_TYPE("maxEndStop", getMaxEndstop, "get max endstop state", FunctionValueType::_Bool_)
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> Actuator::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_write, "set the state")
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable Actuator::FunctionTable = {
-        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])}, 
-        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])}, 
-        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         EmptyFunctionTable<FunctionTypes::WriteString>
     };
     
@@ -373,9 +378,9 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    /*virtual override*/ 
-    HALOperationResult Actuator::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
+    /* static */ 
+    HALOperationResult Actuator::HALValue_primary_write(Device* device, const HALValue& val) {
+        Actuator& self = static_cast<Actuator&>(*device);
         if (!val.isBoolCompatible()) return HALOperationResult::WriteValueNaN;
 
         int32_t v = val.toInt();
@@ -384,26 +389,27 @@ namespace DALHAL {
         }
 
         // Abort any previous motion
-        stopDrive();
+        self.stopDrive();
 
         if (v == 0) {
-            driveToMin();
+            self.driveToMin();
         } else {
-            driveToMax();
+            self.driveToMax();
         }
 #if HAS_REACTIVE_WRITE(ACTUATOR)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }
 
-    /*override*/
-    HALOperationResult Actuator::read(HALValue& val) {
-        if (state == State::TimeoutFault) {
+    /* static */
+    HALOperationResult Actuator::HALValue_primary_read(Device* device, HALValue& val) {
+        Actuator& self = static_cast<Actuator&>(*device);
+        if (self.state == State::TimeoutFault) {
             return HALOperationResult::Timeout;
         }
-        bool startReached = endMinActive();
-        bool stopReached = endMaxActive();
+        bool startReached = self.endMinActive();
+        bool stopReached = self.endMaxActive();
         if (startReached && stopReached) {
             return HALOperationResult::HardwareFault;
         }
@@ -414,7 +420,7 @@ namespace DALHAL {
             val = (int32_t)1;
         }
         else {
-            val = (int32_t)isr_data.location;
+            val = (int32_t)self.isr_data.location;
         }
         return HALOperationResult::Success;
     }

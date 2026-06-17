@@ -60,6 +60,28 @@ namespace DALHAL {
             Apply(Apply)
         {}
 
+
+        constexpr TX433_UNIT_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const DeviceFunctionTable* functionTable,
+            ApplyFn Apply
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, functionTable),
+            Apply(Apply)
+        {}
+
+        constexpr TX433_UNIT_RegistryDefine(
+            Registry::HAL_DEVICE_CREATE_FUNC Create_Function, 
+            const JsonSchema::JsonObjectSchema* jsonSchema,
+            const EventDescriptor* reactiveTable,
+            const DeviceFunctionTable* functionTable,
+            ApplyFn Apply
+        ) : 
+            Registry::DefineBase(Create_Function, jsonSchema, reactiveTable, functionTable),
+            Apply(Apply)
+        {}
+
     };
     
     extern const Registry::DeviceRegistry TX433_UnitTypeRegistry;

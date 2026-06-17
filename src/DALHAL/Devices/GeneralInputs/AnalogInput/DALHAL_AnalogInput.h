@@ -30,6 +30,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(ANALOG_INPUT)
 #include "DALHAL_AnalogInput_Reactive.h"
@@ -48,6 +50,12 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
         
     private:
         uint8_t pin = 0;
@@ -59,9 +67,7 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
         
         void loop() override;
-        HALOperationResult read(HALValue &val) override;
-        
-        
+
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

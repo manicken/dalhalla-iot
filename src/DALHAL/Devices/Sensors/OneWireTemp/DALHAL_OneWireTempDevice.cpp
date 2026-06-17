@@ -58,13 +58,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase OneWireTempDevice::RegistryDefine = {
         OneWireTempDevice::Create,
         &JsonSchema::OneWireTempDevice::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE)
+        DALHAL_REACTIVE_EVENT_TABLE(ONE_WIRE_TEMP_DEVICE),
+        &OneWireTempDevice::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* OneWireTempDevice::GetRegistryDefine() {
         return &OneWireTempDevice::RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> OneWireTempDevice::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read cached value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable OneWireTempDevice::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     Device* OneWireTempDevice::Create(DeviceCreateContext& context) {
         return new OneWireTempDevice(context);
@@ -81,13 +97,13 @@ namespace DALHAL {
         
     }
 
-    HALOperationResult OneWireTempDevice::read(HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
+    HALOperationResult OneWireTempDevice::HALValue_primary_read(Device* device, HALValue& val) {
+        OneWireTempDevice& self = static_cast<OneWireTempDevice&>(*device);
 
-        if (!dataValid) return HALOperationResult::DataNotReady;
-        val = value;
+        if (!self.dataValid) return HALOperationResult::DataNotReady;
+        val = self.value;
 #if HAS_REACTIVE_READ(ONE_WIRE_TEMP_DEVICE)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }
@@ -172,12 +188,6 @@ namespace DALHAL {
     void OneWireTempDeviceAtRoot::readAll() {
         read(*dTemp);
     }
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-    HALOperationResult OneWireTempDeviceAtRoot::write(const HALValue& val) {
-        dTemp->setTempC(val); // only in simulator
-        return HALOperationResult::Success;
-    }
-#endif
 
     void OneWireTempDeviceAtRoot::loop() {
         autoRefresh.loop();

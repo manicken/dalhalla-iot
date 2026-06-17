@@ -50,13 +50,13 @@ namespace DALHAL {
     }
 
     constexpr FunctionEntry<FunctionTypes::ReadString> I2C_Master::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("raw"), &read_raw, CE_EMIT_STR("read raw data")},
-        {CE_MATCH_EMIT_STR("list"), &list_devices, CE_EMIT_STR("list all devices found by using adress scan")},
+        DALHAL_FUNCTION_ENTRY("raw", read_raw, "read raw data"),
+        DALHAL_FUNCTION_ENTRY("list", list_devices, "list all devices found by using adress scan"),
     };
 
     constexpr FunctionEntry<FunctionTypes::WriteString> I2C_Master::writeStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("raw"), &write_raw, CE_EMIT_STR("write raw data")},
-        {CE_MATCH_EMIT_STR("speed"), &set_speed, CE_EMIT_STR("set i2c speed")},
+        DALHAL_FUNCTION_ENTRY("raw", write_raw, "write raw data"),
+        DALHAL_FUNCTION_ENTRY("speed", set_speed, "set i2c speed"),
     };
 
     __attribute__((used, externally_visible))
@@ -66,8 +66,8 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeStringFunctions),
     };
 
     Device* I2C_Master::Create(DeviceCreateContext& context) {

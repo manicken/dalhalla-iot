@@ -51,20 +51,25 @@ namespace DALHAL {
     const Registry::DefineBase* ThingSpeak::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::Exec> ThingSpeak::execFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(ThingSpeak::exec, "execute event")
+    };
     
     constexpr FunctionEntry<FunctionTypes::ReadString> ThingSpeak::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("getLastUrlApi"), &getLastUrlApi, CE_EMIT_STR("get the last url api string")},
-        {CE_MATCH_EMIT_STR("simulateSend"), &simulateSend, CE_EMIT_STR("simulate a send by generating the url api post string")}
+        DALHAL_FUNCTION_ENTRY("getLastUrlApi", getLastUrlApi, "get the last url api string"),
+        DALHAL_FUNCTION_ENTRY("simulateSend", simulateSend, "simulate a send by generating the url api post string")
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable ThingSpeak::FunctionTable = {
-        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
         EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
@@ -88,22 +93,25 @@ namespace DALHAL {
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;
-            HALOperationResult res = this->exec();
+            HALOperationResult res = ThingSpeak::exec(this);
             if (res != HALOperationResult::Success) {
                 GlobalLogger.Error(F("ThingSpeak::exec"), String(HALOperationResultToString(res)).c_str());
             }
         }
     }
 
-    HALOperationResult ThingSpeak::exec() {
-        //std::string urlApi;
+    /* static */
+    HALOperationResult ThingSpeak::exec(Device* device) {
+        ThingSpeak& self = static_cast<ThingSpeak&>(*device);
+        std::string& ref_urlApi = self.urlApi;
+        ref_urlApi.clear();
+
+        self.ts_root_url.appendTo(ref_urlApi);
+        ref_urlApi += self.api_key;
+
         bool hasUpdates = false;
-        urlApi.clear();
-        ts_root_url.appendTo(urlApi);
-        //urlApi += ts_root_url;
-        urlApi += api_key;
-        for (int i=0;i<fieldCount;i++) {
-            ThingSpeakField& field = fields[i];
+        for (int i=0;i<self.fieldCount;i++) {
+            ThingSpeakField& field = self.fields[i];
             
             if (field.DataReady() == false) continue; // skip values that have not currently been changed
             HALValue val;
@@ -111,10 +119,10 @@ namespace DALHAL {
             if (hres != HALOperationResult::Success) continue;
             if (val.isNaN()) continue; // allows devices that have not been read currently to signal not set values
             
-            urlApi += "&field";
-            urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
-            urlApi += '=';
-            val.appendToString(urlApi);
+            ref_urlApi += "&field";
+            ref_urlApi += (char)(field.index + 0x30); // safe as field.index never exceed 8
+            ref_urlApi += '=';
+            val.appendToString(ref_urlApi);
             hasUpdates = true;
             delay(0);
         }
@@ -123,10 +131,10 @@ namespace DALHAL {
         }
         //Serial1.println(urlApi.c_str());
 
-        http.begin(wifiClient, urlApi.c_str());
-        http.setTimeout(2000); // set to 2 seconds so WDT would not trigger
+        self.http.begin(self.wifiClient, ref_urlApi.c_str());
+        self.http.setTimeout(2000); // set to 2 seconds so WDT would not trigger
                 
-        int httpCode = http.GET();
+        int httpCode = self.http.GET();
         if (httpCode <= 0) {
             GlobalLogger.Error(F("ThingSpeak post"));
         }
@@ -134,10 +142,10 @@ namespace DALHAL {
             GlobalLogger.Info(F("ThingSpeak post [OK]"));
         }*/
 
-        http.end();
+        self.http.end();
         delay(0);
 #if HAS_REACTIVE_EXEC(THINGSPEAK)
-        triggerExec();
+        self.triggerExec();
 #endif
         return HALOperationResult::Success;
     }

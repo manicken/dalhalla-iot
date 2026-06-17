@@ -46,8 +46,9 @@ namespace DALHAL {
         FunctionTypes::BracketOpRead bracketFunc;
         CachedDeviceRead* subscriptOperand; // owned
         ~BracketContext() {
-            if (subscriptOperand)
-                delete subscriptOperand; 
+            if (subscriptOperand) {
+                delete subscriptOperand;
+            }
         }
     };
 
@@ -61,11 +62,6 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
-    HALOperationResult CachedDeviceRead::Handler_Device(void* ctx, HALValue& val) {
-        Device* device = static_cast<Device*>(ctx);
-        return device->read(val);
-    }
-
     HALOperationResult CachedDeviceRead::Handler_Func(void* ctx, HALValue& val) {
         FuncContext* c = static_cast<FuncContext*>(ctx);
         return c->func(c->device, val);
@@ -75,12 +71,14 @@ namespace DALHAL {
         BracketContext* c = static_cast<BracketContext*>(ctx);
         HALValue subVal;
         HALOperationResult res = c->subscriptOperand->ReadSimple(subVal);
-        if (res != HALOperationResult::Success) return res;
+        if (res != HALOperationResult::Success) {
+            return res;
+        }
 
-        if (c->bracketFunc)
+        if (c->bracketFunc) {
             return c->bracketFunc(c->device, subVal, val);
-        else
-            return c->device->read(subVal, val);
+        }
+        return HALOperationResult::UnsupportedOperation;
     }
     CachedDeviceRead::~CachedDeviceRead() { if (deleter) deleter(context); }
     CachedDeviceRead::CachedDeviceRead() {
@@ -88,18 +86,11 @@ namespace DALHAL {
         handler = nullptr;
         deleter = nullptr;
     }
-    /* prevent usage that could lead to uncertain states
-    CachedDeviceRead::CachedDeviceRead(ZeroCopyString zcStrUidPathAndFuncName) 
-    {
-        context = nullptr;
-        handler = nullptr;
-        deleter = nullptr;
-        Set(zcStrUidPathAndFuncName);
-    }*/
 
     bool CachedDeviceRead::Set(ZeroCopyString zcStrUidPathAndFuncName) {
-        if (deleter) deleter(context);
-
+        if (deleter) { 
+            deleter(context);
+        }
         context = nullptr;
         handler = nullptr;
         deleter = nullptr;
@@ -152,11 +143,7 @@ namespace DALHAL {
             handler = &CachedDeviceRead::Handler_Direct;
             return true;
         }
-
-        // Fallback device read
-        context = outDevice;
-        handler = &CachedDeviceRead::Handler_Device;
-        return true;
+        return false;
     }
 
     bool CachedDeviceRead::SetBracketAccess(const char* bracketPos, ZeroCopyString zcStrUidPathAndFuncName) {

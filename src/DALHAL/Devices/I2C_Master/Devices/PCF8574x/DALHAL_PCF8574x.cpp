@@ -39,6 +39,7 @@ namespace DALHAL {
         Create,
         &JsonSchema::PCF8574x::Root,
         DALHAL_REACTIVE_EVENT_TABLE(I2C_DEVICE_PCF8574X),
+        &PCF8574x::FunctionTable,
         HasAddress
     };
     
@@ -51,6 +52,27 @@ namespace DALHAL {
         return (addr >= 0x20 && addr <= 0x27) || // PCF8574
                (addr >= 0x38 && addr <= 0x3f);   // PCF8574A
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> PCF8574x::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read from the device")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> PCF8574x::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write the value to the device", FunctionValueType::_UInt_),
+    };
+
+    constexpr DeviceFunctionTable PCF8574x::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     PCF8574x::PCF8574x(I2C_Master_CreateFunctionContext& context) : PCF8574x_DeviceBase(context.deviceType), wire(context.wire) {
         JsonSchema::PCF8574x::Extractors::Apply(context, this);
@@ -60,27 +82,30 @@ namespace DALHAL {
         return new PCF8574x(static_cast<I2C_Master_CreateFunctionContext&>(context));
     }
 
-    HALOperationResult PCF8574x::read(HALValue& val) {
-        uint8_t received = wire.requestFrom(addr, (uint8_t)1);
+    HALOperationResult PCF8574x::HALValue_primary_read(Device* device, HALValue& val) {
+        PCF8574x& self = static_cast<PCF8574x&>(*device);
+
+        uint8_t received = self.wire.requestFrom(self.addr, (uint8_t)1);
         if (received == 0) return HALOperationResult::ExecutionFailed;
-        val = (uint32_t)wire.read();
+        val = (uint32_t)self.wire.read();
 #if HAS_REACTIVE_READ(I2C_DEVICE_PCF8574X)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }
-    HALOperationResult PCF8574x::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult PCF8574x::HALValue_primary_write(Device* device, const HALValue& val) {
+        PCF8574x& self = static_cast<PCF8574x&>(*device);
+
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        wire.beginTransmission(addr);
-        wire.write(val.toUInt());
-        uint8_t res = wire.endTransmission(true);
+        self.wire.beginTransmission(self.addr);
+        self.wire.write(val.toUInt());
+        uint8_t res = self.wire.endTransmission(true);
         if (res != 0) {
             // todo maybe log to global logger
             return HALOperationResult::ExecutionFailed;
         }
 #if HAS_REACTIVE_WRITE(I2C_DEVICE_PCF8574X)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

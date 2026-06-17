@@ -50,7 +50,7 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteString> TX433::writeStringFunctions[] = {
-        {CE_MATCH_EMIT_STR(""), &TX433::writeByString, CE_EMIT_STR("write raw by json object")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(TX433::writeByString, "write raw by json object")
     };
 
     constexpr DeviceFunctionTable TX433::FunctionTable = {
@@ -63,7 +63,7 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
         EmptyFunctionTable<FunctionTypes::ReadString>,
-        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(writeStringFunctions),
     };
 
     Device* TX433::Create(DeviceCreateContext& context) {

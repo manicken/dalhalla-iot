@@ -31,6 +31,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(DIGITAL_OUTPUT)
 #include "DALHAL_DigitalOutput_Reactive.h"
@@ -49,6 +51,14 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
         
     private:
         uint8_t pin = 0;
@@ -59,10 +69,6 @@ namespace DALHAL {
         ~DigitalOutput() override;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-
-        HALOperationResult read(HALValue &val) override;
-        HALOperationResult write(const HALValue &val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

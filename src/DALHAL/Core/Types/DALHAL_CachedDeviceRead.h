@@ -61,7 +61,6 @@ namespace DALHAL {
         // Handlers
         static HALOperationResult Handler_Invalid(void* ctx, HALValue& val);
         static HALOperationResult Handler_Direct(void* context, HALValue& val);
-        static HALOperationResult Handler_Device(void* context, HALValue& val);
         static HALOperationResult Handler_Func(void* context, HALValue& val);
         static HALOperationResult Handler_Bracket(void* context, HALValue& val);
     };

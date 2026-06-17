@@ -30,6 +30,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(REGO600_REGISTRY_ITEM)
 #include "DALHAL_REGO600_Register_Reactive.h"
@@ -53,6 +55,13 @@ namespace DALHAL {
         friend struct JsonSchema::REGO600_Register::Extractors; // allow access to private memebers of this class from the schema extractor
 
     public: // public static fields and exposed external structures
+        static const Registry::DefineBase RegistryDefine;
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
 
     public: // member data
         ScriptVariable_ValueBase value;   // need to be public for the moment
@@ -63,9 +72,8 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult read(HALValue& val) override;
-        
-        
+        HALValue* GetValueDirectAccessPtr() override;
+      
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

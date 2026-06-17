@@ -58,15 +58,13 @@ namespace DALHAL {
         static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
 
     private:
-        static HALOperationResult static_exec(Device* dev);
+        static HALOperationResult exec(Device* device);
         
     public:
         ScriptEventDispatcher(DeviceCreateContext& context);
         ~ScriptEventDispatcher() override = default;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-
-        HALOperationResult exec() override;
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

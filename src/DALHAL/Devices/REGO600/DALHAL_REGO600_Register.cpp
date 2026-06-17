@@ -33,10 +33,33 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
+    constexpr Registry::DefineBase REGO600_Register::RegistryDefine = {
+        nullptr, // no Create function needed here
+        &JsonSchema::REGO600_Register::Root,
+        DALHAL_REACTIVE_EVENT_TABLE(REGO600_REGISTRY_ITEM),
+        &REGO600_Register::FunctionTable
+    };
+    
     /* override */
     const Registry::DefineBase* REGO600_Register::GetRegistryDefine() {
-        return nullptr;
+        return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> REGO600_Register::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read cached value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable REGO600_Register::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     REGO600_Register::REGO600_Register(DeviceCreateContext& context) : REGO600register_DeviceBase(context.deviceType) {
         JsonSchema::REGO600_Register::Extractors::Apply(context, this);
@@ -45,8 +68,13 @@ namespace DALHAL {
 #endif
     }
 
-    HALOperationResult REGO600_Register::read(HALValue& val) {
-        val = value;
+    HALValue* REGO600_Register::GetValueDirectAccessPtr() {
+        return &value;
+    }
+
+    /* static */
+    HALOperationResult REGO600_Register::HALValue_primary_read(Device* device, HALValue& val) {
+        val = static_cast<REGO600_Register&>(*device).value;
         return HALOperationResult::Success;
     }
 

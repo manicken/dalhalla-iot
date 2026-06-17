@@ -72,13 +72,6 @@ namespace DALHAL {
         HAL_UID uid;
 
         virtual const Registry::DefineBase* GetRegistryDefine() = 0;
-        
-        /** Executes a device action that requires no parameters. */
-        virtual HALOperationResult exec();
-        virtual HALOperationResult read(HALValue& val);
-        virtual HALOperationResult write(const HALValue& val);
-        virtual HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val);
-        virtual HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val);
 
         virtual HALValue* GetValueDirectAccessPtr();
 

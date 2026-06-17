@@ -86,6 +86,7 @@ namespace DALHAL {
                 DALHAL_WS2812_MODES
             #undef X
 #else
+            constexpr LedFormatDefine formatsTable[] = {
             #define X(name) {#name, NEO_##name},
                 DALHAL_WS2812_MODES
             #undef X

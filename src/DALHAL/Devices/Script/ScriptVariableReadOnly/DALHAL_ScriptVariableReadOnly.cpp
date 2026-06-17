@@ -35,13 +35,28 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariableReadOnly::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariableReadOnly::Root,
-        /*nullptr*/ /* no events available */
+        &ScriptVariableReadOnly::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* ScriptVariableReadOnly::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> ScriptVariableReadOnly::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ScriptVariableReadOnly::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     ScriptVariableReadOnly::ScriptVariableReadOnly(DeviceCreateContext& context) : Device(context.deviceType) {
         JsonSchema::ScriptVariableReadOnly::Extractors::Apply(context, this);
@@ -50,9 +65,9 @@ namespace DALHAL {
     Device* ScriptVariableReadOnly::Create(DeviceCreateContext& context) {
         return new ScriptVariableReadOnly(context);
     }
-
-    HALOperationResult ScriptVariableReadOnly::read(HALValue& val) {
-        val = value;
+    /* static */
+    HALOperationResult ScriptVariableReadOnly::HALValue_primary_read(Device* device, HALValue& val) {
+        val = static_cast<ScriptVariableReadOnly&>(*device).value;
         return HALOperationResult::Success;
     }
 

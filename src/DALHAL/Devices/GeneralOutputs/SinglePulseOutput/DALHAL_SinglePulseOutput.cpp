@@ -46,14 +46,22 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> SinglePulseOutput::execFunctions[] = {
-        {CE_MATCH_EMIT_STR(""), &SinglePulseOutput::static_exec, CE_EMIT_STR("execute a pulse")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(SinglePulseOutput::primary_exec, "execute a pulse")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> SinglePulseOutput::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read back the latest used pulse length")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> SinglePulseOutput::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "start a pulse with the given length", FunctionValueType::_UInt_),
     };
 
     constexpr DeviceFunctionTable SinglePulseOutput::FunctionTable = {
-        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
 
-        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
-        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
 
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
@@ -81,37 +89,38 @@ namespace DALHAL {
         pulseTicker.detach();
     }
 
-    HALOperationResult SinglePulseOutput::read(HALValue &val) {
-        //val.set(value); // read back the latest write value
-        val = pulseLength;
+    HALOperationResult SinglePulseOutput::HALValue_primary_read(Device* device, HALValue& val) {
+        SinglePulseOutput& self = *static_cast<SinglePulseOutput*>(device);
+        val = self.pulseLength;
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, READ)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }
 
-    /*static*/void SinglePulseOutput::pulseTicker_Callback(SinglePulseOutput* context) {
+    /*static*/
+    void SinglePulseOutput::pulseTicker_Callback(SinglePulseOutput* context) {
         context->endPulse();
     }
 
-    HALOperationResult SinglePulseOutput::write(const HALValue &val) {
-        if (val.getType() == HALValue::Type::TEST) { /*printf("\nSinglePulseOutput::write TEST\n");*/ return HALOperationResult::Success; }// test write to check feature
+    HALOperationResult SinglePulseOutput::HALValue_primary_write(Device* device, const HALValue& val) {
+        SinglePulseOutput& self = *static_cast<SinglePulseOutput*>(device);
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
         uint32_t t = val.toUInt();
         if (t != 0) {// only change if not zero
             
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, VALUE_CHANGE)
-            if (pulseLength != t) {
-                triggerValueChange(); // increments change counter; consumers compare with their last seen value
+            if (self.pulseLength != t) {
+                self.triggerValueChange(); // increments change counter; consumers compare with their last seen value
             }
 #endif
-            pulseLength = t;
+            self.pulseLength = t;
         }
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, WRITE)
-        HALOperationResult res = exec();
+        HALOperationResult res = SinglePulseOutput::primary_exec(&self);
         if (res == HALOperationResult::Success) {
-            triggerWrite();
+            self.triggerWrite();
         }
         return res;
 #else
@@ -119,17 +128,16 @@ namespace DALHAL {
 #endif
     }
 
-    HALOperationResult SinglePulseOutput::static_exec(Device* device) {
-        return static_cast<SinglePulseOutput*>(device)->exec(); // direct call no vtable
-    }
+    /* static */
+    HALOperationResult SinglePulseOutput::primary_exec(Device* device) {
+        SinglePulseOutput& self = *static_cast<SinglePulseOutput*>(device);
 
-    HALOperationResult SinglePulseOutput::exec() {
-        if (pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
-        pulseTicker.detach();
-        digitalWrite(pin, activeLevel);
-        pulseTicker.once_ms(pulseLength, pulseTicker_Callback, this);
+        if (self.pulseLength == 0) return HALOperationResult::ExecutionFailed; // pulse length not configured
+        self.pulseTicker.detach();
+        digitalWrite(self.pin, self.activeLevel);
+        self.pulseTicker.once_ms(self.pulseLength, pulseTicker_Callback, &self);
 #if HAS_REACTIVE(SINGLE_PULSE_OUTPUT, EXEC)
-        triggerExec();
+        self.triggerExec();
 #endif
         return HALOperationResult::Success;
     }

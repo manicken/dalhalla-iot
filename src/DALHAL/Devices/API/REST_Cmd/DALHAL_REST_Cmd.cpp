@@ -42,13 +42,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase REST_Cmd::RegistryDefine = {
         Create,
         &JsonSchema::REST_Cmd::Root,
-        /*nullptr*/ // no events available on obsolete device
+        &REST_Cmd::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* REST_Cmd::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::Exec> REST_Cmd::execFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(REST_Cmd::exec, "execute event")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable REST_Cmd::FunctionTable = {
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     Device* REST_Cmd::Create(DeviceCreateContext& context) {
         return new REST_Cmd(context);
@@ -59,11 +75,11 @@ namespace DALHAL {
         JsonSchema::REST_Cmd::Extractors::Apply(context, this);
     }
 
-    DALHAL::HALOperationResult REST_Cmd::exec() {
+    DALHAL::HALOperationResult REST_Cmd::exec(Device* device) {
         int getCode = 0;
         HTTPClient client;
         WiFiClient wifiClient;
-        if (client.begin(wifiClient, remoteUrl)) {
+        if (client.begin(wifiClient, static_cast<REST_Cmd*>(device)->remoteUrl)) {
             getCode = client.GET();
         }
 

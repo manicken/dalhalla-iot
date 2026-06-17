@@ -35,13 +35,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase ScriptVariableWriteOnlyTest::RegistryDefine = {
         Create,
         &JsonSchema::ScriptVariableWriteOnlyTest::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR)
+        DALHAL_REACTIVE_EVENT_TABLE(SCRIPT_WRITEVAR),
+        &ScriptVariableWriteOnlyTest::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* ScriptVariableWriteOnlyTest::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> ScriptVariableWriteOnlyTest::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_write, "write value"),
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ScriptVariableWriteOnlyTest::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     ScriptVariableWriteOnlyTest::ScriptVariableWriteOnlyTest(DeviceCreateContext& context) : ScriptVariableWriteOnlyTest_DeviceBase(context.deviceType) {
         JsonSchema::ScriptVariableWriteOnlyTest::Extractors::Apply(context, this);
@@ -51,12 +67,13 @@ namespace DALHAL {
         return new ScriptVariableWriteOnlyTest(context);
     }
 
-    HALOperationResult ScriptVariableWriteOnlyTest::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    /* static */
+    HALOperationResult ScriptVariableWriteOnlyTest::HALValue_primary_write(Device* device, const HALValue& val) {
+        ScriptVariableWriteOnlyTest& self = static_cast<ScriptVariableWriteOnlyTest&>(*device);
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        value = val;
+        self.value = val;
 #if HAS_REACTIVE_WRITE(SCRIPT_WRITEVAR)
-        triggerWrite();
+        self.triggerWrite();
 #endif
         return HALOperationResult::Success;
     }

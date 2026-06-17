@@ -43,12 +43,34 @@ namespace DALHAL {
     constexpr Registry::DefineBase HA_Switch::RegistryDefine = {
         Create,
         &JsonSchema::HA_Switch::Root,
+        &HA_Switch::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* HA_Switch::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> HA_Switch::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read from the target device, if it's defined")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> HA_Switch::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write the value to HomeAssistant, also write the value to target if it's defined", FunctionValueType::_Number_),
+    };
+
+    constexpr DeviceFunctionTable HA_Switch::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     #define DALHAL_HA_SWITCH_PAYLOAD_OFF "OFF"
     #define DALHAL_HA_SWITCH_PAYLOAD_ON "ON"
@@ -82,14 +104,16 @@ namespace DALHAL {
         //return ret;
     }
 
-    HALOperationResult HA_Switch::read(HALValue& val) {
-        if (cda != nullptr) {
-            return cda->ReadSimple(val);
+    HALOperationResult HA_Switch::HALValue_primary_read(Device* device, HALValue& val) {
+        HA_Switch& self = static_cast<HA_Switch&>(*device);
+        if (self.cda != nullptr) {
+            return self.cda->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
     }
-    HALOperationResult HA_Switch::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult HA_Switch::HALValue_primary_write(Device* device, const HALValue& val) {
+        HA_Switch& self = static_cast<HA_Switch&>(*device);
+
         if (!val.isBoolCompatible()) {
             GlobalLogger.Error(F("HA_Switch::write !val.isBoolCompatible(): "), val.typeToString());
             return HALOperationResult::WriteValueNaN;
@@ -99,14 +123,14 @@ namespace DALHAL {
         bool state = val.toBool();
         uint32_t state_cStr_Length = (state ? sizeof(DALHAL_HA_SWITCH_PAYLOAD_ON) : sizeof(DALHAL_HA_SWITCH_PAYLOAD_OFF)) - 1;
         const char* state_cStr = state ? DALHAL_HA_SWITCH_PAYLOAD_ON : DALHAL_HA_SWITCH_PAYLOAD_OFF;
-        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), state_cStr, state_cStr_Length);
+        bool success = HA_DeviceDiscovery::SendState(self.mqttClient, self.hass_uid.c_str(), state_cStr, state_cStr_Length);
 
         if (success == false) { 
             return HALOperationResult::ExecutionFailed;
         }
         
-        if (cda != nullptr) {
-            return cda->WriteSimple(val);
+        if (self.cda != nullptr) {
+            return self.cda->WriteSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
     };

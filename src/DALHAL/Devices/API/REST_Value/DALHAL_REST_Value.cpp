@@ -37,13 +37,28 @@ namespace DALHAL {
     constexpr Registry::DefineBase REST_Value::RegistryDefine = {
         Create,
         &JsonSchema::REST_Value::Root,
-        /*nullptr*/ /* no events available on obsolete device*/
+        &REST_Value::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* REST_Value::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> REST_Value::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable REST_Value::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     Device* REST_Value::Create(DeviceCreateContext& context) {
         return new REST_Value(context);
@@ -54,8 +69,9 @@ namespace DALHAL {
         JsonSchema::REST_Value::Extractors::Apply(context, this);
     }
 
-    DALHAL::HALOperationResult REST_Value::read(DALHAL::HALValue& val) {
-        val = cachedValue;
+    /* static */
+    HALOperationResult REST_Value::HALValue_primary_read(Device* device, HALValue& val) {
+        val = static_cast<REST_Value&>(*device).cachedValue;
         return DALHAL::HALOperationResult::Success;
     }
 

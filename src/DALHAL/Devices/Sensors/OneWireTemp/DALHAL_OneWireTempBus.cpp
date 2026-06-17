@@ -49,10 +49,10 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> OneWireTempBus::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("getAllNewDevices"), &OneWireTempBus::readString_getAllNewDevices_Function, CE_EMIT_STR("get all new devices present on the bus according to the current cfg")},
-        {CE_MATCH_EMIT_STR("getAllNewDevicesWithTemp"), &OneWireTempBus::readString_getAllNewDevicesWithTemp_Function, CE_EMIT_STR("get all new devices with current temperature present on the bus according to the current cfg")},
-        {CE_MATCH_EMIT_STR("getAllDevices"), &OneWireTempBus::readString_getAllDevices_Function, CE_EMIT_STR("get all devices (even new) present on the bus")},
-        {CE_MATCH_EMIT_STR("getAllTemperatures"), &OneWireTempBus::readString_getAllTemperatures_Function, CE_EMIT_STR("get all devices (even new) present on the bus with temperature printed")}
+        DALHAL_FUNCTION_ENTRY("getAllNewDevices", OneWireTempBus::readString_getAllNewDevices_Function, "get all new devices present on the bus according to the current cfg"),
+        DALHAL_FUNCTION_ENTRY("getAllNewDevicesWithTemp", OneWireTempBus::readString_getAllNewDevicesWithTemp_Function, "get all new devices with current temperature present on the bus according to the current cfg"),
+        DALHAL_FUNCTION_ENTRY("getAllDevices", OneWireTempBus::readString_getAllDevices_Function, "get all devices (even new) present on the bus"),
+        DALHAL_FUNCTION_ENTRY("getAllTemperatures", OneWireTempBus::readString_getAllTemperatures_Function, "get all devices (even new) present on the bus with temperature printed")
     };
 
     constexpr DeviceFunctionTable OneWireTempBus::FunctionTable = {
@@ -64,7 +64,7 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 

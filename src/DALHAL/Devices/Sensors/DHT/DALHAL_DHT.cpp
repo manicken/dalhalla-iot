@@ -50,28 +50,29 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> DHT::readValueFunctions[] = {
-        {CE_MATCH_EMIT_STR("temp"), &DHT::readTemperature, CE_EMIT_STR("read the temperature part of DHT")},
-        {CE_MATCH_EMIT_STR("humidity"), &DHT::readHumidity, CE_EMIT_STR("read the humidity part of DHT")},
-        {CE_MATCH_EMIT_STR(""), &DHT::readHumidity, CE_EMIT_STR("read the default 'humidity' part of DHT")},
+        DALHAL_PRIMARY_FUNCTION_ENTRY(DHT::readHumidity, "read the default 'humidity' part of DHT"),
+        DALHAL_FUNCTION_ENTRY("temp", DHT::readTemperature, "read the temperature part of DHT"),
+        DALHAL_FUNCTION_ENTRY("humidity", DHT::readHumidity, "read the humidity part of DHT"),
+        
     };
 
      __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> DHT::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("temp"), &DHT::readString_temperature_Function, CE_EMIT_STR("read the temperature part of DHT, returned as json object")},
-        {CE_MATCH_EMIT_STR("humidity"), &DHT::readString_humidity_Function, CE_EMIT_STR("read the humidity part of DHT, returned as json object")},
-        {CE_MATCH_EMIT_STR(""), &DHT::readString__default__Function, CE_EMIT_STR("read both humidity and temperature, returned as json object")},
+        DALHAL_PRIMARY_FUNCTION_ENTRY(DHT::readString__default__Function, "read both humidity and temperature, returned as json object"),
+        DALHAL_FUNCTION_ENTRY("temp", DHT::readString_temperature_Function, "read the temperature part of DHT, returned as json object"),
+        DALHAL_FUNCTION_ENTRY("humidity", DHT::readString_humidity_Function, "read the humidity part of DHT, returned as json object"),
     };
 
     constexpr DeviceFunctionTable DHT::FunctionTable = {
         EmptyFunctionTable<FunctionTypes::Exec>,
 
-        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
 
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
 
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         EmptyFunctionTable<FunctionTypes::WriteString>,
     };
 
@@ -113,24 +114,16 @@ namespace DALHAL {
         }
     }
 
-    HALOperationResult DHT::read(HALValue &val) {
-        if (!dataValid) return HALOperationResult::DataNotReady;
-        val = data.humidity;
-        return HALOperationResult::Success;
-    }
-
     /* static */
     HALOperationResult DHT::readTemperature(Device* device, HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
-        DHT& dht = *static_cast<DHT*>(device);
+        DHT& dht = static_cast<DHT&>(*device);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.temperature;
         return HALOperationResult::Success;
     }
     /* static */
     HALOperationResult DHT::readHumidity(Device* device, HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) { return HALOperationResult::Success; }
-        DHT& dht = *static_cast<DHT*>(device);
+        DHT& dht = static_cast<DHT&>(*device);
         if (!dht.dataValid) return HALOperationResult::DataNotReady;
         val = dht.data.humidity;
         return HALOperationResult::Success;

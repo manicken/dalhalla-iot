@@ -27,6 +27,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace REST_Cmd { struct Extractors; } } // forward declaration
@@ -39,6 +41,12 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+
+        static DALHAL::HALOperationResult exec(Device* device);
+
+    private:
         String remoteUrl;
 
     public:
@@ -46,7 +54,5 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        DALHAL::HALOperationResult exec() override;
-    
     };
 }

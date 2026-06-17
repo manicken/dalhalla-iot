@@ -242,4 +242,15 @@ namespace DALHAL {
         }
         return { HALOperationResult::Success, fn };
     }
+
+#define DALHAL_FUNCTION_ENTRY(name, fn, help) { CE_MATCH_EMIT_STR(name), &fn, CE_EMIT_STR(help) }
+
+#define DALHAL_FUNCTION_ENTRY_WITH_VAL_TYPE(name, fn, help, valueType) { CE_MATCH_EMIT_STR(name), &fn, CE_EMIT_STR(help), valueType}
+
+/** note there can be only one primary function defined, if a second is defined that will be ignored */
+#define DALHAL_PRIMARY_FUNCTION_ENTRY(fn, help) { CE_MATCH_EMIT_STR(""), &fn, CE_EMIT_STR(help) }
+
+#define DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(fn, help, valueType) { CE_MATCH_EMIT_STR(""), &fn, CE_EMIT_STR(help), valueType }
+
+#define DALHAL_FUNCTION_TABLE_ENTRY(entry) {entry, sizeof(entry) / sizeof(entry[0])}
 }

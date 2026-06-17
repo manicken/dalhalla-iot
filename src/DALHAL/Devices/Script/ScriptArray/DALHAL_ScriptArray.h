@@ -59,7 +59,7 @@ namespace DALHAL {
         static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
 
         static HALOperationResult readString_valuelist_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
-        static HALOperationResult readString__default__Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_primary_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
 
     private:
         static HALOperationResult BracketRead_Func(Device* device, const HALValue& bracketSubscriptVal, HALValue& val);
@@ -76,9 +76,6 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
 
         void begin() override;
-
-        HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
-        HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
        
         void PrintTo(StringBuilderStreamer& sbs) override;
         

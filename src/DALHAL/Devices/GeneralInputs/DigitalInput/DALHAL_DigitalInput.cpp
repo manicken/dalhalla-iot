@@ -35,13 +35,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase DigitalInput::RegistryDefine = {
         Create,
         &JsonSchema::DigitalInput::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT)
+        DALHAL_REACTIVE_EVENT_TABLE(DIGITAL_INPUT),
+        &DigitalInput::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* DigitalInput::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> DigitalInput::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read digital value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable DigitalInput::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     Device* DigitalInput::Create(DeviceCreateContext& context) {
         return new DigitalInput(context);
@@ -52,11 +68,13 @@ namespace DALHAL {
         pinMode(pin, INPUT);
     }
 
-    HALOperationResult DigitalInput::read(HALValue &val) {
-        //val.set((uint32_t)digitalRead(pin));
-        val = (uint32_t)digitalRead(pin);
+    /* static */
+    HALOperationResult DigitalInput::HALValue_primary_read(Device* device, HALValue& val) {
+        DigitalInput& self = static_cast<DigitalInput&>(*device);
+
+        val = (uint32_t)digitalRead(self.pin);
 #if HAS_REACTIVE_READ(DIGITAL_INPUT)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }

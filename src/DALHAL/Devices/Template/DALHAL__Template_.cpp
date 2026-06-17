@@ -47,7 +47,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> _Template_::execFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::exec_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::exec_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::exec_Template_Function, "help"),
     };
     HALOperationResult _Template_::exec_Template_Function(Device* device) {
 
@@ -59,7 +60,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadToHALValue> _Template_::readValueFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::readValue_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::readValue_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::readValue_Template_Function, "help"),
     };
     HALOperationResult _Template_::readValue_Template_Function(Device* device, HALValue& val) {
 
@@ -71,7 +73,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteHALValue> _Template_::writeValueFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::writeValue_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::writeValue_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::writeValue_Template_Function, "help"),
     };
     HALOperationResult _Template_::writeValue_Template_Function(Device* device, const HALValue& val) {
 
@@ -83,7 +86,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpRead> _Template_::bracketOpReadFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::bracketOpRead_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::bracketOpRead_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::bracketOpRead_Template_Function, "help"),
     };
     HALOperationResult _Template_::bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue) {
 
@@ -95,7 +99,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::BracketOpWrite> _Template_::bracketOpWriteFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::bracketOpWrite_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::bracketOpWrite_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::bracketOpWrite_Template_Function, "help"),
     };
     HALOperationResult _Template_::bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
 
@@ -107,7 +112,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::ReadString> _Template_::readStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::readString_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::readString_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::readString_Template_Function, "help"),
     };
     HALOperationResult _Template_::readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
 
@@ -121,7 +127,8 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::WriteString> _Template_::writeStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("_Template_"), &_Template_::writeString_Template_Function, CE_EMIT_STR("help")}
+        DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::writeString_Template_Function, "primary"),
+        DALHAL_FUNCTION_ENTRY("_Template_", _Template_::writeString_Template_Function, "help"),
     };
     HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
 
@@ -135,16 +142,16 @@ namespace DALHAL {
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable _Template_::FunctionTable = {
-        {execFunctions, sizeof(execFunctions) / sizeof(execFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
 
-        {readValueFunctions, sizeof(readValueFunctions) / sizeof(readValueFunctions[0])},
-        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
 
-        {bracketOpReadFunctions, sizeof(bracketOpReadFunctions) / sizeof(bracketOpReadFunctions[0])},
-        {bracketOpWriteFunctions, sizeof(bracketOpWriteFunctions) / sizeof(bracketOpWriteFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(bracketOpReadFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(bracketOpWriteFunctions),
 
-        {readStringFunctions, sizeof(readStringFunctions) / sizeof(readStringFunctions[0])},
-        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeStringFunctions),
     };
 
     constexpr DeviceFunctionTable _Template_::FunctionTable2 = {
@@ -185,39 +192,6 @@ namespace DALHAL {
 #endif        
     }
     DeviceFindResult _Template_::findDevice(UIDPath& path, Device*& outDevice) { return DeviceFindResult::SubDevicesNotSupported; }
-
-    HALOperationResult _Template_::read(HALValue& val) {
-#if HAS_REACTIVE_READ(TEMPLATE)
-        triggerRead();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
-        if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-#if HAS_REACTIVE_WRITE(TEMPLATE)
-        triggerWrite();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    };
-    HALOperationResult _Template_::read(const HALValue& bracketSubscriptVal, HALValue& val) {
-#if HAS_REACTIVE_BRACKET_READ(TEMPLATE)
-        triggerBracketRead();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::write(const HALValue& bracketSubscriptVal, const HALValue& val) {
-#if HAS_REACTIVE_BRACKET_WRITE(TEMPLATE)
-        triggerBracketWrite();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult _Template_::exec() {
-#if HAS_REACTIVE_EXEC(TEMPLATE)
-        triggerExec();
-#endif
-        return HALOperationResult::UnsupportedOperation;
-    }
 
     HALValue* _Template_::GetValueDirectAccessPtr() { return nullptr; }
 }

@@ -30,6 +30,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(BUTTON_INPUT)
 #include "DALHAL_ButtonInput_Reactive.h"
@@ -50,6 +52,12 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
+
+    private:
         uint8_t pin;
         uint32_t debounceMs;
         uint8_t activeLevel;
@@ -66,10 +74,7 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult read(HALValue &val) override;
-
         void loop();
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 

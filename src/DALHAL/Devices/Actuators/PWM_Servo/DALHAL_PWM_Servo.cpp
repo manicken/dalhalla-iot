@@ -49,17 +49,21 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> PWM_Servo::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read last written value defined by internal mode")
+    };
+
     constexpr FunctionEntry<FunctionTypes::WriteHALValue> PWM_Servo::writeValueFunctions[] = {
-        {CE_MATCH_EMIT_STR("ratio"), &writeAsRatio, CE_EMIT_STR("set value explicit as ratio"), FunctionValueType::_Number_},
-        {CE_MATCH_EMIT_STR("pulse"), &writeAsPulseLength, CE_EMIT_STR("set value explicit as pulse"), FunctionValueType::_UInt_},
-        {CE_MATCH_EMIT_STR(""), &writeByInternalMode, CE_EMIT_STR("general write using the preselected mode"), FunctionValueType::_Number_}
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write value defined by internal mode", FunctionValueType::_Number_),
+        DALHAL_FUNCTION_ENTRY_WITH_VAL_TYPE("ratio", writeAsRatio, "set value explicit as ratio", FunctionValueType::_Number_),
+        DALHAL_FUNCTION_ENTRY_WITH_VAL_TYPE("pulse", writeAsPulseLength, "set value explicit as pulse", FunctionValueType::_UInt_)
     };
 
     __attribute__((used, externally_visible))
     constexpr DeviceFunctionTable PWM_Servo::FunctionTable = {
         EmptyFunctionTable<FunctionTypes::Exec>,
-        EmptyFunctionTable<FunctionTypes::ReadToHALValue>, 
-        {writeValueFunctions, sizeof(writeValueFunctions) / sizeof(writeValueFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         EmptyFunctionTable<FunctionTypes::ReadString>,
@@ -168,40 +172,35 @@ namespace DALHAL {
         }
     }
 
-    /*virtual override*/
-    HALOperationResult PWM_Servo::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    /* static */
+    HALOperationResult PWM_Servo::HALValue_primary_write(Device* device, const HALValue& val) {
+        PWM_Servo& self = static_cast<PWM_Servo&>(*device);
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
-        if (valueType == ServoValueType::Ratio) {
+        if (self.valueType == ServoValueType::Ratio) {
             float fVal = val.toFloat();
-            if (fVal < minVal || fVal > maxVal) {
+            if (fVal < self.minVal || fVal > self.maxVal) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
             printf("\r\n PWM_Servo write fVal:%f\r\n", fVal);
-            writeAsPulseLength(ratioValueTypeToPulse(fVal, true) + pulseLengthOffset);
-        } else if (valueType == ServoValueType::PulseUS) {
+            self.writeAsPulseLength(self.ratioValueTypeToPulse(fVal, true) + self.pulseLengthOffset);
+        } else if (self.valueType == ServoValueType::PulseUS) {
             uint32_t uiVal = val.toUInt();
-            if (uiVal < minPulseLength || uiVal > maxPulseLength) {
+            if (uiVal < self.minPulseLength || uiVal > self.maxPulseLength) {
                 return HALOperationResult::WriteValueOutOfRange;
             }
-            writeAsPulseLength(uiVal + pulseLengthOffset);
+            self.writeAsPulseLength(uiVal + self.pulseLengthOffset);
         } else { // should never happend
             return HALOperationResult::UnsupportedOperation;
         }
         
-        if (autoOffAfterMs != 0) {
-            autoOffActive = true;
-            lastWriteMs = millis();
+        if (self.autoOffAfterMs != 0) {
+            self.autoOffActive = true;
+            self.lastWriteMs = millis();
         }
-        lastValue = val;
+        self.lastValue = val;
 
         return HALOperationResult::Success;
-    }
-
-    /*static*/
-    HALOperationResult PWM_Servo::writeByInternalMode(Device* device, const HALValue& val) {
-        return static_cast<PWM_Servo*>(device)->write(val);
     }
 
     HALOperationResult PWM_Servo::writeAsPulseLength(uint32_t pulseUs) {
@@ -232,17 +231,19 @@ namespace DALHAL {
         uint32_t uiVal = static_cast<PWM_Servo*>(device)->ratioValueTypeToPulse(val.toFloat(), false);
         return static_cast<PWM_Servo*>(device)->writeAsPulseLength(uiVal);
     }
+    
     /*static*/
     HALOperationResult PWM_Servo::writeAsPulseLength(Device* device, const HALValue& val) {
         if (val.isNaN()) { return HALOperationResult::WriteValueNaN; }
         return static_cast<PWM_Servo*>(device)->writeAsPulseLength(val.toUInt());
     }
 
-    /*virtual override*/
-    HALOperationResult PWM_Servo::read(HALValue& val) {
-        val = lastValue;
+    /* static */
+    HALOperationResult PWM_Servo::HALValue_primary_read(Device* device, HALValue& val) {
+        PWM_Servo& self = static_cast<PWM_Servo&>(*device);
+        val = self.lastValue;
 #if HAS_REACTIVE(PWM_SERVO, READ)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
     }

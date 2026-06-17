@@ -40,13 +40,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase ButtonInput::RegistryDefine = {
         Create,
         &JsonSchema::ButtonInput::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT)
+        DALHAL_REACTIVE_EVENT_TABLE(BUTTON_INPUT),
+        &ButtonInput::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* ButtonInput::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> ButtonInput::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read  current state")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable ButtonInput::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     // Factory method
     Device* ButtonInput::Create(DeviceCreateContext& context) {
@@ -132,17 +148,11 @@ namespace DALHAL {
     }
 
     // Read: returns the toggle state
-    HALOperationResult ButtonInput::read(HALValue &val) {
-        if (toggleTarget == nullptr) {
-            return HALOperationResult::DeviceNotFound;
-        }
-        HALValue currValue;
-        HALOperationResult res = toggleTarget->ReadSimple(currValue);
-        if (res != HALOperationResult::Success) {
-            Serial.printf("[ButtonInput] %s pressed, toggleState could not execute", decodeUID(uid).c_str());
-            return res;
-        } 
-        val = currValue;
+    HALOperationResult ButtonInput::HALValue_primary_read(Device* device, HALValue& val) {
+        ButtonInput& self = static_cast<ButtonInput&>(*device);
+        val = self.activeLevel ?
+              self.stableState :
+              !self.stableState;
         return HALOperationResult::Success;
     }
 

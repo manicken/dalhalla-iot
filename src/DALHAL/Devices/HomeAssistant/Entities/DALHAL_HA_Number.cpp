@@ -48,6 +48,27 @@ namespace DALHAL {
         return &RegistryDefine;
     }
 
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> HA_Number::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read from the target device, if it's defined")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> HA_Number::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write the value to HomeAssistant", FunctionValueType::_Number_),
+    };
+
+    constexpr DeviceFunctionTable HA_Number::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
+
     void HA_Number::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendCommandTopicCfg(mqtt, ctx); // adds , before
         HA_DeviceDiscovery::SendStateTopicCfg(mqtt, ctx); // adds , before
@@ -71,25 +92,27 @@ namespace DALHAL {
         //return ret;
     }
 
-    HALOperationResult HA_Number::read(HALValue& val) {
-        if (cda != nullptr) {
-            return cda->ReadSimple(val);
+    HALOperationResult HA_Number::HALValue_primary_read(Device* device, HALValue& val) {
+        HA_Number& self = static_cast<HA_Number&>(*device);
+        if (self.cda != nullptr) {
+            return self.cda->ReadSimple(val);
         } else {
-            val = currentValue;
+            val = self.currentValue;
             return HALOperationResult::Success;
         }
     }
-    HALOperationResult HA_Number::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult HA_Number::HALValue_primary_write(Device* device, const HALValue& val) {
+        HA_Number& self = static_cast<HA_Number&>(*device);
+
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
 
-        currentValue = val;
-        if (sendCurrentValue() == false) {
+        self.currentValue = val;
+        if (self.sendCurrentValue() == false) {
             return HALOperationResult::ExecutionFailed;
         }
 
-        if (cda != nullptr) {
-            return cda->WriteSimple(val);
+        if (self.cda != nullptr) {
+            return self.cda->WriteSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
     };

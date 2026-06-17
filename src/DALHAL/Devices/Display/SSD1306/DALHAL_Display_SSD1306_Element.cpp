@@ -29,10 +29,36 @@
 
 namespace DALHAL {
 
+    __attribute__((used, externally_visible))
+    constexpr Registry::DefineBase Display_SSD1306_Element::RegistryDefine = {
+        nullptr,
+        &JsonSchema::Display_SSD1306_Element::Root,
+        &Display_SSD1306_Element::FunctionTable,
+    };
+
     /* override */
     const Registry::DefineBase* Display_SSD1306_Element::GetRegistryDefine() {
-        return nullptr;
+        return &Display_SSD1306_Element::RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> Display_SSD1306_Element::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read back the latest write value")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> Display_SSD1306_Element::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_write, "write value"),
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable Display_SSD1306_Element::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     Display_SSD1306_Element::Display_SSD1306_Element(DeviceCreateContext& context) : Device(context.deviceType) {
         JsonSchema::Display_SSD1306_Element::Extractors::Apply(context, this);
@@ -42,10 +68,14 @@ namespace DALHAL {
         Device::PrintTo(sbs);
     }
 
-    HALOperationResult Display_SSD1306_Element::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult Display_SSD1306_Element::HALValue_primary_read(Device* device, HALValue& val) {
+        val = static_cast<Display_SSD1306_Element&>(*device).val;
+        return HALOperationResult::Success;
+    }
+
+    HALOperationResult Display_SSD1306_Element::HALValue_primary_write(Device* device, const HALValue& val) {
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        this->val = val;
+        static_cast<Display_SSD1306_Element&>(*device).val = val;
         return HALOperationResult::Success;
     }
 

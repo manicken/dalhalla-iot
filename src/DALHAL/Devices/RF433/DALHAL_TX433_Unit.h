@@ -31,6 +31,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Drivers/RF433.h>
 
 #define DALHAL_KEYNAME_TX433_MODEL "model"
@@ -73,6 +75,12 @@ namespace DALHAL {
         static const TX433_UNIT_RegistryDefine AFCTypeRegistryDefine; // advanced fixed code
         static Device* Create(DeviceCreateContext& context);
 
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue &val);
+
     public: // public static fields and exposed external structures
 
 
@@ -94,9 +102,6 @@ namespace DALHAL {
         ~TX433_Unit() override = default;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-
-        HALOperationResult write(const HALValue &val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

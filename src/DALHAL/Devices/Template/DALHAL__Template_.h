@@ -84,15 +84,7 @@ namespace DALHAL {
         /** used to find sub/leaf devices @ "group devices" */
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
 
-        HALOperationResult read(HALValue& val) override;
-        HALOperationResult write(const HALValue& val) override;
-        HALOperationResult read(const HALValue& bracketSubscriptVal, HALValue& val) override;
-        HALOperationResult write(const HALValue& bracketSubscriptVal, const HALValue& val) override;
-
         HALValue* GetValueDirectAccessPtr() override;
-
-        /** Executes a device action that requires no parameters. */
-        HALOperationResult exec() override ;
                 
         void PrintTo(StringBuilderStreamer& sbs) override;
         

@@ -82,27 +82,6 @@ namespace DALHAL {
         sbs.write_jsonString(F("type"), this->Type);
         
     }
-    
-    HALOperationResult Device::read(HALValue& val) { 
-        PrintReadFailOperation("HALValue&");
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult Device::write(const HALValue& val) { 
-        PrintWriteFailOperation("HALValue&"); 
-        return HALOperationResult::UnsupportedOperation;
-    };
-    HALOperationResult Device::read(const HALValue& bracketSubscriptVal, HALValue& val) { 
-        PrintReadFailOperation("HALValue&, HALValue&"); 
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult Device::write(const HALValue& bracketSubscriptVal, const HALValue& val) { 
-        PrintWriteFailOperation("HALValue&, HALValue&"); 
-        return HALOperationResult::UnsupportedOperation;
-    }
-    HALOperationResult Device::exec() { 
-        PrintExecFailOperation(""); 
-        return HALOperationResult::UnsupportedOperation; 
-    }
 
     HALOperationResult Device::Get_ReactiveEvent(ZeroCopyString& zcFuncName, ReactiveEvent** ReactiveEvent) {
         if (ReactiveEvent != nullptr) {

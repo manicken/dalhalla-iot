@@ -46,15 +46,15 @@ namespace DALHAL {
     }
 
     constexpr FunctionEntry<FunctionTypes::WriteString> Display_SSD1306::writeStringFunctions[] = {
-        {CE_MATCH_EMIT_STR("setCursor"), &setCursor, CE_EMIT_STR("sets the cursor")},
-        {CE_MATCH_EMIT_STR("addText"), &addText, CE_EMIT_STR("add text to the buffer data")},
-        {CE_MATCH_EMIT_STR("printText"), &printText, CE_EMIT_STR("add text and display the buffer data")}
+        DALHAL_FUNCTION_ENTRY("setCursor", setCursor, "sets the cursor"),
+        DALHAL_FUNCTION_ENTRY("addText", addText, "add text to the buffer data"),
+        DALHAL_FUNCTION_ENTRY("printText", printText, "add text and display the buffer data")
     };
 
     __attribute__((used, externally_visible))
     constexpr FunctionEntry<FunctionTypes::Exec> Display_SSD1306::execFunctions[] = {
-        {CE_MATCH_EMIT_STR("update"), &display_update, CE_EMIT_STR("display the data in the buffer")},
-        {CE_MATCH_EMIT_STR("clear"), &display_clear, CE_EMIT_STR("clear the display")}
+        DALHAL_FUNCTION_ENTRY("update", display_update, "display the data in the buffer"),
+        DALHAL_FUNCTION_ENTRY("clear", display_clear, "clear the display")
     };
 
     __attribute__((used, externally_visible))
@@ -65,7 +65,7 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
         EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
         EmptyFunctionTable<FunctionTypes::ReadString>,
-        {writeStringFunctions, sizeof(writeStringFunctions) / sizeof(writeStringFunctions[0])},
+        DALHAL_FUNCTION_TABLE_ENTRY(writeStringFunctions)
     };
 
     bool Display_SSD1306::HasAddress(uint8_t addr) {

@@ -35,6 +35,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceEntity.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
@@ -51,6 +53,14 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
+
+    private:
         static const char* PAYLOAD_ON;
         static const char* PAYLOAD_OFF;
         static void SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx);
@@ -64,12 +74,8 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult read(HALValue& val) override;
-        HALOperationResult write(const HALValue& val) override;
-
         HALOperationResult ha_apply(const ZeroCopyString& zcVal) override;
 
-        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

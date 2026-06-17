@@ -101,7 +101,7 @@ namespace DALHAL {
 
             static HALOperationResult DummyHandler(void* context);
             static HALOperationResult GetAndPushVariableValue_Handler(void* context);
-            static HALOperationResult GetAndPushDeviceReadVariableValue_Handler(void* context);
+            //static HALOperationResult GetAndPushDeviceReadVariableValue_Handler(void* context);
             static HALOperationResult GetAndPushReadToHALValue_Function_Context_Handler(void* context);
             /** 
              * Handler used for both script constant values and direct HALValue pointer access.

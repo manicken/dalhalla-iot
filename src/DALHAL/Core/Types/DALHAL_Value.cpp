@@ -46,7 +46,6 @@ namespace DALHAL {
         else if (type == Type::CSTRING) return "CSTRING";
         else if (type == Type::FLOAT) return "FLOAT";
         else if (type == Type::INT) return "INT";
-        else if (type == Type::TEST) return "TEST";
         else if (type == Type::UINT) return "UINT";
         else if (type == Type::UNSET) return "UNSET";
         else return "Unknown";
@@ -190,9 +189,6 @@ namespace DALHAL {
             case Type::BOOL:
                 sbs.write(bval);
                 return;
-            case Type::TEST:
-                sbs.write_jsonQuoted(F("_test_"));
-                return;
             case Type::UNSET:
                 sbs.write_jsonQuoted(F("_unset_"));
                 return;
@@ -214,8 +210,6 @@ namespace DALHAL {
                 return '"' + std::string(cStr != nullptr ? cStr : "null") + '"';
             case Type::BOOL:
                 return bval ? "true" : "false";
-            case Type::TEST:
-                return "\"_test_\"";
             case Type::UNSET:
                 return "\"_unset_\"";
             default:

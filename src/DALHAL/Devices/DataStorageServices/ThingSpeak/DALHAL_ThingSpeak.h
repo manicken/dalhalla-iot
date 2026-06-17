@@ -71,10 +71,13 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
         static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
 
         static HALOperationResult getLastUrlApi(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
         static HALOperationResult simulateSend(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+
+        static HALOperationResult exec(Device* device);
 
     private:
         FlexibleString ts_root_url;
@@ -96,7 +99,7 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
         
-        HALOperationResult exec() override;
+        
 
         void loop() override;
 

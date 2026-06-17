@@ -57,10 +57,15 @@ namespace DALHAL {
     private:
         static const DeviceFunctionTable FunctionTable;
         static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+        static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
 
     private:
         static void pulseTicker_Callback(SinglePulseOutput* context);
-        static HALOperationResult static_exec(Device* device);
+        static HALOperationResult primary_exec(Device* device);
 
         uint8_t pin = 0;
         uint32_t pulseLength = 0;
@@ -75,10 +80,6 @@ namespace DALHAL {
         ~SinglePulseOutput() override;
 
         const Registry::DefineBase* GetRegistryDefine() override;
-
-        HALOperationResult read(HALValue& val) override;
-        HALOperationResult write(const HALValue& val) override;
-        HALOperationResult exec() override;        
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

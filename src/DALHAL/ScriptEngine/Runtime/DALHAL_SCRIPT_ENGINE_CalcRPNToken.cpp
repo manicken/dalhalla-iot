@@ -50,6 +50,11 @@ namespace DALHAL {
 
         void CalcRPNToken::SetAsCachedDeviceAccess(ExpressionToken& expToken)
         {
+            // think this somewhat double code and think i should use a temporary CDR
+            // for everything, but if it's a bracket function then CDR is used directly as it's complex
+            // but for all other cases the returned function ptrs and device context should instead be extracted from CDR
+            // and copied into context + handler for fastest access
+
             if (expToken.ContainsChar('[')) {
                 CachedDeviceRead* cdr = new CachedDeviceRead();
                 cdr->Set(expToken); // dont need to check if return true as at this stage it's valid
@@ -59,12 +64,23 @@ namespace DALHAL {
                 handler = &CalcRPNToken::GetAndPushVariableValue_Handler;
                 deleter = DeleteAs<CachedDeviceRead>;
                 
-            } else if (expToken.ContainsChar('#')) {
+            } else {
                 ZeroCopyString funcName = expToken;
                 ZeroCopyString varOperand = funcName.SplitOffHead('#');
                 UIDPath uidPath(varOperand);
                 Device* device = nullptr;
                 DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
+
+                if (funcName.IsEmpty()) {
+                    // here we prioritize direct value access
+                    HALValue* directPtr = device->GetValueDirectAccessPtr();
+                    if (directPtr != nullptr) {
+                        //printf("\nCalcRPNToken - Did use direct access ptr%s\n", expToken.ToString().c_str());
+                        context = directPtr;
+                        handler = &CalcRPNToken::GetAndPushValuePtr_Handler;
+                        return;
+                    }
+                }
 
                 if (devFindRes != DeviceFindResult::Success) { // failsafe
                     String str = DeviceFindResultToString(devFindRes);
@@ -77,39 +93,12 @@ namespace DALHAL {
                 // only a funcname call
                 ReadToHALValue_Function_Context* ctx = new ReadToHALValue_Function_Context();
                 ctx->device = device;
+                // this is safe as it's validated beforehand
                 ctx->handler = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, funcName).fn;
                 // Assign context, handler, and deleter
                 context = ctx;
                 deleter = DeleteAs<ReadToHALValue_Function_Context>;
                 handler = &CalcRPNToken::GetAndPushReadToHALValue_Function_Context_Handler;
-            } else {
-                deleter = nullptr; // the context is allways non owning
-                //printf("\nCalcRPNToken - non bracket non funcname accessor\n");
-                UIDPath uidPath(expToken);
-                Device* device = nullptr;
-                DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, device);
-
-                if (devFindRes != DeviceFindResult::Success) {  // failsafe
-
-                    String str = DeviceFindResultToString(devFindRes);
-                    str += F(":>>");
-                    str += uidPath.ToString().c_str();
-                    str += F("<<");
-                    GlobalLogger.Error(F("@CalcRPNToken - @non bracket non funcname accessor - "), str.c_str());
-
-                    //printf("\nCalcRPNToken - @non bracket non funcname accessor - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
-                    handler = &DummyHandler;
-                    return;
-                }
-                HALValue* directPtr = device->GetValueDirectAccessPtr();
-                if (directPtr != nullptr) {
-                    //printf("\nCalcRPNToken - Did use direct access ptr%s\n", expToken.ToString().c_str());
-                    context = directPtr;
-                    handler = &CalcRPNToken::GetAndPushValuePtr_Handler;
-                } else {
-                    context = device;
-                    handler = &CalcRPNToken::GetAndPushDeviceReadVariableValue_Handler;
-                }
             }
         }
 
@@ -135,7 +124,6 @@ namespace DALHAL {
         }
 
         HALOperationResult CalcRPNToken::DummyHandler(void* context) {
-            
             return HALOperationResult::HandlerWasDummy;
         }
 
@@ -162,7 +150,7 @@ namespace DALHAL {
             return HALOperationResult::Success;
         }
 
-        HALOperationResult CalcRPNToken::GetAndPushDeviceReadVariableValue_Handler(void* context) {
+        /*HALOperationResult CalcRPNToken::GetAndPushDeviceReadVariableValue_Handler(void* context) {
             Device* cdaItem = static_cast<Device*>(context);
             HALValue value;
             HALOperationResult result = cdaItem->read(value);
@@ -173,7 +161,7 @@ namespace DALHAL {
 #endif
             halValueStack.items[halValueStack.sp++] = value;
             return HALOperationResult::Success;
-        }
+        }*/
 
         HALOperationResult CalcRPNToken::GetAndPushVariableValue_Handler(void* context) {
             CachedDeviceRead* cdrItem = static_cast<CachedDeviceRead*>(context);

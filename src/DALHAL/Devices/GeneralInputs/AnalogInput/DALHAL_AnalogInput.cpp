@@ -33,13 +33,29 @@ namespace DALHAL {
     constexpr Registry::DefineBase AnalogInput::RegistryDefine = {
         Create,
         &JsonSchema::AnalogInput::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT)
+        DALHAL_REACTIVE_EVENT_TABLE(ANALOG_INPUT),
+        &AnalogInput::FunctionTable
     };
 
     /* override */
     const Registry::DefineBase* AnalogInput::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> AnalogInput::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read analog value")
+    };
+
+    __attribute__((used, externally_visible))
+    constexpr DeviceFunctionTable AnalogInput::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     Device* AnalogInput::Create(DeviceCreateContext& context) {
         return new AnalogInput(context);
@@ -54,6 +70,9 @@ namespace DALHAL {
 
     void AnalogInput::loop() {
         return;
+
+        // TODO implement analog read task by refreshtime
+
         // the following can be used when analog read task is implemented
         // to signal that the value has been read
 #if HAS_REACTIVE_CYCLE_COMPLETE(ANALOG_INPUT)
@@ -61,16 +80,17 @@ namespace DALHAL {
 #endif
     }
 
-    HALOperationResult AnalogInput::read(HALValue &val) {
-        //val.set((uint32_t)analogRead(pin));
-#if defined(ESP32)
-        val = (uint32_t)analogRead(pin);
-#endif
-
+    HALOperationResult AnalogInput::HALValue_primary_read(Device* device, HALValue& val) {
+#if defined(ESP32) // and devices supporting analog read, normally analogInput are not available for devices not supporting it
+        AnalogInput& self = static_cast<AnalogInput&>(*device);
+        val = (uint32_t)analogRead(self.pin);
 #if HAS_REACTIVE_READ(ANALOG_INPUT)
-        triggerRead();
+        self.triggerRead();
 #endif
         return HALOperationResult::Success;
+#else
+        return HALOperationResult::ExecutionFailed;
+#endif
     }
 
     void AnalogInput::PrintTo(StringBuilderStreamer& sbs) {

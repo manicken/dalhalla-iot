@@ -41,12 +41,31 @@ namespace DALHAL {
     constexpr Registry::DefineBase HA_Button::RegistryDefine = {
         Create,
         &JsonSchema::HA_Button::Root,
+        &HA_Button::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* HA_Button::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    __attribute__((used, externally_visible))
+    constexpr FunctionEntry<FunctionTypes::Exec> HA_Button::execFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HA_Button::exec, "execute button press action")
+    };
+
+    constexpr DeviceFunctionTable HA_Button::FunctionTable = {
+        DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
+
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     void HA_Button::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendCommandTopicCfg(mqtt, ctx); // adds , before
@@ -71,11 +90,12 @@ namespace DALHAL {
     }
 
     HALOperationResult HA_Button::ha_apply(const ZeroCopyString& zcVal) {
-        return cda->Exec();
+        return HA_Button::exec(this);
     }
 
-    HALOperationResult HA_Button::exec() {
-        return cda->Exec();
+    /* static */
+    HALOperationResult HA_Button::exec(Device* device) {
+        return static_cast<HA_Button*>(device)->cda->Exec();
     }
 
 }

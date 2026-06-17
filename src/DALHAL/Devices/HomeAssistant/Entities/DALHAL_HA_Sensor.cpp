@@ -43,12 +43,34 @@ namespace DALHAL {
     constexpr Registry::DefineBase HA_Sensor::RegistryDefine = {
         Create,
         &JsonSchema::HA_Sensor::Root,
+        &HA_Sensor::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* HA_Sensor::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadToHALValue> HA_Sensor::readValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY(HALValue_primary_read, "read from the target device, if it's defined")
+    };
+
+    constexpr FunctionEntry<FunctionTypes::WriteHALValue> HA_Sensor::writeValueFunctions[] = {
+        DALHAL_PRIMARY_FUNCTION_ENTRY_WITH_VAL_TYPE(HALValue_primary_write, "write the value to HomeAssistant", FunctionValueType::_Number_),
+    };
+
+    constexpr DeviceFunctionTable HA_Sensor::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readValueFunctions),
+        DALHAL_FUNCTION_TABLE_ENTRY(writeValueFunctions),
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        EmptyFunctionTable<FunctionTypes::ReadString>,
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
 
     void HA_Sensor::SendDeviceDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx) {
         HA_DeviceDiscovery::SendAvailabilityTopicCfg(mqtt, ctx); // adds , before
@@ -141,20 +163,23 @@ namespace DALHAL {
 
     }
 
-    HALOperationResult HA_Sensor::read(HALValue& val) {
-        if (cdr != nullptr) {
-            return cdr->ReadSimple(val);
+    HALOperationResult HA_Sensor::HALValue_primary_read(Device* device, HALValue& val) {
+        HA_Sensor& self = static_cast<HA_Sensor&>(*device);
+
+        if (self.cdr != nullptr) {
+            return self.cdr->ReadSimple(val);
         }
         return HALOperationResult::UnsupportedOperation;
 
     }
-    HALOperationResult HA_Sensor::write(const HALValue& val) {
-        if (val.getType() == HALValue::Type::TEST) return HALOperationResult::Success; // test write to check feature
+    HALOperationResult HA_Sensor::HALValue_primary_write(Device* device, const HALValue& val) {
+        HA_Sensor& self = static_cast<HA_Sensor&>(*device);
+
         if (val.isNaN()) return HALOperationResult::WriteValueNaN;
-        if (!wasOnline) {
-            HA_DeviceDiscovery::SetAvailability(mqttClient, hass_uid.c_str(), wasOnline, true);
+        if (!self.wasOnline) {
+            HA_DeviceDiscovery::SetAvailability(self.mqttClient, self.hass_uid.c_str(), self.wasOnline, true);
         }
-        bool success = HA_DeviceDiscovery::SendState(mqttClient, hass_uid.c_str(), val);
+        bool success = HA_DeviceDiscovery::SendState(self.mqttClient, self.hass_uid.c_str(), val);
         
         return success ? HALOperationResult::Success: HALOperationResult::ExecutionFailed;
     };

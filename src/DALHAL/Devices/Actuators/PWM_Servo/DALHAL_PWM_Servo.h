@@ -34,6 +34,7 @@
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
+
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
 
@@ -62,7 +63,11 @@ namespace DALHAL {
 
     private:
         static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
         static const FunctionEntry<FunctionTypes::WriteHALValue> writeValueFunctions[];
+
+        static HALOperationResult HALValue_primary_write(Device* device, const HALValue& val);
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
 
     private:
         // private structures/enums/types
@@ -95,7 +100,6 @@ namespace DALHAL {
         // private member functions
         uint32_t ratioValueTypeToPulse(float fVal, bool clamp = true);
 
-        static HALOperationResult writeByInternalMode(Device* device, const HALValue& val);
         static HALOperationResult writeAsRatio(Device* device, const HALValue& val);
         static HALOperationResult writeAsPulseLength(Device* device, const HALValue& val);
 
@@ -108,11 +112,6 @@ namespace DALHAL {
         
         void begin() override;
         void loop() override;
-
-        HALOperationResult write(const HALValue& val) override;
-
-        HALOperationResult read(HALValue& val) override;
-
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 

@@ -33,6 +33,8 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+
 namespace DALHAL {
 
     namespace JsonSchema { namespace ScriptVariableReadOnly { struct Extractors; } } // forward declaration
@@ -45,6 +47,12 @@ namespace DALHAL {
         static Device* Create(DeviceCreateContext& context);
 
     private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadToHALValue> readValueFunctions[];
+
+        static HALOperationResult HALValue_primary_read(Device* device, HALValue &val);
+
+    private:
         HALValue value;
 
     public:
@@ -53,9 +61,6 @@ namespace DALHAL {
 
         const Registry::DefineBase* GetRegistryDefine() override;
 
-        HALOperationResult read(HALValue& val) override;
-
-        
         void PrintTo(StringBuilderStreamer& sbs) override;
         
     };

@@ -83,8 +83,6 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
 
         void loop() override; // will need loop for automatic polling as this device is slow
-
-        HALOperationResult read(HALValue &val) override;
         
         void PrintTo(StringBuilderStreamer& sbs) override;
 
