@@ -18,10 +18,17 @@
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "mswsock.lib")
-#pragma comment(lib, "advapi32.lib")
+//#pragma comment(lib, "ws2_32.lib")
+//#pragma comment(lib, "mswsock.lib")
+//#pragma comment(lib, "advapi32.lib")
+#include <windows.h>
+#include <bcrypt.h>
+//#pragma comment(lib, "bcrypt.lib")
 #endif
+
+#include <DALHAL/API/DALHAL_WebSocketAPI_httpFile.h>
+
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
 
 namespace DALHAL {
 
@@ -128,15 +135,15 @@ namespace DALHAL {
         void broadcastMessage(const std::string& msg) {
             std::lock_guard<std::mutex> lock(clientsMutex_);
             for (auto& pair : clients_) {
-                sendWebSocketFrame(pair.second, msg);
+                sendWebSocketFrame(pair.second, msg, DALHAL::CmdCbType::Control);
             }
         }
 
-        void sendToClient(int clientId, const std::string& msg) {
+        void sendToClient(int clientId, const std::string& msg, DALHAL::CmdCbType type) {
             std::lock_guard<std::mutex> lock(clientsMutex_);
             auto it = clients_.find(clientId);
             if (it != clients_.end()) {
-                sendWebSocketFrame(it->second, msg);
+                sendWebSocketFrame(it->second, msg, type);
             }
         }
 
@@ -177,13 +184,28 @@ namespace DALHAL {
             }
         }
 
+        bool safeHtmlSend(SOCKET clientSocket, const char* data, int len) {
+            std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+            send(clientSocket, header.c_str(), (int)header.length(), 0);
+            
+            int total = 0;
+            while (total < len) {
+                int sent = send(clientSocket, data + total, len - total, 0);
+                if (sent <= 0) return false;
+                total += sent;
+            }
+            return true;
+        };
+
         void clientHandler(int clientId, SOCKET clientSocket) {
             char buffer[4096];
 
             // Receive WebSocket upgrade request
             int recvResult = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+
             if (recvResult > 0) {
                 buffer[recvResult] = '\0';
+                printf("RX: %.*s\n", recvResult, buffer);
 
                 // Parse HTTP upgrade request
                 if (strstr(buffer, "Upgrade: websocket")) {
@@ -192,8 +214,13 @@ namespace DALHAL {
                     if (!key.empty()) {
                         // Send WebSocket upgrade response
                         std::string upgradeResponse = generateWebSocketUpgrade(key);
+                        printf("TX: %.*s\n", upgradeResponse.length(), upgradeResponse.c_str());
                         send(clientSocket, upgradeResponse.c_str(), (int)upgradeResponse.length(), 0);
                     }
+                } else {
+                    
+                    safeHtmlSend(clientSocket, HTML_WS_CONSOLE, (int)strlen(HTML_WS_CONSOLE));
+                    //send(clientSocket, HTML_WS_CONSOLE, (int)strlen(HTML_WS_CONSOLE), 0);
                 }
             }
 
@@ -206,6 +233,20 @@ namespace DALHAL {
                     std::string message = parseWebSocketFrame(buffer, recvResult);
                     if (!message.empty()) {
                         std::cout << "Client #" << clientId << " RX: " << message << std::endl;
+
+                        CommandExecutor_LOCK_QUEUE();
+                        CommandExecutor::g_pending.push({
+                            std::move(message),
+                            [clientId, this](const ZeroCopyString& body, CmdCbType type) -> bool {
+                                // sendToClient(int clientId, const std::string& msg, DALHAL::CmdCbType type)
+                                std::string cmd = body.ToString();
+                                sendToClient(clientId, cmd, type);
+                                              
+                                return true;
+                            }
+                        });
+                        CommandExecutor_UNLOCK_QUEUE();
+                        
                         // In real implementation, would queue command
                     }
                 }
@@ -271,34 +312,23 @@ namespace DALHAL {
         }
 
         // WebSocket frame encoding
-        void sendWebSocketFrame(SOCKET socket, const std::string& message) {
-            unsigned char frame[4096];
-            int frameLen = 0;
-
-            frame[frameLen++] = 0x81;  // FIN + text opcode
+        void sendWebSocketFrame(SOCKET socket, const std::string& message, CmdCbType type) {
+            std::vector<unsigned char> frame;
+            
+            // text = 0x81, binary = 0x82
+            unsigned char opcode = (type == CmdCbType::Data) ? 0x82 : 0x81;
+            frame.push_back(opcode);
 
             size_t msgLen = message.length();
             if (msgLen < 126) {
-                frame[frameLen++] = static_cast<unsigned char>(msgLen);
+                frame.push_back((unsigned char)msgLen);
+            } else if (msgLen < 65536) {
+                frame.push_back(126);
+                frame.push_back((msgLen >> 8) & 0xff);
+                frame.push_back(msgLen & 0xff);
             }
-            else if (msgLen < 65536) {
-                frame[frameLen++] = 126;
-                frame[frameLen++] = static_cast<unsigned char>((msgLen >> 8) & 0xff);
-                frame[frameLen++] = static_cast<unsigned char>(msgLen & 0xff);
-            }
-            else {
-                frame[frameLen++] = 127;
-                // 64-bit length (simplified)
-                for (int i = 0; i < 8; i++) {
-                    frame[frameLen++] = 0;
-                }
-                frame[frameLen - 1] = static_cast<unsigned char>(msgLen & 0xff);
-            }
-
-            std::memcpy(&frame[frameLen], message.c_str(), msgLen);
-            frameLen += static_cast<int>(msgLen);
-
-            send(socket, (char*)frame, frameLen, 0);
+            frame.insert(frame.end(), message.begin(), message.end());
+            send(socket, (char*)frame.data(), (int)frame.size(), 0);
         }
 
         std::string extractWebSocketKey(const char* request) {
@@ -310,20 +340,42 @@ namespace DALHAL {
             return key;
         }
 
-        std::string generateWebSocketUpgrade(const std::string& key) {
-            // SHA1 + Base64 hash of key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-            std::string magicGUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-            std::string fullKey = key + magicGUID;
+        std::string sha1Base64(const std::string& input) {
+            BCRYPT_ALG_HANDLE hAlg = nullptr;
+            BCRYPT_HASH_HANDLE hHash = nullptr;
+            DWORD hashLen = 20; // SHA1 is always 20 bytes
+            std::vector<uint8_t> hash(hashLen);
 
-            // Simplified: using hardcoded response
-            // In production, implement proper SHA1 + Base64
-            return std::string(
+            BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA1_ALGORITHM, nullptr, 0);
+            BCryptCreateHash(hAlg, &hHash, nullptr, 0, nullptr, 0, 0);
+            BCryptHashData(hHash, (PUCHAR)input.c_str(), (ULONG)input.size(), 0);
+            BCryptFinishHash(hHash, hash.data(), hashLen, 0);
+            BCryptDestroyHash(hHash);
+            BCryptCloseAlgorithmProvider(hAlg, 0);
+
+            // Base64 encode
+            static const char* b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            std::string out;
+            for (size_t i = 0; i < 20; i += 3) {
+                uint32_t n = hash[i] << 16;
+                if (i+1 < 20) n |= hash[i+1] << 8;
+                if (i+2 < 20) n |= hash[i+2];
+                out += b64[(n >> 18) & 63];
+                out += b64[(n >> 12) & 63];
+                out += (i+1 < 20) ? b64[(n >> 6) & 63] : '=';
+                out += (i+2 < 20) ? b64[n & 63] : '=';
+            }
+            return out;
+        }
+
+        std::string generateWebSocketUpgrade(const std::string& key) {
+            std::string accept = sha1Base64(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+            return 
                 "HTTP/1.1 101 Switching Protocols\r\n"
                 "Upgrade: websocket\r\n"
                 "Connection: Upgrade\r\n"
-                "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
-                "\r\n"
-            );
+                "Sec-WebSocket-Accept: " + accept + "\r\n"
+                "\r\n";
         }
     };
 
@@ -371,6 +423,12 @@ namespace DALHAL {
     void WebSocketAPI::Broadcast(const char* source, const char* msg) {
         std::string combined = std::string(source) + msg;
         Broadcast(combined);
+    }
+
+    bool WebSocketAPI::BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type) {
+        //printf("WebSocketAPI::BroadcastCb was called:%.*s", zcStr.Length(), zcStr.start);
+        Broadcast(zcStr.ToString());
+        return true;
     }
 
     void WebSocketAPI::broadcastMessage(const std::string& msg) {

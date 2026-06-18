@@ -25,6 +25,8 @@
 #include <iostream>
 
 SerialStub Serial;
+SerialStub Serial1;
+SerialStub Serial2;
 //uint64_t lastmicros = 0;
 void digitalWrite(int pin, int val) {
     //using namespace std::chrono;

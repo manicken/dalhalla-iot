@@ -177,13 +177,14 @@ namespace DALHAL {
             write(F("false"));
         }
     }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     void StringBuilderStreamer::write(const __FlashStringHelper* fstr) {
         return write_P(reinterpret_cast<PGM_P>(fstr));
     }
     void StringBuilderStreamer::write(const __FlashStringHelper* fstr, size_t len) {
         return write_P(reinterpret_cast<PGM_P>(fstr), len);
     }
+#endif
     void StringBuilderStreamer::write_P(PGM_P pstr) {
         if (!pstr) {
             return;
@@ -340,7 +341,7 @@ namespace DALHAL {
     void StringBuilderStreamer::write_json_object_end() {
         write_char('}');
     }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr) {
         if (fstr == nullptr) {
             write(F("null"));
@@ -350,6 +351,7 @@ namespace DALHAL {
         write_escapedChars_P(reinterpret_cast<PGM_P>(fstr));
         write_doublequote();
     }
+#endif
     void StringBuilderStreamer::write_jsonQuoted(const char* cstr, size_t len) {
         if (!cstr || len == 0)
         {
@@ -357,19 +359,16 @@ namespace DALHAL {
             return;
         }
         write_doublequote();
-        if ((uint32_t)cstr >= 0x40200000) {
-            write_escapedChars_P(cstr, len);
-        } else {
+ 
             size_t i=0;
             for (const char* p = cstr; (*p != '\0') && (i < len); ++p, ++i)
             {
                 write_escaped(*p);
             }
-        }
 
         write_doublequote();
     }
-    void StringBuilderStreamer::write_jsonQuoted_cStr(const char* cstr) {
+    void StringBuilderStreamer::write_jsonQuoted(const char* cstr) {
         if (!cstr)
         {
             write(F("null"));
@@ -378,24 +377,21 @@ namespace DALHAL {
 
         write_doublequote();
         //Serial1.printf("cstr = %p\n", cstr);
-        if ((uint32_t)cstr >= 0x40200000) {
-            write_escapedChars_P(cstr);
-        } else {
-           
+
             for (const char* p = cstr; *p != '\0'; ++p)
             {
                 write_escaped(*p);
             }
-        }
+        
 
         write_doublequote();
     }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr) {
         write_jsonQuoted(fstr);
         write_json_member_separator();
     }
-
+#endif
     void StringBuilderStreamer::write_jsonMemberStart(const char* cstr, size_t len) {
         write_jsonQuoted(cstr, len);
         write_json_member_separator();
@@ -406,17 +402,18 @@ namespace DALHAL {
 
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const char* cstr) {
         write_jsonMemberStart(key);
-        write_jsonQuoted_cStr(cstr);
+        write_jsonQuoted(cstr);
     }
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr) {
         write_jsonMemberStart(key);
         write_jsonQuoted(zcStr.start, zcStr.Length());
     }
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr) {
         write_jsonMemberStart(key);
         write_jsonQuoted(fstr);
     }
-
+#endif
     void StringBuilderStreamer::write_jsonBool(const __FlashStringHelper* key, bool v) {
         write_jsonMemberStart(key);
         write(v);

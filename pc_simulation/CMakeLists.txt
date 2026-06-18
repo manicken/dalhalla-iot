@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(DalhalPC LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 # ---------------------------------------
 # Platform specific flags
@@ -33,6 +34,8 @@ set(INCLUDE_DIRS
 	${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/Time
     ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/TimeAlarms
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib/PubSubClient/src
+	${CMAKE_CURRENT_SOURCE_DIR}/ports/PgmSpace
+	${CMAKE_CURRENT_SOURCE_DIR}/stubs/WString
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/Ticker
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/LittleFS
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/WiFiClient
@@ -57,6 +60,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     *.cpp
     ../src/*.cpp
     ../lib/PubSubClient/src/PubSubClient.cpp
+	../lib/PubSubClient/src/PubSubClient_ErrorStrings.cpp
 	../.pio/libdeps/esp32dev/Time/Time.cpp
     ../.pio/libdeps/esp32dev/TimeAlarms/TimeAlarms.cpp
 )
@@ -89,4 +93,5 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 if (WIN32)
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE winhttp iphlpapi ws2_32)
+	target_link_libraries(test PRIVATE bcrypt ws2_32)
 endif()

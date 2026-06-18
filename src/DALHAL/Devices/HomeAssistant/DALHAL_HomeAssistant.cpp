@@ -138,7 +138,7 @@ namespace DALHAL {
             ZeroCopyString zcEntityID = zcTmp.SplitOffTail('/');
             
             Serial.print(F("PSCP Complete CB - rx cleanup check for:"));
-            Serial.write(zcEntityID.start, zcEntityID.Length());
+            Serial.write((const char*)zcEntityID.start, zcEntityID.Length());
             Serial.println();
 
         } else {

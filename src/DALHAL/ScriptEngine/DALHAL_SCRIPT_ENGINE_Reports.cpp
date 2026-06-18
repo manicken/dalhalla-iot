@@ -26,6 +26,7 @@
 
 namespace DALHAL {
     namespace ScriptEngine {
+        
         void ReportError(const char* msg) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             std::cout << "Error: " << msg << std::endl;
@@ -34,13 +35,11 @@ namespace DALHAL {
 #endif
         }
 
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void ReportError(const __FlashStringHelper* msg) {
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            std::cout << "Error: " << msg << std::endl;
-#else
             GlobalLogger.Error(F("Report:"), String(msg).c_str());
-#endif
         }
+#endif
 
         void ReportWarning(const char* msg, const char* param) {
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)

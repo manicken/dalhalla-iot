@@ -184,7 +184,7 @@ namespace DALHAL {
                 sbs.write(fval);
                 return;
             case Type::CSTRING:
-                return sbs.write_jsonQuoted_cStr(cStr != nullptr ? cStr : "");
+                return sbs.write_jsonQuoted(cStr != nullptr ? cStr : "");
                 return;
             case Type::BOOL:
                 sbs.write(bval);

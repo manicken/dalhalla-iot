@@ -182,7 +182,7 @@ namespace Drivers {
             if (i > 0) {
                 sbs.write_json_value_separator();
             }
-            sbs.write_jsonQuoted_cStr(SystemRegisterTable[i].name);
+            sbs.write_jsonQuoted(SystemRegisterTable[i].name);
         }
         sbs.write_json_array_end();
     }

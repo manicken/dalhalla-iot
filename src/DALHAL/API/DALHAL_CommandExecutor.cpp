@@ -350,12 +350,15 @@ namespace DALHAL {
 
     bool CommandExecutor::execute(ZeroCopyString& zcStr, CommandCallback cb) {
         ZeroCopyString zcStrCmd = zcStr; // create copy to make it possible to print full cmd in case of error
+
         HALOperationResult res = ExecuteNode(RootItem, zcStr, cb);
         if (res != HALOperationResult::Success) {
             BlockStreamer bs(cb, zcStrCmd.start, BlockStreamer::DataType::Json);
             StringBuilderStreamer& sbs = bs.writer();
             sbs.write_json_object_begin();
             sbs.write_jsonString(F("error"), HALOperationResultToString(res));
+            sbs.write_json_value_separator();
+            sbs.write_jsonString(F("cmd"), zcStrCmd);
             sbs.write_json_object_end();
             return false;
         } 

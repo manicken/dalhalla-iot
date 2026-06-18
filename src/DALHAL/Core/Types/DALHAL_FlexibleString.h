@@ -48,7 +48,9 @@ namespace DALHAL {
         Type type = Type::Null;
 
         union {
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
             const __FlashStringHelper* flash;
+#endif
             const char* cstr;
             char* mutableStr;
         } data = {};  // Value-initialize union to zero
@@ -57,13 +59,13 @@ namespace DALHAL {
 
     public:
         FlexibleString() = default;
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         FlexibleString(const __FlashStringHelper* s)
             : type(Type::Flash) {
             data.flash = s;
             len = strlen_P((PGM_P)data.flash);
         }
-
+#endif
         FlexibleString(const char* s)
             : type(Type::Const) {
             data.cstr = s;
@@ -77,7 +79,9 @@ namespace DALHAL {
         FlexibleString& operator=(const FlexibleString&) = delete;
 
         FlexibleString& operator=(const char* s);
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         FlexibleString& operator=(const __FlashStringHelper* s);
+#endif
         FlexibleString& operator=(FlexibleString&& other) noexcept;
 
         void SetCopy(const char* s);
@@ -110,9 +114,10 @@ namespace DALHAL {
             }
             return nullptr;
         }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         inline const __FlashStringHelper* flashStr() const {
             return type == Type::Flash ? data.flash : nullptr;
         }
+#endif
     };
 }

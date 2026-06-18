@@ -49,11 +49,11 @@ namespace DALHAL {
         if (zcStr != nullptr) { \
             return zcStr->EqualsIC(str); \
         } \
-        sbs->write_jsonQuoted_cStr(str); \
+        sbs->write_jsonQuoted(str); \
         return true; \
     }
 #define CE_EMIT_STR(str) \
-    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted_cStr(str);}
+    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted(str);}
 #endif
 
 }

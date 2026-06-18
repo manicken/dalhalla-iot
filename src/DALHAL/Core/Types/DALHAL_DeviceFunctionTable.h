@@ -206,8 +206,17 @@ namespace DALHAL {
         } else if constexpr (std::is_same_v<Fn, FunctionTypes::WriteString>) {
             return &t->writeString;
         } else {
-            static_assert(sizeof(Fn) == 0,
-              "GetTable<Fn>: unsupported FunctionTypes specialization");
+
+            static_assert(
+                std::is_same_v<Fn, FunctionTypes::Exec> ||
+                std::is_same_v<Fn, FunctionTypes::ReadToHALValue> ||
+                std::is_same_v<Fn, FunctionTypes::WriteHALValue> ||
+                std::is_same_v<Fn, FunctionTypes::BracketOpRead> ||
+                std::is_same_v<Fn, FunctionTypes::BracketOpWrite> ||
+                std::is_same_v<Fn, FunctionTypes::ReadString> ||
+                std::is_same_v<Fn, FunctionTypes::WriteString>,
+                "Unsupported Fn");
+            //static_assert(sizeof(Fn) == 0, "GetTable<Fn>: unsupported FunctionTypes specialization");
         }
 
         return nullptr;

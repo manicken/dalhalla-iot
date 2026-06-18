@@ -21,19 +21,14 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <functional>
+#include "DALHAL_SCRIPT_ENGINE_Parser_Triggers.h"
 
 namespace DALHAL {
+    namespace ScriptEngine {
+        namespace Parser {
 
-    struct ZeroCopyString; // forward declaration
+            
 
-    enum class CmdCbType {
-        Control,
-        Data
-    };
-
-    using CommandCallback = std::function<bool(const ZeroCopyString& response, CmdCbType type)>;
-
+        }
+    }
 }

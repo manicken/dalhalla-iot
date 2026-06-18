@@ -23,6 +23,8 @@
 
 #include "DALHAL_ZeroCopyString.h"
 
+#include <WString.h> // F() macro
+
 namespace DALHAL {
     ZeroCopyString::ZeroCopyString() : start(nullptr), end(nullptr) { } // empty 'string'
     ZeroCopyString::ZeroCopyString(const char* start, const char* end) : start(start), end(end) { 
@@ -422,9 +424,11 @@ namespace DALHAL {
         //if (len == 0) return false;
         return std::strlen(cstr) == len && std::memcmp(start, cstr, len) == 0;
     }
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     bool ZeroCopyString::Equals(const __FlashStringHelper* fstr) const {
         return Equals_P(reinterpret_cast<PGM_P>(fstr));
     }
+#endif
     bool ZeroCopyString::Equals_P(PGM_P pstr) const {
         if (!pstr)
             return false;
@@ -486,9 +490,11 @@ namespace DALHAL {
         }
         return true; // lengths already checked, all characters matched
     }
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     bool ZeroCopyString::EqualsIC(const __FlashStringHelper* fstr) const {
         return EqualsIC_P(reinterpret_cast<PGM_P>(fstr));
     }
+#endif
     bool ZeroCopyString::EqualsIC_P(PGM_P pstr) const {
         if (!pstr)
             return false;
@@ -795,9 +801,10 @@ namespace DALHAL {
     bool operator!=(const char* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
     bool operator==(const ZeroCopyString& lhs, const char* rhs) { return lhs.Equals(rhs); }
     bool operator!=(const ZeroCopyString& lhs, const char* rhs) { return !lhs.Equals(rhs); }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return rhs.Equals(lhs); }
     bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
     bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs) { return lhs.Equals(rhs); }
     bool operator!=(const ZeroCopyString& lhs, const __FlashStringHelper* rhs) { return !lhs.Equals(rhs); }
+#endif
 }

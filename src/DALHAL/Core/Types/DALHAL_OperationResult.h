@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <WString.h>
+#include <WString.h> // __FlashStringHelper
 
 namespace DALHAL {
 

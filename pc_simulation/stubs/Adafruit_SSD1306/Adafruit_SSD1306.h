@@ -66,6 +66,8 @@ public:
     void print(const char* text);
     void println(const char* text);
     size_t write(const char *buffer, size_t size);
+    int8_t width();
+    int8_t height();
 
     // Optional graphics functions
     void drawPixel(int16_t x, int16_t y, uint16_t color);
@@ -73,8 +75,8 @@ public:
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
 private:
-    int8_t width;
-    int8_t height;
-    int8_t resetPin;
-    void* wireInterface;
+    int8_t _width;
+    int8_t _height;
+    int8_t _resetPin;
+    void* _wireInterface;
 };

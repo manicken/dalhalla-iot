@@ -28,8 +28,9 @@
 #include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Tests.h>
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
+#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_CountingPubSubClient.h>
-#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
+//#include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_TopicBasePath.h>
 
 std::atomic<bool> running{true};
 
@@ -85,8 +86,22 @@ void exprTestLoad(DALHAL::ZeroCopyString& zcStr) {
     }
     delete[] contents;
 }
+bool CommandExecutor_executeCB(const DALHAL::ZeroCopyString& zcMsg, DALHAL::CmdCbType type) {
+    // ignore type for now until we implemented a real protocol over serial
+    // maybe could use something similar to WebSocket
+    printf("%.*s\r\n", zcMsg.Length(), zcMsg.start);
+    return true;
+}
 void parseCommand(const char* cmd, bool oneShot) {
-    DALHAL::ZeroCopyString zcCmd(cmd);
+    // make safe owned copy
+    std::string cmdStr(cmd); 
+
+    DALHAL::ZeroCopyString zcCmd(cmdStr.c_str());
+    DALHAL::ZeroCopyString zcCmdForCmdExec = zcCmd; // create copy of current view
+
+    if (DALHAL::CommandExecutor::execute(zcCmdForCmdExec, CommandExecutor_executeCB)) {
+        return;
+    }
 
     DALHAL::ZeroCopyString zcCmdRoot = zcCmd.SplitOffHead('/');
 
@@ -95,18 +110,11 @@ void parseCommand(const char* cmd, bool oneShot) {
         running = false;
     } else if (zcCmdRoot == "status") {
         std::cout << "Status: running\n";
-    } else if (zcCmdRoot == "help") {
-        ParseHelpCommand(zcCmd);            
-    } else if (zcCmdRoot == "hal") {
-        DALHAL::CommandExecutor::execute(zcCmd, [](const std::string& response){ 
-            std::cout << response << "\n"; 
-        });
-
     } else if (zcCmdRoot == "expr") {
         exprTestLoad(zcCmd);
     } else if (zcCmdRoot == "loadrules" || zcCmdRoot == "lr") {
         if (oneShot) {
-            DALHAL::DeviceManager::setupMgr();
+            DALHAL::DeviceManager::init();
         }
         DALHAL::ZeroCopyString zcFilePath = zcCmd.SplitOffHead('/');
         std::cout << "using rule set file:" << zcFilePath.ToString() << "\n";
@@ -153,7 +161,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
-        DALHAL::DeviceManager::setupMgr();
+        DALHAL::DeviceManager::init();
         DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
@@ -163,7 +171,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         auto start = std::chrono::high_resolution_clock::now();
         // loads the json HAL config, 
         // this is needed as it's used by the script validator
-        DALHAL::DeviceManager::setupMgr();
+        DALHAL::DeviceManager::init();
         DALHAL::ScriptEngine::ScriptsToLoad scriptsToLoad;
         DALHAL::ScriptEngine::ValidateAllActiveScripts(scriptsToLoad);
         auto end = std::chrono::high_resolution_clock::now();
@@ -172,7 +180,7 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "Parse time: " << duration.count() << " ms\n";
     } else if (zcCmdRoot == "ldcfg") {
         auto start = std::chrono::high_resolution_clock::now();
-        DALHAL::DeviceManager::setupMgr();
+        DALHAL::DeviceManager::init();
         
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> duration = end - start;
@@ -216,14 +224,19 @@ void parseCommand(const char* cmd, bool oneShot) {
         std::cout << "\nDALHAL::PSC_JsonWriter::SendAllItems:\n";
         DALHAL::PSC_JsonWriter::SendAllItems(cntPSC, deviceDoc);
         std::cout << "\n";
-        DALHAL::TopicBasePath topicBasePath;
-        topicBasePath.Set("PC sim test", "sim_test_uid");
+        //DALHAL::TopicBasePath topicBasePath;
+       // topicBasePath.Set("PC sim test", "sim_test_uid");
         // Call the function
         const char* type_cStr = deviceDoc["type"];
         const char* uid_cStr =  deviceDoc["uid"];
         const char* deviceID_cStr = "PC_sim";
-        const char* cfgTopic_cStr = DALHAL::HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceID_cStr, type_cStr, uid_cStr);
-        DALHAL::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceID_cStr, cfgTopic_cStr, uid_cStr, deviceDoc, deviceGroupDoc, topicBasePath);
+        //const char* cfgTopic_cStr = DALHAL::HA_DeviceDiscovery::GetDiscoveryCfgTopic(deviceID_cStr, type_cStr, uid_cStr);
+        StaticJsonDocument<512> deviceDiscovery;
+        const JsonObject deviceDiscoveryObj = deviceDiscovery.as<JsonObject>();
+        DALHAL::HA_DD_Context ha_dd_ctx = {"hass_uid_cStr", "hass_prev_uid_cStr", "deviceType", deviceID_cStr, "groupID_cStr", "groupName_cStr", deviceDiscoveryObj};  
+        DALHAL::HA_DeviceDiscovery::SendDiscovery(cntPSC, ha_dd_ctx, nullptr);
+
+        //DALHAL::HA_DeviceDiscovery::SendDiscovery(cntPSC, deviceID_cStr, cfgTopic_cStr, uid_cStr, deviceDoc, deviceGroupDoc, topicBasePath);
          std::cout << std::endl;
 
     } else {

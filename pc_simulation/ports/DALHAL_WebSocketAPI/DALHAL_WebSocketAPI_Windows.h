@@ -22,6 +22,7 @@
 
 #pragma once
 
+
 #include <string>
 #include <functional>
 #include <map>
@@ -30,6 +31,9 @@
 #include <mutex>
 #include <queue>
 #include <set>
+
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_CommandCallback.h>
 
 namespace DALHAL {
 
@@ -54,6 +58,7 @@ namespace DALHAL {
         static void Broadcast(const std::string& msg);
         static void Broadcast(const char* msg);
         static void Broadcast(const char* source, const char* msg);
+        static bool BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type);
 
         // Check if server is running
         static bool isRunning();

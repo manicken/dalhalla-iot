@@ -60,7 +60,7 @@ namespace DALHAL {
             GlobalLogger.Error(F("Token:"), message.c_str());
     #endif
         }
-
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void Token::ReportTokenError(const __FlashStringHelper* msg, const __FlashStringHelper* param) const {
             std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): ";
             message += String(msg).c_str();
@@ -72,6 +72,7 @@ namespace DALHAL {
             GlobalLogger.Error(F("Token:"), message.c_str());
     #endif
         }
+#endif
         void Token::ReportTokenWarning(const char* msg, const char* param) const {
             std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): " + msg;
             if (param != nullptr)

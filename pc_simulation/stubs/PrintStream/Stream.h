@@ -23,9 +23,9 @@ public:
     int read(uint8_t* buf, size_t size);
     int peek();
 
-    void print(const std::string& s);
-    void print(const char* s);
-    void print(char c);
+    size_t print(const std::string& s);
+    size_t print(const char* s);
+    size_t print(char c);
     void print(int n, int format = DEC);
 
     void println();

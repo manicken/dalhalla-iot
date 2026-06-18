@@ -101,7 +101,7 @@ namespace DALHAL {
             // Extract each byte from most significant to least significant
             char c = uid.str[i];
             if (c == '\0') return;
-            sbs.write(c);
+            sbs.write_char(c);
         }
     }
 }

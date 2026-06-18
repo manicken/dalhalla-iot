@@ -23,6 +23,8 @@
 
 #include "DALHAL_OneWireTempBus.h"
 
+#include <cinttypes> // PRIu32
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>

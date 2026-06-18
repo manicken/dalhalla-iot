@@ -24,6 +24,7 @@
 #pragma once
 
 #include <functional>
+#include <WString.h> // __FlashStringHelper
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 
 #if defined(ESP8266)
@@ -31,7 +32,7 @@
 #elif defined(ESP32)
 #define DALHAL_API_STREAMWRITER_BUFFER_SIZE 1024
 #elif defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-#define DALHAL_API_STREAMWRITER_BUFFER_SIZE 1024*1024
+#define DALHAL_API_STREAMWRITER_BUFFER_SIZE 2048 // keep this tiny even here to make chunking happend, which is nice to see if there are bugs
 #else
 #define DALHAL_API_STREAMWRITER_BUFFER_SIZE 256
 #endif
@@ -72,8 +73,10 @@ namespace DALHAL {
         inline void write_doublequote() {
             write_char('"');
         }
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void write(const __FlashStringHelper* fstr);
         void write(const __FlashStringHelper* fstr, size_t len);
+#endif
         void write_P(PGM_P pstr, size_t len);
         void write_escapedChars_P(PGM_P pstr, size_t len);
         void write_P(PGM_P pstr);
@@ -114,11 +117,15 @@ namespace DALHAL {
         /** write a simple } */
         void write_json_object_end();
         void write_json(float v);
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void write_jsonQuoted(const __FlashStringHelper* fstr);
+#endif
         void write_jsonQuoted(const char* cstr, size_t len);
-        void write_jsonQuoted_cStr(const char* cstr);
+        void write_jsonQuoted(const char* cstr);
         /** write a key followed by a colon : */
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void write_jsonMemberStart(const __FlashStringHelper* fstr);
+#endif
         /** write a key followed by a colon : */
         void write_jsonMemberStart(const char* cstr, size_t len);
         /** write a key followed by a colon : */
@@ -126,7 +133,9 @@ namespace DALHAL {
 
         void write_jsonString(const __FlashStringHelper* key, const char* cstr);
         void write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr);
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         void write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr);
+#endif
         void write_jsonBool(const __FlashStringHelper* key, bool v);
         void write_jsonNumber(const __FlashStringHelper* key, uint32_t v);
         void write_jsonNumber(const __FlashStringHelper* key, int32_t v);

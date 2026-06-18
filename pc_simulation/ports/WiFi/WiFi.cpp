@@ -12,6 +12,42 @@
 #include <unistd.h>
 #endif
 
+wl_status_t WiFiClass::begin() {
+    return wl_status_t::WL_CONNECTED;
+}
+
+bool WiFiClass::mode(wifi_mode_t m) {
+    return true;
+}
+
+wl_status_t WiFiClass::status() {
+    return wl_status_t::WL_CONNECTED;
+}
+
+int8_t WiFiClass::RSSI() {
+    return 0;
+}
+
+bool WiFiClass::disconnect(bool) {
+    return true;
+}
+
+String WiFiClass::SSID() {
+    return "WindowsSimulator";
+}
+
+IPAddress WiFiClass::localIP() {
+    return IPAddress();
+}
+
+IPAddress WiFiClass::softAPIP() {
+    return IPAddress();
+}
+
+bool WiFiClass::softAP(const char* ssid, const char* passphrase/* = NULL*/, int channel/* = 1*/, int ssid_hidden/* = 0*/, int max_connection/* = 4*/, bool ftm_responder/* = false*/) {
+    return true;
+}
+
 bool WiFiClass::hostByName(const char* host, IPAddress ip) {
 #if defined(_WIN32)
     WSADATA wsaData;

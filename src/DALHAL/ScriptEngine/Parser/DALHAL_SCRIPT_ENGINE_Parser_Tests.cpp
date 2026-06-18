@@ -94,7 +94,10 @@ namespace DALHAL {
                     ReportInfo(String(F("\nInput expression: ")).c_str() + tokens.ToString());
 
                     ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(tokens);
-                    /*LogicRPNNode* lrpnNode = */Expressions::BuildLogicTree(newDirect);
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+                    LogicRPNNode* lrpnNode = 
+#endif
+                        Expressions::BuildLogicTree(newDirect);
                     ReportInfo(String(F("\n\nnew complete RPN:")).c_str());
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'

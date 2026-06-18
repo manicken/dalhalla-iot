@@ -27,9 +27,17 @@
 #include <string>
 #include <cstring>
 #include <cstdint>
-
+#if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
+#else
+#include <pc_simulation/ports/PgmSpace/pgmspace.h>
+#endif
+
+// special note here
+// __FlashStringHelper is included in pgmspace.h for pc build:s
+#if defined(ESP8266) || defined(ESP32)
 #include <WString.h> // __FlashStringHelper
+#endif
 
 namespace DALHAL {
 
@@ -165,15 +173,20 @@ namespace DALHAL {
         void Trim();
 
         bool Equals(char c) const;
+
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         bool Equals(const __FlashStringHelper* fstr) const;
+#endif
         bool Equals_P(PGM_P pstr) const;
 
         bool EqualsIC(char c) const;
         bool EqualsIC(const ZeroCopyString& other) const;
         bool EqualsIC(const char* cstr) const;
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
         bool EqualsIC(const __FlashStringHelper* fstr) const;
+#endif
         bool EqualsIC_P(PGM_P pstr) const;
 
         bool EqualsICAny(const char* const* candidates) const;
@@ -199,8 +212,10 @@ namespace DALHAL {
     bool operator==(const ZeroCopyString& lhs, const char* rhs);
     bool operator!=(const ZeroCopyString& lhs, const char* rhs);
 
+#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
     bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
     bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
     bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs);
     bool operator!=(const ZeroCopyString& lhs, const __FlashStringHelper* rhs);
+#endif
 }

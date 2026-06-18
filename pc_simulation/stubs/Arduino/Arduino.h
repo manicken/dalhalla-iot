@@ -34,16 +34,16 @@
 #include "../PrintStream/Stream.h"
 #include <cstdarg> // variadic
 
-#define F(x) x
+#include <pgmspace.h>
+#include <WString.h>
 
-using String = std::string;
 
 #if defined(_WIN32)
 #define strdup _strdup
 #endif
-#define __FlashStringHelper char 
 
-#define pgm_read_byte_near(addr) (*(const unsigned char*)(addr))
+
+//#define pgm_read_byte_near(addr) (*(const unsigned char*)(addr))
 
 
 #define HIGH 1
@@ -104,7 +104,8 @@ public:
     bool available() { return false; }
     void end() {}
     size_t write(uint8_t b) override { return 1; }
-    size_t write(const uint8_t *buffer, size_t size) {return size;}
+    size_t write(const uint8_t* buffer, size_t size) {return size;}
+    size_t write(const char* buffer, size_t size) {return size;}
     uint8_t read() { return 0; }
 
     template <typename T>
@@ -146,6 +147,8 @@ public:
     }
 };
 
-extern SerialStub Serial; // Declared here, defined in a .cpp
+extern SerialStub Serial; // Declared here, defined in .cpp
+extern SerialStub Serial1; // Declared here, defined in .cpp
+extern SerialStub Serial2; // Declared here, defined in .cpp
 
 #define HardwareSerial Stream

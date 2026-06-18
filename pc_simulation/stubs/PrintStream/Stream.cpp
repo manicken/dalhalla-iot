@@ -1,5 +1,7 @@
 #include "Stream.h"
 
+#include <cstring>
+
 Stream::Stream(std::ostream& stream) : out(stream) {}
 
 bool Stream::available() { return false; }
@@ -13,9 +15,9 @@ int Stream::read(uint8_t* buf, size_t size) {
 
 int Stream::peek() { return -1; }
 
-void Stream::print(const std::string& s) { out << s; }
-void Stream::print(const char* s)        { out << s; }
-void Stream::print(char c)               { out << c; }
+size_t Stream::print(const std::string& s) { out << s; return s.length(); }
+size_t Stream::print(const char* s)        { out << s; return strlen(s); }
+size_t Stream::print(char c)               { out << c; return 1; }
 
 void Stream::print(int n, int format) {
     if (format == HEX)

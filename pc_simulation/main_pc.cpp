@@ -32,6 +32,7 @@
     #include <string_view>
 
     #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
+    #include <DALHAL/API/DALHAL_CommandExecutor.h>
     #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
    // #include "ports/DALHAL_REST/DALHAL_REST.h"
@@ -42,7 +43,7 @@
     #include <ArduinoJson.h>
     #include "commandLoop.h"
 
-    #include "test_mqtt.h"
+    //#include "test_mqtt.h"
 
 
 
@@ -71,13 +72,28 @@
 #endif
         
         std::cout << "\n****** Init DALHAL Manager\n";
-        DALHAL::DeviceManager::setupMgr();
+        DALHAL::DeviceManager::init();
         DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
         std::cout << "\n****** Starting commandLoop thread\n";
         std::thread cmdThread(commandLoop); // start command input thread from commandLoop that is in commandLoop.h
-        test_mqtt::setup();
+        
+        //test_mqtt::setup();
         long lastmillis = 0;
         while (running) { // running is in commandLoop.h
+            // process Async Requests queue
+            while (true) {
+                CommandExecutor_LOCK_QUEUE();
+                if (DALHAL::CommandExecutor::g_pending.empty()) {
+                    CommandExecutor_UNLOCK_QUEUE();
+                    break;
+                }
+                DALHAL::PendingRequest pr = std::move(DALHAL::CommandExecutor::g_pending.front());
+                DALHAL::CommandExecutor::g_pending.pop();
+                CommandExecutor_UNLOCK_QUEUE();
+
+                DALHAL::ZeroCopyString zcCmd(pr.command.c_str());
+                /*bool ok = */DALHAL::CommandExecutor::execute(zcCmd, pr.cb);
+            }
             DALHAL::DeviceManager::loop();
             long currmillis = millis();
             if (currmillis-lastmillis > 100) {
@@ -85,7 +101,7 @@
                 if (DALHAL::ScriptEngine::ScriptsBlock::running)
                     DALHAL::ScriptEngine::Exec(); // runs the scriptengine
             }
-            test_mqtt::loop();
+            //test_mqtt::loop();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         cmdThread.join(); // wait for command thread to finish

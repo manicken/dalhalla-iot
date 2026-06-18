@@ -221,7 +221,7 @@ struct DeviceInfo {
     [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted(F(str));}
 #elif defined (ESP32)
 #define FLASH_STRING(str) \
-    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted_cStr(str); }
+    [](DALHAL::StringBuilderStreamer& sbs) { sbs.write_jsonQuoted(str); }
 #endif
 
 constexpr DeviceInfo devices[] = {

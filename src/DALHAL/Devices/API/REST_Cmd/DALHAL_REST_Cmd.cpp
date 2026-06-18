@@ -85,7 +85,7 @@ namespace DALHAL {
 
         if (getCode != 200) {
 #if defined(_WIN32) || defined(__linux__)
-            printf("\n[REST_Cmd] Failed to exec (%d): %s\n", getCode, remoteUrl.c_str());
+            printf("\n[REST_Cmd] Failed to exec (%d): %s\n", getCode, static_cast<REST_Cmd*>(device)->remoteUrl.c_str());
 #endif
             return HALOperationResult::ExecutionFailed;
         }

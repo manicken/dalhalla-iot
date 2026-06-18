@@ -85,7 +85,7 @@ namespace DALHAL {
                 if (ToJsonString::objectsContains(fs.subtype->typeName) == false) {
                     ToJsonString::addToObjects(fs.subtype->typeName, *(fs.subtype));
                 }
-                sbs.write_jsonQuoted_cStr(fs.subtype->typeName);
+                sbs.write_jsonQuoted(fs.subtype->typeName);
             } else {
                 JsonObjectSchema::SchemaToJson(fs.subtype, sbs, mode);
             }

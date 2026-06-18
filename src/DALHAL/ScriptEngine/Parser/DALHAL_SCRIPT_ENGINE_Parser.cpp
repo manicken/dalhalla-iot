@@ -97,6 +97,12 @@ namespace DALHAL {
                     ReportInfo(String(F("[OK]\n")).c_str());
                 //);
                     
+                    // TODO make functionality to check "script blocks"
+                    // i.e. a script block is contained inside a on <event> then  <script> endon
+                    // a script block is allways at the root
+                    // but i do allow "if blocks" to be in the root as well
+                    // then they are automatically wrapped inside a "script block" that is set to allway run
+                    
                 // MEASURE_TIME("\n VerifyConditionBlocks time: ",
                     ReportInfo(String(F("\n VerifyConditionBlocks: \n")).c_str());
                     if (Conditions::VerifyConditionBlocks(_tokens) == false) {
