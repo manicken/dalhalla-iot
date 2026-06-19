@@ -61,9 +61,9 @@ LogEntry::LogEntry() : timestamp(0),
 
         sbs.write_json_array_begin();
         sbs.write(timeinfo->tm_mday, "%02d");
-        sbs.write('/');
+        sbs.write_char('/');
         sbs.write(timeinfo->tm_mon+1, "%02d");
-        sbs.write(' ');
+        sbs.write_char(' ');
         sbs.write(timeinfo->tm_hour, "%02d");
         sbs.write_char(':');
         sbs.write(timeinfo->tm_min, "%02d");
@@ -82,14 +82,14 @@ LogEntry::LogEntry() : timestamp(0),
             sbs.write_json_object_begin();
             sbs.write(source);
             sbs.write_json_object_end();
-            sbs.write(' ');
+            sbs.write_char(' ');
         }
         // append repeat count
         if (repeatCount > 0) {
-            sbs.write('(');
+            sbs.write_char('(');
             sbs.write(repeatCount);
-            sbs.write(')');
-            sbs.write(' ');
+            sbs.write_char(')');
+            sbs.write_char(' ');
         }
         // append message or error code
         if (isCode) {
@@ -107,7 +107,7 @@ LogEntry::LogEntry() : timestamp(0),
         
     }
 
-    void LogEntry::Print(Stream &out) const {
+    /*void LogEntry::Print(Stream &out) const {
         //char strTime[32]; // Enough for asctime output
         struct tm* timeinfo = localtime(&timestamp);
         
@@ -152,7 +152,7 @@ LogEntry::LogEntry() : timestamp(0),
         if (text != nullptr)
             out.print(text);
        
-    }
+    }*/
 
     bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const 
     {
@@ -302,7 +302,8 @@ Logger::Logger() {
 
 void Logger::EmitLastEntry()
 {
-#ifndef ESP8266 // currently disabled for esp8266 to debug issuse
+    // actually this is a bad idea, as it's very slow and we need to make sure that the Logger is not misused
+#if !(defined(ESP8266) || defined(ESP32)) 
     DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
 
     getLastEntry().PrintTo(bs.writer());
@@ -433,12 +434,12 @@ void Logger::printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew)
         entry.isNew = false;
         
         entry.PrintTo(sbs);
-        sbs.write('\n');
+        sbs.write_char('\n');
     }
 }
 
 
-void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
+/*void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
     size_t start = wrapped ? head : 0;
     size_t count = wrapped ? LOG_BUFFER_SIZE : head;
 
@@ -452,7 +453,7 @@ void Logger::printAllLogs(Stream &out, bool onlyPrintNew) {
         entry.Print(out);
         out.println();
     }
-}
+}*/
 
 void Logger::advance() {
     head = (head + 1) % LOG_BUFFER_SIZE;

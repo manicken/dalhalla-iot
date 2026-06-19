@@ -95,7 +95,7 @@ namespace DALHAL {
     };
 
     template<typename Fn>
-    static Fn GetDeviceFunction(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
+    static Fn GetDeviceFunctionFromTable(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
         for (size_t i = 0; i<funcTable.count; ++i) {
             if (funcTable.items[i].name(&zcFuncName, nullptr)) {
                 return funcTable.items[i].fn;
@@ -249,7 +249,8 @@ namespace DALHAL {
         if (table->items == nullptr || table->count == 0) {
             return { HALOperationResult::UnsupportedOperation, nullptr };
         }
-        Fn fn = GetDeviceFunction(*table, zcFuncName);
+        
+        Fn fn = GetDeviceFunctionFromTable(*table, zcFuncName);
         if (fn == nullptr) {
             return { HALOperationResult::UnsupportedCommand, nullptr };
         }

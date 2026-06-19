@@ -68,7 +68,7 @@ struct LogEntry {
 
       void MessageWriteTo(DALHAL::StringBuilderStreamer& sbs) const;
       void PrintTo(DALHAL::StringBuilderStreamer& sbs) const;
-      void Print(Stream &out = Serial) const;
+      //void Print(Stream &out = Serial) const;
 
   };
 
@@ -94,7 +94,7 @@ class Logger {
     void Warn(const __FlashStringHelper* msg, const char* text);
     void Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr);
     void printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew = false);
-    void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
+    //void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
         
     const LogEntry& getLastEntry() const;
     bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag);

@@ -217,7 +217,7 @@ namespace DALHAL {
             ScriptEngine::Expressions::CalcStackSizesInit();
             if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
                 GlobalLogger.Error(F("ValidateAllActiveScripts fail!"));
-                GlobalLogger.printAllLogs(Serial, false);
+                //GlobalLogger.printAllLogs(Serial, false);
                 return false;
             }
             

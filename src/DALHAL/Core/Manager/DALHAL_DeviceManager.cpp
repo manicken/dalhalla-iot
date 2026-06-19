@@ -47,7 +47,7 @@ namespace DALHAL {
 
     bool DeviceManager::init() {
         if (DeviceManager::ReadJSON() == false) {
-            GlobalLogger.printAllLogs(Serial, false);
+            //GlobalLogger.printAllLogs(Serial, false);
             return false;
         }
         DeviceManager::begin(); // call the begin function on all loaded hal devices

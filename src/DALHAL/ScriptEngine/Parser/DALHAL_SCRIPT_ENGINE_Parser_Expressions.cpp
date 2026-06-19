@@ -582,8 +582,8 @@ namespace DALHAL {
                         operandToken.ReportTokenError(F("Get Exec other error: "), HALOperationResultToString(getFunRes.result));
                     }
                     anyError = true;
-                    return;
                 }
+                return;
             }
 
             if (mode == ValidateOperandMode::Read || mode == ValidateOperandMode::ReadWrite) {
@@ -596,6 +596,7 @@ namespace DALHAL {
                     }
                     anyError = true;
                 }
+                return;
             }
             if (mode == ValidateOperandMode::Write || mode == ValidateOperandMode::ReadWrite) {
                 auto getFunRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, funcName);
@@ -607,7 +608,7 @@ namespace DALHAL {
                     }
                     anyError = true;
                 }
-
+                return;
             }
         }
 
