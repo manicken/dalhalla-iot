@@ -36,6 +36,13 @@ namespace DALHAL {
 
         using ActionHandler = HALOperationResult(*)(void*);
 
+
+          /// MAJOR TODO
+
+    /// something is very wrong with CACHED device access @ function direct exec
+    // it cause reccursive loop and WDT fires
+    
+
         struct ActionStatement
         {
             DALHAL_NOCOPY_NOMOVE(ActionStatement);

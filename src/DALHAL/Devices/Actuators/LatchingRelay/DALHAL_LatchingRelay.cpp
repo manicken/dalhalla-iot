@@ -338,8 +338,8 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     /*static*/
     HALOperationResult LatchingRelay::exec_drive_to_reset(Device* device) {
-        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
-        static_cast<LatchingRelay*>(device)->driveToReset(); // direct call no vtable
+        static_cast<LatchingRelay*>(device)->stopDrive(); 
+        static_cast<LatchingRelay*>(device)->driveToReset();
 #if HAS_REACTIVE_EXEC(RELAY_LATCHING)
         static_cast<LatchingRelay*>(device)->triggerExec();
 #endif
@@ -348,8 +348,8 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     /*static*/
     HALOperationResult LatchingRelay::exec_drive_to_set(Device* device) {
-        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
-        static_cast<LatchingRelay*>(device)->driveToSet(); // direct call no vtable
+        static_cast<LatchingRelay*>(device)->stopDrive(); 
+        static_cast<LatchingRelay*>(device)->driveToSet();
 #if HAS_REACTIVE_EXEC(RELAY_LATCHING)
         static_cast<LatchingRelay*>(device)->triggerExec();
 #endif
@@ -358,7 +358,7 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     /*static*/
     HALOperationResult LatchingRelay::exec_stop(Device* device) {
-        static_cast<LatchingRelay*>(device)->stopDrive(); // direct call no vtable
+        static_cast<LatchingRelay*>(device)->stopDrive();
 #if HAS_REACTIVE_EXEC(RELAY_LATCHING)
         static_cast<LatchingRelay*>(device)->triggerExec();
 #endif
