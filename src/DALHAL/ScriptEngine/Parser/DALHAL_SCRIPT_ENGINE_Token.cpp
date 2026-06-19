@@ -39,6 +39,9 @@ namespace DALHAL {
         Token::~Token() {
             // nothing to do here as no dynamic memory is allocated
         }
+
+        
+
         void Token::ReportTokenInfo(const char* msg, const char* param) const {
             std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): " + msg;
             if (param != nullptr)

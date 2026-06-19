@@ -186,9 +186,9 @@ namespace DALHAL {
                         if (((tokens[i].type == ScriptTokenType::If) || (tokens[i].type == ScriptTokenType::ElseIf)) == false) continue;
                         i++;
                         int conditionTokenCount = CountConditionTokens(_tokens, i);
-        #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)   
-                        std::cout << "If case token count: " << conditionTokenCount << "\n";
-        #endif
+        //#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)   
+        //                std::cout << "If case token count: " << conditionTokenCount << "\n";
+        //#endif
                         if (conditionTokenCount == -1) return false; // failsafe
                         
                         // if multiple tokens then there could be 'and' / 'or' keywords

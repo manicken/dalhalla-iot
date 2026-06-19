@@ -31,7 +31,7 @@ namespace DALHAL {
     namespace ScriptEngine {
         namespace Parser {
 
-            bool ValidateParseScript(ScriptTokens& tokens, bool validateOnly);
+            bool ValidateParseScript(ScriptTokens& tokens, bool validateOnly, const char* fileName = nullptr);
             /** 
              * if the callback is set this is considered a Load function
              * if the callback is not set (nullptr) then it's validate only

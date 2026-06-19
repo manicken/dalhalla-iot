@@ -23,11 +23,26 @@
 
 #pragma once
 
+#include "DALHAL_SCRIPT_ENGINE_Script_Token.h"
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
+
+#define DALHAL_SCRIPT_ENGINE_TRIGGER_ALLWAYS_RUN_KEYWORD "eachloop"
+#define DALHAL_SCRIPT_ENGINE_TRIGGER_SEPARATOR '@'
+#define DALHAL_SCRIPT_ENGINE_TRIGGER_SEPARATOR_STR "@"
+
 namespace DALHAL {
     namespace ScriptEngine {
         namespace Parser {
 
-            
+            class Trigger {
+            private:
+
+            public:
+                static bool Validate(ScriptTokens& tokens);
+                static HALOperationResult Validate(ScriptToken& token);
+                
+            };
 
         }
     }

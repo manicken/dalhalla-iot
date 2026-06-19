@@ -80,7 +80,6 @@ namespace DALHAL {
          */
         static HALOperationResult GetDeviceEvent(ZeroCopyString zcUidPath, ZeroCopyString zcFuncName, ReactiveEvent** reactiveEventOut);
         static HALOperationResult GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, ReactiveEvent** reactiveEventOut);
-        static HALOperationResult ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName);
 
         // Maintenance
         static void loop();

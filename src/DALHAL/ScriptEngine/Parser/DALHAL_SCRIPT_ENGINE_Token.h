@@ -46,6 +46,7 @@ namespace DALHAL {
             uint16_t column;
 
             void Set(const char* _start, const char* _end, int line, int column);
+
             void ReportTokenInfo(const char* msg, const char* param = nullptr) const;
             void ReportTokenError(const __FlashStringHelper* msg, const char* param = nullptr) const;
 #if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))

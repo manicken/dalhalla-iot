@@ -59,6 +59,7 @@ namespace DALHAL {
             case HALOperationResult::FunctionTableNotFound: return F("FunctionTableNotFound");
             case HALOperationResult::FunctionTable_t_NotFound: return F("FunctionTable_t_NotFound");
             case HALOperationResult::DeviceUIDPathEmpty: return F("DeviceUIDPathEmpty");
+            case HALOperationResult::TriggerSeparatorMissing: return F("TriggerSeparatorMissing");
             
             default:
                 Serial.print("");// force the compiler to not use lockup table which consume 400 bytes ram

@@ -47,6 +47,7 @@ namespace DALHAL {
             /** used to make it easier to see unset tokens, is also used as terminator item when defining a list of token types */
             NotSet, 
             On,
+            OnExpression,
             EndOn,
             If,
             EndIf,
@@ -101,6 +102,12 @@ namespace DALHAL {
             void MarkTokenGroup(int size, ScriptTokenType constructType);
 
             bool AnyType(const ScriptTokenType* candidates);
+
+            ScriptToken SplitOffHead(char delimiter);
+            ScriptToken SplitOffTail(char delimiter);
+            ScriptToken SplitOffHead(const char* delimiterPtr);
+            ScriptToken SplitOffTail(const char* delimiterPtr);
+
             ~ScriptToken();
         };
         /** Tokens are considered identical if their 'start' pointers are the same */

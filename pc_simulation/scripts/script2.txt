@@ -1,4 +1,4 @@
-on dummyTrigger then
+on i2c:pcf2@Interrupt then
 
   // store in temp vars
   rgb16 = ((i2c:pcf2 << 8) & 0xFF00) | i2c:pcf1

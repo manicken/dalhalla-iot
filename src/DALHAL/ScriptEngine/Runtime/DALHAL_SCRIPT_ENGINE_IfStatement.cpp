@@ -206,10 +206,11 @@ namespace DALHAL {
                 return HALOperationResult::ContextWasNullPtr;
             }
             IfStatement* ifStatement = static_cast<IfStatement*>(context);
+            /* no point doing this check
             if (ifStatement == nullptr) {
                GlobalLogger.Error(F("\n IfStatement::Handler ifStatement was nullprtr\n"));
                 return HALOperationResult::ContextWasNullPtr;
-            }
+            }*/
             int ifStatementBranchItemsCount = ifStatement->branchItemsCount;
             ConditionalBranch* ifStatementBranchItems = ifStatement->branchItems;
             for (int i=0;i<ifStatementBranchItemsCount;i++) {
@@ -218,7 +219,7 @@ namespace DALHAL {
                     return ifStatementBranchItems[i].Exec();
                 } else if (res != HALOperationResult::IfConditionFalse) {
 #if defined(ESP32) == false && defined(ESP8266) == false
-                    printf("\n IfStatement::Handler - did execute a error \n");
+                    printf("\n IfStatement::Handler - did return a error \n");
 #endif
                     return res; // direct fail stop exec here??
                 }

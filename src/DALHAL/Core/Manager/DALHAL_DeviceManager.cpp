@@ -34,6 +34,8 @@
 //#include <DALHAL/Core/JsonConfig/DALHAL_JSON_Schema_Validator.h>
 #include <DALHAL/Core/JsonConfig/Types/Structures/DALHAL_JSON_Schema_ArrayOfRegistryItems.h>
 
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Triggers.h>
+
 namespace DALHAL {
 
     Device** DeviceManager::devices = nullptr;
@@ -174,39 +176,7 @@ namespace DALHAL {
         path.reset(); // ensure to be at root level
         return Device::findInArray(devices, deviceCount, path, nullptr, outDevice);
     }
-    /*
-    HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, Device::DeviceEvent** deviceEventOut) {
-        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('@');
-        UIDPath uidPath(zcStrUidPathAndFuncName);
-        Device* deviceOut = nullptr;
-        DeviceFindResult devFindRes = DeviceManager::findDevice(uidPath, deviceOut);
-
-        if (devFindRes != DeviceFindResult::Success) {
-            if (deviceEventOut) {
-                *deviceEventOut = nullptr;
-            }
-            return HALOperationResult::DeviceNotFound;
-        }
-
-        Device::DeviceEvent* deviceEventTemp = nullptr;
-        HALOperationResult res = deviceOut->Get_DeviceEvent(zcFuncName, &deviceEventTemp);
-
-        if (res != HALOperationResult::Success) {
-            if (deviceEventOut) {
-                *deviceEventOut = nullptr;
-            }
-            return res;
-        }
-
-        // Success case
-        if (deviceEventOut) {
-            *deviceEventOut = deviceEventTemp;   // transfer ownership
-        } else {
-            delete deviceEventTemp;             // test mode → auto delete
-        }
-
-        return HALOperationResult::Success;
-    }*/
+    
     HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcUidPath, ZeroCopyString zcFuncName, ReactiveEvent** reactiveEventOut)
     {
         UIDPath uidPath(zcUidPath);
@@ -226,11 +196,8 @@ namespace DALHAL {
     }
     HALOperationResult DeviceManager::GetDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName, ReactiveEvent** reactiveEventOut)
     {
-        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail('@');
+        ZeroCopyString zcFuncName = zcStrUidPathAndFuncName.SplitOffTail(DALHAL_SCRIPT_ENGINE_TRIGGER_SEPARATOR);
         return GetDeviceEvent(zcStrUidPathAndFuncName, zcFuncName, reactiveEventOut);
-    }
-    HALOperationResult DeviceManager::ValidateDeviceEvent(ZeroCopyString zcStrUidPathAndFuncName) {
-        return GetDeviceEvent(zcStrUidPathAndFuncName, nullptr);
     }
 
     bool DeviceManager::ReadJSON(const char* cStr_path) {

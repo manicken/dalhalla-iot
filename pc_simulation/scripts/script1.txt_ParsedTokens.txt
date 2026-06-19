@@ -1,0 +1,64 @@
+rootLevelBlockCount: 1
+Token(0): (line:1, col:1, count:1, type:On): on
+Token(1): (line:1, col:4, count:0, type:OnExpression): temps:a:a@ValueChange
+Token(2): (line:1, col:26, count:1, type:Then): then
+Token(3): (line:3, col:3, count:2, type:If, hasElse:false): if
+
+Tokens block:
+  Token(4): (line:3, col:6, count:7, type:IfCondition): temps:a:a
+  Token(5): (line:3, col:16, count:0, type:Merged): >
+  Token(6): (line:3, col:18, count:0, type:Merged): 25
+  Token(7): (line:3, col:21, count:0, type:Merged): &&
+  Token(8): (line:3, col:24, count:0, type:Merged): var1
+  Token(9): (line:3, col:29, count:0, type:Merged): ==
+  Token(10): (line:3, col:32, count:0, type:Merged): 0
+
+Token(11): (line:3, col:34, count:4, type:Then): then
+
+Tokens block:
+  Token(12): (line:4, col:5, count:3, type:Action): var1
+  Token(13): (line:4, col:10, count:0, type:Merged): =
+  Token(14): (line:4, col:12, count:0, type:Merged): 1
+
+Tokens block:
+  Token(15): (line:5, col:5, count:3, type:Action): i2c:disp:var
+  Token(16): (line:5, col:18, count:0, type:Merged): =
+  Token(17): (line:5, col:20, count:0, type:Merged): 0xFF
+
+Tokens block:
+  Token(18): (line:6, col:5, count:3, type:Action): neo#color
+  Token(19): (line:6, col:15, count:0, type:Merged): =
+  Token(20): (line:6, col:17, count:0, type:Merged): 0xFF0000
+
+Token(21): (line:7, col:5, count:1, type:Action): BIRELSET()
+Token(22): (line:8, col:3, count:4, type:ElseIf): elseif
+
+Tokens block:
+  Token(23): (line:8, col:10, count:7, type:IfCondition): temps:a:a
+  Token(24): (line:8, col:20, count:0, type:Merged): <
+  Token(25): (line:8, col:22, count:0, type:Merged): 25
+  Token(26): (line:8, col:25, count:0, type:Merged): &&
+  Token(27): (line:8, col:28, count:0, type:Merged): var1
+  Token(28): (line:8, col:33, count:0, type:Merged): ==
+  Token(29): (line:8, col:36, count:0, type:Merged): 1
+
+Token(30): (line:8, col:38, count:4, type:Then): then
+
+Tokens block:
+  Token(31): (line:9, col:5, count:3, type:Action): var1
+  Token(32): (line:9, col:10, count:0, type:Merged): =
+  Token(33): (line:9, col:12, count:0, type:Merged): 0
+
+Tokens block:
+  Token(34): (line:10, col:5, count:3, type:Action): i2c:disp:var
+  Token(35): (line:10, col:18, count:0, type:Merged): =
+  Token(36): (line:10, col:20, count:0, type:Merged): 0
+
+Tokens block:
+  Token(37): (line:11, col:5, count:3, type:Action): neo#color
+  Token(38): (line:11, col:15, count:0, type:Merged): =
+  Token(39): (line:11, col:17, count:0, type:Merged): 0x00FF00
+
+Token(40): (line:12, col:5, count:1, type:Action): BIRELRST()
+Token(41): (line:13, col:3, count:0, type:EndIf): endif
+Token(42): (line:15, col:1, count:0, type:EndOn): endon

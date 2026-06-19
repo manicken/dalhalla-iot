@@ -69,6 +69,8 @@ namespace DALHAL {
         BracketOpSubscriptOutOffRange = 29,
         /** script engine specific error */
         BracketOpSubscriptInvalid = 30,
+        /** trigger event specific error */
+        TriggerSeparatorMissing = 31,
 
         RegistryDefineNotFound = 50,
         FunctionTableNotFound = 51,

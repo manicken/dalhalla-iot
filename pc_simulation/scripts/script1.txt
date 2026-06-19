@@ -1,4 +1,4 @@
-on dummyTrigger then
+on temps:a:a@ValueChange then
 	
   if temps:a:a > 25 && var1 == 0 then
     var1 = 1

@@ -25,6 +25,8 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Triggers.h>
+
 #define DALHAL_SCRIPTS_STRUCTURES_RPN_STACK_SAFETY_CHECKS
 
 namespace DALHAL {
@@ -91,7 +93,7 @@ namespace DALHAL {
                     tokens.currIndex++; // consume the On token as it dont have any important data
                     
                     ScriptToken& triggerSourceToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
-                    if (triggerSourceToken.EqualsIC(F("eachloop"))) {
+                    if (triggerSourceToken.EqualsIC(F(DALHAL_SCRIPT_ENGINE_TRIGGER_ALLWAYS_RUN_KEYWORD))) {
                         triggerBlock.event = new ReactiveEvent(TriggerBlock::AllwaysRun); // using special case of ReactiveEvent
                     }
                     else

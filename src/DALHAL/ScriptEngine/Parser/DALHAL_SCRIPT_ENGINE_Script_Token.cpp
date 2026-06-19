@@ -81,6 +81,7 @@ namespace DALHAL {
             switch (type) {
                 case ScriptTokenType::NotSet: return F("NotSet");
                 case ScriptTokenType::On: return F("On");
+                case ScriptTokenType::OnExpression: return F("OnExpression");
                 case ScriptTokenType::EndOn: return F("EndOn");
                 case ScriptTokenType::If: return F("If");
                 case ScriptTokenType::EndIf: return F("EndIf");
@@ -157,6 +158,95 @@ namespace DALHAL {
                 candidates++;
             }
             return false;
+        }
+
+        ScriptToken ScriptToken::SplitOffHead(char delimiter) {
+            if (!start || !end || start >= end) return ScriptToken(nullptr, nullptr);
+
+            const char* splitPos = FindChar(delimiter);
+            const char* newStartPos = start;
+            uint16_t originalColumn = column;
+
+            if (splitPos == nullptr) {
+                start = end;
+                column += (uint16_t)(end - newStartPos); // advance past everything
+                ScriptToken result(newStartPos, end);
+                result.type = type;
+                result.line = line;
+                result.column = originalColumn;
+                return result;
+            }
+
+            column += (uint16_t)(splitPos - newStartPos) + 1; // advance past head + delimiter
+            start = splitPos + 1;
+
+            ScriptToken result(newStartPos, splitPos);
+            result.type = type;
+            result.line = line;
+            result.column = originalColumn;
+            return result;
+        }
+
+        ScriptToken ScriptToken::SplitOffTail(char delimiter) {
+            if (!start || !end || start >= end) return ScriptToken(nullptr, nullptr);
+
+            const char* splitPos = FindCharReverse(delimiter);
+            const char* newEndPos = end;
+
+            if (splitPos == nullptr) {
+                return ScriptToken();
+            }
+
+            ScriptToken result(splitPos + 1, newEndPos);
+            result.type = type;
+            result.line = line;
+            result.column = column + (uint16_t)(splitPos - start) + 1; // tail starts after delimiter
+
+            end = splitPos; // this stays the same column, just shorter end
+            return result;
+        }
+
+        ScriptToken ScriptToken::SplitOffHead(const char* delimiterPtr) {
+            if (!start || !end || start >= end) return ScriptToken(nullptr, nullptr);
+
+            const char* newStartPos = start;
+            uint16_t originalColumn = column;
+
+            if (!ContainsPtr(delimiterPtr)) {
+                column += (uint16_t)(end - newStartPos);
+                start = end;
+                ScriptToken result(newStartPos, end);
+                result.line = line;
+                result.column = originalColumn;
+                return result;
+            }
+
+            column += (uint16_t)(delimiterPtr - newStartPos) + 1;
+            start = delimiterPtr + 1;
+
+            ScriptToken result(newStartPos, delimiterPtr);
+            result.type = type;
+            result.line = line;
+            result.column = originalColumn;
+            return result;
+        }
+
+        ScriptToken ScriptToken::SplitOffTail(const char* delimiterPtr) {
+            if (!start || !end || start >= end) return ScriptToken(nullptr, nullptr);
+
+            const char* newEndPos = end;
+
+            if (!ContainsPtr(delimiterPtr)) {
+                return ScriptToken();
+            }
+
+            ScriptToken result(delimiterPtr + 1, newEndPos);
+            result.type = type;
+            result.line = line;
+            result.column = column + (uint16_t)(delimiterPtr - start) + 1;
+
+            end = delimiterPtr;
+            return result;
         }
 
         //    ████████  ██████  ██   ██ ███████ ███    ██ ███████ 

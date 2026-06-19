@@ -30,7 +30,7 @@
 #if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
 #else
-#include <pc_simulation/ports/PgmSpace/pgmspace.h>
+#include <pgmspace.h>
 #endif
 
 // special note here

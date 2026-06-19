@@ -32,6 +32,7 @@
 
 #include "DALHAL_SCRIPT_ENGINE_Tokenizer.h"
 #include "../DALHAL_SCRIPT_ENGINE_Reports.h"
+#include "DALHAL_SCRIPT_ENGINE_Parser_Triggers.h"
 #include "DALHAL_SCRIPT_ENGINE_Parser_Conditions.h"
 #include "DALHAL_SCRIPT_ENGINE_Parser_Actions.h"
 
@@ -43,24 +44,42 @@
 
 #include <Support/MeasureTime.h>
 
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#include <fstream>
+#include <string>
+
+void writeDebug(std::string fileName, const std::string& text)
+{
+    std::ofstream file(fileName); // truncates automatically
+    if (file)
+    {
+        file << text;
+    }
+}
+#endif
+
 namespace DALHAL {
     namespace ScriptEngine {
         namespace Parser {
 
-            bool ValidateParseScript(ScriptTokens& _tokens, bool validateOnly) {
-
+            bool ValidateParseScript(ScriptTokens& _tokens, bool validateOnly, const char* fileName) {
+                bool anyError = false;
                 if (validateOnly) {
                     ReportInfo(String(F("**********************************************************************************\n")).c_str());
                     ReportInfo(String(F("*                            RAW TOKEN LIST                                      *\n")).c_str());
                     ReportInfo(String(F("**********************************************************************************\n")).c_str());
-    #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                    ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
-    #endif
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+                    {
+                    std::string debugFilename = fileName;
+                    writeDebug(debugFilename + "_RawTokens.txt", PrintScriptTokens(_tokens,0));
+                    }
+#endif
                     ReportInfo(String(F("\n VerifyBlocks (BetterError): ")).c_str());
                     //MEASURE_TIME(" VerifyBlocks time: ",
                     if (validateOnly && Conditions::VerifyBlocks(_tokens) == false) {
                         ReportInfo(String(F("[FAIL]\n")).c_str());
-                        return false;
+                        anyError = true;
+                        //return false;
                     }
                     //);
                     ReportInfo(String(F("[OK]\n")).c_str());
@@ -84,19 +103,25 @@ namespace DALHAL {
                 ReportInfo(String(F("**********************************************************************************\n")).c_str());
                 ReportInfo(String(F("*                            PARSED TOKEN LIST                                   *\n")).c_str());
                 ReportInfo(String(F("**********************************************************************************\n")).c_str());
-    #if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(DEBUG_PRINT_SCRIPT_ENGINE) || defined(DEBUG_PRINT_SCRIPT_ENGINE)
-                ReportInfo(PrintScriptTokens(_tokens,0) + "\n");
-    #endif
+
                 if (validateOnly) {
                     //MEASURE_TIME("\n Conditions::EnsureActionBlocksContainItems time: ",
                     ReportInfo(String(F("\n Conditions::EnsureBlocksContainItems: ")).c_str());
-                    if (validateOnly && Conditions::EnsureBlocksContainItems(_tokens) == false) { // uses the metadata itemsInBlock to determine if there are invalid
+                    if (Conditions::EnsureBlocksContainItems(_tokens) == false) { // uses the metadata itemsInBlock to determine if there are invalid
                         ReportInfo(String(F("[FAIL]\n")).c_str());
-                        return false;
+                        anyError = true;
+                        //return false;
                     }
                     ReportInfo(String(F("[OK]\n")).c_str());
                 //);
                     
+                    ReportInfo(String(F("\n Trigger::Validate: ")).c_str());
+                    if (Trigger::Validate(_tokens) == false) {
+                        ReportInfo(String(F("[FAIL]\n")).c_str());
+                        anyError = true;
+                        //return false;
+                    }
+                    ReportInfo(String(F("[OK]\n")).c_str());
                     // TODO make functionality to check "script blocks"
                     // i.e. a script block is contained inside a on <event> then  <script> endon
                     // a script block is allways at the root
@@ -107,18 +132,28 @@ namespace DALHAL {
                     ReportInfo(String(F("\n VerifyConditionBlocks: \n")).c_str());
                     if (Conditions::VerifyConditionBlocks(_tokens) == false) {
                         ReportInfo(String(F("[FAIL @ VerifyConditionBlocks]\n")).c_str());
-                        return false;
+                        anyError = true;
+                        //return false;
                     }
                 //);
                 //MEASURE_TIME("\n VerifyActionBlocks time: ",
                     ReportInfo(String(F("\n VerifyActionBlocks: \n")).c_str());
                     if (Actions::VerifyActionBlocks(_tokens) == false) {
                         ReportInfo(String(F("[FAIL @ VerifyActionBlocks]\n")).c_str());
-                        return false;
+                        anyError = true;
+                        //return false;
                     }
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+                    {
+                    std::string debugFilename = fileName;
+                    writeDebug(debugFilename + "_ParsedTokens.txt", PrintScriptTokens(_tokens,0));
+                    }
+#endif
+
                 //);
                 }
-                return true;
+                
+                return anyError == false;
             }
 
             bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
@@ -148,7 +183,7 @@ namespace DALHAL {
                 //);
                 bool anyError = false;
                 MEASURE_TIME(String(F("ValidateParseScript time: ")).c_str(),
-                if (ValidateParseScript(tokens, parsedOKcallback==nullptr)) {
+                if (ValidateParseScript(tokens, parsedOKcallback==nullptr, filePath)) {
                     ReportInfo(String(F("ParseScript [OK]\n")).c_str());
                     
                     if (parsedOKcallback) {
