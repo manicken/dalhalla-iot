@@ -44,8 +44,7 @@
   ]},
   {"uid":"temp","type":"1WTD","pin":33,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
   {"disabled":true,"uid":"1WTD0","type":"1WTD","pin":-34,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
-  {"uid":"BIRELSET", "type":"DPOUT", "pin":18,"plength":5000},
-  {"uid":"BIRELRST", "type":"DPOUT", "pin":19,"plength":5000},
+     {"uid":"birel", "type":"RELAY_LATCHING", "pinA":18, "pinB":19},
   {"uid":"hum", "type":"DHT","model":"dht11", "pin":23, "refreshtimesec":2},
   {"uid":"tx433", "type":"TX433", "pin":15,
     "units": [

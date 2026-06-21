@@ -32,40 +32,6 @@
 namespace DALHAL {
     namespace ScriptEngine {
        
-        TriggerBlock::TriggerBlock() : event(nullptr), items(nullptr), itemsCount(0) { }
-        TriggerBlock::~TriggerBlock() {
-            delete event;
-            delete[] items;
-            items = nullptr;
-            event = nullptr;
-            itemsCount = 0;
-        }
-        bool TriggerBlock::AllwaysRun(void* context) {
-            //GlobalLogger.Info(F("AllwaysRun"));
-            return true;
-        }
-        bool TriggerBlock::NeverRun(void* context) {
-            //GlobalLogger.Info(F("NeverRun"));
-            return false;
-        }
-
-        void TriggerBlock::Set(int _itemsCount, ScriptTokens& tokens) {
-            //printf("(%d) TriggerBlock::Set----------------- triggerblock statement item count:%d %s\n",tokens.currIndex, _itemsCount, tokens.Current().ToString().c_str());
-            
-            itemsCount = _itemsCount;
-            items = new StatementBlock[_itemsCount];
-            
-           // printf("see if we come here\n");
-            for (int i=0;i<_itemsCount;i++) {
-                if (tokens.SkipIgnoresAndEndIf() == false) {
-                    Serial.print(F("SERIOUS ERROR - reached end\n"));
-                    break;
-                }
-                
-                items[i].Set(tokens);
-            }
-        }
-
         ScriptBlock::ScriptBlock() : triggerBlocks(nullptr), triggerBlockCount(0) { }
         ScriptBlock::~ScriptBlock()
         {
@@ -135,6 +101,10 @@ namespace DALHAL {
                     Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
                     break;
                 }
+                if (statementItem.context == nullptr) {
+                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.context == nullptr\n"));
+                    break;
+                }
                 HALOperationResult res = statementItem.handler(statementItem.context);
                 if (res != HALOperationResult::Success) {
                     return res; // direct return on any failure here
@@ -147,6 +117,7 @@ namespace DALHAL {
             for (int i=0;i<triggerBlockCount;i++) {
                 if (triggerBlocks[i].event == nullptr) {
                     GlobalLogger.Error(F("triggerBlocks[i].event == nullptr"));
+                    continue;
                 } else {
                     if (triggerBlocks[i].event->CheckForEvent() == false) {
                         continue;

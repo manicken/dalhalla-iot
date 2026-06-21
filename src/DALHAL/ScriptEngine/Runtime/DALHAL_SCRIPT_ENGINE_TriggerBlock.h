@@ -26,34 +26,33 @@
 #include <Arduino.h>
 
 #include "DALHAL_SCRIPT_ENGINE_StatementBlock.h"
-#include "DALHAL_SCRIPT_ENGINE_TriggerBlock.h"
 
 #include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
 
 namespace DALHAL {
     namespace ScriptEngine {
         /**
-         * Represents a single script file.
-         * A script may contain one or more top-level triggers.
-         * A script may contain IfBlocks at the top-level
-         * in such cases the TriggerBlock::AllwaysRun should be used
-         * as the trigger source
+         * A single trigger definition at the root level of a script.
+         * Each trigger is linked to one or more executable operation blocks.
          */
-        struct ScriptBlock
+        struct TriggerBlock
         {
-            DALHAL_NOCOPY_NOMOVE(ScriptBlock);
+            DALHAL_NOCOPY_NOMOVE(TriggerBlock);
 
-            TriggerBlock* triggerBlocks;
-            int triggerBlockCount;
+            /** the function set to this pointer should return true if the StatementBlock(s) should execute */
+            ReactiveEvent* event;
+            StatementBlock* items;
+            int itemsCount;
 
-            ScriptBlock();
-            ~ScriptBlock();
+            static bool AllwaysRun(void* context);
+            static bool NeverRun(void* context);
 
-            void Set(ScriptTokens& tokens);
+            TriggerBlock();
+            ~TriggerBlock();
 
-            void Exec();
+            HALOperationResult Exec();
+
+            void Set(int statementBlockCount, ScriptTokens& tokens);
         };
-
-        
     }
 }

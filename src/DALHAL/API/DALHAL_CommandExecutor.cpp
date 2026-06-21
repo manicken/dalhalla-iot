@@ -961,17 +961,24 @@ namespace DALHAL {
     }
 
     HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "hal/scripts/reload", BlockStreamer::DataType::Json);
         if (ScriptEngine::ValidateAndLoadAllActiveScripts()) {
+            bs.writer().write_jsonString(F("info"), F("ok"));
             return HALOperationResult::Success;
         }
+        bs.writer().write_jsonString(F("error"), F("could not ValidateAndLoadAllActiveScripts"));
         return HALOperationResult::ExecutionFailed;
     }
     HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "hal/scripts/stop", BlockStreamer::DataType::Json);
         ScriptEngine::ScriptsBlock::running = false;
+        bs.writer().write_jsonString(F("info"), F("stopped"));
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_Scripts_Start(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "hal/scripts/start", BlockStreamer::DataType::Json);
         ScriptEngine::ScriptsBlock::running = true;
+        bs.writer().write_jsonString(F("info"), F("started"));
         return HALOperationResult::Success;
     }
 

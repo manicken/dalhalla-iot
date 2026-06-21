@@ -30,7 +30,7 @@ Tokens block:
   Token(19): (line:6, col:15, count:0, type:Merged): =
   Token(20): (line:6, col:17, count:0, type:Merged): 0xFF0000
 
-Token(21): (line:7, col:5, count:1, type:Action): BIRELSET()
+Token(21): (line:7, col:5, count:1, type:Action): birel#set()
 Token(22): (line:8, col:3, count:4, type:ElseIf): elseif
 
 Tokens block:
@@ -59,6 +59,6 @@ Tokens block:
   Token(38): (line:11, col:15, count:0, type:Merged): =
   Token(39): (line:11, col:17, count:0, type:Merged): 0x00FF00
 
-Token(40): (line:12, col:5, count:1, type:Action): BIRELRST()
+Token(40): (line:12, col:5, count:1, type:Action): birel#reset()
 Token(41): (line:13, col:3, count:0, type:EndIf): endif
 Token(42): (line:15, col:1, count:0, type:EndOn): endon

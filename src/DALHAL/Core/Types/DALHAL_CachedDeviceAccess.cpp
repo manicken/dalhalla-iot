@@ -93,6 +93,17 @@ namespace DALHAL {
         bracketWriteFunc = GetDeviceFunction<FunctionTypes::BracketOpWrite>(device, zcStrFuncName).fn;
         
         valueDirectAccessPtr = device->GetValueDirectAccessPtr();
+
+        // at least one need to be valid
+        if (execFunc == nullptr &&
+            readToHalValueFunc == nullptr &&
+            writeFromHalValueFunc == nullptr &&
+            bracketReadFunc == nullptr &&
+            bracketWriteFunc == nullptr &&
+            valueDirectAccessPtr == nullptr) {
+                return false;
+            }
+
         return true;
     }
 

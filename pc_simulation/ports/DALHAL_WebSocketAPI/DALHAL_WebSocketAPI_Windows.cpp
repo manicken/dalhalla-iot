@@ -185,7 +185,9 @@ namespace DALHAL {
         }
 
         bool safeHtmlSend(SOCKET clientSocket, const char* data, int len) {
-            std::string header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+            std::string header = "HTTP/1.1 200 OK\r\n";
+            header += "Content-Length: " + std::to_string(len) + "\r\n";
+            header += "Content-Type: text/html\r\nConnection: close\r\n\r\n";
             send(clientSocket, header.c_str(), (int)header.length(), 0);
             
             int total = 0;

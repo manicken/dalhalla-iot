@@ -20,7 +20,7 @@ Token(17): (line:5, col:20, count:0, type:NotSet): 0xFF
 Token(18): (line:6, col:5, count:0, type:NotSet): neo#color
 Token(19): (line:6, col:15, count:0, type:NotSet): =
 Token(20): (line:6, col:17, count:0, type:NotSet): 0xFF0000
-Token(21): (line:7, col:5, count:0, type:NotSet): BIRELSET()
+Token(21): (line:7, col:5, count:0, type:NotSet): birel#set()
 Token(22): (line:8, col:3, count:0, type:ElseIf): elseif
 Token(23): (line:8, col:10, count:0, type:NotSet): temps:a:a
 Token(24): (line:8, col:20, count:0, type:NotSet): <
@@ -39,6 +39,6 @@ Token(36): (line:10, col:20, count:0, type:NotSet): 0
 Token(37): (line:11, col:5, count:0, type:NotSet): neo#color
 Token(38): (line:11, col:15, count:0, type:NotSet): =
 Token(39): (line:11, col:17, count:0, type:NotSet): 0x00FF00
-Token(40): (line:12, col:5, count:0, type:NotSet): BIRELRST()
+Token(40): (line:12, col:5, count:0, type:NotSet): birel#reset()
 Token(41): (line:13, col:3, count:0, type:EndIf): endif
 Token(42): (line:15, col:1, count:0, type:EndOn): endon

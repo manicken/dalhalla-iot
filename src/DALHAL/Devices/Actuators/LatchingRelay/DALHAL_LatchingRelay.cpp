@@ -365,6 +365,9 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         return HALOperationResult::Success;
     }
 
+
+  
+
     /*static*/
     HALOperationResult LatchingRelay::exec_resetMode(Device* device) {
         static_cast<LatchingRelay*>(device)->driveToReset();
