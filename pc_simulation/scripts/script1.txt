@@ -2,14 +2,14 @@ on temps:a:a@ValueChange then
 	
   if temps:a:a > 25 && var1 == 0 then
     var1 = 1
-    i2c:disp:var = 0xFF
-    neo#color = 0xFF0000
-    birel#set()
+    //i2c:disp:var = 0xFF
+    //neo#color = 0xFF0000
+    birel#set();
   elseif temps:a:a < 25 && var1 == 1 then
     var1 = 0
-    i2c:disp:var = 0
-    neo#color = 0x00FF00
-    birel#reset()
+    //i2c:disp:var = 0
+    //neo#color = 0x00FF00
+    birel#reset();
   endif
 	
 endon

@@ -43,7 +43,7 @@ namespace DALHAL {
             return HALOperationResult::Success;
         } 
 
-        void StatementBlock::Set(ScriptTokens& tokens)
+        bool StatementBlock::Set(ScriptTokens& tokens)
         {
             //printf("(%d) StatementBlock::Set----------------- : %s\n",tokens.currIndex, tokens.Current().ToString().c_str());
             // note to myself, this is one statement consume only
@@ -52,7 +52,10 @@ namespace DALHAL {
  
             if (token.type == ScriptTokenType::If) {
                 //printf("---- StatementBlock::Set was if\n");
-                IfStatement* newItem = new IfStatement(tokens);
+                IfStatement* newItem = new IfStatement();
+                if (newItem->Set(tokens) == false) {
+                    return false; // abort loading
+                }
                 context = newItem;
                 handler = IfStatement::Handler;
                 deleter = DeleteAs<IfStatement>;
@@ -62,7 +65,10 @@ namespace DALHAL {
                 //printf("--------------------- StatementBlock::Set was action: %s\n",tokens.SliceToString().c_str());
                 tokens.currentEndIndex = tokens.count;
                 //tokens.currIndex += token.itemsInBlock; // just skip it here
-                ActionStatement* newItem = new ActionStatement(tokens, handler);
+                ActionStatement* newItem = new ActionStatement();
+                if (newItem->Set(tokens, handler) == false) {
+                    return false; // abort loading
+                }
                 context = newItem;
                 
                 deleter = DeleteAs<ActionStatement>;
@@ -71,7 +77,9 @@ namespace DALHAL {
             }
             else {
                 token.ReportTokenError(F("StatementBlock::Set !!!! very big issue found unknown type:"), ScriptTokenTypeToString(token.type));
+                return false;
             }
+            return true;
             
         }
 

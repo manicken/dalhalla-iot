@@ -52,7 +52,7 @@ namespace DALHAL {
 
             HALOperationResult Exec();
 
-            void Set(int statementBlockCount, ScriptTokens& tokens);
+            bool Set(int statementBlockCount, ScriptTokens& tokens);
         };
     }
 }

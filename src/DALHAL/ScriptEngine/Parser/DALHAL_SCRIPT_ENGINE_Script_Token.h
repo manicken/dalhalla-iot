@@ -39,6 +39,10 @@
 
 namespace DALHAL {
     namespace ScriptEngine {
+        enum class SkipTokenResult {
+            Success,
+            ReachedEnd
+        };
         /** 
          * for the fundamentala types
          * this is set in the tokenize function.
@@ -151,7 +155,7 @@ namespace DALHAL {
             const ScriptToken& Current() const;
             ScriptToken& GetNextAndConsume();
             
-            bool SkipIgnoresAndEndIf();
+            SkipTokenResult SkipIgnoresAndEndIf();
 
             // Optional: const version
             

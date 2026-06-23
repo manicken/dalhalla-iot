@@ -33,8 +33,9 @@
 namespace DALHAL {
     namespace ScriptEngine {
 
-        ActionStatement::ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut)
-        {
+        ActionStatement::ActionStatement() : target(nullptr), calcRpn(nullptr) { }
+
+        bool ActionStatement::Set(ScriptTokens& tokens, ActionHandler& handlerOut) {
             // ExtractAssignmentParts "consumes" the tokens until the next action or whatever coming after
             // just run this no checking here as at this stage the script is valid
             Parser::Actions::ExtractAssignmentParts(tokens); 
@@ -42,12 +43,20 @@ namespace DALHAL {
             ReportInfo("**************** Action ******** assigment operator:" + std::string(1, Parser::Actions::AssignmentParts::op) + "\n");
             
             target = new CachedDeviceAccess();
-            target->Set(Parser::Actions::AssignmentParts::lhs); // should allready be valid at this stage
+            if (target->Set(Parser::Actions::AssignmentParts::lhs) == false) { // should allready be valid at this stage
+                GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - target->Set() == false"));
+                return false; // absolute failsafe
+            }
 
             if (Expressions::IsExpressionEmpty(Parser::Actions::AssignmentParts::rhs)) {
                 calcRpn = nullptr; // not used here
             } else {
                 ExpressionTokens* expTokens = Expressions::GenerateRPNTokens(Parser::Actions::AssignmentParts::rhs); // note here. expTokens is non owned
+
+                if (expTokens == nullptr) {
+                    GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - expTokens == nullptr"));
+                    return false;
+                }
 
                 ReportInfo("\n***************** Action *********** rhs calc RPN: [");
                 for (int i=0;i<expTokens->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
@@ -59,7 +68,14 @@ namespace DALHAL {
             }
             
             handlerOut = GetFunctionHandler(Parser::Actions::AssignmentParts::op);
+            if (handlerOut == nullptr) {
+                GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - handlerOut == nullptr"));
+                return false; // absolute failsafe
+            }
+
+            return true;
         }
+
         ActionStatement::~ActionStatement()
         {
             delete target;

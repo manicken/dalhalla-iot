@@ -27,7 +27,7 @@
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
 #include "Runtime/DALHAL_SCRIPT_ENGINE_StatementBlock.h"
-#include "Runtime/DALHAL_SCRIPT_ENGINE_Script.h"
+#include "Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlock.h"
 
 #include "Parser/DALHAL_SCRIPT_ENGINE_Tokenizer.h"
 #include "Parser/DALHAL_SCRIPT_ENGINE_Parser.h"
@@ -76,7 +76,7 @@ namespace DALHAL {
 
         
 
-        void ScriptsBlock::ScriptFileParsed(ScriptTokens& tokens) {
+        bool ScriptsBlock::ScriptFileParsed(ScriptTokens& tokens) {
             ReportInfo("\n");
             ReportInfo("**************************************************************************************\n");
             ReportInfo("**************************************************************************************\n");
@@ -90,7 +90,7 @@ namespace DALHAL {
             ReportInfo("**************************************************************************************\n");
             ReportInfo("**************************************************************************************\n");
 
-            scriptBlocks[currentScriptIndex].Set(tokens);
+            bool anyError = (scriptBlocks[currentScriptIndex].Set(tokens) == false);
 
             ReportInfo("**************************************************************************************\n");
             ReportInfo("**************************************************************************************\n");
@@ -99,6 +99,7 @@ namespace DALHAL {
 #endif
             ReportInfo("**************************************************************************************\n");
             ReportInfo("**************************************************************************************\n");
+            return (anyError == false);
         }
 
         ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) {
@@ -223,7 +224,7 @@ namespace DALHAL {
             
             ScriptEngine::Expressions::InitStacks();
             if (ScriptsBlock::LoadAllActiveScripts(scriptsToLoad) == false) {
-                GlobalLogger.Error(F("SERIOUS problem could not load scripts!"));
+                GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - could not load scripts!"));
                 return false;
             }
             ScriptsBlock::running = true;

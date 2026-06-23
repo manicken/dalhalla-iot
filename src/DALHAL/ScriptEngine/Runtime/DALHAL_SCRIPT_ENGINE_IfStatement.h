@@ -62,10 +62,10 @@ namespace DALHAL {
             Deleter deleter;
             HALOperationResult (*handler)(void* context);
 
-            void Set(ScriptTokens& tokens);
-
             ConditionalBranch();
             ~ConditionalBranch();
+
+            bool Set(ScriptTokens& tokens);
         };
 
         /** 
@@ -76,8 +76,10 @@ namespace DALHAL {
         {
             DALHAL_NOCOPY_NOMOVE(UnconditionalBranch);
 
-            UnconditionalBranch(ScriptTokens& tokens);
+            UnconditionalBranch();
             ~UnconditionalBranch();
+
+            bool Set(ScriptTokens& tokens);
         };
 
         /** 
@@ -101,10 +103,12 @@ namespace DALHAL {
             int branchItemsCount;
             /** set when there are a else branch defined, else it's set to nullptr */
             UnconditionalBranch* elseBranch; 
-            bool elseBranchFound;
+            //bool elseBranchFound;
 
-            IfStatement(ScriptTokens& tokens);
+            IfStatement();
             ~IfStatement();
+
+            bool Set(ScriptTokens& tokens);
 
             static HALOperationResult Handler(void* context);
         };

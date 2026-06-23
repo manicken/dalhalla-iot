@@ -30,9 +30,6 @@
 namespace DALHAL {
     namespace ScriptEngine {
 
-        // Forward declare IfBlock, currently not needed but keep it here if we somewhere in the future want to do it
-        struct IfBlock;
-
         /** StatementBlock contains either a IfBlock or a ExecBlock */
         struct StatementBlock
         {
@@ -45,7 +42,7 @@ namespace DALHAL {
             StatementBlock();
             ~StatementBlock();
             
-            void Set(ScriptTokens& tokens);
+            bool Set(ScriptTokens& tokens);
         };
 
         

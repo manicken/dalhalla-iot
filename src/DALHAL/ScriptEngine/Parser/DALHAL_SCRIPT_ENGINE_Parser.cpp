@@ -156,7 +156,7 @@ namespace DALHAL {
                 return anyError == false;
             }
 
-            bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens)) {
+            bool ReadAndParseScriptFile(const char* filePath, bool (*parsedOKcallback)(ScriptTokens& tokens)) {
                 char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
                 MEASURE_TIME(String(F("ReadAndParseScriptFile - load_text_file time: ")).c_str(),
                 LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
@@ -188,7 +188,9 @@ namespace DALHAL {
                     
                     if (parsedOKcallback) {
                         MEASURE_TIME(String(F("loadscript time: ")).c_str(),
-                        parsedOKcallback(tokens);
+                        if (parsedOKcallback(tokens)==false) {
+                            anyError=true;
+                        }
                         );
                     }
                 } else {

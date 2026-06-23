@@ -36,7 +36,7 @@ namespace DALHAL {
              * if the callback is set this is considered a Load function
              * if the callback is not set (nullptr) then it's validate only
              */
-            bool ReadAndParseScriptFile(const char* filePath, void (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
+            bool ReadAndParseScriptFile(const char* filePath, bool (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
             
         }
     }

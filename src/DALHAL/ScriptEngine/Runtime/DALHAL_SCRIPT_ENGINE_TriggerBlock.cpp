@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_SCRIPT_ENGINE_Script.h"
+#include "DALHAL_SCRIPT_ENGINE_ScriptBlock.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
@@ -33,6 +33,7 @@ namespace DALHAL {
     namespace ScriptEngine {
 
         TriggerBlock::TriggerBlock() : event(nullptr), items(nullptr), itemsCount(0) { }
+
         TriggerBlock::~TriggerBlock() {
             delete event;
             delete[] items;
@@ -49,7 +50,7 @@ namespace DALHAL {
             return false;
         }
 
-        void TriggerBlock::Set(int _itemsCount, ScriptTokens& tokens) {
+        bool TriggerBlock::Set(int _itemsCount, ScriptTokens& tokens) {
             //printf("(%d) TriggerBlock::Set----------------- triggerblock statement item count:%d %s\n",tokens.currIndex, _itemsCount, tokens.Current().ToString().c_str());
             
             itemsCount = _itemsCount;
@@ -57,13 +58,35 @@ namespace DALHAL {
             
            // printf("see if we come here\n");
             for (int i=0;i<_itemsCount;i++) {
-                if (tokens.SkipIgnoresAndEndIf() == false) {
+                if (tokens.SkipIgnoresAndEndIf() == SkipTokenResult::ReachedEnd) {
                     Serial.print(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - reached end\n"));
-                    break;
+                    return false; // abort loading
                 }
                 
-                items[i].Set(tokens);
+                if (items[i].Set(tokens) == false) {
+                    return false; // abort loading
+                }
             }
+            return true;
+        }
+
+        HALOperationResult TriggerBlock::Exec() {
+            for (int i=0;i<itemsCount;i++) {
+                StatementBlock& statementItem = items[i];
+                if (statementItem.handler == nullptr) {
+                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
+                    break;
+                }
+                if (statementItem.context == nullptr) {
+                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.context == nullptr\n"));
+                    break;
+                }
+                HALOperationResult res = statementItem.handler(statementItem.context);
+                if (res != HALOperationResult::Success) {
+                    return res; // direct return on any failure here
+                }
+            }
+            return HALOperationResult::Success;
         }
         
     }

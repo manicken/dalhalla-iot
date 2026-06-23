@@ -50,8 +50,10 @@ namespace DALHAL {
             CachedDeviceAccess* target;
             CalcRPN* calcRpn;
 
-            ActionStatement(ScriptTokens& tokens, ActionHandler& handlerOut);
+            ActionStatement();
             ~ActionStatement();
+
+            bool Set(ScriptTokens& tokens, ActionHandler& handlerOut);
 
             
             template <typename Op>

@@ -26,7 +26,7 @@
 #include <Arduino.h>
 
 #include "Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h" // ScriptTokens
-#include "Runtime/DALHAL_SCRIPT_ENGINE_Script.h" // ScriptBlock
+#include "Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlock.h" // ScriptBlock
 
 namespace DALHAL {
     namespace ScriptEngine {
@@ -64,7 +64,7 @@ namespace DALHAL {
             static int currentScriptIndex;
 
             /** just a callback wrapper to begin initializing the structures */
-            static void ScriptFileParsed(ScriptTokens& tokens);
+            static bool ScriptFileParsed(ScriptTokens& tokens);
             
             /** ValidateAllActiveScripts should be run before using this function */
             static bool LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad);

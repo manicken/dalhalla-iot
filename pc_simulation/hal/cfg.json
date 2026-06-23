@@ -3,7 +3,7 @@
   {"uid":"false","value":0,"type":"CONSTVAR"},
   {"uid":"var1","type":"VAR"},
   {"uid":"var2","type":"VAR"},
-  {"uid":"var3","value":0,"type":"VAR"},
+  {"uid":"var3","type":"VAR"},
   {"uid":"var4","type":"VAR"},
   {"uid":"var5","type":"VAR"},
   {"uid":"var6","type":"VAR"},
@@ -38,21 +38,23 @@
 	    ]}
 	  ]
   },
-  {"uid":"temps2","type":"1WTB","pin":32,"refreshtimesec":2,"note":"inne","items":[
+  {"disabled":true,"uid":"temps2","type":"1WTB","pin":32,"refreshtimesec":2,"note":"inne","items":[
     {"uid":"a","romid":"28:61:64:35:18:20:9E:8D","note":"uppe"},
     {"uid":"b","romid":"28:61:64:35:18:27:D4:DB","note":"nere"}
   ]},
-  {"uid":"temp","type":"1WTD","pin":33,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
-  {"disabled":true,"uid":"1WTD0","type":"1WTD","pin":-34,"refreshtimesec":1,"romid":"28:61:64:35:18:20:9E:8D","note":"inne uppe"},
-     {"uid":"birel", "type":"RELAY_LATCHING", "pinA":18, "pinB":19},
-  {"uid":"hum", "type":"DHT","model":"dht11", "pin":23, "refreshtimesec":2},
+  {"uid":"birel", "type":"RELAY_LATCHING", "pinA":18, "pinB":19},
+  {"disabled":true,"uid":"BIRELSET", "type":"DPOUT", "pin":18,"plength":5000},
+  {"disabled":true,"uid":"BIRELRST", "type":"DPOUT", "pin":19,"plength":5000},
+  {"uid":"hum", "type":"DHT","model":"dht11","refreshtimesec":2, "pin":23},
   {"uid":"tx433", "type":"TX433", "pin":15,
-    "units": [
-      {"uid":"D1","type":"lc","anid":"D001","grp_btn":0,"btn":0,"state":0},
-      {"uid":"D2","type":"lc","anid":"D002"}
-    ]
-  },
-  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":-23,"refreshtimesec":5,"items": [
+   "units": [
+    {"uid":"kok","type":"lc","hexid":"EB53FD","grp_btn":0,"btn":15},
+    {"uid":"hall","type":"lc","hexid":"EB53FD","grp_btn":0,"btn":14},
+    {"uid":"bank","type":"sfc","ch":1,"btn":1}
+   ]
+ },
+  {"uid":"servo","type":"PWM_SERVO","pin":32,"ch":0, "autoOffAfterMs":3000, "minPulseLength":1000, "maxPulseLength":2000, "startPulseLength":1450, "minVal":-45,"maxVal":45},
+  {"disabled":true,"uid":"hp","type":"REGO600","rxpin":34,"txpin":33,"refreshtimesec":5,"items": [
 	  {"uid":"gt1","regname":"gt1"},
 	  {"uid":"gt2","regname":"gt2"},
 	  {"uid":"gt3","regname":"gt3"},
@@ -68,6 +70,7 @@
 	  {"uid":"vxv","regname":"vxv"},
 	  {"uid":"alarm","regname":"alarm"}
   ]},
+
   {"uid":"i2c","type":"I2C","sckpin":22,"sdapin":21,"items": [
     {"uid":"disp","type":"SSD1306","width":128,"height":64,"addr":"3C","items": [
       {"uid":"tmpa","x":0,"y":0,"label":"temps:a:a=","source":"temps:a:a"},
@@ -83,7 +86,7 @@
     {"uid":"pcf1","type":"PCF8574x","addr":"38"},
     {"uid":"pcf2","type":"PCF8574x","addr":"39"}
   ]},
-  {"disabled":true,"uid":"ts1","type":"THINGSPEAK","refreshtimesec":5,"firstUpdateAfterSeconds":0,"testserver":true,"key":"0123456789ABCDEF",
+  {"disabled":true,"uid":"ts1","type":"THINGSPEAK","refreshtimesec":10,"firstUpdateAfterSeconds":5,"testserver":true,"key":"0123456789ABCDEF",
     "items":{
       "1":"temps:a:a",
       "2":"temps:a:b",
@@ -91,46 +94,28 @@
       "4":"var2",
       "5":"var3",
       "6":"var4",
-      "7":"var5",
-      "8":"var6"
+      "7":"hum#humidity",
+      "8":"hum#temp"
     }
   },
+  {"uid":"led","type":"DOUT","pin":25},
   {"uid":"neo","type":"WS2812","pin":26,"ledcount":1,"format":"RGB","ifspeed":"KHZ400","brightness":64,"mode":12,"fxspeed":32000},
-  {"uid":"arr1","type":"ARRAY","readonly":true,"items":[2,3.14,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67]},
-  {"uid":"arr2","type":"ARRAY","readonly":true,"items":[3.1415,1.4142,1.732,2.236]},
-  {"disabled":true,"uid":"ha1","type":"HOMEASSISTANT", "deviceId":"pc_sim_a", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
-    "group":{"uid":"ha_grp1", "name":"PC Development Test"}, 
+  {"disabled":true,"uid":"ha","type":"HOMEASSISTANT","host":"hidden", "port":1883, "user":"hidden", "pass":"hidden", 
+    "group":{"uid":"ha_dev1", "name":"Development Board Test"}, 
     "items": [
-	{"uid":"temp", "type":"CONTAINER", "items":[
-	    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
-	    {"uid":"room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"}
-	    
-	]},
-	{"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
-    ]
-  },
-  {"disabled":true,"uid":"ha2","type":"HOMEASSISTANT", "deviceId":"pc_sim_b", "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
-    "group":{"uid":"ha_grp2", "name":"PC Development Test2"}, 
-    "items": [
-	  {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
-    ]
-  },
-  {"disabled":true,"uid":"ha","type":"HOMEASSISTANT", "deviceId":"pc_sim_c", "flattengroups":true, "host":"127.0.0.1", "port":1883, "user":"dalhal", "pass":"pass", 
-    "groups":[
-	  {"uid":"ha_grp1", "name":"PC Development Test1",
-	    "items": [
-		  {"uid":"temp", "type":"CONTAINER", "items":[
-		    {"uid":"room1", "type":"sensor", "name":"temp room 1", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:a", "event_source":"temps:a:a@valueChanged"},
-		    {"uid":"room2", "type":"sensor", "name":"temp room 2", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}, "source":"temps:a:b", "event_source":"temps:a:b@valueChanged"}
-		  ]},
-		  {"uid":"hum", "type":"sensor", "name":"hum room 1", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}, "source":"hum", "event_source":"hum@valueChanged"}
-		  ]
-	  },
-	  {"uid":"ha_grp2", "name":"PC Development Test2",
-        "items": [
-	      {"uid":"sw_room1", "type":"switch", "name":"switch room 1", "target":"BIRELSET"}
-        ]
-	  }
+      {"uid":"temp","type":"CONTAINER",
+        "items":[
+	        {"uid":"room1", "type":"sensor", "name":"Temp room1", "hass_uid":"dev32_temp_room1", "refreshtimesec":1, "source":"temps:a:a", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}},
+	        {"uid":"room2", "type":"sensor", "name":"Temp room2", "hass_uid":"dev32_temp_room2", "refreshtimesec":1, "source":"temps:a:b", "discovery":{"unit_of_measurement": "°C", "device_class": "temperature"}}
+	      ]
+      },
+      {"uid":"servo", "type":"number", "name":"Tilt Servo", "hass_uid":"dev32_servo1", "target":"servo", "discovery":{"min":-45,"max":45,"step":15,"unit_of_measurement":"%","mode":"slider"}},
+	    {"uid":"hum_rm1", "type":"sensor", "name":"Humidity", "hass_uid":"dev32_hum_room1", "refreshtimesec":3, "source":"hum", "discovery":{"unit_of_measurement": "%", "device_class": "humidity"}},
+	    {"uid":"switch", "type":"switch", "name":"Simple Led", "hass_uid":"dev32_switch1", "target":"led"},
+	    {"uid":"birel", "type":"switch", "name":"Bi Relay", "hass_uid":"dev32_birel1", "target":"birel"},
+	     {"uid":"kok_lamp", "type":"switch", "name":"kök lampa", "hass_uid":"dev32_kitchen_lamp", "target":"tx433:kok"},
+  	 {"uid":"halllamp", "type":"switch", "name":"hall lampa", "hass_uid":"dev32_hall_lamp", "target":"tx433:hall"},
+  	 {"uid":"banklamp", "type":"switch", "name":"kök bänk lampa", "hass_uid":"dev32_bank_lamp", "target":"tx433:bank"}
     ]
   }
 ]

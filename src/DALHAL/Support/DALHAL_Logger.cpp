@@ -107,7 +107,7 @@ LogEntry::LogEntry() : timestamp(0),
         
     }
 
-    /*void LogEntry::Print(Stream &out) const {
+    void LogEntry::PrintTo(Stream &out) const {
         //char strTime[32]; // Enough for asctime output
         struct tm* timeinfo = localtime(&timestamp);
         
@@ -152,7 +152,7 @@ LogEntry::LogEntry() : timestamp(0),
         if (text != nullptr)
             out.print(text);
        
-    }*/
+    }
 
     bool LogEntry::isEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag) const 
     {
@@ -312,6 +312,13 @@ void Logger::EmitLastEntry()
     DALHAL::WebSocketAPI::Broadcast(entryStr);
     Serial.println(entryStr.c_str());*/
 #endif
+
+#if defined(ESP32)
+    getLastEntry().PrintTo(Serial);
+#elif defined(ESP8266)
+    getLastEntry().PrintTo(Serial1);
+#endif
+
 }
 
 void Logger::Error(uint32_t code) {

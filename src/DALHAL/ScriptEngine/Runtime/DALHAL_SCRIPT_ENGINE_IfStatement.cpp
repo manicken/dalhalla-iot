@@ -30,10 +30,7 @@
 namespace DALHAL {
     namespace ScriptEngine {
 
-        BranchBlock::BranchBlock()
-        {
-
-        }
+        BranchBlock::BranchBlock() : items(nullptr), itemsCount(0) { }
 
         BranchBlock::~BranchBlock()
         {
@@ -57,10 +54,8 @@ namespace DALHAL {
             return HALOperationResult::Success;
         }
 
-        ConditionalBranch::ConditionalBranch()
-        {
+        ConditionalBranch::ConditionalBranch() : BranchBlock(), context(nullptr), deleter(nullptr), handler(nullptr) { }
 
-        }
         ConditionalBranch::~ConditionalBranch()
         {
             if (deleter && context) {
@@ -70,7 +65,7 @@ namespace DALHAL {
             //delete[] items; is deleted by BranchBlock destructor
 
         }
-        void ConditionalBranch::Set(ScriptTokens& tokens)
+        bool ConditionalBranch::Set(ScriptTokens& tokens)
         {
 #if defined(ESP32) == false && defined(ESP8266) == false
             printf("(%d) ConditionalBranch::Set: %s\n", tokens.currIndex, tokens.Current().ToString().c_str());
@@ -108,8 +103,8 @@ namespace DALHAL {
             //when consumed we are at the then
             ScriptToken& thenToken = tokens.GetNextAndConsume();//.items[tokens.currIndex++]; // get and consume
             if (thenToken.type != ScriptTokenType::Then) {
-                thenToken.ReportTokenError(F(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ERROR: is not a then token: "));
-                return;
+                thenToken.ReportTokenError(F("LOAD ERROR - following is not a then token: "));
+                return false;
             }
             // here extract the itemsCount
             itemsCount = thenToken.itemsInBlock;
@@ -119,16 +114,25 @@ namespace DALHAL {
             items = new StatementBlock[itemsCount];
 
             for (int i=0;i<itemsCount;i++) {
-                if (tokens.SkipIgnoresAndEndIf() == false) {
-                    GlobalLogger.Error(F("SERIOUS ERROR - reached end\n"));
-                    break;
+                if (tokens.SkipIgnoresAndEndIf() == SkipTokenResult::ReachedEnd) {
+                    GlobalLogger.Error(F("LOAD ERROR - reached end\n"));
+                    return false;
                 }
                 items[i].Set(tokens); // each call should consume all tokens
             }
+            // allways consume ignore/endif tokens
+            if (tokens.SkipIgnoresAndEndIf() == SkipTokenResult::ReachedEnd) {
+                GlobalLogger.Error(F("LOAD ERROR - reached end\n"));
+                return false;
+            }
+            return true;
         }
 
-        UnconditionalBranch::UnconditionalBranch(ScriptTokens& tokens)
+        UnconditionalBranch::UnconditionalBranch() : BranchBlock()
         {
+
+        }
+        bool UnconditionalBranch::Set(ScriptTokens& tokens) {
 #if defined(ESP32) == false && defined(ESP8266) == false
             printf("(%d) UnconditionalBranch::UnconditionalBranch: %s\n", tokens.currIndex, tokens.Current().ToString().c_str());
 #endif
@@ -138,23 +142,28 @@ namespace DALHAL {
             items = new StatementBlock[itemsCount];
 
             for (int i=0;i<itemsCount;i++) {
-                if (tokens.SkipIgnoresAndEndIf() == false) {
+                if (tokens.SkipIgnoresAndEndIf() == SkipTokenResult::ReachedEnd) {
                     GlobalLogger.Error(F("SERIOUS ERROR - reached end\n"));
-                    break;
+                    return false;
                 }
                 items[i].Set(tokens);
             }
+            return true;
         }
         UnconditionalBranch::~UnconditionalBranch()
         {
             //delete[] items; is deleted by BranchBlock destructor
         }
 
-        IfStatement::IfStatement(ScriptTokens& tokens)
-        {
-            elseBranchFound = false;
+        IfStatement::IfStatement() : branchItems(nullptr), branchItemsCount(0), elseBranch(nullptr) { }
+
+        bool IfStatement::Set(ScriptTokens& tokens) {
+            //elseBranchFound = false;
             ScriptToken& ifToken = tokens.Current(); // this now points to the if-type token
-            if (ifToken.type != ScriptTokenType::If) { GlobalLogger.Error(F("\nERROR ----- ifToken.type != TokenType::If\n"));}
+            if (ifToken.type != ScriptTokenType::If) { 
+                ifToken.ReportTokenError(F("LOAD ERROR ----- ifToken.type != TokenType::If\n"));
+                return false; // stop loading script
+            }
             branchItemsCount = ifToken.itemsInBlock;
             if (ifToken.hasElse == 1) branchItemsCount--; // minus one as the else case is handled separately
             //printf("\n----------------------------------------------------------------- branchItemsCount:%d\n",branchItemsCount);
@@ -167,11 +176,13 @@ namespace DALHAL {
                 //printf("\n---------------------------- loading brachitem:%d\n",i);
                 ScriptToken& token = tokens.Current();
                 if (token.type != ScriptTokenType::ElseIf) {
-                    GlobalLogger.Error(F("\n ERROR ----  TOKEN IS NOT A ELSEIF\n"));
-                    break;
+                    token.ReportTokenError(F("LOAD ERROR ----  TOKEN IS NOT A ELSEIF\n"));
+                    return false; // stop loading script
                 }
                 // this will consume all tokens that actually belongs to this block
-                branchItems[i].Set(tokens); 
+                if (branchItems[i].Set(tokens) == false) {
+                    return false; // stop loading script
+                } 
             }
             ScriptToken& token = tokens.Current();
             if (token.type == ScriptTokenType::Else) {
@@ -179,21 +190,27 @@ namespace DALHAL {
                 printf("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ found ELSE token @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 #endif
                 // this will consume all tokens that actually belongs to this block
-                elseBranch = new UnconditionalBranch(tokens);
-                elseBranchFound = true;
+                elseBranch = new UnconditionalBranch();
+                //elseBranchFound = true;
+                if (elseBranch->Set(tokens) == false) {
+                    return false;  // stop loading script
+                }
+                
             } 
             else {
 #if defined(ESP32) == false && defined(ESP8266) == false
                 printf("\n@???????????????????????????????????????????? found NOT ANY ELSE token @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 #endif
                 elseBranch = nullptr;
-                elseBranchFound = false;
+                //elseBranchFound = false;
             }
             /*if (tokens.currIndex == 85) {
                     raise(SIGTRAP); // triggers a breakpoint in GDB
                     
             }*/
+           return true;
         }
+
         IfStatement::~IfStatement()
         {
             delete[] branchItems;

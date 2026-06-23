@@ -281,20 +281,21 @@ namespace DALHAL {
             return items[currIndex];
         }
 
-        bool ScriptTokens::SkipIgnoresAndEndIf() {
+        SkipTokenResult ScriptTokens::SkipIgnoresAndEndIf() {
             while (currIndex < count) {
                 ScriptToken& token = Current();
-                if (token.type != ScriptTokenType::Ignore && token.type != ScriptTokenType::EndIf)
+                if (token.type != ScriptTokenType::Ignore && token.type != ScriptTokenType::EndIf) {
                     break;
+                }
                 token.ReportTokenInfo(String(F("--------- skipping token:")).c_str());
                 currIndex++;
             }
 
             if (currIndex >= count) {
                 ReportError(String(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unexpected end of tokens while building items")).c_str());
-                return false;
+                return SkipTokenResult::ReachedEnd;
             }
-            return true;
+            return SkipTokenResult::Success;
         }
 
         ScriptTokens::ScriptTokens() : zeroCopy(true), firstTokenStartOffset(nullptr), items(nullptr), count(0), rootBlockCount(0), currentEndIndex(0), currIndex(0) {}

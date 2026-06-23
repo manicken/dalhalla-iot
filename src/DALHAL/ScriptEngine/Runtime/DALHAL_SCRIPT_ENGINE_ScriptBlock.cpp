@@ -21,7 +21,7 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_SCRIPT_ENGINE_Script.h"
+#include "DALHAL_SCRIPT_ENGINE_ScriptBlock.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 
@@ -33,13 +33,14 @@ namespace DALHAL {
     namespace ScriptEngine {
        
         ScriptBlock::ScriptBlock() : triggerBlocks(nullptr), triggerBlockCount(0) { }
+
         ScriptBlock::~ScriptBlock()
         {
             delete[] triggerBlocks;
             triggerBlocks = nullptr;
         }
 
-        void ScriptBlock::Set(ScriptTokens& tokens) {
+        bool ScriptBlock::Set(ScriptTokens& tokens) {
             
             triggerBlockCount = tokens.rootBlockCount;
             triggerBlocks = new TriggerBlock[tokens.rootBlockCount];
@@ -72,7 +73,9 @@ namespace DALHAL {
                     //ReportTokenInfo(tokens.Current(), "this should be a then token: ", tokens.Current().ToString().c_str());
                     int itemCount = tokens.Current().itemsInBlock;
                     tokens.currIndex++; // consume the then
-                    triggerBlock.Set(itemCount, tokens); // get number of items and consume
+                    if (triggerBlock.Set(itemCount, tokens) == false) {; // get number of items and consume
+                        return false;
+                    }
                 }
                 else if (token.type == ScriptTokenType::If) 
                 {
@@ -81,7 +84,9 @@ namespace DALHAL {
                     // here we dont consume anything just pass 
                     // wrap root-level if into a trigger block that always runs
                     triggerBlock.event = new ReactiveEvent(TriggerBlock::AllwaysRun); // using special case of ReactiveEvent
-                    triggerBlock.Set(1, tokens);
+                    if (triggerBlock.Set(1, tokens)) {
+                        return false;
+                    }
                 }
                 else {
                     //printf("\n(%d) SKIPPING TOKEN: %s\n", tokens.currIndex, token.ToString().c_str());
@@ -89,29 +94,16 @@ namespace DALHAL {
                     
                 }
             }
+            // failsafe check to make sure that every tokenBlocks have been set
             if (i != tokens.rootBlockCount) {
-                GlobalLogger.Error(F("i != tokens.rootBlockCount"));
+                GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - i != tokens.rootBlockCount\n"));
+                return false;
             }
+
+            return true;
         }
 
-        HALOperationResult TriggerBlock::Exec() {
-            for (int i=0;i<itemsCount;i++) {
-                StatementBlock& statementItem = items[i];
-                if (statementItem.handler == nullptr) {
-                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
-                    break;
-                }
-                if (statementItem.context == nullptr) {
-                    Serial.println(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.context == nullptr\n"));
-                    break;
-                }
-                HALOperationResult res = statementItem.handler(statementItem.context);
-                if (res != HALOperationResult::Success) {
-                    return res; // direct return on any failure here
-                }
-            }
-            return HALOperationResult::Success;
-        }
+        
 
         void ScriptBlock::Exec() {
             for (int i=0;i<triggerBlockCount;i++) {

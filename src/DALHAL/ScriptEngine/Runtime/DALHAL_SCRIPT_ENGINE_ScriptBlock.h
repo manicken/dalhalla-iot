@@ -49,7 +49,7 @@ namespace DALHAL {
             ScriptBlock();
             ~ScriptBlock();
 
-            void Set(ScriptTokens& tokens);
+            bool Set(ScriptTokens& tokens);
 
             void Exec();
         };
