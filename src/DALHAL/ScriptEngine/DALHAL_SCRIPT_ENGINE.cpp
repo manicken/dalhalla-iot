@@ -23,15 +23,16 @@
 
 #include "DALHAL_SCRIPT_ENGINE.h"
 
-#include "DALHAL_SCRIPT_ENGINE_Reports.h"
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE_Reports.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
-#include "Runtime/DALHAL_SCRIPT_ENGINE_StatementBlock.h"
-#include "Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlock.h"
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_StatementBlock.h>
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlock.h>
 
-#include "Parser/DALHAL_SCRIPT_ENGINE_Tokenizer.h"
-#include "Parser/DALHAL_SCRIPT_ENGINE_Parser.h"
-#include "Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Tokenizer.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
@@ -43,122 +44,8 @@
 #include <LittleFS_ext.h>
 #endif
 
-
-#if defined(_WIN32) || defined(__linux__)
-#define SCRIPTS_DIRECTORY   "scripts/"
-#define DEFAULT_SCRIPT_FILE "script.txt"
-#define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
-#else
-#define SCRIPTS_DIRECTORY     "/scripts/"
-#define DEFAULT_SCRIPT_FILE "script.txt"
-#define SCRIPTS_LIST_FILE_PATH SCRIPTS_DIRECTORY "list.txt"
-#endif
 namespace DALHAL {
     namespace ScriptEngine {
-
-        void Exec() {
-           // printf("\033[2J\033[H");  // clear screen + move cursor to top-left
-#if defined(_WIN32) || defined(__linux__)
-            //printf("\n****** SCRIPT LOOP START *******\n");
-#endif
-            for (int i=0;i<ScriptsBlock::scriptBlocksCount;i++) {
-                ScriptsBlock::scriptBlocks[i].Exec();
-            }
-#if defined(_WIN32) || defined(__linux__)
-           // printf("\n****** SCRIPT LOOP END *******\n");
-#endif
-            
-        }
-        bool ScriptsBlock::running = false;
-        ScriptBlock* ScriptsBlock::scriptBlocks = nullptr;
-        int ScriptsBlock::scriptBlocksCount = 0;
-        int ScriptsBlock::currentScriptIndex = 0;
-
-        
-
-        bool ScriptsBlock::ScriptFileParsed(ScriptTokens& tokens) {
-            ReportInfo("\n");
-            ReportInfo("**************************************************************************************\n");
-            ReportInfo("**************************************************************************************\n");
-            ReportInfo("**                                                                                  **\n");
-            ReportInfo("** ##       ######   #####  ######      #######  ###### ######  ## ######  ######## **\n");
-            ReportInfo("** ##      ##    ## ##   ## ##   ##     ##      ##      ##   ## ## ##   ##    ##    **\n");
-            ReportInfo("** ##      ##    ## ####### ##   ##     ####### ##      ######  ## ######     ##    **\n");
-            ReportInfo("** ##      ##    ## ##   ## ##   ##          ## ##      ##   ## ## ##         ##    **\n");
-            ReportInfo("** #######  ######  ##   ## ######      #######  ###### ##   ## ## ##         ##    **\n");
-            ReportInfo("**                                                                                  **\n");
-            ReportInfo("**************************************************************************************\n");
-            ReportInfo("**************************************************************************************\n");
-
-            bool anyError = (scriptBlocks[currentScriptIndex].Set(tokens) == false);
-
-            ReportInfo("**************************************************************************************\n");
-            ReportInfo("**************************************************************************************\n");
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-            printf("\n\ntokens.currIndex(%d) of tokens.count(%d) reached end of 'script'\n\n", tokens.currIndex, tokens.count);
-#endif
-            ReportInfo("**************************************************************************************\n");
-            ReportInfo("**************************************************************************************\n");
-            return (anyError == false);
-        }
-
-        ScriptsToLoad::ScriptsToLoad() : scriptsListContents(nullptr), scriptFileList(nullptr), scriptFileCount(0) {
-            bool useDefaultFile = false;
-
-            if (LittleFS.exists(SCRIPTS_LIST_FILE_PATH)) {
-                
-                LittleFS_ext::FileResult res = LittleFS_ext::load_text_file(SCRIPTS_LIST_FILE_PATH, &scriptsListContents);
-                if (res != LittleFS_ext::FileResult::Success) {
-                    useDefaultFile = true;
-                }
-                else {
-                    //printf("\nUsing scripts list file:\n");
-
-                    int scriptCount = ParseAndTokenize<ZeroCopyString>(scriptsListContents);
-                    //printf("\nscript count:%d\n", scriptCount);
-                    InitScriptList(scriptCount);
-                    if (false == ParseAndTokenize(scriptsListContents, scriptFileList, scriptFileCount)) {
-                        useDefaultFile = true;
-                        GlobalLogger.Error(F("\ntokenize scripts list file fail!\n"));
-                    } else {
-                        //for (int i=0;i<scriptCount;i++) {
-                        //    std::string s = scriptsToLoad.scriptFileList[i].ToString();
-                        //    printf("\nScript file:%s\n", s.c_str());
-                        //}
-                       
-                    }
-                    
-                }
-            } else {
-                useDefaultFile = true;
-            }
-            if (useDefaultFile) {
-                GlobalLogger.Info(F("Using default script file: script.txt"));
-                InitScriptList(1);
-                scriptFileList[0].Set(DEFAULT_SCRIPT_FILE);
-            }
-        }
-        ScriptsToLoad::~ScriptsToLoad() {
-            if (scriptsListContents != nullptr) {
-                delete[] scriptsListContents;
-                scriptsListContents = nullptr;
-            }
-            if (scriptFileList != nullptr) {
-                delete[] scriptFileList;
-                scriptFileList = nullptr;
-            }
-            scriptFileCount = 0;
-        }
-        void ScriptsToLoad::InitScriptList(int count) {
-            if (scriptFileList != nullptr) {
-                delete[] scriptFileList;
-            }
-            scriptFileList = nullptr;
-            if (count > 0) {
-                scriptFileList = new ZeroCopyString[count];
-            }
-            scriptFileCount = count;
-        }
 
         bool ValidateAllActiveScripts(ScriptsToLoad& scriptsToLoad)
         {
@@ -167,39 +54,13 @@ namespace DALHAL {
             ZeroCopyString* files = scriptsToLoad.scriptFileList;
             for (int i = 0;i<count;i++) {
                 
-                std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
+                std::string path = DALHAL_SCRIPT_ENGINE_SCRIPTS_DIRECTORY + files[i].ToString();
                 //printf("\nValidating script:%s\n",path.c_str());
                 if (LittleFS.exists(path.c_str()) == false) {
                     GlobalLogger.Info(F("ValidateAllActiveScripts - script file do not exist:"), path.c_str());
                     continue;
                 }
                 valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
-                if (valid == false) return false;
-                //yield();
-            }
-            return true;
-        }
-
-        bool ScriptsBlock::LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad)
-        {
-            delete[] scriptBlocks;
-            scriptBlocks = nullptr;
-            scriptBlocksCount = 0;
-            int count = scriptsToLoad.scriptFileCount;
-            ZeroCopyString* files = scriptsToLoad.scriptFileList;
-
-            scriptBlocks = new ScriptBlock[count];
-            scriptBlocksCount = count;
-            bool valid = true; // absolute failsafe
-            for (int i = 0;i<count;i++) {
-                currentScriptIndex = i;
-                // this should now pass and execute the given callback
-                std::string path = SCRIPTS_DIRECTORY + files[i].ToString();
-                if (LittleFS.exists(path.c_str()) == false) {
-                    GlobalLogger.Info(F("LoadAllActiveScripts - script file do not exist:"), path.c_str());
-                    continue;
-                }
-                valid = ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), ScriptFileParsed);
                 if (valid == false) return false;
                 //yield();
             }
@@ -214,7 +75,7 @@ namespace DALHAL {
                 return true;
             }
 
-            ScriptsBlock::running = false;
+            ScriptBlocks::running = false;
             ScriptEngine::Expressions::CalcStackSizesInit();
             if (ValidateAllActiveScripts(scriptsToLoad) == false) { 
                 GlobalLogger.Error(F("ValidateAllActiveScripts fail!"));
@@ -223,11 +84,11 @@ namespace DALHAL {
             }
             
             ScriptEngine::Expressions::InitStacks();
-            if (ScriptsBlock::LoadAllActiveScripts(scriptsToLoad) == false) {
+            if (ScriptBlocks::LoadAllActiveScripts(scriptsToLoad) == false) {
                 GlobalLogger.Error(F("(SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) (SERIOUS ERROR) - could not load scripts!"));
                 return false;
             }
-            ScriptsBlock::running = true;
+            ScriptBlocks::running = true;
             return true;
         }
     }

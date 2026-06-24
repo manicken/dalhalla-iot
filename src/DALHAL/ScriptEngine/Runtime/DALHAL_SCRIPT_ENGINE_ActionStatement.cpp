@@ -23,11 +23,11 @@
 
 #include "DALHAL_SCRIPT_ENGINE_ActionStatement.h"
 
-#include "DALHAL_SCRIPT_ENGINE_Operators.h"
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_Operators.h>
 
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h"
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Parser_Actions.h"
-#include "../DALHAL_SCRIPT_ENGINE_Reports.h"
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Parser_Actions.h>
+#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE_Reports.h>
 
 
 namespace DALHAL {

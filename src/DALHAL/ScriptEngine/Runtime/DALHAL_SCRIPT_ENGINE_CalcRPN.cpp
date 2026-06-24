@@ -23,10 +23,12 @@
 
 #include "DALHAL_SCRIPT_ENGINE_CalcRPN.h"
 
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h>
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_CalcRPNToken.h>
+
 namespace DALHAL {
     namespace ScriptEngine {
         
-
         CalcRPN::CalcRPN(ExpressionTokens* tokens, int startIndex, int endIndex) {
             calcRPNstr = PrintExpressionTokensOneRow(*tokens, startIndex, endIndex);
             count = endIndex - startIndex;
@@ -79,5 +81,6 @@ namespace DALHAL {
 #endif
             return HALOperationResult::Success;
         }
+
     }
 }

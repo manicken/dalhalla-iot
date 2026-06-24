@@ -82,6 +82,18 @@ namespace DALHAL {
         return new PCF8574x(static_cast<I2C_Master_CreateFunctionContext&>(context));
     }
 
+    void PCF8574x::loop() {
+#if HAS_REACTIVE_CUSTOM(I2C_DEVICE_PCF8574X)
+        if (intPin < 0) { return; }
+        if (digitalRead(intPin) == LOW && intPinPrevState == 1) {
+            intPinPrevState = 0;
+            triggerInterrupt();
+        } else {
+            intPinPrevState = 1;
+        }
+#endif
+    }
+
     HALOperationResult PCF8574x::HALValue_primary_read(Device* device, HALValue& val) {
         PCF8574x& self = static_cast<PCF8574x&>(*device);
 

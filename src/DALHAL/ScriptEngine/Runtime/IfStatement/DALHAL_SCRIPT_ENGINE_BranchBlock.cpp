@@ -21,37 +21,37 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "DALHAL_SCRIPT_ENGINE_BranchBlock.h"
 
 #include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_StatementBlock.h>
-#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_TriggerBlock.h>
 
-#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 namespace DALHAL {
     namespace ScriptEngine {
-        /**
-         * Represents a single script file.
-         * A script may contain one or more top-level triggers that then are contained in a TriggerBlock.
-         * A script may contain IfStatement:s at the top-level:
-         *   in such cases the IfStatement block is wrapped inside a TriggerBlock
-         *   using the TriggerBlock::AllwaysRun handler
-         */
-        struct ScriptBlock
+
+        BranchBlock::BranchBlock() : items(nullptr), itemsCount(0) { }
+
+        BranchBlock::~BranchBlock()
         {
-            DALHAL_NOCOPY_NOMOVE(ScriptBlock);
+            delete[] items;
+        }
 
-            TriggerBlock* triggerBlocks;
-            int triggerBlockCount;
-
-            ScriptBlock();
-            ~ScriptBlock();
-
-            bool Set(ScriptTokens& tokens);
-
-            void Exec();
-        };
-
-        
+        HALOperationResult BranchBlock::Exec()
+        {
+            for (int i=0;i<itemsCount;i++) {
+                StatementBlock& statementItem = items[i];
+                if (statementItem.handler == nullptr) {
+                    
+                    GlobalLogger.Error(F("\nERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR statementItem.handler == nullptr\n"));
+                    break;
+                }
+                HALOperationResult res = statementItem.handler(statementItem.context);
+                if (res != HALOperationResult::Success) {
+                    return res; // direct return on any failure here
+                }
+            }
+            return HALOperationResult::Success;
+        }
     }
 }

@@ -23,9 +23,8 @@
 
 #pragma once
 
-#include <Arduino.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 
 namespace DALHAL {

@@ -140,7 +140,7 @@ namespace DALHAL {
                                 onLevel--;
 
                             if (expecting_do_then) {
-                                token.ReportTokenError(F("missing 'do' after last 'on'"));
+                                token.ReportTokenError(F("missing 'then/do' after last 'on'"));
                                 otherErrors = true;
                             }
                         }

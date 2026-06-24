@@ -39,10 +39,12 @@ namespace DALHAL {
         namespace PCF8574x {
 
             constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "38", 1};
+            constexpr SchemaHardwarePin intpinField = {"intpin", FieldPolicy::Optional, (GPIO_manager::PinFunc::IN)};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base
                 &addrField,
+                &intpinField,
                 nullptr,
             };
 
@@ -59,6 +61,10 @@ namespace DALHAL {
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
                 const char* hexAddrStr = JsonSchema::PCF8574x::addrField.ExtractFrom(*(context.jsonObjItem));
                 out->addr = static_cast<uint8_t>(std::strtoul(hexAddrStr, nullptr, 16));
+                out->intPin = JsonSchema::PCF8574x::intpinField.ExtractFrom(*(context.jsonObjItem));
+                if (out->intPin >= 0) {
+                    pinMode(out->intPin, INPUT);
+                }
             }
 
         }

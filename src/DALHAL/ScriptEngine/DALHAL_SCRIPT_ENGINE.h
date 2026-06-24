@@ -23,60 +23,18 @@
 
 #pragma once
 
-#include <Arduino.h>
-
-#include "Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h" // ScriptTokens
-#include "Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlock.h" // ScriptBlock
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_ScriptsToLoad.h>
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlocks.h>
 
 namespace DALHAL {
     namespace ScriptEngine {
-        struct ScriptsToLoad {
-            char* scriptsListContents;
-            ZeroCopyString* scriptFileList;
-            int scriptFileCount;
-            /** On creation, this tries to load the scripts list file from LittleFS.
-              * If the file exists and is valid, it tokenizes the contents and initializes the script list.
-              * Otherwise, it falls back to a default script file (script.txt).
-            */
-            ScriptsToLoad();
-            ~ScriptsToLoad();
 
-            void InitScriptList(int count);
-
-            // Delete copy constructor/assignment to prevent double-free
-            ScriptsToLoad(const ScriptsToLoad&) = delete;
-            ScriptsToLoad& operator=(const ScriptsToLoad&) = delete;
-        };
-        /**
-         * Global container for all loaded scripts in the engine.
-         * This is the highest-level structure in the script engine hierarchy.
-         */
-        struct ScriptsBlock
-        {
-            /** set this to true to make the script run,
-             * set to false to make the script not run 
-             * this is set to false if any of the script validate
-             * fails
-             * */
-            static bool running;
-            static ScriptBlock* scriptBlocks;
-            static int scriptBlocksCount;
-            static int currentScriptIndex;
-
-            /** just a callback wrapper to begin initializing the structures */
-            static bool ScriptFileParsed(ScriptTokens& tokens);
-            
-            /** ValidateAllActiveScripts should be run before using this function */
-            static bool LoadAllActiveScripts(ScriptsToLoad& scriptsToLoad);
-            
-        };
         /** should be run before using LoadAllActiveScripts */
         bool ValidateAllActiveScripts(ScriptsToLoad& scriptsToLoad);
         /** begins with validating all scripts
          * and if all pass then it begins to load in the structures
          */
         bool ValidateAndLoadAllActiveScripts();
-        /** entry point of one script loop iteraction */
-        void Exec();
+        
     }
 }

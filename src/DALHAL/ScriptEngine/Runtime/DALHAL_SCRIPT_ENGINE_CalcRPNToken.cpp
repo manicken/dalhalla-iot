@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_CalcRPNToken.h"
-#include "DALHAL_SCRIPT_ENGINE_RPNStack.h" //contains the instance of halValueStack
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h> //contains the instance of halValueStack
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceRead.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>

@@ -22,65 +22,17 @@
 */
 
 #pragma once
-#include <Arduino.h>
-#include <DALHAL/Core/Types/DALHAL_Device.h> // HALOperationResult
-#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include "DALHAL_SCRIPT_ENGINE_LogicExecNode.h"
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h"
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Parser_Expressions.h"
 
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 
 namespace DALHAL {
     namespace ScriptEngine {
 
-        // Forward declare StatementBlock
-        struct StatementBlock;
-
-        /** collection of StatementBlock(s) */
-        struct BranchBlock
-        {
-            DALHAL_NOCOPY_NOMOVE(BranchBlock);
-
-            StatementBlock* items;
-            int itemsCount;
-
-            /** used to execute all StatementBlock Items one after annother */
-            HALOperationResult Exec(void);
-
-            BranchBlock();
-            ~BranchBlock();
-        };
-
-        struct ConditionalBranch : public BranchBlock
-        {
-            DALHAL_NOCOPY_NOMOVE(ConditionalBranch);
-
-            /** is either LogicExecNode or CalcCompareRPN (pure without logic) */
-            void* context;
-            /** used to delete the context depending on type */
-            Deleter deleter;
-            HALOperationResult (*handler)(void* context);
-
-            ConditionalBranch();
-            ~ConditionalBranch();
-
-            bool Set(ScriptTokens& tokens);
-        };
-
-        /** 
-         * this is a kind of of ConditionalBranch where there are not any LogicalExpressionRPNToken list
-         * there is only one instance of it inside a IfBlock item
-         */
-        struct UnconditionalBranch : public BranchBlock
-        {
-            DALHAL_NOCOPY_NOMOVE(UnconditionalBranch);
-
-            UnconditionalBranch();
-            ~UnconditionalBranch();
-
-            bool Set(ScriptTokens& tokens);
-        };
+        // Forward declarations
+        struct ConditionalBranch;
+        struct UnconditionalBranch;
+        struct ScriptTokens;
 
         /** 
          * contains collections of ConditionalBranch and one optional UnconditionalBranch at the end

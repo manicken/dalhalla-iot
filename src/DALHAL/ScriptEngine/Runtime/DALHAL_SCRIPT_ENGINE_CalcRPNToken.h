@@ -23,14 +23,13 @@
 
 #pragma once
 
-#include <Arduino.h>
 #include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include "DALHAL_SCRIPT_ENGINE_RPNStack.h"  //contains the instance of halValueStack
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h"
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h>  //contains the instance of halValueStack
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h>
 #include "DALHAL_SCRIPT_ENGINE_Operators.h"
 
 namespace DALHAL {

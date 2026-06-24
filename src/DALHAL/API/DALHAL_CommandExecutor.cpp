@@ -971,13 +971,13 @@ namespace DALHAL {
     }
     HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/scripts/stop", BlockStreamer::DataType::Json);
-        ScriptEngine::ScriptsBlock::running = false;
+        ScriptEngine::ScriptBlocks::running = false;
         bs.writer().write_jsonString(F("info"), F("stopped"));
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_Scripts_Start(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/scripts/start", BlockStreamer::DataType::Json);
-        ScriptEngine::ScriptsBlock::running = true;
+        ScriptEngine::ScriptBlocks::running = true;
         bs.writer().write_jsonString(F("info"), F("started"));
         return HALOperationResult::Success;
     }

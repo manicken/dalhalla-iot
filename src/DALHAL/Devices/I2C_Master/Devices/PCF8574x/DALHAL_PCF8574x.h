@@ -66,6 +66,8 @@ namespace DALHAL {
 
     private:
         uint8_t addr = 0;
+        int8_t intPin = -1; // -1 (negative value mean unused)
+        uint8_t intPinPrevState = 1;
         TwoWire& wire;
 
     public:
@@ -73,6 +75,8 @@ namespace DALHAL {
         ~PCF8574x() override = default;
 
         const Registry::DefineBase* GetRegistryDefine() override;
+
+        void loop() override;
         
         void PrintTo(StringBuilderStreamer& sbs) override;
         

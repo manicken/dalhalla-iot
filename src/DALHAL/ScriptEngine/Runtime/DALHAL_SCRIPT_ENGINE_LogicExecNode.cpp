@@ -22,7 +22,12 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_LogicExecNode.h"
-#include "DALHAL_SCRIPT_ENGINE_CalcRPN.h"
+
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_CalcRPN.h>
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h>
+
+#include <DALHAL/Core/Types/DALHAL_Value.h>
+#include <DALHAL/Support/DALHAL_Logger.h>
 
 //#define DEBUG_LOGIC_EXEC
 

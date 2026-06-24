@@ -23,39 +23,29 @@
 
 #pragma once
 
-#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
+#include <DALHAL/ScriptEngine/Runtime/IfStatement/DALHAL_SCRIPT_ENGINE_BranchBlock.h>
 
 namespace DALHAL {
-
-    class ReactiveEvent;
-
     namespace ScriptEngine {
 
-        struct StatementBlock;
+        // forward declaration
         struct ScriptTokens;
 
-        /**
-         * A single trigger definition at the root level of a script.
-         * Each trigger is linked to one or more executable operation blocks.
-         */
-        struct TriggerBlock
+        struct ConditionalBranch : public BranchBlock
         {
-            DALHAL_NOCOPY_NOMOVE(TriggerBlock);
+            DALHAL_NOCOPY_NOMOVE(ConditionalBranch);
 
-            /** the function set to this pointer should return true if the StatementBlock(s) should execute */
-            ReactiveEvent* event;
-            StatementBlock* items;
-            int itemsCount;
+            /** is either LogicExecNode or CalcCompareRPN (pure without logic) */
+            void* context;
+            /** used to delete the context depending on type */
+            Deleter deleter;
+            HALOperationResult (*handler)(void* context);
 
-            static bool AllwaysRun(void* context);
-            static bool NeverRun(void* context);
+            ConditionalBranch();
+            ~ConditionalBranch();
 
-            TriggerBlock();
-            ~TriggerBlock();
-
-            HALOperationResult Exec();
-
-            bool Set(int statementBlockCount, ScriptTokens& tokens);
+            bool Set(ScriptTokens& tokens);
         };
+
     }
 }

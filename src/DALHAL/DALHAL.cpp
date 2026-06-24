@@ -81,8 +81,9 @@ namespace DALHAL {
             lastmillis = currmillis;
             DeviceManager::loop();
             
-            if (ScriptEngine::ScriptsBlock::running)
-                ScriptEngine::Exec(); // runs the scriptengine
+            if (ScriptEngine::ScriptBlocks::running) {
+                ScriptEngine::ScriptBlocks::Exec(); // runs the scriptengine
+            }
         }
         WebSocketAPI::loop();
         SerialAPI::loop();

@@ -32,6 +32,8 @@
 #include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
+#include <DALHAL/Core/Types/DALHAL_Device.h>
+
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
 

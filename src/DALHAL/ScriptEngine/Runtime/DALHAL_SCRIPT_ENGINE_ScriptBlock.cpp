@@ -67,7 +67,9 @@ namespace DALHAL {
                     {
                         HALOperationResult res = DeviceManager::GetDeviceEvent(triggerSourceToken, &triggerBlock.event);
                         if (res != HALOperationResult::Success) {
-                           triggerBlock.event = new ReactiveEvent(TriggerBlock::NeverRun); // using special case of ReactiveEvent
+                            triggerBlock.event = new ReactiveEvent(TriggerBlock::NeverRun); // using special case of ReactiveEvent
+                            token.ReportTokenError(F("LOAD ERROR - while trying to get Device event"));
+                            return false;
                         }
                     }
                     //ReportTokenInfo(tokens.Current(), "this should be a then token: ", tokens.Current().ToString().c_str());

@@ -23,25 +23,21 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include <DALHAL/Core/Types/DALHAL_Device.h> // HALOperationResult
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include "DALHAL_SCRIPT_ENGINE_CalcRPN.h"
+
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/Core/Types/DALHAL_CachedDeviceAccess.h>
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
+
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_CalcRPN.h>
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_RPNStack.h>
 
 
 namespace DALHAL {
     namespace ScriptEngine {
 
         using ActionHandler = HALOperationResult(*)(void*);
-
-
-          /// MAJOR TODO
-
-    /// something is very wrong with CACHED device access @ function direct exec
-    // it cause reccursive loop and WDT fires
-    
 
         struct ActionStatement
         {
@@ -70,7 +66,6 @@ namespace DALHAL {
                 return actionItem->target->WriteSimple(val2write);
             }
             
-
             static HALOperationResult Assign_Handler(void* context);
             static HALOperationResult Exec_Handler(void* context);
 /*            static HALOperationResult AddAndAssign_Handler(void* context);
@@ -86,10 +81,7 @@ namespace DALHAL {
             */
             static ActionHandler GetFunctionHandler(const char c);
 
-            
         };
-
-        
 
     }
 }

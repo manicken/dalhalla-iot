@@ -21,12 +21,16 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "DALHAL_SCRIPT_ENGINE_CalcRPNToken.h"
+#include <string>
+
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 
 namespace DALHAL {
     namespace ScriptEngine {
-        
 
+        struct ExpressionTokens;
+        struct CalcRPNToken;
+        
         struct CalcRPN {
             std::string calcRPNstr;
             
@@ -38,5 +42,6 @@ namespace DALHAL {
             ~CalcRPN();
             HALOperationResult DoCalc();
         };
+
     }
 }

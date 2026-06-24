@@ -23,39 +23,28 @@
 
 #pragma once
 
-#include <DALHAL/Support/DALHAL_DeleterTemplate.h>
+#include <DALHAL/Support/DALHAL_DeleterTemplate.h> // DALHAL_NOCOPY_NOMOVE
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 
 namespace DALHAL {
-
-    class ReactiveEvent;
-
     namespace ScriptEngine {
 
+        // Forward declare StatementBlock
         struct StatementBlock;
-        struct ScriptTokens;
 
-        /**
-         * A single trigger definition at the root level of a script.
-         * Each trigger is linked to one or more executable operation blocks.
-         */
-        struct TriggerBlock
+        /** collection of StatementBlock(s) */
+        struct BranchBlock
         {
-            DALHAL_NOCOPY_NOMOVE(TriggerBlock);
+            DALHAL_NOCOPY_NOMOVE(BranchBlock);
 
-            /** the function set to this pointer should return true if the StatementBlock(s) should execute */
-            ReactiveEvent* event;
             StatementBlock* items;
             int itemsCount;
 
-            static bool AllwaysRun(void* context);
-            static bool NeverRun(void* context);
+            /** used to execute all StatementBlock Items one after annother */
+            HALOperationResult Exec(void);
 
-            TriggerBlock();
-            ~TriggerBlock();
-
-            HALOperationResult Exec();
-
-            bool Set(int statementBlockCount, ScriptTokens& tokens);
+            BranchBlock();
+            ~BranchBlock();
         };
     }
 }

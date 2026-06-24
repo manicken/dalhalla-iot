@@ -44,6 +44,10 @@
 #include <vector> // until we see it working
 
 namespace DALHAL {
+
+    class Device;
+
+    
     namespace ScriptEngine {
         enum class ExpressionContext {
             IfCondition,

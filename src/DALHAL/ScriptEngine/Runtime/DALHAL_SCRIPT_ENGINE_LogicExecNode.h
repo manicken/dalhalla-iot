@@ -23,9 +23,9 @@
 
 #pragma once
 
-#include <DALHAL/Core/Types/DALHAL_Device.h> // HALOperationResult
+#include <DALHAL/Core/Types/DALHAL_OperationResult.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h> // Deleter
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h" // ExpressionTokens, ExpressionToken
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Expression_Token.h> // ExpressionTokens, ExpressionToken
 
 namespace DALHAL {
     namespace ScriptEngine {

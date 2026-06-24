@@ -22,12 +22,11 @@
 */
 
 #include "DALHAL_SCRIPT_ENGINE_StatementBlock.h"
-#include "DALHAL_SCRIPT_ENGINE_IfStatement.h"
+#include <DALHAL/ScriptEngine/Runtime/IfStatement/DALHAL_SCRIPT_ENGINE_IfStatement.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Support/DALHAL_DeleterTemplate.h>
-#include "../Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h"
-#include "DALHAL_SCRIPT_ENGINE_IfStatement.h"
-#include "DALHAL_SCRIPT_ENGINE_ActionStatement.h"
+#include <DALHAL/ScriptEngine/Parser/DALHAL_SCRIPT_ENGINE_Script_Token.h>
+#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_ActionStatement.h>
 
 namespace DALHAL {
     namespace ScriptEngine {
