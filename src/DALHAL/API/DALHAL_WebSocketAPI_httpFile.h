@@ -91,6 +91,15 @@ body.dark {
   flex-direction: column;
   gap: 6px;
 }
+#btn-container {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 #toolbar-top {
   display: flex;
   align-items: center;
@@ -301,9 +310,182 @@ button.cmd-btn.danger { color: var(--c-red); border-color: var(--c-red); }
   overflow-x: auto;
   color: var(--fg);
 }
+/* Backdrop */
+#wifi-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+#wifi-modal-backdrop.open { display: flex; }
+
+/* Dialog box */
+#wifi-modal {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  width: 420px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: sans-serif;
+  font-size: 14px;
+}
+
+/* Header */
+#wifi-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+#wifi-modal-header h2 { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+#wifi-modal-close {
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: #888; line-height: 1;
+}
+#wifi-modal-close:hover { color: #333; }
+
+/* Body */
+#wifi-modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+.wm-row { display: flex; flex-direction: column; gap: 4px; }
+.wm-label { font-size: 12px; color: #555; font-weight: 500; }
+
+.wm-row select,
+.wm-row input[type="password"],
+.wm-row input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fafafa;
+  color: #1a1a1a;
+}
+.wm-row select:focus,
+.wm-row input:focus { outline: 2px solid #4a90d9; border-color: transparent; background: #fff; }
+
+/* Password row with toggle */
+.wm-pw-wrap { position: relative; }
+.wm-pw-wrap input { padding-right: 38px; }
+.wm-pw-toggle {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  font-size: 16px; cursor: pointer;
+  line-height: 1;
+}
+
+/* Scan button inline with select */
+.wm-scan-row { display: flex; gap: 8px; align-items: flex-end; }
+.wm-scan-row select { flex: 1; }
+.wm-scan-btn {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  font-size: 13px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #f0f0f0;
+  white-space: nowrap;
+}
+.wm-scan-btn:hover { background: #e0e0e0; }
+.wm-scan-btn:disabled { opacity: .5; cursor: default; }
+
+/* Status line */
+#wm-status {
+  font-size: 12px;
+  min-height: 18px;
+  color: #555;
+  padding: 0 2px;
+}
+#wm-status.err  { color: #c0392b; }
+#wm-status.ok   { color: #1a7a4a; }
+#wm-status.info { color: #1a5fa0; }
+
+/* Footer */
+#wifi-modal-footer {
+  padding: 12px 18px 16px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.wm-btn-cancel {
+  padding: 8px 16px;
+  font-size: 13px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #f4f4f4;
+}
+.wm-btn-cancel:hover { background: #e8e8e8; }
+.wm-btn-send {
+  padding: 8px 18px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #1a5fa0;
+  color: #fff;
+  font-weight: 500;
+}
+.wm-btn-send:hover { background: #154d84; }
+.wm-btn-send:disabled { opacity: .5; cursor: default; }
 </style>
 </head>
 <body class="light">
+
+<!-- ── WiFi Setup Modal ── -->
+<div id="wifi-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="wifi-modal-title">
+  <div id="wifi-modal">
+
+    <div id="wifi-modal-header">
+      <h2 id="wifi-modal-title">📶 WiFi Setup</h2>
+      <button id="wifi-modal-close" aria-label="Close" onclick="WifiModal.close()">×</button>
+    </div>
+
+    <div id="wifi-modal-body">
+
+      <!-- Network select + Scan -->
+      <div class="wm-row">
+        <label class="wm-label">Network</label>
+        <div class="wm-scan-row">
+          <select id="wm-ssid"><option value="">— press Scan —</option></select>
+          <button class="wm-scan-btn" id="wm-scan-btn" onclick="WifiModal.scan()">🔍 Scan</button>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="wm-row">
+        <label class="wm-label">Password</label>
+        <div class="wm-pw-wrap">
+          <input type="password" id="wm-password" placeholder="Enter password" autocomplete="current-password"/>
+          <button class="wm-pw-toggle" id="wm-pw-toggle" type="button" aria-label="Toggle password visibility"
+                  onclick="WifiModal._togglePw()">👁️</button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div id="wm-status"></div>
+
+    </div>
+
+    <div id="wifi-modal-footer">
+      <button class="wm-btn-cancel" onclick="WifiModal.close()">Cancel</button>
+      <button class="wm-btn-send" id="wm-send-btn" onclick="WifiModal.send()">Send &amp; Restart</button>
+    </div>
+
+  </div>
+</div>
 
 <!-- ── Toolbar ── -->
 <div id="toolbar">
@@ -312,24 +494,10 @@ button.cmd-btn.danger { color: var(--c-red); border-color: var(--c-red); }
     <button id="theme-toggle" onclick="toggleTheme()">🌙 dark</button>
   </div>
   <div class="btn-row">
-    <button class="cmd-btn" onclick="wsSend('hal/config/reload')">hal/config/reload</button>
-    <button class="cmd-btn" onclick="wsSend('hal/config/unload')">hal/config/unload</button>
-    <button class="cmd-btn" onclick="wsSend('hal/scripts/reload')">scripts/reload</button>
-    <button class="cmd-btn" onclick="wsSend('hal/scripts/stop')">scripts/stop</button>
-    <button class="cmd-btn" onclick="wsSend('hal/scripts/start')">scripts/start</button>
+    <button id="open-wifi-modal-btn" onclick="WifiModal.open()">📶 WiFi Setup</button>
   </div>
-  <div class="btn-row">
-    <button class="cmd-btn" onclick="wsSend('hal/meta/reg/types')">reg/types</button>
-    <button class="cmd-btn" onclick="wsSend('hal/meta/reg/functions')">reg/functions</button>
-    <button class="cmd-btn" onclick="wsSend('hal/meta/reg/events')">reg/events</button>
-    <button class="cmd-btn" onclick="wsSend('hal/meta/reg/cfgschema')">reg/cfgschema</button>
-    <button class="cmd-btn" onclick="wsSend('hal/meta/gpio')">meta/gpio</button>
-    <button class="cmd-btn" onclick="wsSend('hal/meta/devices')">meta/devices</button>
-  </div>
-  <div class="btn-row">
-    <button class="cmd-btn" onclick="wsSend('printlog')">printlog</button>
-    <button class="cmd-btn danger" onclick="wsSend('system/reset')">system/reset</button>
-  </div>
+  <div id="btn-container"></div>
+  
 </div>
 
 <!-- ── Status bar ── -->
@@ -425,6 +593,10 @@ function connect() {
               let parsedJson = JSON.parse(text);
               if (jsonData.tag == 'help') {
                 helpTree = JSON.parse(text); // create copy
+
+                renderAutoButtons(helpTree, document.getElementById('btn-container'), wsSend);
+              } else if (jsonData.tag == 'wifi/scan') {
+                WifiModal.receive(JSON.parse(text));
               }
               logCollapsible(parsedJson, jsonData.tag); }
             catch(e) { logText('(chunk parse error)\n' + text); }
@@ -474,18 +646,31 @@ function logText(text) {
 }
 
 function logCollapsible(jsonData, titleStr) {
-  const details = document.createElement('details');
-  const summary = document.createElement('summary');
+  const details = document.createElement("details");
+
+  const summary = document.createElement("summary");
   const oneLine = JSON.stringify(jsonData);
 
-  summary.innerHTML =
-    `<strong style="color: #4CAF50;">${titleStr ?? ''}</strong> ` +
-    (oneLine.length > 100 ? oneLine.slice(0, 97) + '…' : oneLine);
-    
-  details.appendChild(summary);
-  const pre = document.createElement('pre');
+  summary.textContent =
+    `${titleStr ?? ""} ` +
+    (oneLine.length > 100 ? oneLine.slice(0, 97) + "…" : oneLine);
+
+  const pre = document.createElement("pre");
   pre.textContent = JSON.stringify(jsonData, null, 2);
+
+  details.appendChild(summary);
   details.appendChild(pre);
+
+  pre.addEventListener("mousedown", (e) => {
+    if (e.ctrlKey == false) { return;}
+    e.preventDefault(); // stops native selection behavior
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+
   log.appendChild(details);
   log.scrollTop = log.scrollHeight;
 }
@@ -634,6 +819,187 @@ input.addEventListener('keydown', e => {
 
 input.focus();
 connect();
+
+
+
+const WifiModal = (() => {
+  // ── internal state ──
+  let _sendFn = null;
+  let _inScan = false;
+
+  // ── DOM refs (resolved lazily after DOMContentLoaded) ──
+  const el = () => ({
+    backdrop: document.getElementById('wifi-modal-backdrop'),
+    ssid:     document.getElementById('wm-ssid'),
+    scanBtn:  document.getElementById('wm-scan-btn'),
+    password: document.getElementById('wm-password'),
+    pwToggle: document.getElementById('wm-pw-toggle'),
+    status:   document.getElementById('wm-status'),
+    sendBtn:  document.getElementById('wm-send-btn'),
+  });
+
+  // ── helpers ──
+  function b64urlEncode(str) {
+    return btoa(unescape(encodeURIComponent(str)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function b64urlDecode(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(escape(atob(str)));
+  }
+  function setStatus(msg, type = '') {
+    const s = el().status;
+    s.textContent = msg;
+    s.className = type;
+  }
+  function send(cmd) {
+    if (!_sendFn) { setStatus('No transport set — call WifiModal.setSendFn()', 'err'); return false; }
+    _sendFn(cmd);
+    return true;
+  }
+
+  // ── public API ──
+  return {
+    /** Register the transport. fn(cmd: string) — do NOT add \n, modal handles it if needed */
+    setSendFn(fn) { _sendFn = fn; },
+
+    /** Feed a received line into the modal (call this from your rx handler) */
+    receive(jsonData) {
+      
+      for (let i=0;i<jsonData.length; i++) {
+        let jsonItem = jsonData[i];
+        let ssidDecoded;
+        try { ssidDecoded = b64urlDecode(jsonItem.ssid); } catch { ssidDecoded = jsonItem.ssid; }
+        const opt = document.createElement('option');
+        opt.value = jsonItem.ssid;
+        opt.textContent = `${ssidDecoded} (ch${jsonItem.ch}, ${jsonItem.freq}MHz, ${jsonItem.rssi}dBm, ${jsonItem.encryption})`;
+        el().ssid.appendChild(opt);
+      }
+      /*line = line.trim();
+      if (line === 'wifi/scanstart') {
+        _inScan = true;
+        el().ssid.innerHTML = '';
+        setStatus('Scanning…', 'info');
+        el().scanBtn.disabled = true;
+        return;
+      }
+      if (line === 'wifi/scanend') {
+        _inScan = false;
+        setStatus(`Found ${el().ssid.options.length} network(s).`, 'ok');
+        el().scanBtn.disabled = false;
+        return;
+      }
+      if (_inScan && line.startsWith('wifi/ssid/')) {
+        const payload = line.slice('wifi/ssid/'.length);
+        const [b64, ch, freq, rssi, enc] = payload.split(':');
+        let ssidDecoded;
+        try { ssidDecoded = b64urlDecode(b64); } catch { ssidDecoded = b64; }
+        const opt = document.createElement('option');
+        opt.value = b64;
+        opt.textContent = `${ssidDecoded} (ch${ch}, ${freq}MHz, ${rssi}dBm, ${enc})`;
+        el().ssid.appendChild(opt);
+        return;
+      }*/
+      // You can handle other lines here if needed
+    },
+
+    open() {
+      const e = el();
+      e.backdrop.classList.add('open');
+      e.password.value = '';
+      setStatus('');
+      e.sendBtn.disabled = false;
+      e.scanBtn.disabled = false;
+      e.password.focus();
+    },
+
+    close() {
+      el().backdrop.classList.remove('open');
+      _inScan = false;
+    },
+
+    scan() {
+      setStatus('Sending scan request…', 'info');
+      send('wifi/scan');
+    },
+
+    send() {
+      const e = el();
+      const ssidB64 = e.ssid.value;
+      if (!ssidB64) { setStatus('Select a network first.', 'err'); return; }
+      const pass    = e.password.value;
+      const passB64 = b64urlEncode(pass);
+      const cmd = `wifi/set_b64/${ssidB64}:${passB64}`;
+      if (send(cmd)) {
+        setStatus('Config sent — device will restart.', 'ok');
+        e.sendBtn.disabled = true;
+      }
+    },
+
+    _togglePw() {
+      const pw = el().password;
+      const tog = el().pwToggle;
+      const isHidden = pw.type === 'password';
+      pw.type = isHidden ? 'text' : 'password';
+      tog.textContent = isHidden ? '🙈' : '👁️';
+    },
+  };
+})();
+
+// Close on backdrop click
+document.getElementById('wifi-modal-backdrop').addEventListener('click', e => {
+  if (e.target === e.currentTarget) WifiModal.close();
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') WifiModal.close();
+});
+
+WifiModal.setSendFn(cmd => ws.send(cmd));   // WebSocket
+
+
+const DANGER_COMMANDS = new Set(['system/reset', 'system/restart']);
+
+function collectRows(node, pathParts) {
+  const rows = [];
+  const siblings = [];
+  for (const child of (node.children || [])) {
+    const childPath = pathParts.concat(child.name);
+    if (child.autogenbutton) {
+      siblings.push({
+        path: childPath.join('/'),
+        name: child.name,
+        parent: pathParts[pathParts.length - 1] || null
+      });
+    }
+    rows.push(...collectRows(child, childPath));
+  }
+  if (siblings.length > 0) {
+    rows.unshift({ groupParent: pathParts[pathParts.length - 1] || 'root', buttons: siblings });
+  }
+  return rows;
+}
+
+function renderAutoButtons(tree, container, wsSend) {
+  container.innerHTML = '';
+  const rows = collectRows(tree.root, []);
+  for (const row of rows) {
+    const div = document.createElement('div');
+    div.className = 'btn-row';
+    for (const btn of row.buttons) {
+      const b = document.createElement('button');
+      b.className = 'cmd-btn' + (DANGER_COMMANDS.has(btn.path) ? ' danger' : '');
+      b.textContent = btn.parent ? `${btn.parent}/${btn.name}` : btn.name;
+      b.title = btn.path;  // full path as tooltip
+      b.onclick = () => wsSend(btn.path);
+      div.appendChild(b);
+    }
+    container.appendChild(div);
+  }
+}
+
 </script>
 </body>
 </html>

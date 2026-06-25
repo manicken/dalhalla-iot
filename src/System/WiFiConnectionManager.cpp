@@ -112,6 +112,8 @@ void WiFiConnectionManager::handleSTAConnecting() {
                  WiFi.localIP().toString().c_str());
         emitEvent(Event::STA_CONNECT_SUCCESS, info);
         Serial.print(F("[WiFiMgr] Connected to WiFi: ")); Serial.println(info);
+        WiFi.mode(wifi_mode_t::WIFI_MODE_STA); // make sure that the AP dissapear on successfull connection
+        
         return;
     }
 

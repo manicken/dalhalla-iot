@@ -106,8 +106,14 @@ namespace DALHAL {
     }
 
 #define DALHAL_CMD_CHILDREN(n) n, DALHAL_ARRAY_COUNT(n)
+#define DALHAL_CMD_EXEC_ENTRY(name, exec, help) { CE_MATCH_EMIT_STR(name), exec, CE_EMIT_STR(help) }
+#define DALHAL_CMD_GROUP_ENTRY(name, childs, help) { CE_MATCH_EMIT_STR(name), DALHAL_CMD_CHILDREN(childs), CE_EMIT_STR(help) }
+
+#define DALHAL_CMD_EXEC_ENTRY_WFLAG(name, exec, flags, help) { CE_MATCH_EMIT_STR(name), exec, flags, CE_EMIT_STR(help) }
+#define DALHAL_CMD_GROUP_ENTRY_WFLAG(name, childs, flags, help) { CE_MATCH_EMIT_STR(name), DALHAL_CMD_CHILDREN(childs), flags, CE_EMIT_STR(help) }
 
     void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
+    bool ConnectToNewWiFi(const char* ssid, const char* pass);
     bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);
 
     HALOperationResult Exec_Scheduler_Cmd(ZeroCopyString& zcStr, CommandCallback cb); // TODO to be implemented as a device
@@ -150,81 +156,81 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb);
 
     static constexpr CommandNode HalWriteItems[] = {
-        { CE_MATCH_EMIT_STR("string"), Exec_Hal_Write_String, CE_EMIT_STR("hal write string") },
-        { CE_MATCH_EMIT_STR("uint32"), Exec_Hal_Write_UInt32, CE_EMIT_STR("hal write uint32") },
-        { CE_MATCH_EMIT_STR("int32"), Exec_Hal_Write_Int32, CE_EMIT_STR("hal write int32") },
-        { CE_MATCH_EMIT_STR("bool"), Exec_Hal_Write_Bool, CE_EMIT_STR("hal write bool") },
-        { CE_MATCH_EMIT_STR("float"), Exec_Hal_Write_Float, CE_EMIT_STR("hal write float") },
+        DALHAL_CMD_EXEC_ENTRY("string", Exec_Hal_Write_String, "hal write string"),
+        DALHAL_CMD_EXEC_ENTRY("uint32", Exec_Hal_Write_UInt32, "hal write uint32"),
+        DALHAL_CMD_EXEC_ENTRY("int32", Exec_Hal_Write_Int32, "hal write int32"),
+        DALHAL_CMD_EXEC_ENTRY("bool", Exec_Hal_Write_Bool, "hal write bool"),
+        DALHAL_CMD_EXEC_ENTRY("float", Exec_Hal_Write_Float, "hal write float"),
     };
 
     static constexpr CommandNode HalReadItems[] = {
-        { CE_MATCH_EMIT_STR("string"), Exec_Hal_Read_String, CE_EMIT_STR("hal read string") },
-        { CE_MATCH_EMIT_STR("uint32"), Exec_Hal_Read_UInt32, CE_EMIT_STR("hal read uint32") },
-        { CE_MATCH_EMIT_STR("int32"), Exec_Hal_Read_Int32, CE_EMIT_STR("hal read int32") },
-        { CE_MATCH_EMIT_STR("bool"), Exec_Hal_Read_Bool, CE_EMIT_STR("hal read bool") },
-        { CE_MATCH_EMIT_STR("float"), Exec_Hal_Read_Float, CE_EMIT_STR("hal read float") },
+        DALHAL_CMD_EXEC_ENTRY("string", Exec_Hal_Read_String, "hal read string"),
+        DALHAL_CMD_EXEC_ENTRY("uint32", Exec_Hal_Read_UInt32, "hal read uint32"),
+        DALHAL_CMD_EXEC_ENTRY("int32", Exec_Hal_Read_Int32, "hal read int32"),
+        DALHAL_CMD_EXEC_ENTRY("bool", Exec_Hal_Read_Bool, "hal read bool"),
+        DALHAL_CMD_EXEC_ENTRY("float", Exec_Hal_Read_Float, "hal read float"),
     };
 
     static constexpr CommandNode HalScriptItems[] = {
-        { CE_MATCH_EMIT_STR("reload"), Exec_Hal_Scripts_Reload, CE_EMIT_STR("scripts reload") },
-        { CE_MATCH_EMIT_STR("stop"), Exec_Hal_Scripts_Stop, CE_EMIT_STR("scripts stop/pause execution") },
-        { CE_MATCH_EMIT_STR("start"), Exec_Hal_Scripts_Start, CE_EMIT_STR("scripts start/resume execution") },
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("reload", Exec_Hal_Scripts_Reload, CommandNode::Flags::AUTOGEN_BUTTON, "scripts reload"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("stop", Exec_Hal_Scripts_Stop, CommandNode::Flags::AUTOGEN_BUTTON, "scripts stop/pause execution"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("start", Exec_Hal_Scripts_Start, CommandNode::Flags::AUTOGEN_BUTTON, "scripts start/resume execution"),
     };
 
     static constexpr CommandNode HalConfigItems[] = {
-        { CE_MATCH_EMIT_STR("reload"), Exec_Hal_Config_Reload, CE_EMIT_STR("hal config first validate cfg from file and if success, 1. unloads the current cfg. 2. load new cfg. 3. reload/validate script.") },
-        { CE_MATCH_EMIT_STR("unload"), Exec_Hal_Config_Unload, CE_EMIT_STR("hal config/script unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config") },
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("reload", Exec_Hal_Config_Reload, CommandNode::Flags::AUTOGEN_BUTTON, "hal config first validate cfg from file and if success, 1. unloads the current cfg. 2. load new cfg. 3. reload/validate script."),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("unload", Exec_Hal_Config_Unload, CommandNode::Flags::AUTOGEN_BUTTON, "hal config/script unload, this makes the current cfg clean, can be used to make sure that the memory is clean before loading new config"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("list", Exec_Hal_PrintDevices, CommandNode::Flags::AUTOGEN_BUTTON, "list all current loaded devices"),
     };
 
     static constexpr CommandNode HalMetaRegistryItems[] = {
-        { CE_MATCH_EMIT_STR("types"), Exec_Hal_PrintRegistry_Types, CE_EMIT_STR("print device type registry basedata") },
-        { CE_MATCH_EMIT_STR("functions"), Exec_Hal_PrintRegistry_Functions, CE_EMIT_STR("print device type registry with functions") },
-        { CE_MATCH_EMIT_STR("events"), Exec_Hal_PrintRegistry_Events, CE_EMIT_STR("print device type registry with events") },
-        { CE_MATCH_EMIT_STR("cfgschema"), Exec_Hal_PrintJsonSchemas, CE_EMIT_STR("print config json schema") }
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("types", Exec_Hal_PrintRegistry_Types, CommandNode::Flags::AUTOGEN_BUTTON, "print device type registry basedata"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("functions", Exec_Hal_PrintRegistry_Functions, CommandNode::Flags::AUTOGEN_BUTTON, "print device type registry with functions"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("events", Exec_Hal_PrintRegistry_Events, CommandNode::Flags::AUTOGEN_BUTTON, "print device type registry with events"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("cfgschema", Exec_Hal_PrintJsonSchemas, CommandNode::Flags::AUTOGEN_BUTTON, "print config json schema"),
     };
 
     static constexpr CommandNode HalMetaItems[] = {
-        { CE_MATCH_EMIT_STR("gpio"), Exec_Hal_GetAvailableGPIOs, CE_EMIT_STR("get a list of available GPIO on this target and their functions") },
-        { CE_MATCH_EMIT_STR("devices"), Exec_Hal_PrintDevices, CE_EMIT_STR("print all current loaded devices") },
-        { CE_MATCH_EMIT_STR("reg"), DALHAL_CMD_CHILDREN(HalMetaRegistryItems), CE_EMIT_STR("print registry metadata")}
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("gpio", Exec_Hal_GetAvailableGPIOs, CommandNode::Flags::AUTOGEN_BUTTON, "get a list of available GPIO on this target and their functions"),
+        DALHAL_CMD_GROUP_ENTRY("reg", HalMetaRegistryItems, "print registry metadata"),
     };
 
     static constexpr CommandNode HalItems[] = {
-        { CE_MATCH_EMIT_STR("exec"), Exec_Hal_Exec, CE_EMIT_STR("run device exec cmd") },
-        { CE_MATCH_EMIT_STR("write"), DALHAL_CMD_CHILDREN(HalWriteItems), CE_EMIT_STR("run device write cmds") },
-        { CE_MATCH_EMIT_STR("read"), DALHAL_CMD_CHILDREN(HalReadItems), CE_EMIT_STR("run device read cmds") },
-        { CE_MATCH_EMIT_STR("config"), DALHAL_CMD_CHILDREN(HalConfigItems), CE_EMIT_STR("hal config cmds") },
-        { CE_MATCH_EMIT_STR("scripts"), DALHAL_CMD_CHILDREN(HalScriptItems), CE_EMIT_STR("script specific commands") },
-        { CE_MATCH_EMIT_STR("meta"), DALHAL_CMD_CHILDREN(HalMetaItems), CE_EMIT_STR("print metadata")}
+        DALHAL_CMD_EXEC_ENTRY("exec", Exec_Hal_Exec, "run device exec cmd"),
+        DALHAL_CMD_GROUP_ENTRY("write", HalWriteItems, "run device write cmds"),
+        DALHAL_CMD_GROUP_ENTRY("read", HalReadItems, "run device read cmds"),
+        DALHAL_CMD_GROUP_ENTRY("config", HalConfigItems, "hal config cmds"),
+        DALHAL_CMD_GROUP_ENTRY("scripts", HalScriptItems, "script specific commands"),
+        DALHAL_CMD_GROUP_ENTRY("meta", HalMetaItems, "print metadata"),
     };
 #if defined(ESP8266) || defined(ESP32)
     static constexpr CommandNode WiFiItems[] = {
-        { CE_MATCH_EMIT_STR("scan"), Exec_WiFi_Scan, CE_EMIT_STR("Scan WiFi for AP:s") },
-        { CE_MATCH_EMIT_STR("set_b64"), Exec_WiFi_Set_b64, CE_EMIT_STR("Set current WiFi settings from the given b64 encoded string") },
-        { CE_MATCH_EMIT_STR("set_json"), Exec_WiFi_Set_Json, CE_EMIT_STR("Set current WiFi settings from the given json encoded string") },
+        DALHAL_CMD_EXEC_ENTRY("scan", Exec_WiFi_Scan, "Scan WiFi for AP:s"),
+        DALHAL_CMD_EXEC_ENTRY("set_b64", Exec_WiFi_Set_b64, "Set current WiFi settings from the given b64 encoded string"),
+        DALHAL_CMD_EXEC_ENTRY("set_json", Exec_WiFi_Set_Json, "Set current WiFi settings from the given json encoded string"),
     };
 #endif
     static constexpr CommandNode SystemItems[] = {
         
-        { CE_MATCH_EMIT_STR("info"), Exec_System_Info, CE_EMIT_STR("System info") },
+        DALHAL_CMD_EXEC_ENTRY("info", Exec_System_Info, "System info"),
 #if defined(ESP8266) || defined(ESP32)
-        { CE_MATCH_EMIT_STR("heap"), Exec_System_Heap, CE_EMIT_STR("Print heap info") },
-        { CE_MATCH_EMIT_STR("reset"), Exec_System_Reset_Restart, CE_EMIT_STR("Reset the system") },
-        { CE_MATCH_EMIT_STR("restart"), Exec_System_Reset_Restart, CE_EMIT_STR("Restart the system (same as reset)") },
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("heap", Exec_System_Heap, CommandNode::Flags::AUTOGEN_BUTTON, "Print heap info"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("reset", Exec_System_Reset_Restart, CommandNode::Flags::AUTOGEN_BUTTON, "Reset the system"),
+        DALHAL_CMD_EXEC_ENTRY("restart", Exec_System_Reset_Restart, "Restart the system (same as reset)"),
 #endif
-        { CE_MATCH_EMIT_STR("HeartbeatLed"), Exec_System_HeartbeatLed, CE_EMIT_STR("HeartBeatLed set timings") },
-        { CE_MATCH_EMIT_STR("ver"), Exec_System_Build_Ver_Print, CE_EMIT_STR("Print current build version") },
+        DALHAL_CMD_EXEC_ENTRY("HeartbeatLed", Exec_System_HeartbeatLed, "HeartBeatLed set timings"),
+        DALHAL_CMD_EXEC_ENTRY("ver", Exec_System_Build_Ver_Print, "Print current build version"),
     };
 
     static constexpr CommandNode RootItems[] = {
-        { CE_MATCH_EMIT_STR("hal"), DALHAL_CMD_CHILDREN(HalItems), CE_EMIT_STR("HAL subsystem") },
-        { CE_MATCH_EMIT_STR("system"), DALHAL_CMD_CHILDREN(SystemItems), CE_EMIT_STR("System commands") },
+        DALHAL_CMD_GROUP_ENTRY("hal", HalItems, "HAL subsystem"),
+        DALHAL_CMD_GROUP_ENTRY("system", SystemItems, "System commands"),
 #if defined(ESP8266) || defined(ESP32)
-        { CE_MATCH_EMIT_STR("wifi"), DALHAL_CMD_CHILDREN(WiFiItems), CE_EMIT_STR("WiFi management") },
+        DALHAL_CMD_GROUP_ENTRY("wifi", WiFiItems, "WiFi management"),
 #endif
-        { CE_MATCH_EMIT_STR("printLog"), Exec_PrintLog, CE_EMIT_STR("print log") },
-        { CE_MATCH_EMIT_STR("schedule"), Exec_Scheduler_Cmd, CE_EMIT_STR("Schedule commands") }, // to be removed in the future as it would be implemented as a device
-        { CE_MATCH_EMIT_STR("help"), Exec_Help_Cmd, CE_EMIT_STR("Show help") }
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("printLog", Exec_PrintLog, CommandNode::Flags::AUTOGEN_BUTTON, "print log"),
+        DALHAL_CMD_EXEC_ENTRY("schedule", Exec_Scheduler_Cmd, "Schedule commands"), // to be removed in the future as it would be implemented as a device
+        DALHAL_CMD_EXEC_ENTRY("help", Exec_Help_Cmd, "Show help"),
     };
 
     static constexpr CommandNode RootItem = {
@@ -253,11 +259,15 @@ namespace DALHAL {
         sbs.write_jsonMemberStart(F("name"));
         node.name(nullptr, &sbs);
 
-        sbs.write_json_value_separator();
-
         // help
+        sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("help"));
         node.help(sbs);
+
+        if (node.flags & CommandNode::Flags::AUTOGEN_BUTTON) {
+            sbs.write_json_value_separator();
+            sbs.write_jsonBool(F("autogenbutton"), true);
+        }
 
         // children
         sbs.write_json_value_separator();
@@ -265,6 +275,9 @@ namespace DALHAL {
         sbs.write_json_array_begin();
 
         for (size_t i = 0; i < node.children_count; i++) {
+            if (node.children[i].flags & CommandNode::Flags::HIDDEN) {
+                continue;
+            }
             if (i > 0) {
                 sbs.write_json_value_separator();
             }
@@ -408,6 +421,16 @@ namespace DALHAL {
         
         // Restart the device so it boots with the saved credentials
         ESP.restart();
+    }
+
+    bool ConnectToNewWiFi(const char* ssid, const char* pass) {
+        bool anyError = false;
+        WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
+        if (!WiFi.begin(ssid, pass)) { anyError = true; }      // Connects to the AP.
+        if (!WiFi.setAutoConnect(true)) {anyError = true; }    // ESP32: ensures reconnect on boot. ESP8266: also works.
+        if (!WiFi.setAutoReconnect(true)) { anyError = true; } // ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
+        WiFi.persistent(false); 
+        return anyError == false;
     }
 #endif
 
@@ -553,9 +576,14 @@ namespace DALHAL {
         }
 
         cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Control);
-        delay(50);
         
-        SetWifiCredentialsAndRestart(ssid, pass);
+
+        //select between the two here could be done throuhgt a optional parameter
+        if (!ConnectToNewWiFi(ssid, pass)) {
+            return HALOperationResult::ExecutionFailed;
+        }
+        //delay(50);
+        //SetWifiCredentialsAndRestart(ssid, pass);
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_WiFi_Set_Json(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -578,7 +606,12 @@ namespace DALHAL {
 
         cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Control);
 
-        SetWifiCredentialsAndRestart(ssid, pass);
+        //select between the two here could be done throuhgt a optional parameter
+        if (!ConnectToNewWiFi(ssid, pass)) {
+            return HALOperationResult::ExecutionFailed;
+        }
+        //delay(50);
+        //SetWifiCredentialsAndRestart(ssid, pass);
         return HALOperationResult::Success;
     }
 #endif

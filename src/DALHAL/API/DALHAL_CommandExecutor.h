@@ -48,8 +48,14 @@ namespace DALHAL {
     };
 
     struct CommandNode {
+        using FlagsType = uint8_t;
+        struct Flags {
+            static constexpr FlagsType HIDDEN = 0x01;
+            static constexpr FlagsType AUTOGEN_BUTTON = 0x02;
+        };
         ConstExpressionStringComparableFn name;
         ConstExpressionStringFn help;
+        FlagsType flags;
 
         using Execute = HALOperationResult (*)(ZeroCopyString& args, CommandCallback cb);
         
@@ -58,24 +64,24 @@ namespace DALHAL {
         const CommandNode* children;
         const size_t children_count;
 
-        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, Execute execute, const CommandNode* children, const size_t children_count) 
-            : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
-
-        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, const CommandNode* children, const size_t children_count) 
-            : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
-
-        constexpr CommandNode(ConstExpressionStringComparableFn name, ConstExpressionStringFn help, Execute execute) 
-            : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
-
-        // easier to read variants with help at the end
         constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, const CommandNode* children, const size_t children_count, ConstExpressionStringFn help) 
-            : name(name), help(help), execute(execute), children(children), children_count(children_count) {}
+            : name(name), help(help), execute(execute), children(children), children_count(children_count), flags(0) {}
 
         constexpr CommandNode(ConstExpressionStringComparableFn name, const CommandNode* children, const size_t children_count, ConstExpressionStringFn help) 
-            : name(name), help(help), execute(nullptr), children(children), children_count(children_count) {}
+            : name(name), help(help), execute(nullptr), children(children), children_count(children_count), flags(0) {}
 
         constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, ConstExpressionStringFn help) 
-            : name(name), help(help), execute(execute), children(nullptr), children_count(0) {}
+            : name(name), help(help), execute(execute), children(nullptr), children_count(0), flags(0) {}
+
+        // with flags
+        constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, const CommandNode* children, const size_t children_count, FlagsType flags, ConstExpressionStringFn help) 
+            : name(name), help(help), execute(execute), children(children), children_count(children_count), flags(flags) {}
+
+        constexpr CommandNode(ConstExpressionStringComparableFn name, const CommandNode* children, const size_t children_count, FlagsType flags, ConstExpressionStringFn help) 
+            : name(name), help(help), execute(nullptr), children(children), children_count(children_count), flags(flags) {}
+
+        constexpr CommandNode(ConstExpressionStringComparableFn name, Execute execute, FlagsType flags, ConstExpressionStringFn help) 
+            : name(name), help(help), execute(execute), children(nullptr), children_count(0), flags(flags) {}
     };
 
     class CommandExecutor {
