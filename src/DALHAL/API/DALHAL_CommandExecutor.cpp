@@ -108,9 +108,11 @@ namespace DALHAL {
 #define DALHAL_CMD_CHILDREN(n) n, DALHAL_ARRAY_COUNT(n)
 #define DALHAL_CMD_EXEC_ENTRY(name, exec, help) { CE_MATCH_EMIT_STR(name), exec, CE_EMIT_STR(help) }
 #define DALHAL_CMD_GROUP_ENTRY(name, childs, help) { CE_MATCH_EMIT_STR(name), DALHAL_CMD_CHILDREN(childs), CE_EMIT_STR(help) }
+#define DALHAL_CMD_EXEC_AND_GROUP_ENTRY(name, exec, childs, help) { CE_MATCH_EMIT_STR(name), exec, DALHAL_CMD_CHILDREN(childs), CE_EMIT_STR(help) }
 
 #define DALHAL_CMD_EXEC_ENTRY_WFLAG(name, exec, flags, help) { CE_MATCH_EMIT_STR(name), exec, flags, CE_EMIT_STR(help) }
 #define DALHAL_CMD_GROUP_ENTRY_WFLAG(name, childs, flags, help) { CE_MATCH_EMIT_STR(name), DALHAL_CMD_CHILDREN(childs), flags, CE_EMIT_STR(help) }
+#define DALHAL_CMD_EXEC_AND_GROUP_ENTRY_WFLAG(name, exec, childs, flags, help) { CE_MATCH_EMIT_STR(name), exec, DALHAL_CMD_CHILDREN(childs), flags, CE_EMIT_STR(help) }
 
     void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
     bool ConnectToNewWiFi(const char* ssid, const char* pass);
@@ -118,7 +120,12 @@ namespace DALHAL {
 
     HALOperationResult Exec_Scheduler_Cmd(ZeroCopyString& zcStr, CommandCallback cb); // TODO to be implemented as a device
 
-    HALOperationResult Exec_Help_Cmd(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Help_Cmd_All(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Help_Cmd_Type(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Help_Cmd_DeviceInstance(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Help_Cmd_By_Path(ZeroCopyString& zcStr, CommandCallback cb);
+    
+
     HALOperationResult Exec_System_Info(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_System_Heap(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_System_Reset_Restart(ZeroCopyString& zcStr, CommandCallback cb);
@@ -144,6 +151,7 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& zcStr, CommandCallback cb);
 
     HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_Scripts_Unload(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Scripts_Start(ZeroCopyString& zcStr, CommandCallback cb);
 
@@ -173,6 +181,7 @@ namespace DALHAL {
 
     static constexpr CommandNode HalScriptItems[] = {
         DALHAL_CMD_EXEC_ENTRY_WFLAG("reload", Exec_Hal_Scripts_Reload, CommandNode::Flags::AUTOGEN_BUTTON, "scripts reload"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("unload", Exec_Hal_Scripts_Unload, CommandNode::Flags::AUTOGEN_BUTTON, "hal script unload, can be used to provide a clean slate before loading new script"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("stop", Exec_Hal_Scripts_Stop, CommandNode::Flags::AUTOGEN_BUTTON, "scripts stop/pause execution"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("start", Exec_Hal_Scripts_Start, CommandNode::Flags::AUTOGEN_BUTTON, "scripts start/resume execution"),
     };
@@ -222,6 +231,13 @@ namespace DALHAL {
         DALHAL_CMD_EXEC_ENTRY("ver", Exec_System_Build_Ver_Print, "Print current build version"),
     };
 
+    static constexpr CommandNode HelpItems[] = {
+        DALHAL_CMD_EXEC_ENTRY("all", Exec_Help_Cmd_All, "Returns the whole cmd tree"),
+        DALHAL_CMD_EXEC_ENTRY("type", Exec_Help_Cmd_Type, "Show help by a device type"),
+        DALHAL_CMD_EXEC_ENTRY("device", Exec_Help_Cmd_DeviceInstance, "Show help for a given device instance path"),
+        DALHAL_CMD_EXEC_ENTRY("@", Exec_Help_Cmd_By_Path, "Show help for a given cmd path"),
+    };
+
     static constexpr CommandNode RootItems[] = {
         DALHAL_CMD_GROUP_ENTRY("hal", HalItems, "HAL subsystem"),
         DALHAL_CMD_GROUP_ENTRY("system", SystemItems, "System commands"),
@@ -230,7 +246,7 @@ namespace DALHAL {
 #endif
         DALHAL_CMD_EXEC_ENTRY_WFLAG("printLog", Exec_PrintLog, CommandNode::Flags::AUTOGEN_BUTTON, "print log"),
         DALHAL_CMD_EXEC_ENTRY("schedule", Exec_Scheduler_Cmd, "Schedule commands"), // to be removed in the future as it would be implemented as a device
-        DALHAL_CMD_EXEC_ENTRY("help", Exec_Help_Cmd, "Show help"),
+        DALHAL_CMD_EXEC_AND_GROUP_ENTRY("help", Exec_Help_Cmd_All, HelpItems, "Show help"),
     };
 
     static constexpr CommandNode RootItem = {
@@ -442,7 +458,7 @@ namespace DALHAL {
         cb(zcMsg, CmdCbType::Control);
         return HALOperationResult::Success;
     }
-    HALOperationResult Exec_Help_Cmd(ZeroCopyString& zcStr, CommandCallback cb) {
+    HALOperationResult Exec_Help_Cmd_All(ZeroCopyString& zcStr, CommandCallback cb) {
 
         BlockStreamer bs(cb, "help", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
@@ -455,6 +471,15 @@ namespace DALHAL {
         sbs.write_json_object_end();
 
         return HALOperationResult::Success; 
+    }
+    HALOperationResult Exec_Help_Cmd_Type(ZeroCopyString& zcStr, CommandCallback cb) {
+        return HALOperationResult::TODO_UnsupportedCommand;
+    }
+    HALOperationResult Exec_Help_Cmd_DeviceInstance(ZeroCopyString& zcStr, CommandCallback cb) {
+        return HALOperationResult::TODO_UnsupportedCommand;
+    }
+    HALOperationResult Exec_Help_Cmd_By_Path(ZeroCopyString& zcStr, CommandCallback cb) {
+        return HALOperationResult::TODO_UnsupportedCommand;
     }
     HALOperationResult Exec_System_Info(ZeroCopyString& zcStr, CommandCallback cb) {
 #if defined(ESP8266) || defined(ESP32)
@@ -990,7 +1015,7 @@ namespace DALHAL {
     }
     HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& zcStr, CommandCallback cb) {
 
-        return HALOperationResult::Success;
+        return HALOperationResult::TODO_UnsupportedCommand;
     }
 
     HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -1002,6 +1027,11 @@ namespace DALHAL {
         bs.writer().write_jsonString(F("error"), F("could not ValidateAndLoadAllActiveScripts"));
         return HALOperationResult::ExecutionFailed;
     }
+
+    HALOperationResult Exec_Hal_Scripts_Unload(ZeroCopyString& zcStr, CommandCallback cb) {
+        return HALOperationResult::TODO_UnsupportedCommand;
+    }
+    
     HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/scripts/stop", BlockStreamer::DataType::Json);
         ScriptEngine::ScriptBlocks::running = false;

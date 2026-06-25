@@ -78,6 +78,8 @@ namespace DALHAL {
 
         DeviceUIDPathEmpty = 60,
 
+        TODO_UnsupportedCommand = 98,
+
         NotSet = 99,
     };
     const __FlashStringHelper* HALOperationResultToString(HALOperationResult result);
