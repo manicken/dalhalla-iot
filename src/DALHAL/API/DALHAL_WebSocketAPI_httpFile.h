@@ -959,9 +959,6 @@ document.addEventListener('keydown', e => {
 
 WifiModal.setSendFn(cmd => ws.send(cmd));   // WebSocket
 
-
-const DANGER_COMMANDS = new Set(['system/reset', 'system/restart']);
-
 function collectRows(node, pathParts) {
   const rows = [];
   const siblings = [];
@@ -971,6 +968,7 @@ function collectRows(node, pathParts) {
       siblings.push({
         path: childPath.join('/'),
         name: child.name,
+        danger: child.autogendanger,
         parent: pathParts[pathParts.length - 1] || null
       });
     }
@@ -990,7 +988,7 @@ function renderAutoButtons(tree, container, wsSend) {
     div.className = 'btn-row';
     for (const btn of row.buttons) {
       const b = document.createElement('button');
-      b.className = 'cmd-btn' + (DANGER_COMMANDS.has(btn.path) ? ' danger' : '');
+      b.className = 'cmd-btn' + (btn.danger ? ' danger' : '');
       b.textContent = btn.parent ? `${btn.parent}/${btn.name}` : btn.name;
       b.title = btn.path;  // full path as tooltip
       b.onclick = () => wsSend(btn.path);

@@ -114,7 +114,6 @@ namespace DALHAL {
 #define DALHAL_CMD_GROUP_ENTRY_WFLAG(name, childs, flags, help) { CE_MATCH_EMIT_STR(name), DALHAL_CMD_CHILDREN(childs), flags, CE_EMIT_STR(help) }
 #define DALHAL_CMD_EXEC_AND_GROUP_ENTRY_WFLAG(name, exec, childs, flags, help) { CE_MATCH_EMIT_STR(name), exec, DALHAL_CMD_CHILDREN(childs), flags, CE_EMIT_STR(help) }
 
-    void SetWifiCredentialsAndRestart(const char* ssid, const char* pass);
     bool ConnectToNewWiFi(const char* ssid, const char* pass);
     bool reloadJSON(ZeroCopyString& zcStr, CommandCallback cb);
 
@@ -224,8 +223,8 @@ namespace DALHAL {
         DALHAL_CMD_EXEC_ENTRY("info", Exec_System_Info, "System info"),
 #if defined(ESP8266) || defined(ESP32)
         DALHAL_CMD_EXEC_ENTRY_WFLAG("heap", Exec_System_Heap, CommandNode::Flags::AUTOGEN_BUTTON, "Print heap info"),
-        DALHAL_CMD_EXEC_ENTRY_WFLAG("reset", Exec_System_Reset_Restart, CommandNode::Flags::AUTOGEN_BUTTON, "Reset the system"),
-        DALHAL_CMD_EXEC_ENTRY("restart", Exec_System_Reset_Restart, "Restart the system (same as reset)"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("reset", Exec_System_Reset_Restart, (CommandNode::Flags::AUTOGEN_BUTTON | CommandNode::Flags::DANGER), "Reset the system"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("restart", Exec_System_Reset_Restart, (CommandNode::Flags::DANGER), "Restart the system (same as reset)"),
 #endif
         DALHAL_CMD_EXEC_ENTRY("HeartbeatLed", Exec_System_HeartbeatLed, "HeartBeatLed set timings"),
         DALHAL_CMD_EXEC_ENTRY("ver", Exec_System_Build_Ver_Print, "Print current build version"),
@@ -283,6 +282,11 @@ namespace DALHAL {
         if (node.flags & CommandNode::Flags::AUTOGEN_BUTTON) {
             sbs.write_json_value_separator();
             sbs.write_jsonBool(F("autogenbutton"), true);
+        }
+
+        if (node.flags & CommandNode::Flags::DANGER) {
+            sbs.write_json_value_separator();
+            sbs.write_jsonBool(F("autogendanger"), true);
         }
 
         // children
@@ -426,19 +430,6 @@ namespace DALHAL {
     }
 
 #if defined(ESP8266) || defined(ESP32)
-    void SetWifiCredentialsAndRestart(const char* ssid, const char* pass) {
-        WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
-        WiFi.begin(ssid, pass);     // Connects to the AP.
-        WiFi.setAutoConnect(true);  // ESP32: ensures reconnect on boot. ESP8266: also works.
-        WiFi.setAutoReconnect(true);// ESP32: reconnect if connection drops. ESP8266: ignored (does nothing).
-        
-        WiFi.disconnect(false, true); // ensures save on ESP32
-        delay(200); 
-        
-        // Restart the device so it boots with the saved credentials
-        ESP.restart();
-    }
-
     bool ConnectToNewWiFi(const char* ssid, const char* pass) {
         bool anyError = false;
         WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
@@ -599,16 +590,11 @@ namespace DALHAL {
             }
             return HALOperationResult::ExecutionFailed;
         }
-
-        cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Control);
-        
-
-        //select between the two here could be done throuhgt a optional parameter
         if (!ConnectToNewWiFi(ssid, pass)) {
+            cb(String(F("wifi/set_b64/FAIL\r\n")).c_str(), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
-        //delay(50);
-        //SetWifiCredentialsAndRestart(ssid, pass);
+        cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Control);
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_WiFi_Set_Json(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -629,14 +615,11 @@ namespace DALHAL {
 
         if(pass == nullptr) pass = ""; // allow empty password if desired
 
-        cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Control);
-
-        //select between the two here could be done throuhgt a optional parameter
         if (!ConnectToNewWiFi(ssid, pass)) {
+            cb(String(F("wifi/set_json/FAIL\r\n")).c_str(), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
-        //delay(50);
-        //SetWifiCredentialsAndRestart(ssid, pass);
+        cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Control);
         return HALOperationResult::Success;
     }
 #endif

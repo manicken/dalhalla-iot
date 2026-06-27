@@ -1,6 +1,10 @@
 #include "WiFiConnectionManager.h"
 
-
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 // ============================================================================
 // STATIC MEMBER INITIALIZATION
 // ============================================================================
@@ -112,7 +116,7 @@ void WiFiConnectionManager::handleSTAConnecting() {
                  WiFi.localIP().toString().c_str());
         emitEvent(Event::STA_CONNECT_SUCCESS, info);
         Serial.print(F("[WiFiMgr] Connected to WiFi: ")); Serial.println(info);
-        WiFi.mode(wifi_mode_t::WIFI_MODE_STA); // make sure that the AP dissapear on successfull connection
+        WiFi.mode(WIFI_STA); // make sure that the AP dissapear on successfull connection
         
         return;
     }
