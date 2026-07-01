@@ -989,12 +989,14 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_Config_Reload(ZeroCopyString& zcStr, CommandCallback cb) {
         bool anyErrors = reloadJSON(zcStr, cb) == false;
 
-        if (anyErrors == false) {
-            
-            anyErrors = ScriptEngine::ValidateAndLoadAllActiveScripts() == false;
-            return anyErrors ? HALOperationResult::Success : HALOperationResult::ExecutionFailed;
-        }
-        return HALOperationResult::ExecutionFailed;
+        if (anyErrors) { return HALOperationResult::ExecutionFailed; }
+
+        anyErrors = (ScriptEngine::ValidateAndLoadAllActiveScripts() == false);
+
+        if (anyErrors) { return HALOperationResult::ExecutionFailed; }
+        
+        return HALOperationResult::Success;
+        
     }
     HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& zcStr, CommandCallback cb) {
 

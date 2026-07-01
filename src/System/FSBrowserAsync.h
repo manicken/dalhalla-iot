@@ -39,6 +39,15 @@
 //#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+
+
+#if defined(ESP8266)
+#define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin()
+#elif defined(ESP32)
+#define AUTOFORMAT_ON_FAIL true
+#define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin(AUTOFORMAT_ON_FAIL, "/LittleFS", 10, "spiffs")
+#endif
+
 namespace FSBrowser {
 
     
@@ -337,7 +346,7 @@ namespace FSBrowser {
 
     void setup(AsyncWebServer &srv) {
         
-        fsOK = LittleFS.begin();
+        fsOK = LITTLEFS_BEGIN_FUNC_CALL;
 
         srv.on("/status", HTTP_GET, handleStatus);
         srv.on("/list", HTTP_GET, handleFileList);

@@ -30,7 +30,7 @@ namespace DALHAL {
     BlockStreamer::BlockStreamer(CommandCallback cb, const char* tag, DataType dataType) :
         _cb(cb), 
         // lambda wrapper 
-        sbs([cb](const char* buff, size_t len) -> bool {
+        sbs(cb, [cb](const char* buff, size_t len) -> bool {
             ZeroCopyString zcData(buff, len);
             return cb(zcData, CmdCbType::Data);
         })

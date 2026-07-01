@@ -252,7 +252,8 @@ void setup() {
     DEBUG_UART.begin(115200);
     DEBUG_UART.setDebugOutput(true);
 
-    DALHAL::StringBuilderStreamer sbs(DebugPrint);
+    DALHAL::StringBuilderStreamer sbs(nullptr, DebugPrint);
+
     for (size_t i=0;i<devices_count;i++) {
         devices[i].fstr(sbs);
         sbs.write('\r');

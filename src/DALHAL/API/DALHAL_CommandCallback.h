@@ -36,4 +36,8 @@ namespace DALHAL {
 
     using CommandCallback = std::function<bool(const ZeroCopyString& response, CmdCbType type)>;
 
+    struct CommandCallbackByValue {
+        CommandCallback cb;
+    };
+
 }

@@ -32,6 +32,9 @@
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 
+#include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+
 #include "DALHAL_REGO600_Register.h"
 #include <DALHAL/Drivers/REGO600.h>
 
@@ -53,6 +56,11 @@ namespace DALHAL {
     public: // public static fields and exposed external structures
         static const Registry::DefineBase RegistryDefine;
         static Device* Create(DeviceCreateContext& context);
+
+    private:
+        static const DeviceFunctionTable FunctionTable;
+        static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
+        static HALOperationResult readString_RequestWholeLCD_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
 
     private:
         uint32_t refreshTimeMs = 0;

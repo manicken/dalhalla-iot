@@ -26,6 +26,9 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+#include <DALHAL/API/DALHAL_BlockStreamer.h>
+
 #include <DALHAL/Support/ConvertHelper.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
@@ -39,13 +42,48 @@ namespace DALHAL {
     constexpr Registry::DefineBase REGO600::RegistryDefine = {
         Create,
         &JsonSchema::REGO600::Root,
-        DALHAL_REACTIVE_EVENT_TABLE(REGO600)
+        DALHAL_REACTIVE_EVENT_TABLE(REGO600),
+        &REGO600::FunctionTable
     };
     
     /* override */
     const Registry::DefineBase* REGO600::GetRegistryDefine() {
         return &RegistryDefine;
     }
+
+    constexpr FunctionEntry<FunctionTypes::ReadString> REGO600::readStringFunctions[] = {
+        DALHAL_FUNCTION_ENTRY("lcd", REGO600::readString_RequestWholeLCD_Function, "request whole lcd contents"),
+    };
+    
+    void requestWholeLCD_Callback(void* cb_ctx, void* dataCtx, Drivers::REGO600::RequestMode mode) {
+        auto* ctx = static_cast<CommandCallbackByValue*>(cb_ctx);
+        BlockStreamer bs(ctx->cb, "rego600/lcd", BlockStreamer::DataType::PlainText);
+        bs.writer().write((char*)dataCtx);
+        delete ctx;
+    }
+    HALOperationResult REGO600::readString_RequestWholeLCD_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        REGO600& self = static_cast<REGO600&>(*device);
+        auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
+        
+        self.rego600->RequestWholeLCD(requestWholeLCD_Callback, ctx);
+        sbs.write_jsonString(F("status"), F("OK"));
+        sbs.write_json_value_separator();
+        sbs.write_jsonString(F("request"), F("enqueued"));
+        return HALOperationResult::Success;
+    }
+
+    constexpr DeviceFunctionTable REGO600::FunctionTable = {
+        EmptyFunctionTable<FunctionTypes::Exec>,
+
+        EmptyFunctionTable<FunctionTypes::ReadToHALValue>,
+        EmptyFunctionTable<FunctionTypes::WriteHALValue>,
+
+        EmptyFunctionTable<FunctionTypes::BracketOpRead>,
+        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+
+        DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
+        EmptyFunctionTable<FunctionTypes::WriteString>,
+    };
     
     REGO600::REGO600(DeviceCreateContext& context) : REGO600_DeviceBase(context.deviceType) {
         JsonSchema::REGO600::Extractors::Apply(context, this);

@@ -29,8 +29,8 @@
 
 namespace DALHAL {
 
-    StringBuilderStreamer::StringBuilderStreamer(StreamCallback cb)
-        : _cb(cb), _pos(0) { }
+    StringBuilderStreamer::StringBuilderStreamer(CommandCallback cmdCb, StreamCallback cb)
+        : _cb(cb), cmdCb(cmdCb), _pos(0) { }
 
     StringBuilderStreamer::~StringBuilderStreamer() {
         flush();

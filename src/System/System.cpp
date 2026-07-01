@@ -247,7 +247,7 @@ namespace System {
             ESP.restart();
             
         });
-        /*webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
+        webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {
             
             if (LittleFS.format()) {
                 if (!LITTLEFS_BEGIN_FUNC_CALL) {
@@ -258,7 +258,7 @@ namespace System {
             } else {
                 req->send(500, "text/html", "Format failed");
             }
-        });
+        });/*
         webserver.on(MAIN_URLS_MKDIR, [](AsyncWebServerRequest* req) {
             if (!req->hasArg("dir")) { req->send(200,"text/html", "Error: dir argument missing"); }
             else

@@ -30,11 +30,12 @@
 #define MAIN_URLS_FORMAT_LITTLE_FS      "/formatLittleFs"
 #define MAIN_URLS_MKDIR                 "/mkdir"
 
-#define AUTOFORMAT_ON_FAIL true
+
 
 #if defined(ESP8266)
 #define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin()
 #elif defined(ESP32)
+#define AUTOFORMAT_ON_FAIL true
 #define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin(AUTOFORMAT_ON_FAIL, "/LittleFS", 10, "spiffs")
 #endif
 

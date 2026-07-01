@@ -165,7 +165,7 @@ namespace Drivers {
             OneTime
         };
 
-        using RequestCallback = void (*)(void*, RequestMode);
+        using RequestCallback = void (*)(void* cb_ctx, void* dataCtx, RequestMode);
 
 
         REGO600() = delete;
@@ -182,9 +182,9 @@ namespace Drivers {
         /** please note that this uses std::unique_ptr 
          * to ensure that the created object (Request) is moved into this function
          * and to make sure that it can be deleted internally */
-        void OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb);
-        void RequestWholeLCD(RequestCallback cb);
-        void RequestFrontPanelLeds(RequestCallback cb);
+        void OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx);
+        void RequestWholeLCD(RequestCallback cb, void* cb_ctx);
+        void RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx);
 
         static const OpCodeInfo& getCmdInfo(uint8_t opcode);
         /** this is a "latching flag"/"one-shot flag", i.e. if read and was true it automatically resets the internal flag to false */
@@ -224,6 +224,7 @@ namespace Drivers {
         RequestMode manualRequest_Mode = RequestMode::RefreshLoop; // default value
         std::unique_ptr<Request> manualRequest = nullptr; // this is used when simple values need to be read/written i.e. when manuallyModeReq == RequestMode::OneTime
         RequestCallback manualRequest_Callback = nullptr;
+        void* manualRequest_Context = nullptr;
         void ManualRequest_Schedule(RequestMode reqMode);
         bool ManualRequest_PrepareAndSend();
 

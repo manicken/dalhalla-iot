@@ -26,6 +26,7 @@
 #include <functional>
 #include <WString.h> // __FlashStringHelper
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/API/DALHAL_CommandCallback.h>
 
 #if defined(ESP8266)
 #define DALHAL_API_STREAMWRITER_BUFFER_SIZE 512
@@ -49,7 +50,7 @@ namespace DALHAL {
 
         using StreamCallback = std::function<bool(const char* buf, size_t len)>;
 
-        StringBuilderStreamer (StreamCallback cb);
+        StringBuilderStreamer (CommandCallback cmdCb, StreamCallback cb);
         StringBuilderStreamer (const StringBuilderStreamer &) = delete;
         StringBuilderStreamer & operator=(const StringBuilderStreamer &) = delete;
         StringBuilderStreamer (StringBuilderStreamer &&) = delete;
@@ -141,9 +142,14 @@ namespace DALHAL {
         void write_jsonNumber(const __FlashStringHelper* key, int32_t v);
         void write_jsonNumber(const __FlashStringHelper* key, float v);
 
+        inline CommandCallback GetCommandCallback() {
+                return cmdCb;
+        }
+
     private:
 
         StreamCallback _cb;
+        CommandCallback cmdCb;
 
         char _buf[DALHAL_API_STREAMWRITER_BUFFER_SIZE];
         size_t _pos;

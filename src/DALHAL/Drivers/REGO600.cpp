@@ -397,7 +397,7 @@ namespace Drivers {
         return true;
     }
 
-    void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb) {
+    void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx) {
         if (req->info.type != RequestType::WriteConfirm && cb == nullptr) {
             return; // no point if cb for some reason is nullptr
         }
@@ -406,26 +406,29 @@ namespace Drivers {
             return;
         }
         manualRequest_Callback = cb;
+        manualRequest_Context = cb_ctx;
         manualRequest = std::move(req); // could also do req.release() to return the raw ptr, but then the raw ptr needs to be deleted when used
 
         ManualRequest_Schedule(RequestMode::OneTime);
     }
 
-    void REGO600::RequestWholeLCD(RequestCallback cb) {
+    void REGO600::RequestWholeLCD(RequestCallback cb, void* cb_ctx) {
         if (cb == nullptr) return; // no point if cb for some reason is nullptr
         if (mode != RequestMode::RefreshLoop) { 
             DebugErrorMessage("ReqLCD - manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
+        manualRequest_Context = cb_ctx;
         ManualRequest_Schedule(RequestMode::Lcd);
     }
-    void REGO600::RequestFrontPanelLeds(RequestCallback cb) {
+    void REGO600::RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx) {
         if (mode != RequestMode::RefreshLoop) { 
             DebugErrorMessage("manual request allready in progress");
             return;
         }
         manualRequest_Callback = cb;
+        manualRequest_Context = cb_ctx;
         ManualRequest_Schedule(RequestMode::FrontPanelLeds);
     }
 
@@ -497,7 +500,7 @@ namespace Drivers {
             
             // execute a callback here
             if (manualRequest_Callback != nullptr) {
-                manualRequest_Callback(readLCD_Text, manualRequest_Mode);
+                manualRequest_Callback(manualRequest_Context, readLCD_Text, manualRequest_Mode);
             } else {
                 DebugErrorMessage("LCD - mReqCB not set");
             }
@@ -527,7 +530,7 @@ namespace Drivers {
         } else {
             
             if (manualRequest_Callback != nullptr) {
-                manualRequest_Callback(&readFrontPanelLeds_Data, manualRequest_Mode);
+                manualRequest_Callback(manualRequest_Context, &readFrontPanelLeds_Data, manualRequest_Mode);
             } else {
                 DebugErrorMessage("FP - mReqCB not set");
             }
@@ -548,7 +551,7 @@ namespace Drivers {
                 return;
             }
             //Request* request = manuallyRequest.release();
-            manualRequest_Callback(manualRequest.get(), manualRequest_Mode);
+            manualRequest_Callback(manualRequest_Context, manualRequest.get(), manualRequest_Mode);
             //delete request;
         }
         else {
