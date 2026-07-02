@@ -138,8 +138,9 @@ namespace DALHAL {
     }
 
     /* static */
-    HALOperationResult Display_SSD1306::setCursor(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
-        ZeroCopyString zcXstr = zcParams.SplitOffHead('/');
+    HALOperationResult Display_SSD1306::setCursor(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
+        ZeroCopyString zcParamsTemp = zcParams;
+        ZeroCopyString zcXstr = zcParamsTemp.SplitOffHead('/');
         int32_t x = 0, y = 0;
         zcXstr.ConvertTo_int32(x);
         zcParams.ConvertTo_int32(y);
@@ -147,12 +148,12 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
     /* static */
-    HALOperationResult Display_SSD1306::addText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult Display_SSD1306::addText(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         static_cast<Display_SSD1306*>(device)->display->write(zcParams.start, zcParams.Length());
         return HALOperationResult::Success;
     }
     /* static */
-    HALOperationResult Display_SSD1306::printText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult Display_SSD1306::printText(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         static_cast<Display_SSD1306*>(device)->display->write(zcParams.start, zcParams.Length());
         static_cast<Display_SSD1306*>(device)->display->display();
         return HALOperationResult::Success;

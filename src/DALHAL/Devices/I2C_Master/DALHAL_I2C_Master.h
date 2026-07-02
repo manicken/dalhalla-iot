@@ -59,8 +59,8 @@ namespace DALHAL {
         static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
         static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
 
-        static HALOperationResult write_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
-        static HALOperationResult set_speed(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult write_raw(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult set_speed(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
         static HALOperationResult read_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
         static HALOperationResult list_devices(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
 

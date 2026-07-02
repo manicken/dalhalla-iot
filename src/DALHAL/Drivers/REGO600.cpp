@@ -38,6 +38,9 @@
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
 namespace Drivers {
 
+    REGO600::RegoLookupEntry REGO600::ManualRawEntry;
+    bool REGO600::emitErrorsToWebSocket = false;
+
     bool unpack_nibbles(const uint8_t* src, uint8_t* dst, size_t dstLen) {
         for (size_t i = 0; i < dstLen; ++i)
         {
@@ -52,8 +55,9 @@ namespace Drivers {
     }
 
     void REGO600::DebugErrorMessage(const char* msg) {
-        //printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
-        DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg); // not needed as GlobalLogger emit error as well
+        if (emitErrorsToWebSocket) {
+            DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        }
         GlobalLogger.Error(F(DRIVERS_REGO600_ERROR_BASE_STR), msg);
     }
 
@@ -180,7 +184,7 @@ namespace Drivers {
             response.text = new char[21](); // 20 characters + null terminator
         }
         else if (info.type == RequestType::Value) {
-            response.value = nullptr;
+            response.value = new DALHAL::HALValue();
         }
         else if (info.type == RequestType::ErrorLogItem) {
             response.text = new char[20](); // 3 digit error code + space + 6 char date + space + 8 char time + null terminator
@@ -374,39 +378,53 @@ namespace Drivers {
         return true;
     }
 
-    void REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx) {
+    bool REGO600::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx) {
+        if (cb == nullptr) {
+            DebugErrorMessage(String(F("OneTimeRequest - callback cannot be nullptr")).c_str());
+            return false; // no point if cb for some reason is nullptr
+        }
         if (req->info.type != RequestType::WriteConfirm && cb == nullptr) {
-            return; // no point if cb for some reason is nullptr
+            return false; // no point if cb for some reason is nullptr
         }
         if (mode != RequestMode::RefreshLoop) { 
             DebugErrorMessage(String(F("OTReq - manual request allready in progress")).c_str());
-            return;
+            return false;
         }
         manualRequest_Callback = cb;
         manualRequest_Context = cb_ctx;
         manualRequest = std::move(req); // could also do req.release() to return the raw ptr, but then the raw ptr needs to be deleted when used
 
         ManualRequest_Schedule(RequestMode::OneTime);
+        return true;
     }
 
-    void REGO600::RequestWholeLCD(RequestCallback cb, void* cb_ctx) {
-        if (cb == nullptr) return; // no point if cb for some reason is nullptr
+    bool REGO600::RequestWholeLCD(RequestCallback cb, void* cb_ctx) {
+        if (cb == nullptr) {
+            DebugErrorMessage(String(F("ReqLCD - callback cannot be nullptr")).c_str());
+            return false; // no point if cb for some reason is nullptr
+        }
         if (mode != RequestMode::RefreshLoop) { 
             DebugErrorMessage(String(F("ReqLCD - manual request allready in progress")).c_str());
-            return;
+            return false;
         }
         manualRequest_Callback = cb;
         manualRequest_Context = cb_ctx;
         ManualRequest_Schedule(RequestMode::Lcd);
+        return true;
     }
-    void REGO600::RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx) {
+    bool REGO600::RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx) {
+        if (cb == nullptr) {
+            DebugErrorMessage(String(F("ReqFrontPanelLeds - callback cannot be nullptr")).c_str());
+            return false; // no point if cb for some reason is nullptr
+        }
         if (mode != RequestMode::RefreshLoop) { 
-            DebugErrorMessage(String(F("manual request allready in progress")).c_str());
-            return;
+            DebugErrorMessage(String(F("ReqFrontPanelLeds - manual request allready in progress")).c_str());
+            return false;
         }
         manualRequest_Callback = cb;
         manualRequest_Context = cb_ctx;
         ManualRequest_Schedule(RequestMode::FrontPanelLeds);
+        return true;
     }
 
     void REGO600::RefreshLoop_SendCurrent() {

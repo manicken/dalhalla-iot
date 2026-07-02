@@ -70,7 +70,7 @@ namespace DALHAL {
         const Registry::DefineBase* GetRegistryDefine() override;
 
         DeviceFindResult findDevice(UIDPath& path, Device*& outDevice) override;
-        static HALOperationResult writeByString(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult writeByString(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
 
         
         void PrintTo(StringBuilderStreamer& sbs) override;

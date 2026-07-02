@@ -130,27 +130,28 @@ namespace DALHAL {
     }
 
     /* static */
-    HALOperationResult I2C_Master::write_raw(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult I2C_Master::write_raw(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         if (zcParams.IsEmpty()) {
             return HALOperationResult::StringRequestParameterError;
         }
-        ZeroCopyString zcAddr = zcParams.SplitOffHead('/');
-        if (zcParams.IsEmpty()) return HALOperationResult::StringRequestParameterError; // simple early check
+        ZeroCopyString zcParamsCopy = zcParams;
+        ZeroCopyString zcAddr = zcParamsCopy.SplitOffHead('/');
+        if (zcParamsCopy.IsEmpty()) return HALOperationResult::StringRequestParameterError; // simple early check
         if (zcAddr.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
-        ZeroCopyString zcByteCount = zcParams.SplitOffHead('/');
+        ZeroCopyString zcByteCount = zcParamsCopy.SplitOffHead('/');
         if (zcByteCount.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
         uint32_t bytesToWrite = 0;
         zcByteCount.ConvertTo_uint32(bytesToWrite);
         if (bytesToWrite == 0) { return HALOperationResult::StringRequestParameterError; }
         
-        uint32_t paramCount = zcParams.CountChar('/')+1; // +1 to make it easier/clearer
+        uint32_t paramCount = zcParamsCopy.CountChar('/')+1; // +1 to make it easier/clearer
         if (paramCount < bytesToWrite) { return HALOperationResult::StringRequestParameterError; }
         uint32_t addr = 0;
         zcAddr.ConvertTo_uint32(addr);
         I2C_Master& self = *static_cast<I2C_Master*>(device);
         self.wire->beginTransmission((uint8_t)addr);
         while (bytesToWrite--) {
-            ZeroCopyString zcByte = zcParams.SplitOffHead('/');
+            ZeroCopyString zcByte = zcParamsCopy.SplitOffHead('/');
             if (zcByte.ValidUINT() == false) {
                 self.wire->endTransmission(true);
                 return HALOperationResult::StringRequestParameterError;
@@ -168,11 +169,12 @@ namespace DALHAL {
     }
 
     /* static */
-    HALOperationResult I2C_Master::set_speed(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult I2C_Master::set_speed(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         if (zcParams.IsEmpty()) { 
             return HALOperationResult::StringRequestParameterError;
         }
-        ZeroCopyString zcSpeed = zcParams.SplitOffHead('/');
+        ZeroCopyString zcParamsCopy = zcParams;
+        ZeroCopyString zcSpeed = zcParamsCopy.SplitOffHead('/');
         if (zcSpeed.IsEmpty()) { return HALOperationResult::StringRequestParameterError; }
         if (zcSpeed.ValidUINT() == false) { return HALOperationResult::StringRequestParameterError; }
         uint32_t speed = 0;

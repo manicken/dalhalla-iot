@@ -81,27 +81,28 @@ namespace DALHAL {
     constexpr FunctionEntry<FunctionTypes::WriteString> WS2812::writeStringFunctions[] = {
         DALHAL_FUNCTION_ENTRY("setpixel", WS2812::writeString_setpixel_Function, "sets a specific pixel the arguments are <xPos>/<yPos>/colorcode")
     };
-    HALOperationResult WS2812::writeString_setpixel_Function(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult WS2812::writeString_setpixel_Function(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         WS2812& self = *static_cast<WS2812*>(device);
         self.ws2812fx->pause();
         // ws2812fx->setSpeed(0);
-        ZeroCopyString zcIndex = zcParams.SplitOffHead('/');
-        ZeroCopyString zcR = zcParams.SplitOffHead('/');
-        ZeroCopyString zcG = zcParams.SplitOffHead('/');
-        ZeroCopyString zcB = zcParams.SplitOffHead('/');
+        ZeroCopyString zcParamsCopy = zcParams;
+        ZeroCopyString zcIndex = zcParamsCopy.SplitOffHead('/');
+        ZeroCopyString zcR = zcParamsCopy.SplitOffHead('/');
+        ZeroCopyString zcG = zcParamsCopy.SplitOffHead('/');
+        ZeroCopyString zcB = zcParamsCopy.SplitOffHead('/');
         uint32_t index,r,g,b;
         zcIndex.ConvertTo_uint32(index);
         zcR.ConvertTo_uint32(r);
         zcG.ConvertTo_uint32(g);
         zcB.ConvertTo_uint32(b);
-        if (zcParams.IsEmpty()) {// simple rgb
+        if (zcParamsCopy.IsEmpty()) {// simple rgb
             
             self.ws2812fx->setPixelColor(index,r,g,b);
             //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d\n",index,r,g,b);
         }
         else {
             uint32_t w;
-            ZeroCopyString zcUval = zcParams.SplitOffHead('/');
+            ZeroCopyString zcUval = zcParamsCopy.SplitOffHead('/');
             zcUval.ConvertTo_uint32(w);
             self.ws2812fx->setPixelColor(index,r,g,b,w);
             //printf("\nsetpixel: index=%d, r=%d, g=%d, b=%d, w=%d\n",index,r,g,b,w);

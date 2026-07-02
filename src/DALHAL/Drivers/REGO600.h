@@ -64,6 +64,7 @@ namespace Drivers {
 
     class REGO600 {
     public:
+        static bool emitErrorsToWebSocket;
 
         enum class RequestType {
             Value,
@@ -119,8 +120,8 @@ namespace Drivers {
             float multiplier;    //  for example 0.1 @ temperatures
         };
         static const RegoLookupEntry* SystemRegisterTableLockup(const char* name);
-        // Declaration of the fallback entry
-        static const RegoLookupEntry ManualRawEntry;
+        // manual requests reuse 
+        static RegoLookupEntry ManualRawEntry;
 
         static bool SystemRegisterTable_ItemExists(void* ctx, const char* name); // ctx not used here as this is a static table
         static void SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs); // ctx not used here as this is a static table
@@ -175,21 +176,23 @@ namespace Drivers {
         void begin();
         void loop();
 
-        void RxDone_RefreshLoop();
-        void RxDone_LCD();
-        void RxDone_FrontPanelLeds();
-        void RxDone_OneTime();
+        
         /** please note that this uses std::unique_ptr 
          * to ensure that the created object (Request) is moved into this function
          * and to make sure that it can be deleted internally */
-        void OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx);
-        void RequestWholeLCD(RequestCallback cb, void* cb_ctx);
-        void RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx);
+        bool OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx);
+        bool RequestWholeLCD(RequestCallback cb, void* cb_ctx);
+        bool RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx);
 
         static const OpCodeInfo& getCmdInfo(uint8_t opcode);
         /** this is a "latching flag"/"one-shot flag", i.e. if read and was true it automatically resets the internal flag to false */
         bool RefreshLoopDone();
     private:
+
+        void RxDone_RefreshLoop();
+        void RxDone_LCD();
+        void RxDone_FrontPanelLeds();
+        void RxDone_OneTime();
         
         uint8_t uartTxBuffer[REGO600_UART_TX_BUFFER_SIZE]; 
         uint8_t uartRxBuffer[REGO600_UART_RX_BUFFER_SIZE];
@@ -200,6 +203,7 @@ namespace Drivers {
         const int refreshLoopCount = 0;
         uint32_t refreshTimeMs = 5000; // this needs to calculated depending on how many items in refreshLoopList (max items is 17 -> 17*0.2 = 3.4 sec) but also what the json cfg have
 
+        
         
         unsigned long requestTimeoutMs = 1000;
         unsigned long lastUpdateMs = 0;

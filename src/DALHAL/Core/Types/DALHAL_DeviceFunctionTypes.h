@@ -41,7 +41,7 @@ namespace DALHAL {
         using BracketOpRead = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         using BracketOpWrite = HALOperationResult (*)(Device* device, const HALValue& subscriptValue, const HALValue& value);
         using ReadString = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
-        using WriteString = HALOperationResult (*)(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        using WriteString = HALOperationResult (*)(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs);
 
     }
 }

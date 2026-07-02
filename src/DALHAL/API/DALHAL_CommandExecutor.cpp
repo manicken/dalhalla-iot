@@ -818,7 +818,8 @@ namespace DALHAL {
 
             opres = fnRes.fn(device, params.zcParameters, sbs);
             if (opres == HALOperationResult::Success) {
-                sbs.write_jsonString(F("info"), F("ok"));
+                
+                sbs.write_jsonString(F("info"), F("OK"));
             } else {
                 sbs.write_jsonMemberStart(F("error"));
                 sbs.write_jsonQuoted(HALOperationResultToString(opres));

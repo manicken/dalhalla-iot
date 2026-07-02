@@ -64,7 +64,7 @@ namespace DALHAL {
         static HALOperationResult exec_resume_Function(Device* device);
         static HALOperationResult exec_stop_Function(Device* device);
         static HALOperationResult exec_start_Function(Device* device);
-        static HALOperationResult writeString_setpixel_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult writeString_setpixel_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs);
 
 
     private:

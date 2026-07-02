@@ -1,1 +1,1 @@
-#define BUILD_VER_STR "0.91"
+#define BUILD_VER_STR "0.92"

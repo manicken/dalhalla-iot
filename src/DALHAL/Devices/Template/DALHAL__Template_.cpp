@@ -130,7 +130,7 @@ namespace DALHAL {
         DALHAL_PRIMARY_FUNCTION_ENTRY(_Template_::writeString_Template_Function, "primary"),
         DALHAL_FUNCTION_ENTRY("_Template_", _Template_::writeString_Template_Function, "help"),
     };
-    HALOperationResult _Template_::writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+    HALOperationResult _Template_::writeString_Template_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs) {
 
         // Note here about trigger, 
         // dont think there is any practicular reason to exmit events on string write function

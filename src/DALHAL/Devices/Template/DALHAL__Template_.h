@@ -66,7 +66,7 @@ namespace DALHAL {
         static HALOperationResult bracketOpRead_Template_Function(Device* device, const HALValue& subscriptValue, HALValue& outValue);
         static HALOperationResult bracketOpWrite_Template_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue);
         static HALOperationResult readString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
-        static HALOperationResult writeString_Template_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult writeString_Template_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs);
 
     private:
         uint8_t pin = 0; // if pin would be used

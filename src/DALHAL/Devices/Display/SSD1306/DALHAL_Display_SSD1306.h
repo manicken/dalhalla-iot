@@ -65,9 +65,9 @@ namespace DALHAL {
 
         static HALOperationResult display_update(Device* device);
         static HALOperationResult display_clear(Device* device);
-        static HALOperationResult setCursor(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
-        static HALOperationResult addText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
-        static HALOperationResult printText(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult setCursor(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult addText(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
+        static HALOperationResult printText(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs);
 
     private:
         Adafruit_SSD1306* display = nullptr;

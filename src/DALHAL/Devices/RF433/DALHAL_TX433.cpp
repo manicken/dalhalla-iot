@@ -93,7 +93,7 @@ namespace DALHAL {
         return Device::findInArray(units, unitCount, path, this, outDevice);
     }
 
-    HALOperationResult TX433::writeByString(Device* device, ZeroCopyString zcParams, StringBuilderStreamer& sbs) {
+    HALOperationResult TX433::writeByString(Device* device, const ZeroCopyString& zcParams, StringBuilderStreamer& sbs) {
         RF433::init(static_cast<TX433*>(device)->pin); // this only sets the pin and set the pin to output
         std::string stdStrCmd = zcParams.ToString();
         
