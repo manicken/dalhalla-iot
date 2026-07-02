@@ -29,6 +29,8 @@
 #include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
 #endif
 
+#include <WString.h>
+
 
 
 #include <DALHAL/Support/DALHAL_Logger.h>
@@ -36,47 +38,22 @@
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "
 namespace Drivers {
 
-    static inline bool HexCharToNibble(uint8_t c, uint8_t& nibble)
-    {
-        if (c >= '0' && c <= '9') {
-            nibble = c - '0';
-            return true;
-        }
-        if (c >= 'A' && c <= 'F') {
-            nibble = c - 'A' + 10;
-            return true;
-        }
-        return false;
-    }
-
-    bool ConvertAsciiHexToBytes(const uint8_t* src,
-                                size_t hexLen,
-                                uint8_t* dst,
-                                size_t dstLen)
-    {
-        // hexLen måste vara jämnt och matcha dstLen
-        if ((hexLen % 2) != 0 || (hexLen / 2) != dstLen)
-            return false;
-
+    bool unpack_nibbles(const uint8_t* src, uint8_t* dst, size_t dstLen) {
         for (size_t i = 0; i < dstLen; ++i)
         {
-            uint8_t high, low;
-
-            if (!HexCharToNibble(src[i*2], high))
+            uint8_t high = src[i*2], low = src[i*2+1];
+            if (high > 0xF || low > 0xF) {
+                // corrupted data
                 return false;
-
-            if (!HexCharToNibble(src[i*2 + 1], low))
-                return false;
-
-            dst[i] = (high << 4) | low;
+            }
+            dst[i] = (high << 4) + low;
         }
-
         return true;
     }
 
     void REGO600::DebugErrorMessage(const char* msg) {
-        printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
-        //DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg); // not needed as GlobalLogger emit error as well
+        //printf("%s%s\r\n", DRIVERS_REGO600_ERROR_BASE_STR, msg);
+        DALHAL::WebSocketAPI::Broadcast(DRIVERS_REGO600_ERROR_BASE_STR, msg); // not needed as GlobalLogger emit error as well
         GlobalLogger.Error(F(DRIVERS_REGO600_ERROR_BASE_STR), msg);
     }
 
@@ -221,7 +198,7 @@ namespace Drivers {
                     if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
                         response.value->set((int32_t)(sVal*def.multiplier));
                     } else {
-                        DebugErrorMessage("skipped Signed value because out of range");
+                        DebugErrorMessage(String(F("skipped Signed value because out of range")).c_str());
                         return false;
                     }
                     break;
@@ -230,7 +207,7 @@ namespace Drivers {
                     if (rawValue == 0 || rawValue == 1) {
                         response.value->set((uint32_t)rawValue);
                     } else {
-                        DebugErrorMessage("skipped Bool value because out of range");
+                        DebugErrorMessage(String(F("skipped Bool value because out of range")).c_str());
                         return false;
                     }
                     break;
@@ -238,7 +215,7 @@ namespace Drivers {
                     if (rawValue >= def.minVal.u16 && rawValue <= def.maxVal.u16) {
                         response.value->set((uint32_t)(rawValue*def.multiplier));
                     } else {
-                        DebugErrorMessage("skipped Unsigned value because out of range");
+                        DebugErrorMessage(String(F("skipped Unsigned value because out of range")).c_str());
                         return false;
                     }
                     break;
@@ -247,7 +224,7 @@ namespace Drivers {
                     if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
                         response.value->set(sVal*def.multiplier);
                     } else {
-                        DebugErrorMessage("skipped Float value because out of range");
+                        DebugErrorMessage(String(F("skipped Float value because out of range")).c_str());
                         return false;
                     }
                     break;
@@ -258,9 +235,9 @@ namespace Drivers {
 
         } else if (info.type == RequestType::Text) {
             uint8_t tmp[20];
-
-            if (!ConvertAsciiHexToBytes(&buff[1], 40, tmp, 20)) {
-                DebugErrorMessage("LCD data corruption detected - discarding frame");
+            
+            if (!unpack_nibbles(&buff[1], tmp, 20)) {
+                DebugErrorMessage(String(F("LCD data corruption detected - discarding frame - ")).c_str());
                 return false;
             }
 
@@ -402,7 +379,7 @@ namespace Drivers {
             return; // no point if cb for some reason is nullptr
         }
         if (mode != RequestMode::RefreshLoop) { 
-            DebugErrorMessage("OTReq - manual request allready in progress");
+            DebugErrorMessage(String(F("OTReq - manual request allready in progress")).c_str());
             return;
         }
         manualRequest_Callback = cb;
@@ -415,7 +392,7 @@ namespace Drivers {
     void REGO600::RequestWholeLCD(RequestCallback cb, void* cb_ctx) {
         if (cb == nullptr) return; // no point if cb for some reason is nullptr
         if (mode != RequestMode::RefreshLoop) { 
-            DebugErrorMessage("ReqLCD - manual request allready in progress");
+            DebugErrorMessage(String(F("ReqLCD - manual request allready in progress")).c_str());
             return;
         }
         manualRequest_Callback = cb;
@@ -424,7 +401,7 @@ namespace Drivers {
     }
     void REGO600::RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx) {
         if (mode != RequestMode::RefreshLoop) { 
-            DebugErrorMessage("manual request allready in progress");
+            DebugErrorMessage(String(F("manual request allready in progress")).c_str());
             return;
         }
         manualRequest_Callback = cb;
@@ -472,7 +449,7 @@ namespace Drivers {
 
     void REGO600::RxDone_RefreshLoop() {
         if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
-            DebugErrorMessage("refreshLoopList RX - invalid value ");
+            DebugErrorMessage(String(F("refreshLoopList RX - invalid value ")).c_str());
             SendRequestFrameAndResetRx(); // retry @ RefreshLoop value error
             return;
         }
@@ -487,13 +464,12 @@ namespace Drivers {
     }
     void REGO600::RxDone_LCD() {
         uint8_t tmp[20];
-
-        if (!ConvertAsciiHexToBytes(&uartRxBuffer[1], 40, tmp, 20)) {
-            DebugErrorMessage("LCD data corruption detected - discarding frame");
+        if (!unpack_nibbles(&uartRxBuffer[1], tmp, 20)) {
+            DebugErrorMessage(String(F("LCD data corruption detected - discarding frame - ")).c_str());
             SendRequestFrameAndResetRx(); // retry @ LCD data error
             return;
         }
-
+        
         memcpy(&readLCD_Text[readLCD_RowIndex*20], tmp, 20);
         
         if (readLCD_RowIndex == 3) { // this was the last row
@@ -502,7 +478,7 @@ namespace Drivers {
             if (manualRequest_Callback != nullptr) {
                 manualRequest_Callback(manualRequest_Context, readLCD_Text, manualRequest_Mode);
             } else {
-                DebugErrorMessage("LCD - mReqCB not set");
+                DebugErrorMessage(String(F("LCD - mReqCB not set")).c_str());
             }
 
             mode = RequestMode::RefreshLoop;
@@ -532,7 +508,7 @@ namespace Drivers {
             if (manualRequest_Callback != nullptr) {
                 manualRequest_Callback(manualRequest_Context, &readFrontPanelLeds_Data, manualRequest_Mode);
             } else {
-                DebugErrorMessage("FP - mReqCB not set");
+                DebugErrorMessage(String(F("FP - mReqCB not set")).c_str());
             }
             mode = RequestMode::RefreshLoop;
             manualRequest_Mode = RequestMode::RefreshLoop;
@@ -546,7 +522,7 @@ namespace Drivers {
             // the callback is not set is actually pointless
             if (manualRequest->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
                 // try the request again
-                DebugErrorMessage("manualReq RX - ValidateAndSetFromBuffer error");
+                DebugErrorMessage(String(F("manualReq RX - ValidateAndSetFromBuffer error")).c_str());
                 SendRequestFrameAndResetRx(); // retry @ OneTime value error
                 return;
             }
@@ -556,7 +532,7 @@ namespace Drivers {
         }
         else {
             //manuallyRequest.reset(); // free the current data
-            DebugErrorMessage("OT - mReqCB not set");
+            DebugErrorMessage(String(F("OT - mReqCB not set")).c_str());
         }
         manualRequest.reset(); // free the current data
         mode = RequestMode::RefreshLoop;
@@ -658,15 +634,20 @@ namespace Drivers {
 
                     FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // allways flush remaining garbage if any
 
+                    if (uartRxBuffer[0] == 0x40) {
+                        DebugErrorMessage(String(F("REGO600 RX failure: device returned error 0x40 in ACK, restarting request")).c_str());
+                        SendRequestFrameAndResetRx(); // retry @ start byte error
+                        return;
+                    }
                     if (uartRxBuffer[0] != 0x01) {
-                        DebugErrorMessage("RX done - start byte mismatch");
+                        DebugErrorMessage((String(F("RX done - corrupted frame - start byte mismatch:")) + String(uartRxBuffer[0], 16)).c_str());
                         SendRequestFrameAndResetRx(); // retry @ start byte error
                         return;
                     }
 
                     if (CalcAndCompareRxDataChecksum() == false) {
                         // try the request again
-                        DebugErrorMessage("manualReq RX - Checksum error");
+                        DebugErrorMessage(String(F("manualReq RX - Checksum error")).c_str());
                         SendRequestFrameAndResetRx(); // retry @ checksum error
                         return;
                     }
@@ -687,7 +668,7 @@ namespace Drivers {
                 requestInProgress = false; // to make the remaining data reads faster, if any 
                 mode = RequestMode::RefreshLoop;
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-                DebugErrorMessage("uartRxBuffer full");
+                DebugErrorMessage(String(F("uartRxBuffer full")).c_str());
             }
             lastRequestMs = millis();
         }
@@ -695,15 +676,15 @@ namespace Drivers {
         { // making now into a separate scope for nicer code
             unsigned long now = millis();
             if ((now - lastRequestMs) >= requestTimeoutMs) {
-                //DebugErrorMessage("REGO600-req-TiOu");
-                GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
+                DebugErrorMessage(String(F("REGO600-request-timeout")).c_str());
+                //GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
                 //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
                 
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
                 SendRequestFrameAndResetRx(); // retry @ timeout
             }
             if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-                DebugErrorMessage("read failsafe overflow");
+                DebugErrorMessage(String(F("read failsafe overflow")).c_str());
             }
         }
     }

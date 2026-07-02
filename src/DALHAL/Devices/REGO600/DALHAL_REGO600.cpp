@@ -57,9 +57,22 @@ namespace DALHAL {
     
     void requestWholeLCD_Callback(void* cb_ctx, void* dataCtx, Drivers::REGO600::RequestMode mode) {
         auto* ctx = static_cast<CommandCallbackByValue*>(cb_ctx);
-        BlockStreamer bs(ctx->cb, "rego600/lcd", BlockStreamer::DataType::PlainText);
-        bs.writer().write((char*)dataCtx);
+        BlockStreamer bs(ctx->cb, "rego600/lcd", BlockStreamer::DataType::Json);
         delete ctx;
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        sbs.write_jsonMemberStart(F("lines"));
+        sbs.write_json_array_begin();
+        const char* lcdData = (const char*)dataCtx;
+        for (size_t i = 0; i < 4; i++) {
+            if (i>0) {
+                sbs.write_json_value_separator();
+            }
+            sbs.write_jsonQuoted(&lcdData[i*20], 20);
+        }
+        sbs.write_json_array_end();
+        sbs.write_json_object_end();
+        
     }
     HALOperationResult REGO600::readString_RequestWholeLCD_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
         REGO600& self = static_cast<REGO600&>(*device);
