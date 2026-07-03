@@ -339,7 +339,7 @@ namespace Drivers {
 
     void REGO600::ManualRequest_Schedule(RequestMode reqMode) {
         manualRequest_Mode = reqMode;
-        if (requestInProgress == false) {
+        if (commState == CommState::Idle) {
             ManualRequest_PrepareAndSend(); // this will start send the request
         }
         else {
@@ -375,9 +375,7 @@ namespace Drivers {
             return false;
         }
         mode = manualRequest_Mode;
-        //const CmdVsResponseSize* info = getCmdInfo(uartTxBuffer[1]);
         ScheduleNextRequest();
-        //SendRequestFrameAndResetRx(); // ManualRequest_PrepareAndSend
         return true;
     }
 
@@ -436,10 +434,8 @@ namespace Drivers {
         uartTxBuffer[1] = (uint8_t)req->info.opcode;
         SetRequestAddr(req->def.address);
         CalcAndSetTxChecksum();
-       //const CmdVsResponseSize* info = getCmdInfo(refreshLoopList[refreshLoopIndex]->opcode);
         currentExpectedRxLength = req->info.size;
         ScheduleNextRequest();
-        //SendRequestFrameAndResetRx(); // RefreshLoop_SendCurrent
     }
 
     void REGO600::RefreshLoop_Restart() {
@@ -453,18 +449,17 @@ namespace Drivers {
             refreshLoopIndex++;
             RefreshLoop_SendCurrent();
         } else {
-            refreshLoopDone = true;
+            refreshLoopDoneFlag = true;
             // one loop done
             // exec some cb here, or set some flags
-            
-            requestInProgress = false; // wait until refresh time 
+            commState = CommState::Idle;
         }
     }
     bool REGO600::RefreshLoopDone() {
-        if (refreshLoopDone == false) {
+        if (refreshLoopDoneFlag == false) {
             return false;
         }
-        refreshLoopDone = false;
+        refreshLoopDoneFlag = false;
         return true;
     }
 
@@ -510,7 +505,6 @@ namespace Drivers {
             uartTxBuffer[4] = readLCD_RowIndex;
             uartTxBuffer[8] = readLCD_RowIndex;
             ScheduleNextRequest();
-            //SendRequestFrameAndResetRx(); // LCD continue
         }
     }
     void REGO600::RxDone_FrontPanelLeds() {
@@ -523,7 +517,6 @@ namespace Drivers {
             uartTxBuffer[4] = readFrontPanelLedsIndex + 0x12;
             uartTxBuffer[8] = readFrontPanelLedsIndex + 0x12;
             ScheduleNextRequest();
-            //SendRequestFrameAndResetRx(); // FrontPanelLeds continue
         } else {
             
             if (manualRequest_Callback != nullptr) {
@@ -564,7 +557,7 @@ namespace Drivers {
     void REGO600::SendRequestFrameAndResetRx() {
         lastRequestMs = millis();
         uartRxBufferIndex = 0;
-        requestInProgress = true;
+        commState = CommState::AwaitingResponse;
         REGO600_UART_TO_USE.write(uartTxBuffer, REGO600_UART_TX_BUFFER_SIZE);
     }
 
@@ -621,8 +614,7 @@ namespace Drivers {
     }
     void REGO600::ScheduleNextRequest() {
         pendingRequestLastTime = millis();
-        pendingRequest = true;
-        requestInProgress = true;
+        commState = CommState::PendingSend;
     }
 
     void REGO600::ParseCurrentRxPacket() {
@@ -659,30 +651,7 @@ namespace Drivers {
     }
 
     #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
-    void REGO600::loop() {
-
-        { // making now into a separate scope for nicer code
-            unsigned long now = millis();
-            if (pendingRequest && (now - pendingRequestLastTime) > pendingRequestDelayMs) {
-                pendingRequest = false;
-                SendRequestFrameAndResetRx();
-            }
-        }
-
-        if (requestInProgress == false) { 
-            //  here we just take care of any glitches and receive garbage data if any
-            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-            //if (mode != RequestMode::RefreshLoop) { return; }
-            if (refreshLoopList == nullptr) { return; }
-            unsigned long now = millis();
-            if (now - lastUpdateMs >= refreshTimeMs) {
-                //DALHAL::WebSocketAPI::Broadcast("RefreshLoop_Restart"); // just to see that this worked
-                RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs, it also sets requestInProgress to true
-            }
-            return; // usually dont expect a response directly
-        }
-        
-
+    void REGO600::AwaitingResponseTask() {
         uint32_t failsafeReadCount = 0;
         while (REGO600_UART_TO_USE.available() && failsafeReadCount++ < REGO600_UART_RX_MAX_FAILSAFECOUNT) {
             lastRequestMs = millis(); // update on every rx
@@ -693,7 +662,7 @@ namespace Drivers {
                     return;                    
                 }
             } else {
-                requestInProgress = false; // to make the remaining data reads faster, if any 
+                commState = CommState::Idle;
                 mode = RequestMode::RefreshLoop;
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
                 DebugErrorMessage(String(F("uartRxBuffer full")).c_str());
@@ -701,20 +670,56 @@ namespace Drivers {
             lastRequestMs = millis();
         }
         // Timeout check after possible any rx
-        { // making now into a separate scope for nicer code
-            unsigned long now = millis();
-            if (pendingRequest == false && (now - lastRequestMs) >= requestTimeoutMs) {
+        unsigned long now = millis();
+        if ((now - lastRequestMs) >= requestTimeoutMs) {
 
-                DebugErrorMessage((String(F("REGO600-request-timeout @ index=")) + String(uartRxBufferIndex) + String(F(", expected length=")) + String(currentExpectedRxLength)).c_str());
-                //GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
-                //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
-                
+            DebugErrorMessage((String(F("REGO600-request-timeout @ index=")) + String(uartRxBufferIndex) + String(F(", expected length=")) + String(currentExpectedRxLength)).c_str());
+            //GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
+            //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
+            
+            FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
+            SendRequestFrameAndResetRx(); // retry @ timeout
+        }
+        if (failsafeReadCount >= REGO600_UART_RX_MAX_FAILSAFECOUNT) {
+            DebugErrorMessage(String(F("read failsafe overflow")).c_str());
+        }
+    }
+
+    void REGO600::loop() {
+
+        switch (commState) {
+            case CommState::AwaitingResponse: {
+                AwaitingResponseTask();                
+                break;
+            }
+            case CommState::PendingSend: {
+                unsigned long now = millis();
+                if ((now - pendingRequestLastTime) > pendingRequestDelayMs) {
+                    SendRequestFrameAndResetRx();
+                }
+                break;
+            }
+            case CommState::Idle: {
+                //  here we just take care of any glitches and receive garbage data if any
                 FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-                SendRequestFrameAndResetRx(); // retry @ timeout
+                // take care of any pending manual requests directly
+                if (manualRequest_Pending) {
+                    manualRequest_Pending = false;
+                    if (ManualRequest_PrepareAndSend() == true) {
+                        return;
+                    }
+                }
+                if (refreshLoopList == nullptr) {
+                    // nothing to do
+                    return;
+                }
+                unsigned long now = millis();
+                if (now - lastUpdateMs >= refreshTimeMs) {
+                    RefreshLoop_Restart(); // this will also take care of updating lastUpdateMs
+                }
+                break;
             }
-            if (failsafeReadCount == REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-                DebugErrorMessage(String(F("read failsafe overflow")).c_str());
-            }
+            default: break;
         }
     }
 }

@@ -60,9 +60,17 @@
 
 namespace Drivers {
 
-
-
     class REGO600 {
+    private:
+        
+        enum class CommState {
+            Idle, //waiting for refreshTimeMs to elapse, or a manual request to arrive
+            PendingSend, // frame queued, waiting out pendingRequestDelayMs (replaces pendingRequest flag)
+            AwaitingResponse, // frame sent, waiting for bytes / timeout (replaces requestInProgress)
+        };
+
+        CommState commState = CommState::Idle;
+
     public:
         static bool emitErrorsToWebSocket;
 
@@ -189,6 +197,7 @@ namespace Drivers {
         bool RefreshLoopDone();
     private:
 
+        void AwaitingResponseTask();
         void ParseCurrentRxPacket();
 
         void RxDone_RefreshLoop();
@@ -212,7 +221,11 @@ namespace Drivers {
         uint32_t lastRequestMs = 0;
         
         int refreshLoopIndex = 0;
-        bool refreshLoopDone = false;
+
+        // flag that is set once a refreshloop is done
+        // it's only reset by using RefreshLoopDone function
+        // this is used as a event emitter
+        bool refreshLoopDoneFlag = false;
 
         /** make this dynamicaly allocated to save memory if not used */
         char* readLCD_Text = nullptr;
@@ -222,9 +235,7 @@ namespace Drivers {
 
 
         RequestMode mode = RequestMode::RefreshLoop;
-        /** set to true when currently waiting for data to be received */
-        bool requestInProgress = false;
-        
+       
         /** set to true when manual interventioon need to be executed */
         bool manualRequest_Pending = false;
         RequestMode manualRequest_Mode = RequestMode::RefreshLoop; // default value
@@ -238,7 +249,6 @@ namespace Drivers {
         void SetRequestData(uint16_t data);
         
         /** used to create a delay before execute SendRequestFrameAndResetRx */
-        bool pendingRequest = false;
         unsigned long pendingRequestLastTime = 0;
         unsigned long pendingRequestDelayMs = 50;
         void ScheduleNextRequest();
