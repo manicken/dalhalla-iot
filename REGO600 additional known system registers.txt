@@ -1,0 +1,6 @@
+LCD buffer - ram location (real 0A6E) computed index: (10A6E-12EC)/2 = 7BC1
+ext input mode definer 003C
+ext input state 01FB
+
+maybe normal run mode 0039
+something else related to main states 0435
