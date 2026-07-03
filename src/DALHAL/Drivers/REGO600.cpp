@@ -39,7 +39,10 @@
 namespace Drivers {
 
     REGO600::RegoLookupEntry REGO600::ManualRawEntry;
-    bool REGO600::emitErrorsToWebSocket = false;
+    // can now be true as we have fixed major comm errors, and if there is any future we want to know that directly
+    // however it can still be deactivated by DALHAL REGO600 device layer if it's very annoying
+    bool REGO600::emitErrorsToWebSocket = true;
+
 
     bool unpack_nibbles(const uint8_t* src, uint8_t* dst, size_t dstLen) {
         for (size_t i = 0; i < dstLen; ++i)
