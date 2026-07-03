@@ -189,6 +189,8 @@ namespace Drivers {
         bool RefreshLoopDone();
     private:
 
+        void ParseCurrentRxPacket();
+
         void RxDone_RefreshLoop();
         void RxDone_LCD();
         void RxDone_FrontPanelLeds();
@@ -205,7 +207,7 @@ namespace Drivers {
 
         
         
-        unsigned long requestTimeoutMs = 1000;
+        unsigned long requestTimeoutMs = 2000;
         unsigned long lastUpdateMs = 0;
         uint32_t lastRequestMs = 0;
         

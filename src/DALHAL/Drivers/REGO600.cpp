@@ -589,6 +589,10 @@ namespace Drivers {
     }
 
     bool REGO600::CalcAndCompareRxDataChecksum() {
+        if (currentExpectedRxLength < 3) {
+            // no checksum byte to validate for e.g. 1-byte WriteConfirm acks
+            return true;
+        }
         uint8_t chksum = 0;
 
         const uint32_t checksumIndex = currentExpectedRxLength - 1;
@@ -616,6 +620,39 @@ namespace Drivers {
         pendingRequestLastTime = millis();
         pendingRequest = true;
         requestInProgress = true;
+    }
+
+    void REGO600::ParseCurrentRxPacket() {
+        FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // allways flush remaining garbage if any
+
+        if (uartRxBuffer[0] == 0x40) {
+            DebugErrorMessage(String(F("REGO600 RX failure: device returned error 0x40 in ACK, restarting request")).c_str());
+            SendRequestFrameAndResetRx(); // retry @ start byte error
+            return;
+        }
+        if (uartRxBuffer[0] != 0x01) {
+            DebugErrorMessage((String(F("RX done - corrupted frame - start byte mismatch:")) + String(uartRxBuffer[0], 16)).c_str());
+            SendRequestFrameAndResetRx(); // retry @ start byte error
+            return;
+        }
+
+        if (CalcAndCompareRxDataChecksum() == false) {
+            // try the request again
+            DebugErrorMessage(String(F("manualReq RX - Checksum error")).c_str());
+            SendRequestFrameAndResetRx(); // retry @ checksum error
+            return;
+        }
+        // RX is done
+        if (mode == RequestMode::RefreshLoop) {
+            RxDone_RefreshLoop();           
+        } else if (mode == RequestMode::Lcd) {
+            RxDone_LCD();
+        } else if (mode == RequestMode::FrontPanelLeds) {
+            RxDone_FrontPanelLeds();
+        } else if (mode == RequestMode::OneTime) {
+            RxDone_OneTime();
+        }
+        lastRequestMs = millis();
     }
 
     #define REGO600_UART_RX_MAX_FAILSAFECOUNT 100
@@ -649,38 +686,8 @@ namespace Drivers {
             if (uartRxBufferIndex < REGO600_UART_RX_BUFFER_SIZE) {
                 uartRxBuffer[uartRxBufferIndex++] = REGO600_UART_TO_USE.read();
                 if (uartRxBufferIndex == currentExpectedRxLength) {
-
-                    FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // allways flush remaining garbage if any
-
-                    if (uartRxBuffer[0] == 0x40) {
-                        DebugErrorMessage(String(F("REGO600 RX failure: device returned error 0x40 in ACK, restarting request")).c_str());
-                        SendRequestFrameAndResetRx(); // retry @ start byte error
-                        return;
-                    }
-                    if (uartRxBuffer[0] != 0x01) {
-                        DebugErrorMessage((String(F("RX done - corrupted frame - start byte mismatch:")) + String(uartRxBuffer[0], 16)).c_str());
-                        SendRequestFrameAndResetRx(); // retry @ start byte error
-                        return;
-                    }
-
-                    if (CalcAndCompareRxDataChecksum() == false) {
-                        // try the request again
-                        DebugErrorMessage(String(F("manualReq RX - Checksum error")).c_str());
-                        SendRequestFrameAndResetRx(); // retry @ checksum error
-                        return;
-                    }
-                    // RX is done
-                    if (mode == RequestMode::RefreshLoop) {
-                        RxDone_RefreshLoop();           
-                    } else if (mode == RequestMode::Lcd) {
-                        RxDone_LCD();
-                    } else if (mode == RequestMode::FrontPanelLeds) {
-                        RxDone_FrontPanelLeds();
-                    } else if (mode == RequestMode::OneTime) {
-                        RxDone_OneTime();
-                    }
-                    lastRequestMs = millis();
-                    return; // now we can return here
+                    ParseCurrentRxPacket();
+                    return;                    
                 }
             } else {
                 requestInProgress = false; // to make the remaining data reads faster, if any 
@@ -693,8 +700,9 @@ namespace Drivers {
         // Timeout check after possible any rx
         { // making now into a separate scope for nicer code
             unsigned long now = millis();
-            if ((now - lastRequestMs) >= requestTimeoutMs) {
-                DebugErrorMessage(String(F("REGO600-request-timeout")).c_str());
+            if (pendingRequest == false && (now - lastRequestMs) >= requestTimeoutMs) {
+
+                DebugErrorMessage((String(F("REGO600-request-timeout @ index=")) + String(uartRxBufferIndex) + String(F(", expected length=")) + String(currentExpectedRxLength)).c_str());
                 //GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
                 //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
                 
