@@ -654,6 +654,11 @@ namespace DALHAL {
             GlobalLogger.Error(F("HALOperationResult: "), str.c_str());
             return res;
         }
+        BlockStreamer bs(cb, "hal/exec", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        sbs.write_jsonString(F("info"), F("OK"));
+        sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_Read_String(ZeroCopyString& zcStr, CommandCallback cb) {
