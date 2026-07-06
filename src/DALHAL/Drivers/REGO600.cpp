@@ -39,6 +39,7 @@
 namespace Drivers {
 
     REGO600::RegoLookupEntry REGO600::ManualRawEntry;
+    DALHAL::HALValue REGO600::ManualRequestValue;
     // can now be true as we have fixed major comm errors, and if there is any future we want to know that directly
     // however it can still be deactivated by DALHAL REGO600 device layer if it's very annoying
     bool REGO600::emitErrorsToWebSocket = true;
@@ -369,6 +370,7 @@ namespace Drivers {
             uartTxBuffer[1] = (uint8_t)manualRequest->info.opcode;
             currentExpectedRxLength = manualRequest->info.size;
             SetRequestAddr(manualRequest->def.address);
+            SetRequestData(manualRequest->response.value->toUInt());
             CalcAndSetTxChecksum();
             
         } else {

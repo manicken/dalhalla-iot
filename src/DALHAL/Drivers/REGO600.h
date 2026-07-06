@@ -130,6 +130,7 @@ namespace Drivers {
         static const RegoLookupEntry* SystemRegisterTableLockup(const char* name);
         // manual requests reuse 
         static RegoLookupEntry ManualRawEntry;
+        static DALHAL::HALValue ManualRequestValue;
 
         static bool SystemRegisterTable_ItemExists(void* ctx, const char* name); // ctx not used here as this is a static table
         static void SystemRegisterTable_GetAllNamesAsJsonStringArray(void* ctx, DALHAL::StringBuilderStreamer& sbs); // ctx not used here as this is a static table
@@ -242,6 +243,7 @@ namespace Drivers {
         std::unique_ptr<Request> manualRequest = nullptr; // this is used when simple values need to be read/written i.e. when manuallyModeReq == RequestMode::OneTime
         RequestCallback manualRequest_Callback = nullptr;
         void* manualRequest_Context = nullptr;
+        
         void ManualRequest_Schedule(RequestMode reqMode);
         bool ManualRequest_PrepareAndSend();
 

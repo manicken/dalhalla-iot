@@ -228,10 +228,10 @@ namespace DALHAL {
         Drivers::REGO600::ManualRawEntry.maxVal.u16 = 65535;
         Drivers::REGO600::ManualRawEntry.multiplier = 1;
         Drivers::REGO600::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
-        
+        Drivers::REGO600::ManualRequestValue = value;
 
         auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::ManualRawEntry);
-        req.get()->response.value = new HALValue(value);
+        req.get()->response.value = &Drivers::REGO600::ManualRequestValue;
         
         if (!self.rego600->OneTimeRequest(std::move(req), writeRegisterValue_Callback, ctx)) {
             sbs.write_jsonString(F("error"), F("cannot start new request - possible reasons are that it's allready one in progress"));
