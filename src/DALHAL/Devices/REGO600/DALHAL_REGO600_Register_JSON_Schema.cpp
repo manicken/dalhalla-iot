@@ -31,7 +31,7 @@
 
 
 
-#include <DALHAL/Drivers/REGO600.h>
+#include <DALHAL/Drivers/REGO600/REGO600.h>
 
 #include "DALHAL_REGO600_Register.h"
 
@@ -41,7 +41,7 @@ namespace DALHAL {
 
         namespace REGO600_Register {
         
-            constexpr SchemaStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::SystemRegisterTable_ItemExists, Drivers::REGO600::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
+            constexpr SchemaStringAnyOfByFuncConstrained regnameField = {"regname", FieldPolicy::Required, nullptr, Drivers::REGO600::REGO600Driver::SystemRegisterTable_ItemExists, Drivers::REGO600::REGO600Driver::SystemRegisterTable_GetAllNamesAsJsonStringArray, nullptr};
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_uidreq_note_group, // DALHAL_CommonSchemas_Base

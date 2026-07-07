@@ -115,11 +115,11 @@ namespace DALHAL {
 
                     const char* regName = JsonSchema::REGO600_Register::regnameField.ExtractFrom(item);
                     // as the cfg is now fully validated this will not return a nullptr
-                    const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::SystemRegisterTableLockup(regName);
+                    const Drivers::REGO600::RegoLookupEntry* entry = Drivers::REGO600::REGO600Driver::SystemRegisterTableLockup(regName);
                     
                     // here value is passed by ref so that REGO600 driver can access and change the value,
                     // that makes REGO600register read function can then get the correct value
-                    const Drivers::REGO600::OpCodeInfo& info = Drivers::REGO600::getCmdInfo(0x02); // system registers only
+                    const Drivers::REGO600::OpCodeInfo& info = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::ReadSystemRegister);
                     out->requestList[index] = new Drivers::REGO600::Request(
                         info, 
                         *entry,
@@ -132,7 +132,7 @@ namespace DALHAL {
 
                 unsigned long requestDelayMs = JsonSchema::REGO600::requestDelayMsField.ExtractFrom(*(context.jsonObjItem));
                 
-                out->rego600 = new Drivers::REGO600(out->rxPin, out->txPin, out->requestList, out->registerItemCount, out->refreshTimeMs, requestDelayMs);
+                out->rego600 = new Drivers::REGO600::REGO600Driver(out->rxPin, out->txPin, out->requestList, out->registerItemCount, out->refreshTimeMs, requestDelayMs);
             }
 
         }

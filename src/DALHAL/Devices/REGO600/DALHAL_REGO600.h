@@ -36,7 +36,8 @@
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 #include "DALHAL_REGO600_Register.h"
-#include <DALHAL/Drivers/REGO600.h>
+#include <DALHAL/Drivers/REGO600/REGO600.h>
+#include <DALHAL/Drivers/REGO600/REGO600_Request.h>
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(REGO600)
@@ -64,6 +65,7 @@ namespace DALHAL {
         static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
         static HALOperationResult readString_RequestWholeLCD_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult readString_RequestRegisterValue_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
+        static HALOperationResult readString_RequestRamDump_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult exec_activate_error_print_Function(Device* device);
         static HALOperationResult exec_deactivate_error_print_Function(Device* device);
         static HALOperationResult writeString_WriteRegisterValue_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs);
@@ -77,7 +79,7 @@ namespace DALHAL {
         Device** registerItems = nullptr;
         int registerItemCount = 0; // used by both registerItems and requestList
         Drivers::REGO600::Request** requestList = nullptr;
-        Drivers::REGO600* rego600 = nullptr;
+        Drivers::REGO600::REGO600Driver* rego600 = nullptr;
     
     public:
         REGO600(DeviceCreateContext& context);

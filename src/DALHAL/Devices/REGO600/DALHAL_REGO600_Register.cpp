@@ -22,7 +22,7 @@
 */
 
 #include "DALHAL_REGO600_Register.h"
-#include <DALHAL/Drivers/REGO600.h>
+#include <DALHAL/Drivers/REGO600/REGO600.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_ArduinoJSON_ext.h>
 #include <DALHAL/Support/DALHAL_Logger.h>

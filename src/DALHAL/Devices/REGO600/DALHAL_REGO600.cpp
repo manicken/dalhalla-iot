@@ -54,6 +54,7 @@ namespace DALHAL {
     constexpr FunctionEntry<FunctionTypes::ReadString> REGO600::readStringFunctions[] = {
         DALHAL_FUNCTION_ENTRY("lcd", REGO600::readString_RequestWholeLCD_Function, "request whole lcd contents"),
         DALHAL_FUNCTION_ENTRY("sysreg", REGO600::readString_RequestRegisterValue_Function, "read system register"),
+        DALHAL_FUNCTION_ENTRY("dump", REGO600::readString_RequestRamDump_Function, "dump ram using lcd read offset"),
     };
 
     constexpr FunctionEntry<FunctionTypes::WriteString> REGO600::writeStringFunctions[] = {
@@ -149,25 +150,25 @@ namespace DALHAL {
 
     HALOperationResult REGO600::readString_RequestRegisterValue_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
         REGO600& self = static_cast<REGO600&>(*device);
-        ZeroCopyString zcAddress = zcStrParameters.SplitOffHead('/');
-        if (zcAddress.IsEmpty()) {
-            GlobalLogger.Error(F("REGO600 RequestRegisterValue missing address parameter"));
+        ZeroCopyString zcRegIndex = zcStrParameters.SplitOffHead('/');
+        if (zcRegIndex.IsEmpty()) {
+            GlobalLogger.Error(F("REGO600 RequestRegisterValue missing regIndex parameter"));
             return HALOperationResult::InvalidArgument;
         }
-        uint32_t address = 0;
-        if (!zcAddress.ConvertTo_uint32(address)) {
-            GlobalLogger.Error(F("REGO600 RequestRegisterValue address parameter is not a unsigned integer"));
+        uint32_t regIndex = 0;
+        if (!zcRegIndex.ConvertTo_uint32(regIndex)) {
+            GlobalLogger.Error(F("REGO600 RequestRegisterValue regIndex parameter is not a unsigned integer"));
             return HALOperationResult::InvalidArgument;
         }
         auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
-        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::getCmdInfo((uint8_t)Drivers::REGO600::OpCodes::ReadSystemRegister);
-        Drivers::REGO600::ManualRawEntry.address = address;
-        Drivers::REGO600::ManualRawEntry.minVal.u16 = 0;
-        Drivers::REGO600::ManualRawEntry.maxVal.u16 = 65535;
-        Drivers::REGO600::ManualRawEntry.multiplier = 1;
-        Drivers::REGO600::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
+        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::ReadSystemRegister);
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
 
-        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::ManualRawEntry);
+        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::REGO600Driver::ManualRawEntry);
         
         
         if (!self.rego600->OneTimeRequest(std::move(req), requestRegisterValue_Callback, ctx)) {
@@ -178,9 +179,9 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonString(F("request"), F("enqueued"));
         sbs.write_json_value_separator();
-        sbs.write_jsonMemberStart(F("address"));
+        sbs.write_jsonMemberStart(F("regIndex"));
         sbs.write_char('"');
-        sbs.write_asHex((uint16_t)address);
+        sbs.write_asHex((uint16_t)regIndex);
         sbs.write_char('"');
      
         return HALOperationResult::Success;
@@ -201,19 +202,19 @@ namespace DALHAL {
     HALOperationResult REGO600::writeString_WriteRegisterValue_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs) {
         REGO600& self = static_cast<REGO600&>(*device);
         ZeroCopyString zcCopy = zcStrParameters;
-        ZeroCopyString zcAddress = zcCopy.SplitOffHead('/');
+        ZeroCopyString zcRegIndex = zcCopy.SplitOffHead('/');
         ZeroCopyString zcValue = zcCopy.SplitOffHead('/');
-        if (zcAddress.IsEmpty()) {
-            GlobalLogger.Error(F("REGO600 WriteRegisterValue missing address parameter"));
+        if (zcRegIndex.IsEmpty()) {
+            GlobalLogger.Error(F("REGO600 WriteRegisterValue missing regIndex parameter"));
             return HALOperationResult::InvalidArgument;
         }
         if (zcValue.IsEmpty()) {
             GlobalLogger.Error(F("REGO600 WriteRegisterValue missing value parameter"));
             return HALOperationResult::InvalidArgument;
         }
-        uint32_t address = 0;
-        if (!zcAddress.ConvertTo_uint32(address)) {
-            GlobalLogger.Error(F("REGO600 WriteRegisterValue address parameter is not a unsigned integer"));
+        uint32_t regIndex = 0;
+        if (!zcRegIndex.ConvertTo_uint32(regIndex)) {
+            GlobalLogger.Error(F("REGO600 WriteRegisterValue regIndex parameter is not a unsigned integer"));
             return HALOperationResult::InvalidArgument;
         }
         uint32_t value = 0;
@@ -222,17 +223,16 @@ namespace DALHAL {
             return HALOperationResult::InvalidArgument;
         }
         auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
-        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::getCmdInfo((uint8_t)Drivers::REGO600::OpCodes::WriteSystemRegister);
-        Drivers::REGO600::ManualRawEntry.address = address;
-        Drivers::REGO600::ManualRawEntry.minVal.u16 = 0;
-        Drivers::REGO600::ManualRawEntry.maxVal.u16 = 65535;
-        Drivers::REGO600::ManualRawEntry.multiplier = 1;
-        Drivers::REGO600::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
-        Drivers::REGO600::ManualRequestValue = value;
+        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::WriteSystemRegister);
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
+        Drivers::REGO600::REGO600Driver::ManualRequestValue = value;
 
-        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::ManualRawEntry);
-        req.get()->response.value = &Drivers::REGO600::ManualRequestValue;
-        
+        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::REGO600Driver::ManualRawEntry, Drivers::REGO600::REGO600Driver::ManualRequestValue);
+                
         if (!self.rego600->OneTimeRequest(std::move(req), writeRegisterValue_Callback, ctx)) {
             sbs.write_jsonString(F("error"), F("cannot start new request - possible reasons are that it's allready one in progress"));
             return HALOperationResult::ExecutionFailed;
@@ -241,9 +241,9 @@ namespace DALHAL {
         //sbs.write_json_value_separator();
         sbs.write_jsonString(F("request"), F("enqueued"));
         sbs.write_json_value_separator();
-        sbs.write_jsonMemberStart(F("address"));
+        sbs.write_jsonMemberStart(F("regIndex"));
         sbs.write_char('"');
-        sbs.write_asHex((uint16_t)address);
+        sbs.write_asHex((uint16_t)regIndex);
         sbs.write_char('"');
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("value"));
@@ -255,13 +255,108 @@ namespace DALHAL {
         return HALOperationResult::Success;
     }
 
+    void requestRamDump_Callback(void* cb_ctx, void* dataCtx, Drivers::REGO600::RequestMode mode) {
+        auto* ctx = static_cast<CommandCallbackByValue*>(cb_ctx);
+        
+        BlockStreamer bs(ctx->cb, "rego600/ramdump/read", BlockStreamer::DataType::Json);
+        delete ctx;
+
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        Drivers::REGO600::Request* req = static_cast<Drivers::REGO600::Request*>(dataCtx);
+        if (req == nullptr) {
+            sbs.write_jsonString(F("error"), F("request is nullptr"));
+            sbs.write_json_object_end();
+            return;
+        }
+
+        if (req->response.value == nullptr) {
+            sbs.write_jsonString(F("error"), F("req->response.value is nullptr"));
+            sbs.write_json_object_end();
+            return;
+        }
+        uint8_t* bytes = req->response.rawBytes;
+
+        sbs.write_jsonMemberStart(F("bytes"));
+        sbs.write_json_array_begin();
+        for (size_t i = 0; i < 20; i++) {
+            if(i>0) { sbs.write_json_value_separator(); }
+            sbs.write_char('"');
+            sbs.write_asHex((uint8_t)bytes[i]);
+            sbs.write_char('"');
+        }
+        sbs.write_json_array_end();
+
+        uint16_t* words = reinterpret_cast<uint16_t*>(bytes);
+        sbs.write_json_value_separator();
+        sbs.write_jsonMemberStart(F("words"));
+        sbs.write_json_array_begin();
+        for (size_t i = 0; i < 20; i++) {
+            if(i>0) { sbs.write_json_value_separator(); }
+            sbs.write_char('"');
+            sbs.write_asHex((uint16_t)words[i]);
+            sbs.write_char('"');
+        }
+        sbs.write_json_array_end();
+
+        sbs.write_json_value_separator();
+        sbs.write_jsonMemberStart(F("words_dec"));
+        sbs.write_json_array_begin();
+        for (size_t i = 0; i < 10; i++) {
+            if(i>0) { sbs.write_json_value_separator(); }
+            sbs.write(words[i]);
+        }
+        sbs.write_json_array_end();
+
+        sbs.write_json_object_end();
+    }
+
+    HALOperationResult REGO600::readString_RequestRamDump_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs) {
+        REGO600& self = static_cast<REGO600&>(*device);
+        ZeroCopyString zcRegIndex = zcStrParameters.SplitOffHead('/');
+        if (zcRegIndex.IsEmpty()) {
+            GlobalLogger.Error(F("REGO600 RequestRegisterValue missing regIndex parameter"));
+            return HALOperationResult::InvalidArgument;
+        }
+        uint32_t regIndex = 0;
+        if (!zcRegIndex.ConvertTo_uint32(regIndex)) {
+            GlobalLogger.Error(F("REGO600 RequestRegisterValue regIndex parameter is not a unsigned integer"));
+            return HALOperationResult::InvalidArgument;
+        }
+        auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
+        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::RamDump);
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
+
+        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::REGO600Driver::ManualRawEntry, self.rego600->GetRawBytesBufferRef());
+        
+        
+        if (!self.rego600->OneTimeRequest(std::move(req), requestRamDump_Callback, ctx)) {
+            sbs.write_jsonString(F("error"), F("cannot start new request - possible reasons are that it's allready one in progress"));
+            return HALOperationResult::ExecutionFailed;
+        }
+        sbs.write_jsonString(F("info"), F("OK"));
+        sbs.write_json_value_separator();
+        sbs.write_jsonString(F("request"), F("enqueued"));
+        sbs.write_json_value_separator();
+        sbs.write_jsonMemberStart(F("regIndex"));
+        sbs.write_char('"');
+        sbs.write_asHex((uint16_t)regIndex);
+        sbs.write_char('"');
+     
+        return HALOperationResult::Success;
+    }
+
     HALOperationResult REGO600::exec_activate_error_print_Function(Device* device) {
-        Drivers::REGO600::emitErrorsToWebSocket = true;
+        Drivers::REGO600::ErrorReport::emitErrorsToWebSocket = true;
         return HALOperationResult::Success;
     }
 
     HALOperationResult REGO600::exec_deactivate_error_print_Function(Device* device) {
-        Drivers::REGO600::emitErrorsToWebSocket = false;
+        Drivers::REGO600::ErrorReport::emitErrorsToWebSocket = false;
         return HALOperationResult::Success;
     }
 
