@@ -45,20 +45,20 @@ namespace Drivers {
 
         // theese are the only available op-codes (verified by rom-dump)
         const REGO600::OpCodeInfo OpCodeInfoTable[] = {
-            {REGO600::CommandID::NotSet,              0xFF, 0,  REGO600::RequestType::NotSet},
-            {REGO600::CommandID::ReadFrontPanel,      0x00, 5,  REGO600::RequestType::Value}, // Read from front panel (keyboard+leds) {reg 0x09A6+xx*2}
-            {REGO600::CommandID::WriteFrontPanel,     0x01, 1,  REGO600::RequestType::WriteConfirm}, // Write to front panel (keyboard+leds) {reg 09A6+xx*2}
-            {REGO600::CommandID::ReadSystemRegister,  0x02, 5,  REGO600::RequestType::Value}, // Read from system register (heat curve, temperatures, devices) {reg 0x12EC+xx*2}
-            {REGO600::CommandID::WriteSystemRegister, 0x03, 1,  REGO600::RequestType::WriteConfirm}, // Write into system register (heat curve, temperatures, devices) {reg 0x12EC+xx*2}
-            {REGO600::CommandID::ReadTimerRegisters,  0x04, 5,  REGO600::RequestType::Value}, // Read from timer registers {reg 0x1AEC+xx*2}
-            {REGO600::CommandID::WriteTimerRegisters, 0x05, 1,  REGO600::RequestType::WriteConfirm}, // Write into timer registers {reg 0x1AEC+xx*2}
-            {REGO600::CommandID::ReadRegister_1B08,   0x06, 5,  REGO600::RequestType::Value}, // Read from register 1b08 {reg 1B08+xx*2}
-            {REGO600::CommandID::WriteRegister_1B08,  0x07, 1,  REGO600::RequestType::WriteConfirm}, // Write into register 1b08 {1B08+xx*2}
-            {REGO600::CommandID::ReadDisplay,         0x20, 42, REGO600::RequestType::Text}, // Read from display {0x0A6E+21*xx}
-            {REGO600::CommandID::RamDump,             0x20, 42, REGO600::RequestType::RawBytes}, // Read from raw ram {0x0A6E+21*xx}
-            {REGO600::CommandID::ReadLastError,       0x40, 42, REGO600::RequestType::ErrorLogItem}, // Read last error line [4100/00] (read from external flash)
-            {REGO600::CommandID::ReadPrevError,       0x42, 42, REGO600::RequestType::ErrorLogItem}, // Read previous error line (prev from last reading) [4100/01](read from external flash)
-            {REGO600::CommandID::ReadRegoVersion,     0x7F, 5,  REGO600::RequestType::Value}, // Read rego version {constant 0258 = 600 ?Rego 600?}
+            {REGO600::CommandID::NotSet,              0xFF, 0,  REGO600::ResponseType::NotSet},
+            {REGO600::CommandID::ReadFrontPanel,      0x00, 5,  REGO600::ResponseType::Value}, // Read from front panel (keyboard+leds) {reg 0x09A6+xx*2}
+            {REGO600::CommandID::WriteFrontPanel,     0x01, 1,  REGO600::ResponseType::WriteConfirm}, // Write to front panel (keyboard+leds) {reg 09A6+xx*2}
+            {REGO600::CommandID::ReadSystemRegister,  0x02, 5,  REGO600::ResponseType::Value}, // Read from system register (heat curve, temperatures, devices) {reg 0x12EC+xx*2}
+            {REGO600::CommandID::WriteSystemRegister, 0x03, 1,  REGO600::ResponseType::WriteConfirm}, // Write into system register (heat curve, temperatures, devices) {reg 0x12EC+xx*2}
+            {REGO600::CommandID::ReadTimerRegisters,  0x04, 5,  REGO600::ResponseType::Value}, // Read from timer registers {reg 0x1AEC+xx*2}
+            {REGO600::CommandID::WriteTimerRegisters, 0x05, 1,  REGO600::ResponseType::WriteConfirm}, // Write into timer registers {reg 0x1AEC+xx*2}
+            {REGO600::CommandID::ReadRegister_1B08,   0x06, 5,  REGO600::ResponseType::Value}, // Read from register 1b08 {reg 1B08+xx*2}
+            {REGO600::CommandID::WriteRegister_1B08,  0x07, 1,  REGO600::ResponseType::WriteConfirm}, // Write into register 1b08 {1B08+xx*2}
+            {REGO600::CommandID::ReadDisplay,         0x20, 42, REGO600::ResponseType::Text}, // Read from display {0x0A6E+21*xx}
+            {REGO600::CommandID::RamDump,             0x20, 42, REGO600::ResponseType::RawBytes}, // Read from raw ram {0x0A6E+21*xx}
+            {REGO600::CommandID::ReadLastError,       0x40, 42, REGO600::ResponseType::ErrorLogItem}, // Read last error line [4100/00] (read from external flash)
+            {REGO600::CommandID::ReadPrevError,       0x42, 42, REGO600::ResponseType::ErrorLogItem}, // Read previous error line (prev from last reading) [4100/01](read from external flash)
+            {REGO600::CommandID::ReadRegoVersion,     0x7F, 5,  REGO600::ResponseType::Value}, // Read rego version {constant 0258 = 600 ?Rego 600?}
         };
         const OpCodeInfo& REGO600Driver::getCmdInfo(CommandID cmdId) {
 
@@ -214,7 +214,8 @@ namespace Drivers {
         bool REGO600Driver::ManualRequest_PrepareAndSend() {
             if (manualRequest_Mode == RequestMode::Lcd) {
                 
-                uartTxBuffer[1] = manualRequest->info.opcode; //static_cast<uint8_t>(OpCodes::ReadDisplay);
+                OpCodeInfo info = getCmdInfo(CommandID::ReadDisplay);
+                uartTxBuffer[1] = info.opcode; //static_cast<uint8_t>(OpCodes::ReadDisplay);
                 readLCD_RowIndex = 0;
                 currentExpectedRxLength = 42;
                 SetRequestAddr(0x00);
@@ -227,7 +228,8 @@ namespace Drivers {
 
             } else if (manualRequest_Mode == RequestMode::FrontPanelLeds) {
                 readFrontPanelLeds_Data = 0x00;
-                uartTxBuffer[1] = manualRequest->info.opcode; //static_cast<uint8_t>(OpCodes::ReadFrontPanel);
+                OpCodeInfo info = getCmdInfo(CommandID::ReadFrontPanel);
+                uartTxBuffer[1] = info.opcode; //static_cast<uint8_t>(OpCodes::ReadFrontPanel);
                 currentExpectedRxLength = 5;
                 readFrontPanelLedsIndex = 0;
                 SetRequestAddr(0x12);
@@ -239,8 +241,10 @@ namespace Drivers {
                 
                 SetRequestAddr(manualRequest->def.address);
 
-                if (manualRequest->info.type != RequestType::RawBytes) {
+                if (manualRequest->response.value != nullptr) {
                     SetRequestData(manualRequest->response.value->toUInt());
+                } else {
+                    SetRequestData(0x0000); // not used here
                 }
                 CalcAndSetTxChecksum();
                 
@@ -265,7 +269,7 @@ namespace Drivers {
                 ErrorReport::DebugMessage(String(F("OneTimeRequest - callback cannot be nullptr")).c_str());
                 return false; // no point if cb for some reason is nullptr
             }
-            if (req->info.type != RequestType::WriteConfirm && cb == nullptr) {
+            if (req->info.responseType != ResponseType::WriteConfirm && cb == nullptr) {
                 return false; // no point if cb for some reason is nullptr
             }
             if (mode != RequestMode::RefreshLoop) { 
@@ -345,7 +349,7 @@ namespace Drivers {
         }
 
         void REGO600Driver::RxDone_RefreshLoop() {
-            if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+            if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == Request::ValidateSetResult::Retry) {
                 ErrorReport::DebugMessage(String(F("refreshLoopList RX - invalid value ")).c_str());
                 SendRequestFrameAndResetRx(); // retry @ RefreshLoop value error
                 return;
@@ -377,10 +381,7 @@ namespace Drivers {
                 } else {
                     ErrorReport::DebugMessage(String(F("LCD - mReqCB not set")).c_str());
                 }
-
-                mode = RequestMode::RefreshLoop;
-                manualRequest_Mode = RequestMode::RefreshLoop;
-                RefreshLoop_Continue();
+                ReturnToRefreshLoop();
             } else {
                 readLCD_RowIndex++;
                 uartTxBuffer[4] = readLCD_RowIndex;
@@ -405,9 +406,7 @@ namespace Drivers {
                 } else {
                     ErrorReport::DebugMessage(String(F("FP - mReqCB not set")).c_str());
                 }
-                mode = RequestMode::RefreshLoop;
-                manualRequest_Mode = RequestMode::RefreshLoop;
-                RefreshLoop_Continue();
+                ReturnToRefreshLoop();
             }
         }
         void REGO600Driver::RxDone_OneTime() {
@@ -415,21 +414,24 @@ namespace Drivers {
                 // only set here, there is no point setting the data if there are no receiver
                 // actually making the request in the first place when
                 // the callback is not set is actually pointless
-                if (manualRequest->ValidateAndSetFromBuffer(uartRxBuffer) == false) {
+
+                Request::ValidateSetResult setRes = manualRequest->ValidateAndSetFromBuffer(uartRxBuffer);
+                if (setRes == Request::ValidateSetResult::Retry) {
                     // try the request again
-                    ErrorReport::DebugMessage(String(F("manualReq RX - ValidateAndSetFromBuffer error")).c_str());
                     SendRequestFrameAndResetRx(); // retry @ OneTime value error
                     return;
+                } else if (setRes == Request::ValidateSetResult::Success) {
+                    manualRequest_Callback(manualRequest_Context, manualRequest.get(), manualRequest_Mode);
                 }
-                //Request* request = manuallyRequest.release();
-                manualRequest_Callback(manualRequest_Context, manualRequest.get(), manualRequest_Mode);
-                //delete request;
             }
             else {
-                //manuallyRequest.reset(); // free the current data
                 ErrorReport::DebugMessage(String(F("OT - mReqCB not set")).c_str());
             }
             manualRequest.reset(); // free the current data
+            ReturnToRefreshLoop();
+        }
+
+        void REGO600Driver::ReturnToRefreshLoop() {
             mode = RequestMode::RefreshLoop;
             manualRequest_Mode = RequestMode::RefreshLoop;
             RefreshLoop_Continue();
@@ -546,7 +548,7 @@ namespace Drivers {
                     commState = CommState::Idle;
                     mode = RequestMode::RefreshLoop;
                     FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-                    ErrorReport::DebugMessage(String(F("uartRxBuffer full")).c_str());
+                    ErrorReport::DebugMessage(String(F("uartRxBuffer full - this is likely to a hw problem")).c_str());
                 }
                 lastRequestMs = millis();
             }

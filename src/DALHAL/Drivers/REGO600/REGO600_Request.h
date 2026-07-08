@@ -73,7 +73,13 @@ namespace Drivers {
              */
             Request(const OpCodeInfo& _info, const RegoLookupEntry& _def, uint8_t* externalValue);
 
-            bool ValidateAndSetFromBuffer(uint8_t* buff);
+            enum class ValidateSetResult {
+                UnsetType,
+                UnknownType,
+                Retry,
+                Success
+            };
+            ValidateSetResult ValidateAndSetFromBuffer(uint8_t* buff);
 
             std::string ToString();
 

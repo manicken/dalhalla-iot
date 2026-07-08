@@ -67,26 +67,28 @@ namespace Drivers {
             : info(_info), 
             def(_def), ownedValue(false)
         {
-            if (info.type == RequestType::Text) {
+            if (info.responseType == ResponseType::Text) {
                 response.text = new char[21](); // 20 characters + null terminator
                 ownedValue = true;
             }
-            else if (info.type == RequestType::Value) {
+            else if (info.responseType == ResponseType::Value) {
                 response.value = new DALHAL::HALValue();
                 ownedValue = true;
             }
-            else if (info.type == RequestType::RawBytes) {
+            else if (info.responseType == ResponseType::RawBytes) {
                 response.rawBytes = new uint8_t[20]();
                 ownedValue = true;
             }
-            else if (info.type == RequestType::ErrorLogItem) {
+            else if (info.responseType == ResponseType::ErrorLogItem) {
                 response.text = new char[20](); // 3 digit error code + space + 6 char date + space + 8 char time + null terminator
                 ownedValue = true;
+            } else {
+                response.value = nullptr;
             }
         }
 
-        bool Request::ValidateAndSetFromBuffer(uint8_t* buff) {
-            if (info.type == RequestType::Value && response.value) {
+        Request::ValidateSetResult Request::ValidateAndSetFromBuffer(uint8_t* buff) {
+            if (info.responseType == ResponseType::Value && response.value) {
                 // 1. Extract the 16-bit raw value (7-bit packing)
                 uint16_t rawValue = (buff[1] << 14) + (buff[2] << 7) + buff[3];
                 
@@ -98,7 +100,7 @@ namespace Drivers {
                             response.value->set((int32_t)(sVal*def.multiplier));
                         } else {
                             ErrorReport::DebugMessage(String(F("skipped Signed value because out of range")).c_str());
-                            return false;
+                            return Request::ValidateSetResult::Retry;
                         }
                         break;
                     }
@@ -107,7 +109,7 @@ namespace Drivers {
                             response.value->set((uint32_t)rawValue);
                         } else {
                             ErrorReport::DebugMessage(String(F("skipped Bool value because out of range")).c_str());
-                            return false;
+                            return Request::ValidateSetResult::Retry;
                         }
                         break;
                     case ValueType::Unsigned:
@@ -115,7 +117,7 @@ namespace Drivers {
                             response.value->set((uint32_t)(rawValue*def.multiplier));
                         } else {
                             ErrorReport::DebugMessage(String(F("skipped Unsigned value because out of range")).c_str());
-                            return false;
+                            return Request::ValidateSetResult::Retry;
                         }
                         break;
                     case ValueType::Float: { 
@@ -124,7 +126,7 @@ namespace Drivers {
                             response.value->set(sVal*def.multiplier);
                         } else {
                             ErrorReport::DebugMessage(String(F("skipped Float value because out of range")).c_str());
-                            return false;
+                            return Request::ValidateSetResult::Retry;
                         }
                         break;
                     }
@@ -132,17 +134,17 @@ namespace Drivers {
                         break; // to avoid making infinite request loop on unset type entities
                 }
 
-            } else if (info.type == RequestType::Text) {
+            } else if (info.responseType == ResponseType::Text) {
                 uint8_t tmp[20];
                 
                 if (!unpack_nibbles(&buff[1], tmp, 20)) {
                     ErrorReport::DebugMessage(String(F("LCD data corruption detected - discarding frame - ")).c_str());
-                    return false;
+                    return Request::ValidateSetResult::Retry;
                 }
 
                 memcpy(response.text, tmp, 20);
                 response.text[20] = '\0';
-            } else if (info.type == RequestType::ErrorLogItem) {
+            } else if (info.responseType == ResponseType::ErrorLogItem) {
                 
                 uint32_t code = buff[1]*16 + buff[2];
                 response.text[0] = (code / 100)+0x30;
@@ -155,36 +157,41 @@ namespace Drivers {
                     response.text[ti] = buff[bi]*16 + buff[bi+1];
                 }
                 
-            } else if (info.type == RequestType::RawBytes) {
+            }/* else if (info.type == RequestType::RawBytes) {
                 uint8_t tmp[20];
                 
                 if (!unpack_nibbles(&buff[1], tmp, 20)) {
                     ErrorReport::DebugMessage(String(F("RAW ram dump data corruption detected - discarding frame - ")).c_str());
-                    return false;
+                    return Request::ValidateSetResult::Retry;
                 }
 
                 memcpy(response.rawBytes, tmp, 20);
-
+            } */else if (info.responseType == ResponseType::WriteConfirm) {
+                return Request::ValidateSetResult::Success;
+            } else if (info.responseType == ResponseType::NotSet) {
+                ErrorReport::DebugMessage(String(F("responseType not set - discarding frame - ")).c_str());
+                return Request::ValidateSetResult::UnsetType;   
             } else {
-                return false;   
+                ErrorReport::DebugMessage(String(F("unknown responseType - discarding frame - ")).c_str());
+                return Request::ValidateSetResult::UnknownType;   
                 // there are currently no more types right now
             }
-            return true;
+            return Request::ValidateSetResult::Success;
         }
 
         REGO600::Request::~Request() {
             // delete owning
             if (ownedValue) {
-                if (info.type == RequestType::Text) {
+                if (info.responseType == ResponseType::Text) {
                     delete[] response.text;
                 }
-                else if (info.type == RequestType::Value) {
+                else if (info.responseType == ResponseType::Value) {
                     delete response.value;
                 }
-                else if (info.type == RequestType::RawBytes) {
+                else if (info.responseType == ResponseType::RawBytes) {
                     delete[] response.rawBytes;
                 }
-                else if (info.type == RequestType::ErrorLogItem) {
+                else if (info.responseType == ResponseType::ErrorLogItem) {
                     delete[] response.text;
                 }
             }

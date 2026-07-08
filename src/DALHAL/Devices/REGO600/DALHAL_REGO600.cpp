@@ -232,9 +232,9 @@ namespace DALHAL {
         Drivers::REGO600::REGO600Driver::ManualRequestValue = value;
 
         auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::REGO600Driver::ManualRawEntry, Drivers::REGO600::REGO600Driver::ManualRequestValue);
-                
+               
         if (!self.rego600->OneTimeRequest(std::move(req), writeRegisterValue_Callback, ctx)) {
-            sbs.write_jsonString(F("error"), F("cannot start new request - possible reasons are that it's allready one in progress"));
+            sbs.write_jsonString(F("error"), F("cannot start new request - possible reason is that it's allready one in progress"));
             return HALOperationResult::ExecutionFailed;
         }
         //sbs.write_jsonString(F("info"), F("OK"));
@@ -249,6 +249,11 @@ namespace DALHAL {
         sbs.write_jsonMemberStart(F("value"));
         sbs.write_char('"');
         sbs.write_asHex((uint16_t)value);
+        sbs.write_char('"');
+        sbs.write_json_value_separator();
+        sbs.write_jsonMemberStart(F("opcode"));
+        sbs.write_char('"');
+        sbs.write_asHex((uint16_t)opInfo.opcode);
         sbs.write_char('"');
         sbs.write_json_value_separator();
      
@@ -287,7 +292,7 @@ namespace DALHAL {
         }
         sbs.write_json_array_end();
 
-        uint16_t* words = reinterpret_cast<uint16_t*>(bytes);
+        /*uint16_t* words = reinterpret_cast<uint16_t*>(bytes);
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("words"));
         sbs.write_json_array_begin();
@@ -307,7 +312,7 @@ namespace DALHAL {
             sbs.write(words[i]);
         }
         sbs.write_json_array_end();
-
+*/
         sbs.write_json_object_end();
     }
 

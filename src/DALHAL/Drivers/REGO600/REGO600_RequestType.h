@@ -26,7 +26,7 @@
 namespace Drivers {
     namespace REGO600 {
 
-        enum class RequestType {
+        enum class ResponseType {
             Value,
             Text,
             RawBytes,

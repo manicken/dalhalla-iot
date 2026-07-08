@@ -178,6 +178,7 @@ namespace Drivers {
 
             uint16_t GetValueFromUartRxBuff();
 
+            void ReturnToRefreshLoop();
             void RefreshLoop_Restart();
             void RefreshLoop_SendCurrent();
             void RefreshLoop_Continue();

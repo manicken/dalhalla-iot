@@ -36,7 +36,7 @@ namespace Drivers {
             CommandID id;
             uint8_t opcode;
             uint32_t size;
-            RequestType type;
+            ResponseType responseType;
         };
 
     }

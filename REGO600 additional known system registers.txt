@@ -4,3 +4,15 @@ ext input state 01FB
 
 maybe normal run mode 0039
 something else related to main states 0435
+
+
+
+DAT_EXTMEM_09cc_FRONT_PANEL__LED_SB
+
+meny selector 0x1b78 -> 0x446(index@sysreg offset)
+meny selector 0x1b7A -> 0x447(index@sysreg offset)
+
+0x1b7A default 0x1efc eller 0xfc1e
+
+visa version på meny för att låsa upp fabrik har 0x9c2c
+

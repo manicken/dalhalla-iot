@@ -653,7 +653,7 @@ function logCollapsible(jsonData, titleStr) {
 
   summary.textContent =
     `${titleStr ?? ""} ` +
-    (oneLine.length > 100 ? oneLine.slice(0, 97) + "…" : oneLine);
+    (oneLine.length > 150 ? oneLine.slice(0, 150-3) + "…" : oneLine);
 
   const pre = document.createElement("pre");
   pre.textContent = JSON.stringify(jsonData, null, 2);
