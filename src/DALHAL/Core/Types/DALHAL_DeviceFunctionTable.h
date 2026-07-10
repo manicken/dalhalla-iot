@@ -111,7 +111,7 @@ namespace DALHAL {
     static const FunctionEntry<Fn>* GetDeviceFunctionEntry(const FunctionTable_t<Fn>& funcTable, const ZeroCopyString& zcFuncName) {
         for (size_t i = 0; i<funcTable.count; ++i) {
             if (funcTable.items[i].name(&zcFuncName, nullptr)) {
-                return funcTable.items[i];
+                return &funcTable.items[i];
             }
             /*if (zcFuncName.EqualsIC(funcTable.items[i].name)) {
                 return &funcTable.items[i];
@@ -229,6 +229,12 @@ namespace DALHAL {
     };
 
     template<typename Fn>
+    struct FunctionEntryLookupResult {
+        HALOperationResult result;
+        const FunctionEntry<Fn>* entry;
+    };
+
+    template<typename Fn>
     static FunctionLookupResult<Fn> GetDeviceFunction(Device* device, const ZeroCopyString& zcFuncName) {
         if (device == nullptr) {// absolute failsafe
             return { HALOperationResult::DeviceNotFound, nullptr }; 
@@ -255,6 +261,62 @@ namespace DALHAL {
             return { HALOperationResult::UnsupportedCommand, nullptr };
         }
         return { HALOperationResult::Success, fn };
+    }
+
+    template<typename Fn>
+    static FunctionEntryLookupResult<Fn> GetDeviceFunctionEntry(Device* device, const ZeroCopyString& zcFuncName) {
+        if (device == nullptr) {// absolute failsafe
+            return { HALOperationResult::DeviceNotFound, nullptr }; 
+        } 
+        const Registry::DefineBase* regDef = device->GetRegistryDefine();
+        if (regDef == nullptr) { 
+            return { HALOperationResult::RegistryDefineNotFound, nullptr };
+        }
+        const DeviceFunctionTable* devFuncTable = regDef->functionTable;
+        if (devFuncTable == nullptr) {
+            return { HALOperationResult::FunctionTableNotFound, nullptr };
+        }
+
+        const FunctionTable_t<Fn>* table = GetTable<Fn>(devFuncTable);
+        if (!table) {
+            return { HALOperationResult::FunctionTable_t_NotFound, nullptr };
+        }
+        if (table->items == nullptr || table->count == 0) {
+            return { HALOperationResult::UnsupportedOperation, nullptr };
+        }
+        
+        const FunctionEntry<Fn>* entry = GetDeviceFunctionEntry(*table, zcFuncName);
+        if (entry == nullptr) {
+            return { HALOperationResult::UnsupportedCommand, nullptr };
+        }
+        return { HALOperationResult::Success, entry };
+    }
+
+    template<typename Fn>
+    static HALOperationResult GetDeviceFunctions(Device* device, StringBuilderStreamer& sbs) {
+        if (device == nullptr) {// absolute failsafe
+            return HALOperationResult::DeviceNotFound; 
+        } 
+        const Registry::DefineBase* regDef = device->GetRegistryDefine();
+        if (regDef == nullptr) { 
+            return HALOperationResult::RegistryDefineNotFound;
+        }
+        const DeviceFunctionTable* devFuncTable = regDef->functionTable;
+        if (devFuncTable == nullptr) {
+            return HALOperationResult::FunctionTableNotFound;
+        }
+
+        const FunctionTable_t<Fn>* table = GetTable<Fn>(devFuncTable);
+        if (!table) {
+            return HALOperationResult::FunctionTable_t_NotFound;
+        }
+        if (table->items == nullptr || table->count == 0) {
+            return HALOperationResult::UnsupportedOperation;
+        }
+
+        GetDeviceFunctions<Fn>(*table, sbs);
+
+        return HALOperationResult::Success;
     }
 
 #define DALHAL_FUNCTION_ENTRY(name, fn, help) { CE_MATCH_EMIT_STR(name), &fn, CE_EMIT_STR(help) }

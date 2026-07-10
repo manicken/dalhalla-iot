@@ -126,7 +126,8 @@ namespace DALHAL {
 
                     DALHAL::BlockStreamer bs(DALHAL::WebSocketAPI::BroadcastCb, "log entry", DALHAL::BlockStreamer::DataType::PlainText);
                     bs.writer().write(F("[ButtonInput] pressed, toggleState="));
-                    newVal.toString(bs.writer());
+                    bs.writer().write(newVal);
+                    //newVal.toString(bs.writer());
                 
                 } else {
 

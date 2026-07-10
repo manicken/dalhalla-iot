@@ -269,6 +269,27 @@ namespace DALHAL {
         if (n > 0) write(buf, (size_t)n);
     }
 
+    void StringBuilderStreamer::write(HALValue v) {
+        switch (v.getType()) {
+            case HALValue::Type::INT:  return write(v.asRawInt());
+            case HALValue::Type::FLOAT: {
+                float fv = v.asRawFloat();
+                if (isnan(fv)) {
+                    write_json_null();
+                } else {
+                    return write(v.asRawFloat());
+                }
+                break;
+            }
+            case HALValue::Type::BOOL:  return write(v.asRawBool());
+            case HALValue::Type::UINT: return write(v.asRawUInt());
+            case HALValue::Type::CSTRING: return write(v.asRawConstChar());
+            case HALValue::Type::UNSET: return write(F("_UNSET_"));
+            default: return write(F("_unknown_"));
+        }
+
+    }
+
     void StringBuilderStreamer::write_asBin(uint8_t v) {
         for (int bit = 7; bit >= 0; --bit) {
             write_char((v & (1U << bit)) ? '1' : '0');
@@ -321,6 +342,10 @@ namespace DALHAL {
         char buf[32];
         int n = snprintf(buf, sizeof(buf), "%g", (double)v);
         if (n > 0) write(buf, (size_t)n);
+    }
+
+    void StringBuilderStreamer::write_json_null() {
+        write(F("null"));
     }
 
     void StringBuilderStreamer::write_json_value_separator() {
@@ -429,6 +454,10 @@ namespace DALHAL {
     void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, float v) {
         write_jsonMemberStart(key);
         write_json(v);
+    }
+    void StringBuilderStreamer::write_jsonNumber(const __FlashStringHelper* key, HALValue v) {
+        write_jsonMemberStart(key);
+        write(v);
     }
 
 }

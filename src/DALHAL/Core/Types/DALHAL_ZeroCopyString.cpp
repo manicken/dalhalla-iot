@@ -524,6 +524,17 @@ namespace DALHAL {
         }
         return false;
     }
+
+    bool ZeroCopyString::StartsWith(char c) const {
+        if (Length() == 0) return false;
+        return (*start == c);
+    }
+
+    bool ZeroCopyString::StartsWithIC(char c) const {
+        if (Length() == 0) return false;
+        return (std::tolower(*start) == std::tolower(c));
+    }
+
     bool ZeroCopyString::ValidNumber() const {
         if (Length() == 0) return false;
 

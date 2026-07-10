@@ -26,6 +26,7 @@
 #include <functional>
 #include <WString.h> // __FlashStringHelper
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
+#include <DALHAL/Core/Types/DALHAL_Value.h>
 #include <DALHAL/API/DALHAL_CommandCallback.h>
 
 #if defined(ESP8266)
@@ -94,7 +95,7 @@ namespace DALHAL {
         void write(uint32_t v, const char* fmt);
         void write(int32_t v, const char* fmt);
         void write(float v);
-
+        void write(HALValue v);
         
         void write_asBin(uint8_t v);
         void write_asBin(uint16_t v);
@@ -105,6 +106,8 @@ namespace DALHAL {
 
         /** note if separator is null terminator then the separator is not printed */
         void write_asHex(uint8_t* buff, size_t len, char separator = '\0');
+        /** write json null */
+        void write_json_null();
         /** writes a simple , (comma) */
         void write_json_value_separator();
         /** write a simple : (colon) */
@@ -141,6 +144,7 @@ namespace DALHAL {
         void write_jsonNumber(const __FlashStringHelper* key, uint32_t v);
         void write_jsonNumber(const __FlashStringHelper* key, int32_t v);
         void write_jsonNumber(const __FlashStringHelper* key, float v);
+        void write_jsonNumber(const __FlashStringHelper* key, HALValue v);
 
         inline CommandCallback GetCommandCallback() {
                 return cmdCb;

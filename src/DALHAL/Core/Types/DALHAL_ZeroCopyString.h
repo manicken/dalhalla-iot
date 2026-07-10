@@ -191,7 +191,8 @@ namespace DALHAL {
 
         bool EqualsICAny(const char* const* candidates) const;
 
-        
+        bool StartsWith(char c) const;
+        bool StartsWithIC(char c) const;
 
         /** returns true if any valid number: float, integer or unsigned integer */
         bool ValidNumber() const;

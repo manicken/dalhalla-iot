@@ -83,7 +83,8 @@ namespace DALHAL {
 
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("value"));
-        value.toString(sbs);
+        sbs.write(value);
+        //value.toString(sbs);
     }
 
 }

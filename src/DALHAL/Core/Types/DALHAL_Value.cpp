@@ -172,7 +172,7 @@ namespace DALHAL {
         }
     }
 
-    void HALValue::toString(StringBuilderStreamer& sbs) const {
+    /*void HALValue::toString(StringBuilderStreamer& sbs) const {
         switch (type) {
             case Type::INT:
                 sbs.write(ival);
@@ -196,7 +196,7 @@ namespace DALHAL {
                 sbs.write_jsonQuoted(F("_unknown_"));
                 return;
         }
-    }
+    }*/
 
     std::string HALValue::toString() const {
         switch (type) {

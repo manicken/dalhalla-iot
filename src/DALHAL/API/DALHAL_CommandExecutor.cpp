@@ -95,14 +95,57 @@ namespace DALHAL {
     //
     // This ordering ensures payload content cannot corrupt UID or command resolution.
     CommandExecutor::ReadWriteCmdParameters::ReadWriteCmdParameters(ZeroCopyString& zcStr) {
+        zcStr.Trim();
+        if (zcStr.StartsWith('?')) {
+            isHelpRequest = true;
+            zcStr.start++;
+        } else {
+            isHelpRequest = false;
+        }
         zcUid = zcStr.SplitOffHead('/');
-        zcCmd = zcUid.SplitOffTail('#');
+        zcUid.Trim();
+        const char* cmdSeparator = zcUid.FindCharReverse('#');
+        if (cmdSeparator != nullptr) {
+            zcCmd = zcUid.SplitOffTail(cmdSeparator);
+            zcCmd.Trim();
+            cmdIsPresent = true;
+        } else {
+            cmdIsPresent = false;
+        }
+        const char* startBracket = zcUid.FindChar('[');
+        const char* endBracket = zcUid.FindChar(']');
+        if (startBracket != nullptr) { // do not really care if end bracket is found or not actually we only need the first to make the split
+            zcBracketParameter = zcUid.SplitOffTail(startBracket);
+            if (endBracket != nullptr) {
+                zcBracketParameter.end = endBracket;
+            }
+            zcBracketParameter.Trim();
+            zcUid.Trim();
+            isBracketOp = true;
+        } else {
+            isBracketOp = false;
+        }
         zcParameters = zcStr; // the value is the rest
+        zcParameters.Trim();
     }
 
     CommandExecutor::ExecCmdParameters::ExecCmdParameters(ZeroCopyString& zcStr) {
+        zcStr.Trim();
+        if (zcStr.StartsWith('?')) {
+            isHelpRequest = true;
+            zcStr.start++;
+        }
         zcUid = zcStr.SplitOffHead('/');
-        zcCmd = zcUid.SplitOffTail('#');
+        zcUid.Trim();
+        const char* cmdSeparator = zcUid.FindCharReverse('#');
+        if (cmdSeparator != nullptr) {
+            zcCmd = zcUid.SplitOffTail(cmdSeparator);
+            zcCmd.Trim();
+            cmdIsPresent = true;
+        } else {
+            cmdIsPresent = false;
+        }
+        // here are not any parameters
     }
 
 #define DALHAL_CMD_CHILDREN(n) n, DALHAL_ARRAY_COUNT(n)
@@ -136,15 +179,10 @@ namespace DALHAL {
 
     HALOperationResult Exec_Hal_Exec(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Read_String(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Read_UInt32(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Read_Int32(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Read_Bool(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Read_Float(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_Read_Value(ZeroCopyString& zcStr, CommandCallback cb); // to make explicit type functions obsolete
+
     HALOperationResult Exec_Hal_Write_String(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Write_UInt32(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Write_Int32(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Write_Bool(ZeroCopyString& zcStr, CommandCallback cb);
-    HALOperationResult Exec_Hal_Write_Float(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_Write_Value(ZeroCopyString& zcStr, CommandCallback cb);  // to make explicit type functions obsolete
 
     HALOperationResult Exec_Hal_Config_Reload(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& zcStr, CommandCallback cb);
@@ -164,18 +202,16 @@ namespace DALHAL {
 
     static constexpr CommandNode HalWriteItems[] = {
         DALHAL_CMD_EXEC_ENTRY("string", Exec_Hal_Write_String, "hal write string"),
-        DALHAL_CMD_EXEC_ENTRY("uint32", Exec_Hal_Write_UInt32, "hal write uint32"),
-        DALHAL_CMD_EXEC_ENTRY("int32", Exec_Hal_Write_Int32, "hal write int32"),
-        DALHAL_CMD_EXEC_ENTRY("bool", Exec_Hal_Write_Bool, "hal write bool"),
-        DALHAL_CMD_EXEC_ENTRY("float", Exec_Hal_Write_Float, "hal write float"),
+        DALHAL_CMD_EXEC_ENTRY("str", Exec_Hal_Write_String, "hal write string - short alias for string"),
+        DALHAL_CMD_EXEC_ENTRY("value", Exec_Hal_Write_Value, "hal write numeric value"),
+        DALHAL_CMD_EXEC_ENTRY("val", Exec_Hal_Write_Value, "hal write numeric value - short alias for value"),
     };
 
     static constexpr CommandNode HalReadItems[] = {
         DALHAL_CMD_EXEC_ENTRY("string", Exec_Hal_Read_String, "hal read string"),
-        DALHAL_CMD_EXEC_ENTRY("uint32", Exec_Hal_Read_UInt32, "hal read uint32"),
-        DALHAL_CMD_EXEC_ENTRY("int32", Exec_Hal_Read_Int32, "hal read int32"),
-        DALHAL_CMD_EXEC_ENTRY("bool", Exec_Hal_Read_Bool, "hal read bool"),
-        DALHAL_CMD_EXEC_ENTRY("float", Exec_Hal_Read_Float, "hal read float"),
+        DALHAL_CMD_EXEC_ENTRY("str", Exec_Hal_Read_String, "hal read string - short alias for string"),
+        DALHAL_CMD_EXEC_ENTRY("value", Exec_Hal_Read_Value, "hal read numeric value"),
+        DALHAL_CMD_EXEC_ENTRY("val", Exec_Hal_Read_Value, "hal read numeric value - short alias for value"),
     };
 
     static constexpr CommandNode HalScriptItems[] = {
@@ -207,6 +243,8 @@ namespace DALHAL {
         DALHAL_CMD_EXEC_ENTRY("exec", Exec_Hal_Exec, "run device exec cmd"),
         DALHAL_CMD_GROUP_ENTRY("write", HalWriteItems, "run device write cmds"),
         DALHAL_CMD_GROUP_ENTRY("read", HalReadItems, "run device read cmds"),
+        DALHAL_CMD_GROUP_ENTRY("wr", HalWriteItems, "run device write cmds - alias for write"),
+        DALHAL_CMD_GROUP_ENTRY("rd", HalReadItems, "run device read cmds - alias for read"),
         DALHAL_CMD_GROUP_ENTRY("config", HalConfigItems, "hal config cmds"),
         DALHAL_CMD_GROUP_ENTRY("scripts", HalScriptItems, "script specific commands"),
         DALHAL_CMD_GROUP_ENTRY("meta", HalMetaItems, "print metadata"),
@@ -310,7 +348,7 @@ namespace DALHAL {
         sbs.write_json_object_end();
     }
 
-    HALOperationResult PrecheckHalReadWriteExecOperation(CommandExecutor::ReadWriteCmdParameters& params, BlockStreamer& bs, Device** outDevice) {
+    HALOperationResult ValidateDeviceExistence(CommandExecutor::ReadWriteCmdParameters& params, BlockStreamer& bs, Device** outDevice) {
         // check if have uid given
         if (params.zcUid.IsEmpty()) {
             StringBuilderStreamer& sbs = bs.writer();
@@ -326,10 +364,10 @@ namespace DALHAL {
             StringBuilderStreamer& sbs = bs.writer();
             sbs.write_json_object_begin();
             sbs.write_jsonMemberStart(F("error"));
-            sbs.write('"');
+            sbs.write_char('"');
             sbs.write(F("device not found: "));
             sbs.write(params.zcUid);
-            sbs.write('"');
+            sbs.write_char('"');
             sbs.write_json_object_end();
             return HALOperationResult::DeviceNotFound;
         }
@@ -661,39 +699,46 @@ namespace DALHAL {
         sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
+    
     HALOperationResult Exec_Hal_Read_String(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/read/string", BlockStreamer::DataType::Json);
         Device* device = nullptr;
         CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
+        HALOperationResult opres = ValidateDeviceExistence(params, bs, &device);
         if (opres != HALOperationResult::Success) {
             return opres;
         }
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
 
-        auto fnRes = GetDeviceFunction<FunctionTypes::ReadString>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
-
-            opres = fnRes.fn(device, params.zcParameters, sbs);
+        if (params.isHelpRequest && params.cmdIsPresent == false) {
+            sbs.write_jsonMemberStart(F("help"));
+            opres = GetDeviceFunctions<FunctionTypes::ReadString>(device, sbs);
             if (opres != HALOperationResult::Success) {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
+                sbs.write_json_null(); // here we decide what to write on error
             }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
+        }
+        else {
+            auto fnRes = GetDeviceFunctionEntry<FunctionTypes::ReadString>(device, params.zcCmd);
             opres = fnRes.result;
+            if (opres == HALOperationResult::Success) {
+                if (params.isHelpRequest == false) {
+                    opres = fnRes.entry->fn(device, params.zcParameters, sbs);
+                } else if (params.cmdIsPresent) {
+                    sbs.write_jsonMemberStart(F("help"));
+                    fnRes.entry->help(sbs);
+                }
+            }
         }
-
         sbs.write_json_object_end();
         return opres;
     }
-    HALOperationResult Exec_Hal_Read_UInt32(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/read/uint32", BlockStreamer::DataType::Json);
+
+    HALOperationResult Exec_Hal_Read_Value(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "hal/read/value", BlockStreamer::DataType::Json);
         Device* device = nullptr;
         CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
+        HALOperationResult opres = ValidateDeviceExistence(params, bs, &device);
         if (opres != HALOperationResult::Success) {
             return opres;
         }
@@ -701,295 +746,98 @@ namespace DALHAL {
         sbs.write_json_object_begin();
         HALValue val;
         auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
+        opres = fnRes.result;
+        if (opres == HALOperationResult::Success) {
             
             opres = fnRes.fn(device, val);
             if (opres == HALOperationResult::Success) {
-                sbs.write_jsonNumber(F("value"), val.toUInt());
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
+                sbs.write_jsonNumber(F("value"), val);
             }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
         }
 
         sbs.write_json_object_end();
         return opres;
     }
-    HALOperationResult Exec_Hal_Read_Int32(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/read/int32", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-        HALValue val;
-        auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
-            
-            opres = fnRes.fn(device, val);
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonNumber(F("value"), val.toInt());
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-    }
-    HALOperationResult Exec_Hal_Read_Bool(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/read/bool", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-
-        HALValue val;
-        auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
-            
-            opres = fnRes.fn(device, val);
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonNumber(F("value"), val.toBool());
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-    }
-    HALOperationResult Exec_Hal_Read_Float(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/read/float", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-
-        HALValue val;
-        auto fnRes = GetDeviceFunction<FunctionTypes::ReadToHALValue>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
-            
-            opres = fnRes.fn(device, val);
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonNumber(F("value"), val.toFloat());
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-    }
+    
     HALOperationResult Exec_Hal_Write_String(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/write/string", BlockStreamer::DataType::Json);
         Device* device = nullptr;
         CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
+        HALOperationResult opres = ValidateDeviceExistence(params, bs, &device);
         if (opres != HALOperationResult::Success) {
             return opres;
         }
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
 
-        auto fnRes = GetDeviceFunction<FunctionTypes::WriteString>(device, params.zcCmd);
-        if (fnRes.result == HALOperationResult::Success) {
-
-            opres = fnRes.fn(device, params.zcParameters, sbs);
-            if (opres == HALOperationResult::Success) {
-                
-                sbs.write_jsonString(F("info"), F("OK"));
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
+        if (params.isHelpRequest && params.cmdIsPresent == false) {
+            sbs.write_jsonMemberStart(F("help"));
+            opres = GetDeviceFunctions<FunctionTypes::WriteString>(device, sbs);
+            if (opres != HALOperationResult::Success) {
+                sbs.write_json_null(); // here we decide what to write on error
             }
-        } else {
-            sbs.write_jsonMemberStart(F("error"));
-            sbs.write_jsonQuoted(HALOperationResultToString(fnRes.result));
+        }
+        else {
+            auto fnRes = GetDeviceFunctionEntry<FunctionTypes::WriteString>(device, params.zcCmd);
             opres = fnRes.result;
+            if (opres == HALOperationResult::Success) {
+                if (params.isHelpRequest == false) {
+                    opres = fnRes.entry->fn(device, params.zcParameters, sbs);
+                } else if (params.cmdIsPresent) {
+                    sbs.write_jsonMemberStart(F("help"));
+                    fnRes.entry->help(sbs);
+                }
+            }
         }
-
         sbs.write_json_object_end();
         return opres;
     }
-    HALOperationResult Exec_Hal_Write_UInt32(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/write/uint32", BlockStreamer::DataType::Json);
+    HALOperationResult Exec_Hal_Write_Value(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "hal/write/value", BlockStreamer::DataType::Json);
         Device* device = nullptr;
         CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
+        HALOperationResult opres = ValidateDeviceExistence(params, bs, &device);
         if (opres != HALOperationResult::Success) {
             return opres;
         }
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
-        // Convert value to integer
-        uint32_t uintValue = 0;
-        if (params.zcParameters.ConvertTo_uint32(uintValue) == false) {
-            sbs.write_jsonString(F("error"), F("Invalid uint32 value."));
-        } else {
-            HALValue halValue = uintValue;
+        HALValue halValue;
+        NumberResult numRes = params.zcParameters.ConvertStringToNumber();
+        if (numRes.type != NumberType::INVALID) {
 
-            auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);
-            if (fnRes.result == HALOperationResult::Success) {
-                opres = fnRes.fn(device, halValue);
-            } else {
-                opres = fnRes.result;
+            if (numRes.type == NumberType::FLOAT) {
+                halValue = numRes.f32;
+            } else if (numRes.type == NumberType::UINT32) {
+                halValue = numRes.u32;
+            } else if (numRes.type == NumberType::INT32) {
+                halValue = numRes.i32;
             }
-            
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonString(F("info"), F("Value written"));
-                sbs.write_json_value_separator();
-                sbs.write_jsonNumber(F("value"), uintValue);
+
+        } else {
+            bool bValue = 0;
+            if (params.zcParameters.ConvertTo_bool(bValue) == false) {
+                sbs.write_jsonString(F("error"), F("Invalid value."));
                 sbs.write_json_object_end();
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
+                return HALOperationResult::InvalidArgument;
             }
+            halValue = bValue;
         }
 
+        auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);
+        opres = fnRes.result;
+        if (opres == HALOperationResult::Success) {
+            opres = fnRes.fn(device, halValue);
+        }
+        if (opres == HALOperationResult::Success) {
+            sbs.write_jsonString(F("info"), F("Value written"));
+            sbs.write_json_value_separator();
+            sbs.write_jsonNumber(F("value"), halValue);
+            sbs.write_json_object_end();
+        }
+        
         sbs.write_json_object_end();
         return opres;
-    }
-    HALOperationResult Exec_Hal_Write_Int32(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/write/int32", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-        // Convert value to integer
-        int32_t intValue = 0;
-        if (params.zcParameters.ConvertTo_int32(intValue) == false) {
-            sbs.write_jsonString(F("error"), F("Invalid int32 value."));
-        } else {
-            HALValue halValue = intValue;
-
-            auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);
-            if (fnRes.result == HALOperationResult::Success) {
-                opres = fnRes.fn(device, halValue);
-            } else {
-                opres = fnRes.result;
-            }
-            
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonString(F("info"), F("Value written"));
-                sbs.write_json_value_separator();
-                sbs.write_jsonNumber(F("value"), intValue);
-                sbs.write_json_object_end();
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-    }
-    HALOperationResult Exec_Hal_Write_Bool(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/write/bool", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-        // Convert value to integer
-        bool bValue = 0;
-        if (params.zcParameters.ConvertTo_bool(bValue) == false) {
-            sbs.write_jsonString(F("error"), F("Invalid bool value."));
-        } else {
-            HALValue halValue = bValue;
-
-            auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);
-            if (fnRes.result == HALOperationResult::Success) {
-                opres = fnRes.fn(device, halValue);
-            } else {
-                opres = fnRes.result;
-            }
-            
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonString(F("info"), F("Value written"));
-                sbs.write_json_value_separator();
-                sbs.write_jsonBool(F("value"), bValue);
-                sbs.write_json_object_end();
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-    }
-    HALOperationResult Exec_Hal_Write_Float(ZeroCopyString& zcStr, CommandCallback cb) {
-        BlockStreamer bs(cb, "hal/write/float", BlockStreamer::DataType::Json);
-        Device* device = nullptr;
-        CommandExecutor::ReadWriteCmdParameters params(zcStr);
-        HALOperationResult opres = PrecheckHalReadWriteExecOperation(params, bs, &device);
-        if (opres != HALOperationResult::Success) {
-            return opres;
-        }
-        StringBuilderStreamer& sbs = bs.writer();
-        sbs.write_json_object_begin();
-        // Convert value to float
-        float floatValue = 0;
-        if (params.zcParameters.ConvertTo_float(floatValue) == false) {
-            sbs.write_jsonString(F("error"), F("Invalid float value."));
-        } else {
-            HALValue halValue = floatValue;
-
-            auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);
-            if (fnRes.result == HALOperationResult::Success) {
-                opres = fnRes.fn(device, halValue);
-            } else {
-                opres = fnRes.result;
-            }
-            
-            if (opres == HALOperationResult::Success) {
-                sbs.write_jsonString(F("info"), F("Value written"));
-                sbs.write_json_value_separator();
-                sbs.write_jsonNumber(F("value"), floatValue);
-                sbs.write_json_object_end();
-            } else {
-                sbs.write_jsonMemberStart(F("error"));
-                sbs.write_jsonQuoted(HALOperationResultToString(opres));
-            }
-        }
-
-        sbs.write_json_object_end();
-        return opres;
-        return HALOperationResult::Success;
     }
 
     HALOperationResult Exec_Hal_Config_Reload(ZeroCopyString& zcStr, CommandCallback cb) {

@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cstdint>
 
-#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+//#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
 namespace DALHAL {
     /**
@@ -170,7 +170,7 @@ namespace DALHAL {
          */
         std::string toString() const;
 
-        void toString(StringBuilderStreamer& sbs) const;
+        //void toString(StringBuilderStreamer& sbs) const;
 
         const char* typeToString() const;
 

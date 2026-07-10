@@ -107,7 +107,8 @@ namespace DALHAL {
             if (i>0) {
                 sbs.write_json_value_separator();
             }
-            self.values[i].toString(sbs);
+            sbs.write(self.values[i]);
+            //self.values[i].toString(sbs);
         }
         sbs.write_json_array_end();
 
@@ -129,7 +130,8 @@ namespace DALHAL {
             sbs.write_jsonString(F("error"), F("invalid index out of range"));
             return HALOperationResult::BracketOpSubscriptOutOffRange;
         }
-        self.values[index].toString(sbs);
+        sbs.write(self.values[index]);
+        //self.values[index].toString(sbs);
         //val.out_value = values[index].toString();
         return HALOperationResult::Success;
     }

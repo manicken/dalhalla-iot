@@ -116,7 +116,11 @@ namespace DALHAL {
         static bool execute(ZeroCopyString& zcStr, CommandCallback cb);
 
         struct ReadWriteCmdParameters {
+            bool isHelpRequest;
+            bool cmdIsPresent;
+            bool isBracketOp;
             ZeroCopyString zcUid;
+            ZeroCopyString zcBracketParameter;
             ZeroCopyString zcCmd;
             ZeroCopyString zcParameters;
             ReadWriteCmdParameters(ZeroCopyString& zcStr);
@@ -124,6 +128,8 @@ namespace DALHAL {
         };
 
         struct ExecCmdParameters {
+            bool isHelpRequest;
+            bool cmdIsPresent;
             ZeroCopyString zcUid;
             ZeroCopyString zcCmd;
             ExecCmdParameters(ZeroCopyString& zcStr);
