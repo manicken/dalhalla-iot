@@ -719,7 +719,7 @@ namespace DALHAL {
             }
         } else {
             sbs.write_jsonMemberStart(F("help"));
-            if (params.cmdIsPresent) {
+            if (params.cmdIsPresent == false) {
                 opres = GetDeviceFunctions<FunctionTypes::ReadString>(device, sbs);
             } else {
                 auto fnRes = GetDeviceFunctionEntry<FunctionTypes::ReadString>(device, params.zcCmd);
@@ -754,7 +754,7 @@ namespace DALHAL {
             }
         } else {
             sbs.write_jsonMemberStart(F("help"));
-            if (params.cmdIsPresent) {
+            if (params.cmdIsPresent == false) {
                 opres = GetDeviceFunctions<FunctionTypes::WriteString>(device, sbs);
             } else {
                 auto fnRes = GetDeviceFunctionEntry<FunctionTypes::WriteString>(device, params.zcCmd);
@@ -769,6 +769,23 @@ namespace DALHAL {
         }
         sbs.write_json_object_end();
         return opres;
+    }
+
+    HALOperationResult ConvertToHALValue(const ZeroCopyString& zcStr, HALValue& outVal) {
+        NumberResult numRes = zcStr.ConvertStringToNumber();
+
+        if (numRes.type == NumberType::INVALID) {
+            return HALOperationResult::WriteValueNaN;
+        }
+
+        if (numRes.type == NumberType::FLOAT) {
+            outVal = numRes.f32;
+        } else if (numRes.type == NumberType::UINT32) {
+            outVal = numRes.u32;
+        } else if (numRes.type == NumberType::INT32) {
+            outVal = numRes.i32;
+        }
+        return HALOperationResult::Success;
     }
 
     HALOperationResult Exec_Hal_Read_Value(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -791,15 +808,31 @@ namespace DALHAL {
                     opres = fnRes.fn(device, val);
                 }
             } else {
-                opres = HALOperationResult::TODO_UnsupportedCommand;
+                HALValue bracketIndexValue;
+                opres = ConvertToHALValue(params.zcBracketParameter, bracketIndexValue);
+                if (opres != HALOperationResult::Success) {
+                    sbs.write_jsonString(F("error"), F("Invalid bracket index value."));
+                    sbs.write_json_object_end();
+                    return HALOperationResult::InvalidArgument;
+                }
+                auto fnRes = GetDeviceFunctionEntry<FunctionTypes::BracketOpRead>(device, params.zcCmd);
+                opres = fnRes.result;
+                if (opres == HALOperationResult::Success) {
+                    opres = fnRes.entry->fn(device, bracketIndexValue, val);
+                }
             }
             if (opres == HALOperationResult::Success) {
                 sbs.write_jsonNumber(F("value"), val);
+                if ( val.getType() == HALValue::Type::UINT) {
+                    sbs.write_json_value_separator();
+                    sbs.write_jsonMemberStart(F("hex"));
+                    sbs.write_asHex(val.asRawUInt());
+                }
             }
         } else {
             sbs.write_jsonMemberStart(F("help"));
             if (params.isBracketOp == false) {
-                if (params.cmdIsPresent) {
+                if (params.cmdIsPresent == false) {
                     opres = GetDeviceFunctions<FunctionTypes::ReadToHALValue>(device, sbs);
                 } else {
                     auto fnRes = GetDeviceFunctionEntry<FunctionTypes::ReadToHALValue>(device, params.zcCmd);
@@ -809,7 +842,15 @@ namespace DALHAL {
                     }
                 }
             } else {
-                opres = HALOperationResult::TODO_UnsupportedCommand;
+                if (params.cmdIsPresent == false) {
+                    opres = GetDeviceFunctions<FunctionTypes::BracketOpRead>(device, sbs);
+                } else {
+                    auto fnRes = GetDeviceFunctionEntry<FunctionTypes::BracketOpRead>(device, params.zcCmd);
+                    opres = fnRes.result;
+                    if (opres == HALOperationResult::Success) {
+                        fnRes.entry->help(sbs);
+                    }
+                }
             }
             if (opres != HALOperationResult::Success) {
                 sbs.write_json_null(); // here we decide what to write on error
@@ -832,18 +873,9 @@ namespace DALHAL {
 
         if (params.isHelpRequest == false) {
             HALValue halValue;
-            NumberResult numRes = params.zcParameters.ConvertStringToNumber();
-            if (numRes.type != NumberType::INVALID) {
+            opres = ConvertToHALValue(params.zcParameters, halValue);
 
-                if (numRes.type == NumberType::FLOAT) {
-                    halValue = numRes.f32;
-                } else if (numRes.type == NumberType::UINT32) {
-                    halValue = numRes.u32;
-                } else if (numRes.type == NumberType::INT32) {
-                    halValue = numRes.i32;
-                }
-
-            } else {
+            if (opres != HALOperationResult::Success) {
                 bool bValue = 0;
                 if (params.zcParameters.ConvertTo_bool(bValue) == false) {
                     sbs.write_jsonString(F("error"), F("Invalid value."));
@@ -859,7 +891,18 @@ namespace DALHAL {
                     opres = fnRes.fn(device, halValue);
                 }
             } else {
-                opres = HALOperationResult::TODO_UnsupportedCommand;
+                HALValue bracketIndexValue;
+                opres = ConvertToHALValue(params.zcBracketParameter, bracketIndexValue);
+                if (opres != HALOperationResult::Success) {
+                    sbs.write_jsonString(F("error"), F("Invalid bracket index value."));
+                    sbs.write_json_object_end();
+                    return HALOperationResult::InvalidArgument;
+                }
+                auto fnRes = GetDeviceFunctionEntry<FunctionTypes::BracketOpWrite>(device, params.zcCmd);
+                opres = fnRes.result;
+                if (opres == HALOperationResult::Success) {
+                    opres = fnRes.entry->fn(device, bracketIndexValue, halValue);
+                }
             }
             if (opres == HALOperationResult::Success) {
                 sbs.write_jsonString(F("info"), F("Value written"));
@@ -871,7 +914,7 @@ namespace DALHAL {
         else {
             sbs.write_jsonMemberStart(F("help"));
             if (params.isBracketOp == false) {
-                if (params.cmdIsPresent) {
+                if (params.cmdIsPresent == false) {
                     opres = GetDeviceFunctions<FunctionTypes::WriteHALValue>(device, sbs);
                 } else {
                     auto fnRes = GetDeviceFunctionEntry<FunctionTypes::WriteHALValue>(device, params.zcCmd);
@@ -881,7 +924,15 @@ namespace DALHAL {
                     }
                 }
             } else {
-                opres = HALOperationResult::TODO_UnsupportedCommand;
+                if (params.cmdIsPresent == false) {
+                    opres = GetDeviceFunctions<FunctionTypes::BracketOpWrite>(device, sbs);
+                } else {
+                    auto fnRes = GetDeviceFunctionEntry<FunctionTypes::BracketOpWrite>(device, params.zcCmd);
+                    opres = fnRes.result;
+                    if (opres == HALOperationResult::Success) {
+                        fnRes.entry->help(sbs);
+                    }
+                }
             }
             if (opres != HALOperationResult::Success) {
                 sbs.write_json_null(); // here we decide what to write on error
