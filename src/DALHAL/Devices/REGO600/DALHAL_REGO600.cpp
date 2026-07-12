@@ -66,6 +66,16 @@ namespace DALHAL {
         DALHAL_FUNCTION_ENTRY("deactivate_error_ws_print", REGO600::exec_deactivate_error_print_Function, "deactivate error print to websocket"),
     };
 
+    /* impossible to do with the current dalhal synced reads
+    constexpr FunctionEntry<FunctionTypes::BracketOpRead> REGO600::bracketOpReadFunctions[] = {
+        DALHAL_FUNCTION_ENTRY("sysreg", REGO600::bracketOpRead_ReadRegisterValue_Function, "read a register value using the bracket function, where the reg index is given as the subscript value"),
+    };
+    */
+
+    constexpr FunctionEntry<FunctionTypes::BracketOpWrite> REGO600::bracketOpWriteFunctions[] = {
+        DALHAL_FUNCTION_ENTRY("sysreg", REGO600::bracketOpWrite_WriteRegisterValue_Function, "write a register value using the bracket function, where the reg index is given as the subscript value"),
+    };
+
     constexpr DeviceFunctionTable REGO600::FunctionTable = {
         DALHAL_FUNCTION_TABLE_ENTRY(execFunctions),
 
@@ -73,7 +83,7 @@ namespace DALHAL {
         EmptyFunctionTable<FunctionTypes::WriteHALValue>,
 
         EmptyFunctionTable<FunctionTypes::BracketOpRead>,
-        EmptyFunctionTable<FunctionTypes::BracketOpWrite>,
+        DALHAL_FUNCTION_TABLE_ENTRY(bracketOpWriteFunctions),
 
         DALHAL_FUNCTION_TABLE_ENTRY(readStringFunctions),
         DALHAL_FUNCTION_TABLE_ENTRY(writeStringFunctions),
@@ -351,6 +361,38 @@ namespace DALHAL {
         sbs.write_char('"');
         sbs.write_asHex((uint16_t)regIndex);
         sbs.write_char('"');
+     
+        return HALOperationResult::Success;
+    }
+
+    void writeRegisterValueByBracketOP_Callback(void* cb_ctx, void* dataCtx, Drivers::REGO600::RequestMode mode) {
+        REGO600* self = static_cast<REGO600*>(cb_ctx);
+        
+#if HAS_REACTIVE_BRACKET_WRITE(REGO600)
+        self->triggerBracketWrite();
+#endif
+    }
+
+    HALOperationResult REGO600::bracketOpWrite_WriteRegisterValue_Function(Device* device, const HALValue& subscriptValue, const HALValue& inValue) {
+        REGO600& self = static_cast<REGO600&>(*device);
+
+        if (subscriptValue.getType() != HALValue::Type::UINT) {
+            return HALOperationResult::InvalidArgument;
+        }
+
+        const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::WriteSystemRegister);
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = subscriptValue.toUInt();
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.valueType = Drivers::REGO600::ValueType::Unsigned;
+        Drivers::REGO600::REGO600Driver::ManualRequestValue = inValue.toUInt();
+
+        auto req = std::make_unique<Drivers::REGO600::Request>(opInfo, Drivers::REGO600::REGO600Driver::ManualRawEntry, Drivers::REGO600::REGO600Driver::ManualRequestValue);
+               
+        if (!self.rego600->OneTimeRequest(std::move(req), writeRegisterValueByBracketOP_Callback, &self)) {
+            return HALOperationResult::ExecutionFailed;
+        }
      
         return HALOperationResult::Success;
     }

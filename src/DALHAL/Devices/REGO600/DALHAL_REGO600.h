@@ -63,12 +63,18 @@ namespace DALHAL {
         static const FunctionEntry<FunctionTypes::Exec> execFunctions[];
         static const FunctionEntry<FunctionTypes::ReadString> readStringFunctions[];
         static const FunctionEntry<FunctionTypes::WriteString> writeStringFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpRead> bracketOpReadFunctions[];
+        static const FunctionEntry<FunctionTypes::BracketOpWrite> bracketOpWriteFunctions[];
+
+        static HALOperationResult exec_activate_error_print_Function(Device* device);
+        static HALOperationResult exec_deactivate_error_print_Function(Device* device);
+
         static HALOperationResult readString_RequestWholeLCD_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult readString_RequestRegisterValue_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
         static HALOperationResult readString_RequestRamDump_Function(Device* device, ZeroCopyString zcStrParameters, StringBuilderStreamer& sbs);
-        static HALOperationResult exec_activate_error_print_Function(Device* device);
-        static HALOperationResult exec_deactivate_error_print_Function(Device* device);
         static HALOperationResult writeString_WriteRegisterValue_Function(Device* device, const ZeroCopyString& zcStrParameters, StringBuilderStreamer& sbs);
+
+        static HALOperationResult bracketOpWrite_WriteRegisterValue_Function(Device* device, const HALValue& registerIndexValue, const HALValue& inValue);
 
     private:
         uint32_t refreshTimeMs = 0;

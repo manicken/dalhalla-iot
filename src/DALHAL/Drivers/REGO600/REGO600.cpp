@@ -269,7 +269,7 @@ namespace Drivers {
                 ErrorReport::DebugMessage(String(F("OneTimeRequest - callback cannot be nullptr")).c_str());
                 return false; // no point if cb for some reason is nullptr
             }
-            if (req->info.responseType != ResponseType::WriteConfirm && cb == nullptr) {
+            if (req->info.responseType != ResponseType::WriteConfirm) {
                 return false; // no point if cb for some reason is nullptr
             }
             if (mode != RequestMode::RefreshLoop) { 
