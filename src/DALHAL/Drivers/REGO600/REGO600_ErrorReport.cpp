@@ -24,7 +24,7 @@
 #include "REGO600_ErrorReport.h"
 
 #include "stdint.h"
-#include <DALHAL/API/DALHAL_WebSocketAPI.h>
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h>
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #define DRIVERS_REGO600_ERROR_BASE_STR "REGO600 error - "

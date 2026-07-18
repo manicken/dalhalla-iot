@@ -35,7 +35,7 @@
 #endif
 
 #include <System/WiFiConnectionManager.h>
-#include <DALHAL/API/DALHAL_WebSocketAPI.h>
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h>
 #ifndef ESP8266
 #include <LittleFS.h>
 #include "esp_partition.h"

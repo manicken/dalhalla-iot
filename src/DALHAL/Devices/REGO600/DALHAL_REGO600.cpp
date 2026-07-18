@@ -265,7 +265,7 @@ namespace DALHAL {
         sbs.write_char('"');
         sbs.write_asHex((uint16_t)opInfo.opcode);
         sbs.write_char('"');
-        sbs.write_json_value_separator();
+        //sbs.write_json_value_separator();
      
         return HALOperationResult::Success;
     }

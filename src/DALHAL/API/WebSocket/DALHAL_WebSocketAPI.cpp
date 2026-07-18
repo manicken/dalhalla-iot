@@ -30,16 +30,19 @@
 #include "freertos/portmacro.h"
 #endif
 
-#include "DALHAL_CommandExecutor.h"
+#include <DALHAL/API/DALHAL_CommandExecutor.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <LittleFS.h>
-#include "DALHAL_WebSocketAPI_httpFile.h"
+//#include "FrontendFiles/DALHAL_WebSocketAPI_httpFile.h"
 
 #if defined(ESP8266) || defined(ESP32)
 #include <System/System.h> //  defines DALHAL_SYSTEM_H_
 #endif
+
+#include "FrontendFiles/DALHAL_VirtualFile.h"
+#include "FrontendFiles/DALHAL_FileList.h"
 
 namespace DALHAL {
 
@@ -152,7 +155,7 @@ namespace DALHAL {
         }
     }
 
-    void WebSocketAPI::GetRootPage_Handler(AsyncWebServerRequest* request) {
+    /*void WebSocketAPI::GetRootPage_Handler(AsyncWebServerRequest* request) {
 
         const __FlashStringHelper* path = F("/api/index.html");
 
@@ -162,6 +165,38 @@ namespace DALHAL {
         }
 
         request->send_P(200, F("text/html"), HTML_WS_CONSOLE);
+    }*/
+
+    void WebSocketAPI::GetAnyFile_Handler(AsyncWebServerRequest* request) {
+        const String& url = request->url();
+        const bool isRoot = url.length() == 1;
+
+        String path;
+        // avoid heap fragmentation
+        path.reserve(5 + (isRoot ? sizeof("/index.html") : url.length()));
+        
+        path = F("/api");
+        if (isRoot) {
+            path += F("/index.html");
+        } else {
+            path += url;
+        }
+
+        if (LittleFS.exists(path)) {
+            request->send(LittleFS, path);
+        } else {
+            
+            ZeroCopyString zcFilePath = url.c_str();
+            if (zcFilePath.StartsWith('/')) {
+                zcFilePath.start++;
+            }
+            const ApiVirtualFile* vFile = GetApiVirtualFile(zcFilePath);
+            if (vFile == nullptr) {
+                request->send(404, F("text/plain"), F("file not found"));
+                return;
+            }
+            request->send_P(200, vFile->mime, vFile->data, vFile->size);
+        }
     }
 
     void WebSocketAPI::setup(bool failsafeMode) {
@@ -179,7 +214,8 @@ namespace DALHAL {
         asyncWebSocket = new AsyncWebSocket("/ws");
         asyncWebSocket->onEvent(onWsEvent);
         asyncWebserver->addHandler(asyncWebSocket);
-        asyncWebserver->on("/", GetRootPage_Handler);
+        //asyncWebserver->on("/", GetRootPage_Handler);
+        asyncWebserver->onNotFound(GetAnyFile_Handler);
         asyncWebserver->begin();
         asyncWebSocket->enable(true);
 

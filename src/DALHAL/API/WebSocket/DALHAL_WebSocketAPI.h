@@ -49,7 +49,8 @@ namespace DALHAL {
     private:
         static AsyncWebServer* asyncWebserver;
         static AsyncWebSocket* asyncWebSocket;
-        static void GetRootPage_Handler(AsyncWebServerRequest* request);
+        //static void GetRootPage_Handler(AsyncWebServerRequest* request);
+        static void GetAnyFile_Handler(AsyncWebServerRequest* request);
         static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
         static bool failsafeMode;
     public:

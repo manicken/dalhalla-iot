@@ -64,6 +64,8 @@
 #include <iostream>
 #endif
 
+#include "WebSocket/FrontendFiles/DALHAL_FileList.h"
+
 namespace DALHAL {
 
 #if defined(ESP32)
@@ -200,6 +202,8 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_PrintRegistry_Events(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb);
 
+    HALOperationResult Exec_Api_PrintVirtualFiles(ZeroCopyString& zcStr, CommandCallback cb);
+
     static constexpr CommandNode HalWriteItems[] = {
         DALHAL_CMD_EXEC_ENTRY("string", Exec_Hal_Write_String, "hal write string"),
         DALHAL_CMD_EXEC_ENTRY("str", Exec_Hal_Write_String, "hal write string - short alias for string"),
@@ -268,15 +272,19 @@ namespace DALHAL {
         DALHAL_CMD_EXEC_ENTRY("ver", Exec_System_Build_Ver_Print, "Print current build version"),
     };
 
+    static constexpr CommandNode ApiItems[] = {
+         DALHAL_CMD_EXEC_ENTRY("vFiles", Exec_Api_PrintVirtualFiles, "Print all current virtual files"),
+    };
+
     static constexpr CommandNode HelpItems[] = {
         DALHAL_CMD_EXEC_ENTRY("all", Exec_Help_Cmd_All, "Returns the whole cmd tree"),
         DALHAL_CMD_EXEC_ENTRY("type", Exec_Help_Cmd_Type, "Show help by a device type"),
-        DALHAL_CMD_EXEC_ENTRY("device", Exec_Help_Cmd_DeviceInstance, "Show help for a given device instance path"),
         DALHAL_CMD_EXEC_ENTRY("@", Exec_Help_Cmd_By_Path, "Show help for a given cmd path"),
     };
 
     static constexpr CommandNode RootItems[] = {
         DALHAL_CMD_GROUP_ENTRY("hal", HalItems, "HAL subsystem"),
+        DALHAL_CMD_GROUP_ENTRY("api", ApiItems, "API specific commands"),
         DALHAL_CMD_GROUP_ENTRY("system", SystemItems, "System commands"),
 #if defined(ESP8266) || defined(ESP32)
         DALHAL_CMD_GROUP_ENTRY("wifi", WiFiItems, "WiFi management"),
@@ -1020,6 +1028,11 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_PrintJsonSchemas(ZeroCopyString& zcStr, CommandCallback cb) {
         DALHAL::BlockStreamer bs(cb, "schema", BlockStreamer::DataType::Json);
         JsonSchema::ToJsonString::buildCompleteJsonSchemasStartingFrom(RootDevicesRegistry, bs.writer());
+        return HALOperationResult::Success;
+    }
+    HALOperationResult Exec_Api_PrintVirtualFiles(ZeroCopyString& zcStr, CommandCallback cb) {
+        DALHAL::BlockStreamer bs(cb, "api/vFiles", BlockStreamer::DataType::Json);
+        GetVirtualFiles(bs.writer());
         return HALOperationResult::Success;
     }
 }

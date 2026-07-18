@@ -24,7 +24,7 @@
 #include "REGO600.h"
 
 #if defined(ESP8266) || defined(ESP32)
-#include <DALHAL/API/DALHAL_WebSocketAPI.h> // for SendMessage
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
 #include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
 #endif
