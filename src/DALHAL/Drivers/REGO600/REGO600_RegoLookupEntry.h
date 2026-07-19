@@ -46,7 +46,7 @@ namespace Drivers {
 
         struct RegoLookupEntry {
             PGM_P name;
-            uint16_t address;
+            uint16_t regIndex;
             //REGO600::OpCodes opcode; this is determined by if it's read/write and set elsewhere
             ValueLimit minVal;      // including minimum
             ValueLimit maxVal;      // including maximum

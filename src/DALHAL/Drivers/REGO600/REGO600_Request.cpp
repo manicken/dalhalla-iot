@@ -202,7 +202,7 @@ namespace Drivers {
             str += "info.op: " + std::to_string((int)info.opcode);
             str += ", info.size: " + std::to_string((int)info.size);
             str += ", def.name: " + std::string(def.name);
-            str += ", def.address: " + std::to_string(def.address);
+            str += ", def.address: " + std::to_string(def.regIndex);
             if (def.valueType == ValueType::Signed || def.valueType == ValueType::Float) {
                 str += ", def.minVal.s16: " + std::to_string(def.minVal.s16);
                 str += ", def.maxVal.s16: " + std::to_string(def.maxVal.s16);

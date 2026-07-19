@@ -103,7 +103,29 @@ namespace DALHAL {
             if (i>0) {
                 sbs.write_json_value_separator();
             }
-            sbs.write_jsonQuoted(&lcdData[i*20], 20);
+            sbs.write_doublequote();
+            for (size_t ci=0;ci<20;ci++) {
+                const char chr = lcdData[i*20+ci];
+                if (chr >= 0x01 && chr <= 0x08) {
+                    sbs.write_char('\\');
+                    sbs.write_char('u');
+                    sbs.write_asHex((uint16_t)(0x2580 + chr));
+                } else if (chr == 0x09) {
+                    sbs.write(F("\\uC3BF"));
+                } else {
+                    if (chr < 0x20 || chr > 0x7E) {
+                        //sbs.write_char('[');
+                        sbs.write_char('\\');
+                        sbs.write_char('u');
+                        sbs.write_asHex((uint16_t)(chr));
+                        //sbs.write_char(']');
+                    } else {
+                        sbs.write_char(chr);
+                    }
+                }
+            }
+            sbs.write_doublequote();
+            //sbs.write_jsonQuoted(&lcdData[i*20], 20);
         }
         sbs.write_json_array_end();
         sbs.write_json_object_end();
@@ -145,15 +167,23 @@ namespace DALHAL {
         }
         uint16_t uintValue = req->response.value->toUInt();
         int16_t intValue = req->response.value->toInt();
-        
+        sbs.write_jsonMemberStart(F("regIndex"));
+        sbs.write_char('"');
+        sbs.write_asHex((uint16_t)req->def.regIndex);
+        sbs.write_char('"');
+
+        sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("hex"));
         sbs.write_char('"');
         sbs.write_asHex((uint16_t)uintValue);
         sbs.write_char('"');
+
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("uint"), uintValue);
+
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("int"), intValue);
+
         sbs.write_json_object_end();
         
     }
@@ -172,7 +202,7 @@ namespace DALHAL {
         }
         auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
         const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::ReadSystemRegister);
-        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.regIndex = regIndex;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
@@ -202,10 +232,25 @@ namespace DALHAL {
         
         BlockStreamer bs(ctx->cb, "rego600/systemregister/write", BlockStreamer::DataType::Json);
         delete ctx;
+        Drivers::REGO600::Request* req = static_cast<Drivers::REGO600::Request*>(dataCtx);
 
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
+        if (req != nullptr) {
+            sbs.write_jsonMemberStart(F("regIndex"));
+            sbs.write_char('"');
+            sbs.write_asHex((uint16_t)req->def.regIndex);
+            sbs.write_char('"');
+
+            sbs.write_json_value_separator();
+            sbs.write_jsonMemberStart(F("value"));
+            sbs.write_char('"');
+            sbs.write_asHex((uint16_t)req->response.value->toUInt());
+            sbs.write_char('"');
+        }
+        sbs.write_json_value_separator();
         sbs.write_jsonString(F("value written"), F("ok"));
+
         sbs.write_json_object_end();
     }
 
@@ -234,7 +279,7 @@ namespace DALHAL {
         }
         auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
         const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::WriteSystemRegister);
-        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.regIndex = regIndex;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
@@ -340,7 +385,7 @@ namespace DALHAL {
         }
         auto* ctx = new CommandCallbackByValue{sbs.GetCommandCallback()};
         const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::RamDump);
-        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = regIndex;
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.regIndex = regIndex;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
@@ -381,7 +426,7 @@ namespace DALHAL {
         }
 
         const Drivers::REGO600::OpCodeInfo& opInfo = Drivers::REGO600::REGO600Driver::getCmdInfo(Drivers::REGO600::CommandID::WriteSystemRegister);
-        Drivers::REGO600::REGO600Driver::ManualRawEntry.address = subscriptValue.toUInt();
+        Drivers::REGO600::REGO600Driver::ManualRawEntry.regIndex = subscriptValue.toUInt();
         Drivers::REGO600::REGO600Driver::ManualRawEntry.minVal.u16 = 0;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.maxVal.u16 = 65535;
         Drivers::REGO600::REGO600Driver::ManualRawEntry.multiplier = 1;
@@ -473,7 +518,7 @@ namespace DALHAL {
             sbs.write_json_value_separator();
             sbs.write_jsonMemberStart(F("addr"));
             sbs.write_doublequote();
-            sbs.write_asHex(requestList[i]->def.address);
+            sbs.write_asHex(requestList[i]->def.regIndex);
             sbs.write_doublequote();
 
             sbs.write_json_object_end();

@@ -239,7 +239,7 @@ namespace Drivers {
                 uartTxBuffer[1] = (uint8_t)manualRequest->info.opcode;
                 currentExpectedRxLength = manualRequest->info.size;
                 
-                SetRequestAddr(manualRequest->def.address);
+                SetRequestAddr(manualRequest->def.regIndex);
 
                 if (manualRequest->response.value != nullptr) {
                     SetRequestData(manualRequest->response.value->toUInt());
@@ -317,7 +317,7 @@ namespace Drivers {
             Request* req = refreshLoopList[refreshLoopIndex];
 
             uartTxBuffer[1] = (uint8_t)req->info.opcode;
-            SetRequestAddr(req->def.address);
+            SetRequestAddr(req->def.regIndex);
             CalcAndSetTxChecksum();
             currentExpectedRxLength = req->info.size;
             ScheduleNextRequest();
