@@ -269,8 +269,8 @@ namespace Drivers {
                 ErrorReport::DebugMessage(String(F("OneTimeRequest - callback cannot be nullptr")).c_str());
                 return false; // no point if cb for some reason is nullptr
             }
-            if (req->info.responseType != ResponseType::WriteConfirm) {
-                return false; // no point if cb for some reason is nullptr
+            if (req->info.responseType == ResponseType::NotSet) {
+                return false; // 
             }
             if (mode != RequestMode::RefreshLoop) { 
                 ErrorReport::DebugMessage(String(F("OTReq - manual request allready in progress")).c_str());
