@@ -43,11 +43,11 @@ namespace DALHAL {
         namespace ButtonInput {
 
             constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
-            constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)30};
+            constexpr SchemaUInt debounceMsField = { "debounceMs", FieldPolicy::Optional, (uint32_t)1, (uint32_t)0, (uint32_t)30};
 
             //constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
             //constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, "high", &activeLevelConstraints};
-            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (unsigned int)0, (unsigned int)1, (unsigned int)0}; 
+            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint32_t)0, (uint32_t)1, (uint32_t)0}; 
             
             constexpr SchemaString on_pressField = { "on_press", FieldPolicy::Optional};
 

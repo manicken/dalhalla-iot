@@ -197,6 +197,7 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_GetAvailableGPIOs(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintDevices(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_PrintLog(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_ClearLog(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintRegistry_Types(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintRegistry_Functions(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_PrintRegistry_Events(ZeroCopyString& zcStr, CommandCallback cb);
@@ -290,6 +291,7 @@ namespace DALHAL {
         DALHAL_CMD_GROUP_ENTRY("wifi", WiFiItems, "WiFi management"),
 #endif
         DALHAL_CMD_EXEC_ENTRY_WFLAG("printLog", Exec_PrintLog, CommandNode::Flags::AUTOGEN_BUTTON, "print log"),
+        DALHAL_CMD_EXEC_ENTRY_WFLAG("clearLog", Exec_ClearLog, (CommandNode::Flags::AUTOGEN_BUTTON | CommandNode::Flags::DANGER), "clear log"),
         DALHAL_CMD_EXEC_ENTRY("schedule", Exec_Scheduler_Cmd, "Schedule commands"), // to be removed in the future as it would be implemented as a device
         DALHAL_CMD_EXEC_AND_GROUP_ENTRY("help", Exec_Help_Cmd_All, HelpItems, "Show help"),
     };
@@ -1008,6 +1010,11 @@ namespace DALHAL {
     HALOperationResult Exec_PrintLog(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "logs", BlockStreamer::DataType::PlainText);
         GlobalLogger.printAllLogs(bs.writer());
+        return HALOperationResult::Success;
+    }
+    HALOperationResult Exec_ClearLog(ZeroCopyString& zcStr, CommandCallback cb) {
+        BlockStreamer bs(cb, "logs_clear", BlockStreamer::DataType::PlainText);
+        GlobalLogger.ClearLog();
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_Hal_PrintRegistry_Types(ZeroCopyString& zcStr, CommandCallback cb) {

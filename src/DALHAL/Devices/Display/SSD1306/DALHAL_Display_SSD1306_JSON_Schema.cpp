@@ -52,9 +52,9 @@ namespace DALHAL {
 
         namespace Display_SSD1306 {
 
-            constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, (unsigned int)8, (unsigned int)128, (unsigned int)128};
-            constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, (unsigned int)8, (unsigned int)64, (unsigned int)64};
-            constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (unsigned int)1, (unsigned int)64, (unsigned int)1};
+            constexpr SchemaUInt widthField = {"width", FieldPolicy::Required, (uint32_t)8, (uint32_t)128, (uint32_t)128};
+            constexpr SchemaUInt heightField = {"height", FieldPolicy::Required, (uint32_t)8, (uint32_t)64, (uint32_t)64};
+            constexpr SchemaUInt textsizeField = {"textsize", FieldPolicy::Optional, (uint32_t)1, (uint32_t)64, (uint32_t)1};
             constexpr SchemaStringHexBytes addrField = {"addr", FieldPolicy::Required, "3C", 1};
 
             constexpr SchemaArrayOfObjects itemsField = {"items", FieldPolicy::Required, Gui::UseInline, &JsonSchema::Display_SSD1306_Element::Root, EmptyPolicy::Error };

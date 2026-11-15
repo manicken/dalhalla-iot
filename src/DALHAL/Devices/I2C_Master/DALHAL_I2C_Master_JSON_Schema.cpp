@@ -46,8 +46,8 @@ namespace DALHAL {
             constexpr SchemaHardwarePin sckpinField = {"sckpin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
             constexpr SchemaHardwarePin sdapinField = {"sdapin", FieldPolicy::Required, (GPIO_manager::PinFunc::OUT | GPIO_manager::PinFunc::IN)};
 
-            constexpr SchemaUInt freqField = {"freq", FieldPolicy::Optional, (unsigned int)(100*1000)};
-            constexpr SchemaUInt busindexField = {"busindex", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)1};
+            constexpr SchemaUInt freqField = {"freq", FieldPolicy::Optional, (uint32_t)(100*1000)};
+            constexpr SchemaUInt busindexField = {"busindex", FieldPolicy::Optional, (uint32_t)0, (uint32_t)0, (uint32_t)1};
 
             constexpr SchemaArrayOfRegistryItems itemsField = {"items", FieldPolicy::Required, EmptyPolicy::Error, &I2C_DeviceRegistry, "ROOT.I2C_Master"};
 

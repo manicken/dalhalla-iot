@@ -56,7 +56,7 @@ namespace DALHAL {
         std::string password;
         std::string host; // just for debug???
         IPAddress ip;
-        uint16_t port;
+        uint32_t port;
 
         WiFiClient wifiClient;
         PubSubClient mqttClient;

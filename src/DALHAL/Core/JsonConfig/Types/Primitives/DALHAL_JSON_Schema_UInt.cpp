@@ -98,8 +98,12 @@ namespace DALHAL {
             } else {
                 raw = this->defaultValue;
             }
+            
             if (this->HasConversion() == false) {
+                GlobalLogger.Info(F("raw uint value converted:"), std::to_string(raw).c_str()); // safe to use it do copy the string
                 return raw;
+            } else {
+                GlobalLogger.Info(F("raw uint value:"), std::to_string(raw).c_str()); // safe to use it do copy the string
             }
             return static_cast<unsigned int>(raw * this->conversionFactor);
         }

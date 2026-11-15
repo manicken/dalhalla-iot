@@ -50,6 +50,7 @@ struct LogEntry {
       /** used when the same exact error happens repetitively */
       uint32_t repeatCount = 0;
       LogEntry();
+      void Clear();
       void Set(time_t time, Loglevel level, uint32_t errorCode);
       void Set(time_t time, Loglevel level, const __FlashStringHelper* message);
       void Set(time_t time, Loglevel level, uint32_t errorCode, const char* text);
@@ -95,6 +96,7 @@ class Logger {
     void Warn(const __FlashStringHelper* msg, const DALHAL::ZeroCopyString& zcStr);
     void printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew = false);
     void printAllLogs(Stream &out = Serial, bool onlyPrintNew = false);
+    void ClearLog();
         
     const LogEntry& getLastEntry() const;
     bool UpdateLastEntryIfEqual(Loglevel lvl, uint32_t err, const __FlashStringHelper* msg, const char* txt, bool codeFlag);

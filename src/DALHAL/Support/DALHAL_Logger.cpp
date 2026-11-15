@@ -55,6 +55,17 @@ LogEntry::LogEntry() : timestamp(0),
       isCode(true)
        {}
 
+    void LogEntry::Clear() {
+        if (text != nullptr) { free(text); text = nullptr; }
+        level = Loglevel::Info;
+        errorCode = 0;
+        source = nullptr;
+        isCode = true;
+        timestamp = 0;
+        isNew = false;
+        repeatCount = 0;
+    }
+
     void LogEntry::PrintTo(DALHAL::StringBuilderStreamer& sbs) const {
         // build timestamp prefix
         struct tm* timeinfo = localtime(&timestamp);
@@ -443,6 +454,19 @@ void Logger::printAllLogs(DALHAL::StringBuilderStreamer& sbs, bool onlyPrintNew)
         entry.PrintTo(sbs);
         sbs.write_char('\n');
     }
+}
+
+void Logger::ClearLog() {
+
+    size_t start = wrapped ? head : 0;
+    size_t count = wrapped ? LOG_BUFFER_SIZE : head;
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t index = (start + i) % LOG_BUFFER_SIZE;
+        buffer[index].Clear();
+    }
+    wrapped = false;
+    head = 0;    
 }
 
 

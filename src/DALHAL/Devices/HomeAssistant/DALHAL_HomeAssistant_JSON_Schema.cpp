@@ -55,7 +55,7 @@ namespace DALHAL {
 
             //constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
             constexpr SchemaString hostField = {"host", FieldPolicy::Required};
-            constexpr SchemaUInt   portField = {"port", FieldPolicy::Required, (unsigned int)1, (unsigned int)65535, (unsigned int)1883};
+            constexpr SchemaUInt   portField = {"port", FieldPolicy::Optional, (uint32_t)1, (uint32_t)65535, (uint32_t)1883};
             constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
             constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
 

@@ -46,8 +46,8 @@ namespace DALHAL {
         namespace Display_SSD1306_Element {
 
             // SSD1306_Element "device"
-            constexpr SchemaUInt xField = {"x", FieldPolicy::Required, (unsigned int)0, (unsigned int)128, (unsigned int)0};
-            constexpr SchemaUInt yField = {"y", FieldPolicy::Required, (unsigned int)0, (unsigned int)64, (unsigned int)0};
+            constexpr SchemaUInt xField = {"x", FieldPolicy::Required, (uint32_t)0, (uint32_t)128, (uint32_t)0};
+            constexpr SchemaUInt yField = {"y", FieldPolicy::Required, (uint32_t)0, (uint32_t)64, (uint32_t)0};
             constexpr SchemaString labelField = {"label", FieldPolicy::Optional};
 
             constexpr const SchemaTypeBase* fields[] = {

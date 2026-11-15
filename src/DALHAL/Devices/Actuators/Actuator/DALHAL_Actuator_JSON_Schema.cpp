@@ -62,7 +62,7 @@ namespace DALHAL {
             constexpr SchemaObject maxEndStopField = { "MaxEndStop", FieldPolicy::Optional, &CommonPins::InputPinScheme };
 
 
-            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)10000}; // default 10 seconds
+            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (uint32_t)1, (uint32_t)0, (uint32_t)10000}; // default 10 seconds
 
             constexpr const SchemaTypeBase* hbridgeModeAB_GroupItems[] = {&pin_hbridge_a_field, &pin_hbridge_b_field, nullptr};
             constexpr SchemaAllOfFieldsGroup hbridgeModeAB_GroupFields = {"hbridgeModeAB", FieldPolicy::ModeDefine, hbridgeModeAB_GroupItems}; // here hbridgeModeAB defines what name to use for the BSON output

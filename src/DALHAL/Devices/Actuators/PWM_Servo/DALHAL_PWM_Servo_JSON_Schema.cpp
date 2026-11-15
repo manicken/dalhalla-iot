@@ -45,17 +45,17 @@ namespace DALHAL {
 
             //constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT)};
 
-            constexpr SchemaUInt chField = {"ch", FieldPolicy::Required, (unsigned int)0, (unsigned int)7, (unsigned int)0};
+            constexpr SchemaUInt chField = {"ch", FieldPolicy::Required, (uint32_t)0, (uint32_t)7, (uint32_t)0};
 
-            constexpr SchemaUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)1000};
-            constexpr SchemaUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)2000};
-            constexpr SchemaUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, (unsigned int)100, (unsigned int)20000, (unsigned int)1500};
+            constexpr SchemaUInt minPulseLengthField = {"minPulseLength", FieldPolicy::Optional, (uint32_t)100, (uint32_t)20000, (uint32_t)1000};
+            constexpr SchemaUInt maxPulseLengthField = {"maxPulseLength", FieldPolicy::Optional, (uint32_t)100, (uint32_t)20000, (uint32_t)2000};
+            constexpr SchemaUInt startPulseLengthField = {"startPulseLength", FieldPolicy::Optional, (uint32_t)100, (uint32_t)20000, (uint32_t)1500};
 
-            constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)0};
-            constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, (unsigned int)0, (unsigned int)0, (unsigned int)0};
+            constexpr SchemaUInt autoOffAfterMsField = {"autoOffAfterMs", FieldPolicy::Optional, (uint32_t)0, (uint32_t)0, (uint32_t)0};
+            constexpr SchemaUInt pulseLengthOffsetField = {"pulseLengthOffset", FieldPolicy::Optional, (uint32_t)0, (uint32_t)0, (uint32_t)0};
 
-            constexpr SchemaFloat minValField = {"minVal", FieldPolicy::ModeDefine, (unsigned int)0};
-            constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::ModeDefine, (unsigned int)100};
+            constexpr SchemaFloat minValField = {"minVal", FieldPolicy::ModeDefine, (uint32_t)0};
+            constexpr SchemaFloat maxValField = {"maxVal", FieldPolicy::ModeDefine, (uint32_t)100};
 
             constexpr ModeConjunctionDefine conjunctions_ratio_value_Mode[] = {
                 { &minValField, true }, // field must exist for this mode

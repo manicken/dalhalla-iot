@@ -59,7 +59,7 @@ namespace DALHAL {
             constexpr SchemaObject setStateField = { "SetState", FieldPolicy::Optional, &CommonPins::InputPinScheme };
 
 
-            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (unsigned int)1, (unsigned int)0, (unsigned int)500}; // default 500 mS
+            constexpr SchemaUInt timeout_ms_field = {"timeoutMs", FieldPolicy::Optional, (uint32_t)1, (uint32_t)0, (uint32_t)500}; // default 500 mS
 
             constexpr const SchemaTypeBase* directModeAB_GroupItems[] = {&pin_direct_a_field, &pin_direct_b_field, nullptr};
             constexpr SchemaAllOfFieldsGroup directModeAB_GroupFields = {"directModeAB", FieldPolicy::ModeDefine, directModeAB_GroupItems }; // here hbridgeModeAB defines what name to use for the BSON output
