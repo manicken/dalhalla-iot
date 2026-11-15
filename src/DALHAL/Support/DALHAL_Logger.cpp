@@ -60,15 +60,15 @@ LogEntry::LogEntry() : timestamp(0),
         struct tm* timeinfo = localtime(&timestamp);
 
         sbs.write_json_array_begin();
-        sbs.write(timeinfo->tm_mday, "%02d");
+        sbs.write((int32_t)timeinfo->tm_mday, "%02d");
         sbs.write_char('/');
-        sbs.write(timeinfo->tm_mon+1, "%02d");
+        sbs.write((int32_t)timeinfo->tm_mon+1, "%02d");
         sbs.write_char(' ');
-        sbs.write(timeinfo->tm_hour, "%02d");
+        sbs.write((int32_t)timeinfo->tm_hour, "%02d");
         sbs.write_char(':');
-        sbs.write(timeinfo->tm_min, "%02d");
+        sbs.write((int32_t)timeinfo->tm_min, "%02d");
         sbs.write_char(':');
-        sbs.write(timeinfo->tm_sec, "%02d");
+        sbs.write((int32_t)timeinfo->tm_sec, "%02d");
         sbs.write_json_array_end();
 
         switch (level) {

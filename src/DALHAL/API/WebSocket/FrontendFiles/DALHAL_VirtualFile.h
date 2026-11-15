@@ -51,8 +51,10 @@ namespace DALHAL {
         const uint8_t* data;
         size_t size;
         PGM_P mime;
+        /** data is gzip compressed and must be served with Content-Encoding: gzip */
+        bool gzip;
 
-        constexpr ApiVirtualFile(ConstExpressionStringComparableFn filename, const uint8_t* data, size_t size, PGM_P mime) : filename(filename), data(data), size(size), mime(mime) {}
+        constexpr ApiVirtualFile(ConstExpressionStringComparableFn filename, const uint8_t* data, size_t size, PGM_P mime, bool gzip = false) : filename(filename), data(data), size(size), mime(mime), gzip(gzip) {}
     };
 #define API_TEXT_FILE_ENTRY(filename, data, mime) \
     { CE_MATCH_EMIT_STR(filename), data, sizeof(data) - 1, mime }

@@ -179,10 +179,10 @@ namespace DALHAL {
         sbs.write_char('"');
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("uint"), uintValue);
+        sbs.write_jsonNumber(F("uint"), (uint32_t)uintValue);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("int"), intValue);
+        sbs.write_jsonNumber(F("int"), (int32_t)intValue);
 
         sbs.write_json_object_end();
         

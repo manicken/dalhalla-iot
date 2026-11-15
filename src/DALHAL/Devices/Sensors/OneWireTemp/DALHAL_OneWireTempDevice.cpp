@@ -139,8 +139,8 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("format"));
         sbs.write_doublequote();
-        if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write('C'); }
-        else if (format == OneWireTempDeviceTempFormat::Fahrenheit) { sbs.write('F'); }
+        if (format == OneWireTempDeviceTempFormat::Celsius) { sbs.write_char('C'); }
+        else if (format == OneWireTempDeviceTempFormat::Fahrenheit) { sbs.write_char('F'); }
         else { sbs.write(F("other")); }
         sbs.write_doublequote();
 
@@ -197,7 +197,7 @@ namespace DALHAL {
     void OneWireTempDeviceAtRoot::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write_jsonNumber(F("pin"), (int32_t)pin);
         sbs.write_json_value_separator();
         OneWireTempDevice::PrintTo(sbs);
         sbs.write_json_value_separator();

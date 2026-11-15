@@ -253,9 +253,9 @@ namespace DALHAL {
         Device::PrintTo(sbs);
         
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write_jsonNumber(F("pin"), (int32_t)pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pwmChannel"), pwmChannel);
+        sbs.write_jsonNumber(F("pwmChannel"), (int32_t)pwmChannel);
     }
 
     uint32_t PWM_Servo::ratioValueTypeToPulse(float fVal, bool clamp/* = true*/) {

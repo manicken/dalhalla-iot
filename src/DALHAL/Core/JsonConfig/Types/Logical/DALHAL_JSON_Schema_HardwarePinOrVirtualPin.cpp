@@ -123,11 +123,11 @@ namespace DALHAL {
                 if (jsonObj[fieldSchema.name].is<const char*>()) {
                     return HALValue(jsonObj[fieldSchema.name].as<const char*>());
                 } else {
-                    return HALValue(jsonObj[fieldSchema.name].as<signed int>());
+                    return HALValue((int32_t)jsonObj[fieldSchema.name].as<signed int>());
                 }
                 
             } else {
-                return HALValue(-1);
+                return HALValue((int32_t)-1);
             }
         }
 

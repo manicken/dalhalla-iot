@@ -128,8 +128,8 @@ namespace DALHAL {
         sbs.write_json_value_separator();
         sbs.write_jsonMemberStart(F("addr"));
         sbs.write_doublequote();
-        sbs.write('0');
-        sbs.write('x');
+        sbs.write_char('0');
+        sbs.write_char('x');
         sbs.write_asHex(addr);
         sbs.write_doublequote();
     }

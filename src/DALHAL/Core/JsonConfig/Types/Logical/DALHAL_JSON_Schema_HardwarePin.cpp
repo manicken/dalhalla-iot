@@ -112,7 +112,7 @@ namespace DALHAL {
         }
 
         HALValue SchemaHardwarePin::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            return HALValue(static_cast<const SchemaHardwarePin&>(fieldSchema).ExtractFrom(jsonObj));
+            return HALValue((int32_t)static_cast<const SchemaHardwarePin&>(fieldSchema).ExtractFrom(jsonObj));
         }
 
         void SchemaHardwarePin::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {

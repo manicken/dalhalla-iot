@@ -256,8 +256,8 @@ void setup() {
 
     for (size_t i=0;i<devices_count;i++) {
         devices[i].fstr(sbs);
-        sbs.write('\r');
-        sbs.write('\n');
+        sbs.write_char('\r');
+        sbs.write_char('\n');
     }
     sbs.flush();
 

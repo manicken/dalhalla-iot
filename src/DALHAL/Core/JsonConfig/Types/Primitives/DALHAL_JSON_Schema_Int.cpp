@@ -105,15 +105,15 @@ namespace DALHAL {
         }
 
         HALValue SchemaInt::GetValue(const SchemaTypeBase& fieldSchema, const JsonVariant& jsonObj) {
-            return HALValue(static_cast<const SchemaInt&>(fieldSchema).ExtractFrom(jsonObj));
+            return HALValue((int32_t)(static_cast<const SchemaInt&>(fieldSchema).ExtractFrom(jsonObj)));
         }
 
         void SchemaInt::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaTypeBase::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaInt&>(fieldSchema);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("default"), fs.defaultValue);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("minValue"), fs.minValue);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("maxValue"), fs.maxValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("default"), (int32_t)fs.defaultValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("minValue"), (int32_t)fs.minValue);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("maxValue"), (int32_t)fs.maxValue);
             
             if (fieldSchema.type == FieldType::Int) {
                 sbs.write_json_object_end(); // add the object finalizer if this is the actual object

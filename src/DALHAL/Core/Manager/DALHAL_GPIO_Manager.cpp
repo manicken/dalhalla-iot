@@ -144,25 +144,25 @@ namespace DALHAL {
         //    {18, (PinFunc::OUT | PinFunc::IN)}, // USB_DP
         //    {19, (PinFunc::OUT | PinFunc::IN)}, // USP_DM
         //#endif
-            {20, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
-            {21, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {20, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {21, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(seeed_xiao_esp32c3)
 
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {2, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
             {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
-            {4, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
-            {5, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
+            {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
+            {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
             {6, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
             {7, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
             {8, (PinFunc::OUT | PinFunc::IN)},
             {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
             {10, (PinFunc::OUT | PinFunc::IN)},
-            {20, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
-            {21, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {20, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {21, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(waveshare_esp32c6_zero)
             {0, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {1, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {2, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
             {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
@@ -170,14 +170,14 @@ namespace DALHAL {
             {6, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
             {7, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
             {8, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)}, // onboard ws2812 LED
-            {9, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // strapping pin
+            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // strapping pin
             {12, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USB_DM
             {13, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USP_DP
             
             {14, (PinFunc::OUT | PinFunc::IN)},
             {15, (PinFunc::OUT | PinFunc::IN)},
-            {16, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
-            {17, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
+            {16, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
+            {17, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
             {18, (PinFunc::OUT | PinFunc::IN)},
             {19, (PinFunc::OUT | PinFunc::IN)},
             {20, (PinFunc::OUT | PinFunc::IN)},
@@ -219,7 +219,7 @@ namespace DALHAL {
 
                 if (pinFuncMask & pinModeDef.func) {
                     
-                    if (anyFunc) { sbs.write('|'); }
+                    if (anyFunc) { sbs.write_char('|'); }
                     sbs.write(pinModeDef.Name);
                     anyFunc = true;
                 }
@@ -392,7 +392,7 @@ namespace DALHAL {
                 if (i>0) { sbs.write_json_value_separator(); }
                 
                 sbs.write_doublequote();
-                sbs.write(available_gpio_list[i].pin);
+                sbs.write((int32_t)available_gpio_list[i].pin);
                 sbs.write_doublequote();
                 sbs.write_char(':');
                 sbs.write_doublequote();

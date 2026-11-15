@@ -1,0 +1,41 @@
+så egentligen när jag kör pulled OTA så skulle jag i princip ha en hårdkodad struktur på min OTA server:
+esp8266:
+  1MB.bin
+  2MB.bin
+  4MB.bin
+esp32_classic:
+  4MB.bin
+esp32_c3:
+  4MB.bin
+  8MB.bin
+  16MB.bin
+esp32_c6:
+  4MB.bin
+  8MB.bin
+  16MB.bin
+  
+osv.
+man kan kanske även ha sub builds inuti de olika storlekar om man vill men det skulle bara göra det överdrivet
+men däremot 
+kunna göra OTA pulled cmd:
+4MB_special.bin
+för att kunna uppdatera speciella konfigurationer
+ock sedan ha resten hårdkodat/baserat på själva target med hjälp av compiler
+
+// samma ip
+#define PULLED_OTA_IP 192.168.x.x
+#if defined(ESP32) && defined(ESP32_classic)
+#define PULLED_OTA_PATH "esp32_classic"
+#if defined(ESP32) && defined(esp32_c3)
+#define PULLED_OTA_PATH "esp32_c3"
+#endif
+
+
+esp8266 kompilationer:
+71672
+835197
+
+70896 utan 1 wire temp device type och 71672 med => 776 bytes
+822797 utan 1 wire temp device type och 835197 med => 12400 bytes
+
+833249

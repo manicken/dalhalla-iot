@@ -25,6 +25,7 @@
 #include "DALHAL_CommandExecutor.h"
 #include "DALHAL_SerialAPI.h"
 #if defined(ESP8266) || defined(ESP32)
+
 #include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h> // for SendMessage
 #else
 #include <DALHAL/API/DALHAL_WebSocketAPI_win.h> // for SendMessage

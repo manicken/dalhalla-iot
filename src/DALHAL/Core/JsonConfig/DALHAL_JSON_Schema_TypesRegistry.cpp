@@ -109,7 +109,7 @@ namespace DALHAL {
             const FieldTypeRegistryItem& regDefItem = GetFieldTypeRegistryItem(stb.type);
             if (regDefItem.name == nullptr) {
                 GlobalLogger.Error(F("schema error - could not find schema type @ GetValue"));
-                return 0;
+                return (uint32_t)0;
             }
             return regDefItem.define->GetValue(stb, jsonObj);
         }

@@ -151,9 +151,9 @@ namespace DALHAL {
     // Read: returns the toggle state
     HALOperationResult ButtonInput::HALValue_primary_read(Device* device, HALValue& val) {
         ButtonInput& self = static_cast<ButtonInput&>(*device);
-        val = self.activeLevel ?
+        val.set(self.activeLevel ?
               self.stableState :
-              !self.stableState;
+              !self.stableState);
         return HALOperationResult::Success;
     }
 
@@ -161,11 +161,11 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write_jsonNumber(F("pin"), (int32_t)pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("activeLevel"), activeLevel);
+        sbs.write_jsonNumber(F("activeLevel"), (uint32_t)activeLevel);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("debounceMs"), debounceMs);
+        sbs.write_jsonNumber(F("debounceMs"), (uint32_t)debounceMs);
 
     }
 

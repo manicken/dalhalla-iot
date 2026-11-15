@@ -368,13 +368,13 @@ namespace DALHAL {
 
     /*static*/
     HALOperationResult Actuator::getMinEndstop(Device* device, HALValue& val) {
-        val = static_cast<Actuator*>(device)->endMinActive();
+        val.set(static_cast<Actuator*>(device)->endMinActive());
         return HALOperationResult::Success;
     }
 
     /*static*/
     HALOperationResult Actuator::getMaxEndstop(Device* device, HALValue& val) {
-        val = static_cast<Actuator*>(device)->endMaxActive();
+        val.set(static_cast<Actuator*>(device)->endMaxActive());
         return HALOperationResult::Success;
     }
 
@@ -567,26 +567,26 @@ namespace DALHAL {
         if (mode == DriveMode::HBridge) {
             sbs.write(F("\"mode\":\"h-bridge\""));
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin a"), (int8_t)pins.hbridge.a);
+            sbs.write_jsonNumber(F("pin a"), (int32_t)pins.hbridge.a);
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin b"), (int8_t)pins.hbridge.b);
+            sbs.write_jsonNumber(F("pin b"), (int32_t)pins.hbridge.b);
 
         } else if (mode == DriveMode::DirEnable) {
             sbs.write(F("\"mode\":\"dir_enable\""));
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin dir"), (int8_t)pins.diren.dir);
+            sbs.write_jsonNumber(F("pin dir"), (int32_t)pins.diren.dir);
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.diren.enable);
+            sbs.write_jsonNumber(F("pin enable"), (int32_t)pins.diren.enable);
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin brk"), (int8_t)pins.diren.brk);
+            sbs.write_jsonNumber(F("pin brk"), (int32_t)pins.diren.brk);
         } else {
             sbs.write(F("\"mode\":\"__unknown__\""));
         }
         
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pinEndMin"), (int8_t)pinMinEndStop);
+        sbs.write_jsonNumber(F("pinEndMin"), (int32_t)pinMinEndStop);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pinEndMax"), (int8_t)pinMaxEndStop);
+        sbs.write_jsonNumber(F("pinEndMax"), (int32_t)pinMaxEndStop);
     }
 
 } // namespace DALHAL

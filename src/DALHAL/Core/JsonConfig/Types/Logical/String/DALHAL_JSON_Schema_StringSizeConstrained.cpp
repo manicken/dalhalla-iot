@@ -97,8 +97,8 @@ namespace DALHAL {
         void SchemaStringSizeConstrained::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             const SchemaStringSizeConstrained& strSchema = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("minLength"), strSchema.minLength);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("maxLength"), strSchema.maxLength);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("minLength"), (uint32_t)strSchema.minLength);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("maxLength"), (uint32_t)strSchema.maxLength);
             
             if (fieldSchema.type == FieldType::StringSizeConstrained) {
                 sbs.write_json_object_end(); // this is complete object

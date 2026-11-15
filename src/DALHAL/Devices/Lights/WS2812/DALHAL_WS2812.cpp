@@ -188,13 +188,13 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pin"), ws2812fx->getPin());
+        sbs.write_jsonNumber(F("pin"), (int32_t)ws2812fx->getPin());
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("curr mode"), ws2812fx->getMode());
+        sbs.write_jsonNumber(F("curr mode"), (uint32_t)ws2812fx->getMode());
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("curr brightness"), ws2812fx->getBrightness());
+        sbs.write_jsonNumber(F("curr brightness"), (uint32_t)ws2812fx->getBrightness());
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("curr speed"), ws2812fx->getSpeed());
+        sbs.write_jsonNumber(F("curr speed"), (uint32_t)ws2812fx->getSpeed());
     }
 
     uint8_t neoCodeFromString(const char* str) {

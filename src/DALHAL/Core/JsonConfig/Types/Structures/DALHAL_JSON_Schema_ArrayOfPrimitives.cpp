@@ -139,9 +139,9 @@ namespace DALHAL {
                 if (item.is<float>()) {
                     hVal.set(item.as<float>());
                 } else if (item.is<signed int>()) {
-                    hVal.set(item.as<signed int>());
+                    hVal.set((int32_t)item.as<signed int>());
                 } else if (item.is<unsigned int>()) {
-                    hVal.set(item.as<unsigned int>());
+                    hVal.set((uint32_t)item.as<unsigned int>());
                 } else if (item.is<bool>()) {
                     hVal.set(item.as<bool>());
                 } else if (item.is<const char*>()) {

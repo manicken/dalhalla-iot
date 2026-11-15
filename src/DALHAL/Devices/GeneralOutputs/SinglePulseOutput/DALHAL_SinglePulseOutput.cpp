@@ -151,9 +151,9 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pin"), pin);
+        sbs.write_jsonNumber(F("pin"), (int32_t)pin);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pulseLength"), pulseLength);
+        sbs.write_jsonNumber(F("pulseLength"), (uint32_t)pulseLength);
     }
 	
 }

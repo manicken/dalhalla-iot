@@ -115,9 +115,9 @@ namespace DALHAL {
     void Display_SSD1306::PrintTo(StringBuilderStreamer& sbs) {
         Device::PrintTo(sbs);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("width"), display->width());
+        sbs.write_jsonNumber(F("width"), (int32_t)display->width());
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("height"), display->height());
+        sbs.write_jsonNumber(F("height"), (int32_t)display->height());
 
     }
 

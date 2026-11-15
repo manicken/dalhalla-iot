@@ -326,13 +326,13 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
 
     /*static*/
     HALOperationResult LatchingRelay::getResetActive(Device* device, HALValue& val) {
-        val = static_cast<LatchingRelay*>(device)->resetActive();
+        val.set(static_cast<LatchingRelay*>(device)->resetActive());
         return HALOperationResult::Success;
     }
 
     /*static*/
     HALOperationResult LatchingRelay::getSetActive(Device* device, HALValue& val) {
-        val = static_cast<LatchingRelay*>(device)->setActive();
+        val.set(static_cast<LatchingRelay*>(device)->setActive());
         return HALOperationResult::Success;
     }
 
@@ -572,23 +572,23 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         if (mode == DriveMode::Direct) {
             sbs.write(F("\"mode\":\"Direct\""));
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin a"), (int8_t)pins.direct.a);
+            sbs.write_jsonNumber(F("pin a"), (int32_t)pins.direct.a);
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin b"), (int8_t)pins.direct.b);
+            sbs.write_jsonNumber(F("pin b"), (int32_t)pins.direct.b);
         } else if (mode == DriveMode::DataEnable) {
             sbs.write(F("\"mode\":\"data_enable\""));
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin data"), (int8_t)pins.data_enable.data);
+            sbs.write_jsonNumber(F("pin data"), (int32_t)pins.data_enable.data);
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("pin enable"), (int8_t)pins.data_enable.enable);
+            sbs.write_jsonNumber(F("pin enable"), (int32_t)pins.data_enable.enable);
         } else {
             sbs.write(F("\"mode\":\"__unknown__\""));
         }
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pinFeedbackReset"), (int8_t)pinFeedbackReset);
+        sbs.write_jsonNumber(F("pinFeedbackReset"), (int32_t)pinFeedbackReset);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("pinFeedbackSet"), (int8_t)pinFeedbackSet);
+        sbs.write_jsonNumber(F("pinFeedbackSet"), (int32_t)pinFeedbackSet);
     }
 
 } // namespace DALHAL

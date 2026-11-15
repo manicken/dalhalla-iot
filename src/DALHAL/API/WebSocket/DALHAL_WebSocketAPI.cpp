@@ -195,7 +195,11 @@ namespace DALHAL {
                 request->send(404, F("text/plain"), F("file not found"));
                 return;
             }
-            request->send_P(200, vFile->mime, vFile->data, vFile->size);
+            AsyncWebServerResponse* response = request->beginResponse_P(200, FPSTR(vFile->mime), vFile->data, vFile->size);
+            if (vFile->gzip) {
+                response->addHeader(F("Content-Encoding"), F("gzip"));
+            }
+            request->send(response);
         }
     }
 

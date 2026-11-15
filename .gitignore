@@ -11,3 +11,4 @@ pc_simulation/build
 pc_simulation/src
 secrets
 html/node_modules
+src/DALHAL/API/WebSocket/FrontendFiles/Generated

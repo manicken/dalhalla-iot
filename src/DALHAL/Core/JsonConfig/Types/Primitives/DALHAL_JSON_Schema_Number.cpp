@@ -99,11 +99,11 @@ namespace DALHAL {
                 if (jsonObj[this->name].is<float>()) {
                     return HALValue(jsonObj[this->name].as<float>());
                 } else {
-                    return HALValue(jsonObj[this->name].as<signed int>());
+                    return HALValue((int32_t)jsonObj[this->name].as<signed int>());
                 }
                 
             } else {
-                return HALValue(0);
+                return HALValue((uint32_t)0);
             }
         }
 

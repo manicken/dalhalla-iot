@@ -100,9 +100,9 @@ namespace DALHAL {
         Device::PrintTo(sbs);
 
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("SDA PIN"), sdapin);
+        sbs.write_jsonNumber(F("SDA PIN"), (uint32_t)sdapin);
         sbs.write_json_value_separator();
-        sbs.write_jsonNumber(F("SCK PIN"), sckpin);
+        sbs.write_jsonNumber(F("SCK PIN"), (uint32_t)sckpin);
         sbs.write_json_value_separator();
         sbs.write_jsonNumber(F("freq"), freq);
         sbs.write_json_value_separator();

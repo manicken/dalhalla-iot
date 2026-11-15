@@ -82,6 +82,19 @@ list(FILTER SOURCES EXCLUDE REGEX ".*/DALHAL\\.cpp$")
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
+# ---------------------------------------
+# Generate embedded frontend files
+# ---------------------------------------
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(GEN_FRONTEND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/gen_frontend.py)
+# run once at configure time so the header exists for the first build
+execute_process(COMMAND ${Python3_EXECUTABLE} ${GEN_FRONTEND})
+# and before every build, the script only rewrites the header when www/ content changed
+add_custom_target(frontend_files COMMAND ${Python3_EXECUTABLE} ${GEN_FRONTEND})
+add_dependencies(${EXECUTABLE_NAME} frontend_files)
+
+
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
 # ---------------------------------------

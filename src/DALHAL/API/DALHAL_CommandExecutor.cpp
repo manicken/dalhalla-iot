@@ -536,7 +536,7 @@ namespace DALHAL {
 #if defined(ESP8266)
         sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), ESP.getMaxFreeBlockSize());
 #elif defined(ESP32)
-        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), ESP.getMaxAllocHeap());
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), (uint32_t)ESP.getMaxAllocHeap());
 #endif
         sbs.write_json_object_end();
         return HALOperationResult::Success;
@@ -597,11 +597,11 @@ namespace DALHAL {
             sbs.write_json_object_begin();
             sbs.write_jsonString(F("ssid"), ssidB64.c_str());
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("ch"), WiFi.channel(i));
+            sbs.write_jsonNumber(F("ch"), (uint32_t)WiFi.channel(i));
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("freq"), WiFi.channel(i) <= 14 ? 2400 : 5000); // crude 2.4/5 GHz
+            sbs.write_jsonNumber(F("freq"), (uint32_t)(WiFi.channel(i) <= 14 ? 2400 : 5000)); // crude 2.4/5 GHz
             sbs.write_json_value_separator();
-            sbs.write_jsonNumber(F("rssi"), WiFi.RSSI(i));
+            sbs.write_jsonNumber(F("rssi"), (int32_t)WiFi.RSSI(i));
             sbs.write_json_value_separator();
             sbs.write_jsonString(F("encryption"), enc);
             sbs.write_json_object_end();
@@ -890,7 +890,7 @@ namespace DALHAL {
                     sbs.write_json_object_end();
                     return HALOperationResult::InvalidArgument;
                 }
-                halValue = bValue;
+                halValue.set(bValue);
             }
             if (params.isBracketOp == false) {
                 auto fnRes = GetDeviceFunction<FunctionTypes::WriteHALValue>(device, params.zcCmd);

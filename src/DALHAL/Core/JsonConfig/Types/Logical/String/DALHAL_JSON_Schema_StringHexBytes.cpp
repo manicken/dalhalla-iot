@@ -82,7 +82,7 @@ namespace DALHAL {
         void SchemaStringHexBytes::SchemaToJson(const SchemaTypeBase& fieldSchema, StringBuilderStreamer& sbs, SchemaEmitMode mode) {
             SchemaString::SchemaToJson(fieldSchema, sbs, mode);
             auto fs = static_cast<const SchemaStringHexBytes&>(fieldSchema);
-            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("byteCount"), fs.byteCount);
+            sbs.write_json_value_separator(); sbs.write_jsonNumber(F("byteCount"), (uint32_t)fs.byteCount);
 
             if (fieldSchema.type == FieldType::StringHexBytes) {
                 sbs.write_json_object_end(); // add the object finalizer if this is the actual object

@@ -1,0 +1,69 @@
+on eachloop then
+	if temps:a:a > 28 && var1 == 0 then
+	  var1 = 1
+	  birel#set() // if i end this statement with a ; then my script engine expects the next token is a "action line" and not a elseif
+	elseif temps:a:a < 28 && var1 == 1 then
+	  var1 = 0
+	  birel#reset()
+	endif
+endon
+
+
+
+
+ScriptBlocks (script files)
+ - ScriptBlock (script file)
+   - TriggerBlock:s
+     - StatementBlock:s
+       || IfStatement
+	   || ActionStatement
+   
+   
+   
+   
+   
+on i2c:pcf1@Interrupt then
+	rgb16 = (rgb16 & 0xFF00) | (i2c:pcf1 & 0x00FF);
+endon
+
+on i2c:pcf2@Interrupt then
+	rgb16 = (rgb16 & 0x00FF) | ((i2c:pcf2 & 0x00FF) << 8);
+endon
+
+on rgb16@ValueChange
+	i2c:disp:rgb16 = rgb16 ;
+
+	red = (rgb16 >> 11) & 0x1F ;
+	green = (rgb16 >> 5) & 0x3F ;
+  blue = rgb16 & 0x1F ;
+
+  red = (red << 3) ; // | (var7 >> 2)
+  green = (green << 2) ; // | (var8 >> 4)
+  blue = (blue << 3) ; // | (var9 >> 2)
+
+  i2c:disp:red = red ;
+  i2c:disp:green = green ;
+  i2c:disp:blue = blue ;
+
+  neo#color = (red << 16) | (green << 8) | blue ;
+  
+endon
+
+
+on i2c:pcf1@Interrupt then
+	vars:rgb16 = (vars:rgb16 & 0xFF00) | (i2c:pcf1 & 0x00FF);
+	vars:pcf1:int = 1
+endon
+
+on i2c:pcf2@Interrupt then
+	vars:rgb16 = (vars:rgb16 & 0x00FF) | ((i2c:pcf2 & 0x00FF) << 8);
+	vars:pcf2:int = 1
+endon
+
+on vars:rgb16@ValueChange then
+	if (vars:pcf1:int && vars:pcf2:int) then
+		vars:pcf1:int = 0
+		vars:pcf2:int = 0
+		// do something here
+	endif
+endon
