@@ -37,9 +37,9 @@ namespace DALHAL {
         constexpr gpio_pin available_gpio_list[] {
     #if defined(ESP8266)
         
-            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // (reserved for programming) only safe to use as a output
-            {1, (PinFunc::OUT | PinFunc::SpecialAtBoot)},  // TXD0 (reserved for programming/UART) only safe to use as a output
-            {2, (PinFunc::OUT | PinFunc::SpecialAtBoot)},  // TXD1 (reserved for debug) only safe to use as a output
+            {0, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // (reserved for programming) only safe to use as a output
+            {1, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot)},  // TXD0 (reserved for programming/UART) only safe to use as a output
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot)},  // TXD1 (reserved for debug) only safe to use as a output
             //{3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // RXD0 (reserved for programming/UART)
             {4, (PinFunc::OUT | PinFunc::IN)},    // I2C SDA
             {5, (PinFunc::OUT | PinFunc::IN)},    // I2C SCL
@@ -55,12 +55,12 @@ namespace DALHAL {
             {15, (PinFunc::OUT | PinFunc::IN)}, // SPI CS/TXD2
     
     #elif defined(ESP32DEV) || defined(_WIN32) || defined(__linux__) || defined(__MAC__)
-            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
-            {1, (PinFunc::Reserved | PinFunc::OUT | PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
-            {2, (PinFunc::OUT | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
+            {0, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
+            {1, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
             {3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
             {4, (PinFunc::OUT | PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
-            {5, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
+            {5, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
       
             {6, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
             {7, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
@@ -69,10 +69,10 @@ namespace DALHAL {
             {10, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
             {11, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
 
-            {12, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
+            {12, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
             {13, (PinFunc::OUT | PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
             {14, (PinFunc::OUT | PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
-            {15, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
+            {15, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
             {16, (PinFunc::OUT | PinFunc::IN)}, // U2_RXD
             {17, (PinFunc::OUT | PinFunc::IN)}, // U2_TXD     
             {18, (PinFunc::OUT | PinFunc::IN)}, // VSPI_CLK
@@ -91,12 +91,12 @@ namespace DALHAL {
             {39, (PinFunc::IN | PinFunc::AIN)},  // ADC1_3/SensVN (input only)
             
     #elif defined(ESP32WROVER_E_IE)
-            {0, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
+            {0, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_1/TOUCH1 (reserved for programming, better to just keep it a output)
             {1, (PinFunc::Reserved | PinFunc::OUT | PinFunc::SpecialAtBoot)}, // U0_TXD (reserved for programmer/debug)
-            {2, (PinFunc::OUT | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT)}, // ADC2_2/TOUCH2/SD_DATA0 (must be LOW during boot/is connected to onboard LED, could be a output function only pin)
             {3, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U0_RXD (reserved for programmer/debug cannot be shared directly)
             {4, (PinFunc::OUT | PinFunc::IN)},  // ADC2_0/TOUCH0/SD_DATA1 (ADC2 cannot be used together with WiFi)
-            {5, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
+            {5, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)},  // VSPI_CS (must be HIGH during boot better to keep it a output only)
             // GPIO 6-11 are not available on the module they are internally connected to the flash
             {6, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U1_CTS/SPI_CLK (reserved for flash)
             {7, (PinFunc::Reserved | PinFunc::SpecialAtBoot)},  // U2_RTS/SPI_MISO (reserved for flash)
@@ -105,10 +105,10 @@ namespace DALHAL {
             {10, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_TXD/SPI_WP (reserved for flash)
             {11, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // U1_RTX/SPI_CS (reserved for flash)
  
-            {12, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
+            {12, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_5/TOUCH5/HSPI_MISO/SD_DATA2 (must be LOW during boot, could be a output function only pin)
             {13, (PinFunc::OUT | PinFunc::IN)}, // ADC2_4/TOUCH4/HSPI_MOSI/SD_DATA3 (ADC2 cannot be used together with WiFi)
             {14, (PinFunc::OUT | PinFunc::IN)}, // ADC2_6/TOUCH6/HSPI_CLK/SD_CLK (ADC2 cannot be used together with WiFi)
-            {15, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
+            {15, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // ADC2_3/TOUCH3/HSPI_CS/SD_CMD (must be HIGH during boot, could be a output function only pin)
      
             {18, (PinFunc::OUT | PinFunc::IN)}, // VSPI_CLK
             {19, (PinFunc::OUT | PinFunc::IN)}, // VSPI_MISO
@@ -128,14 +128,14 @@ namespace DALHAL {
     #elif defined(waveshare_esp32c3_zero)
             {0, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {1, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
-            {2, MAKE_PIN_MASK_4(PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
             {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {6, (PinFunc::OUT | PinFunc::IN)},
             {7, (PinFunc::OUT | PinFunc::IN)},
             {8, (PinFunc::OUT | PinFunc::IN)},
-            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
+            {9, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
             {10, (PinFunc::OUT | PinFunc::IN)}, // onboard ws2812 LED
         //#if ARDUINO_USB_CDC_ON_BOOT || ARDUINO_USB_MODE
             {18, (PinFunc::Reserved | PinFunc::SpecialAtBoot)}, // USB_DP
@@ -148,21 +148,21 @@ namespace DALHAL {
             {21, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(seeed_xiao_esp32c3)
 
-            {2, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
             {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
             {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN | PinFunc::JTAG)},
             {6, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
             {7, (PinFunc::OUT | PinFunc::IN | PinFunc::JTAG)},
             {8, (PinFunc::OUT | PinFunc::IN)},
-            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
+            {9, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot)}, // strapping pin
             {10, (PinFunc::OUT | PinFunc::IN)},
             {20, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART RxD
             {21, (PinFunc::OUT | PinFunc::IN | PinFunc::SpecialAtBoot | PinFunc::UARTFLASH)}, // flash standard UART TxD
     #elif defined(waveshare_esp32c6_zero)
             {0, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {1, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
-            {2, (PinFunc::OUT | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
+            {2, (PinFunc::OUT | PinFunc::IN | PinFunc::LOW2BOOT | PinFunc::SpecialAtBoot | PinFunc::AIN)}, // strapping pin
             {3, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {4, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
             {5, (PinFunc::OUT | PinFunc::IN | PinFunc::AIN)},
@@ -170,7 +170,7 @@ namespace DALHAL {
             {6, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
             {7, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)},
             {8, (PinFunc::OUT | PinFunc::IN | PinFunc::UNDERSIDE)}, // onboard ws2812 LED
-            {9, (PinFunc::OUT | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // strapping pin
+            {9, (PinFunc::OUT | PinFunc::IN | PinFunc::HIGH2BOOT | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // strapping pin
             {12, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USB_DM
             {13, (PinFunc::Reserved | PinFunc::SpecialAtBoot | PinFunc::UNDERSIDE)}, // USP_DP
             

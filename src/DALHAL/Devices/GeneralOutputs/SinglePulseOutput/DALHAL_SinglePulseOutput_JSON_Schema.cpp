@@ -44,12 +44,12 @@ namespace DALHAL {
 
         namespace SinglePulseOutput {
 
-            constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::IN) };
-            constexpr SchemaUInt pulseLengthField = { DALHAL_KEYNAME_SINGLE_PULSE_OUTPUT_DEFAULT_PULSE_LENGHT, FieldPolicy::Optional, (uint32_t)1, (uint32_t)0, (uint32_t)500};
+            constexpr SchemaHardwarePin pinField = { DALHAL_COMMON_CFG_NAME_PIN, FieldPolicy::Required, (GPIO_manager::PinFunc::OUT) };
+            constexpr SchemaUInt pulseLengthField = { "pulseLength", FieldPolicy::Optional, (uint32_t)1, (uint32_t)0, (uint32_t)500}; // min=1, max=0(max of uint32), default=500
             
             //constexpr ByArrayConstraints activeLevelConstraints = {CommonPins::activeLevelStrings, ByArrayConstraints::Policy::IgnoreCase};
             //constexpr SchemaStringAnyOfArrayConstrained activeLevelField = { "activeLevel", FieldPolicy::Optional, DALHAL_COMMON_CFG_VALUE_PIN_LEVEL_HIGH, &activeLevelConstraints};
-            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint32_t)0, (uint32_t)1, (uint32_t)0}; 
+            constexpr SchemaUInt activeLevelField = {"activeLevel", FieldPolicy::Optional, (uint32_t)0, (uint32_t)1, (uint32_t)1}; // min=0, max=1, default=1
 
             constexpr const SchemaTypeBase* fields[] = {
                 &CommonBase::disabled_type_uidreq_note_group, // DALHAL_CommonSchemas_Base

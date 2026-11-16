@@ -76,7 +76,7 @@ namespace DALHAL {
             const SchemaStringSizeConstrained& fssc = static_cast<const SchemaStringSizeConstrained&>(fieldSchema);
             res = ValidatorResult::Success;
             if (strLen < fssc.minLength) {
-                std::string errMsg = std::to_string((unsigned int)fssc.minLength) + "): ";
+                std::string errMsg = std::to_string((uint16_t)fssc.minLength) + "): ";
                 errMsg += fieldSchema.name;
                 errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
                 GlobalLogger.Error(F("String shorter than minLength("), errMsg.c_str());
@@ -84,7 +84,7 @@ namespace DALHAL {
                 anyError = true;
             }
             if (fssc.maxLength > 0 && strLen > fssc.maxLength) {
-                std::string errMsg = std::to_string((unsigned int)fssc.maxLength) + "): ";
+                std::string errMsg = std::to_string((uint16_t)fssc.maxLength) + "): ";
                 errMsg += fieldSchema.name;
                 errMsg += " @ "; errMsg += '['; errMsg += sourceObjTypeName; errMsg += ']';
                 GlobalLogger.Error(F("String exceeds maxLength("), errMsg.c_str());
