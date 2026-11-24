@@ -22,11 +22,7 @@
 */
 
 #include "DALHAL_HomeAssistant.h"
-#if defined(ESP32) || (defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
-#include <WiFi.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#endif
+#include <System/Network/Network.h>
 #include <Arduino.h>
 
 #include <PubSubClient.h>
@@ -76,7 +72,7 @@ namespace DALHAL {
     }
     
     HomeAssistant::HomeAssistant(DeviceCreateContext& context) : Device(context.deviceType) {
-        mqttClient.setClient(wifiClient);
+        mqttClient.setClient(tcpClient);
         uint32_t failedSendCountBefore = HA_DeviceDiscovery::failedSendCount;
         JsonSchema::HomeAssistant::Extractors::Apply(context, this);
         discoveryFailedAtCreate = (HA_DeviceDiscovery::failedSendCount != failedSendCountBefore);
@@ -86,7 +82,7 @@ namespace DALHAL {
     }
 
     void HomeAssistant::ConfigureMqttClient() {
-        if (WiFi.hostByName(host.c_str(), ip)) {
+        if (Network::HostByName(host.c_str(), ip)) {
             // Successfully resolved
             mqttClient.setServer(ip, port);
         } else {
@@ -184,7 +180,7 @@ namespace DALHAL {
 #endif
         }
 
-        String localIp = WiFi.localIP().toString();
+        String localIp = Network::LocalIP().toString();
         if (err == 0) {
             snprintf(msg, sizeof(msg), "raw TCP to %s:%u OK from %s (fd=%d, arp mac=%s), so the problem is inside WiFiClient/PubSubClient", target.toString().c_str(), port, localIp.c_str(), fd, macStr);
             GlobalLogger.Info(F("HASS MQTT diag -"), msg);
@@ -400,9 +396,7 @@ namespace DALHAL {
 
     void HomeAssistant::loop() {
         if (!devices) return;
-#if defined(ESP8266) || defined(ESP32)
-        if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping HomeAssistant task"); }
-#endif
+        if (Network::IsUp() == false) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("network not up, skipping HomeAssistant task"); }
         if (mqttClient.connected() == false) {
             
             unsigned long now = millis();

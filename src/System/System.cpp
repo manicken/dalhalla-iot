@@ -36,6 +36,7 @@
 
 #include "OTA.h"
 #include "FSBrowserAsync.h"
+#include <System/Network/Network.h>
 
 #include <DALHAL/API/DALHAL_API.h>
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
@@ -134,52 +135,8 @@ namespace System {
         Serial.println(F("      FAILSAFE MODE ACTIVATED"));
         Serial.println(F("======================================\r\n"));
 
-        // === STEP 0: WiFi Preparation ===
-        WiFi.setSleep(false);
-        WiFi.disconnect(true);  // Turn off previous connection completely
-        delay(100);
-        WiFi.mode(WIFI_AP_STA);
-
-#define DALHAL_FAILSAFE_AP_SSID "Failsafe-Device"
-#define DALHAL_FAILSAFE_AP_PASS "12345678"
-        // Setup AP (failsafe access point)
-        if (!WiFi.softAP(DALHAL_FAILSAFE_AP_SSID, DALHAL_FAILSAFE_AP_PASS)) {
-            Serial.println(F("ERROR: Failed to start AP!"));
-        } else {
-            WiFi.softAP(DALHAL_FAILSAFE_AP_SSID, DALHAL_FAILSAFE_AP_PASS);
-            Serial.print(F("AP credentials: SSID=" DALHAL_FAILSAFE_AP_SSID ", PASS=" DALHAL_FAILSAFE_AP_PASS));
-            Serial.print(F("AP IP: "));
-            Serial.println(WiFi.softAPIP());
-        }
-
-        // --- STEP 1: Connect to last known WiFi (non-blocking with timeout) ---
-        Serial.println(F("\n[WiFi] Attempting to connect to last known network..."));
-        WiFi.begin();  // Use stored credentials
-
-        unsigned long wifiConnectTimeout = millis() + 60000;  // 60 second WiFi timeout
-        bool wifiConnected = false;
-        int wifiAttempts = 0;
-        
-        while (millis() < wifiConnectTimeout && !wifiConnected) {
-            delay(500);
-            wifiAttempts++;
-            
-            if (WiFi.status() == WL_CONNECTED) {
-                wifiConnected = true;
-                Serial.println(F("\n[WiFi] ✓ Connected to WiFi!"));
-                Serial.print(F("[WiFi] IP: "));
-                Serial.println(WiFi.localIP());
-                break;
-            }
-            
-            if (wifiAttempts % 4 == 0) {  // Print every 2 seconds
-                Serial.print(F("."));
-            }
-        }
-        
-        if (!wifiConnected) {
-            Serial.println(F("\n[WiFi] ✗ Failed to connect to stored network (continuing in AP-only mode)"));
-        }
+        // --- STEP 0+1: bring up all network links in failsafe mode (WiFi: failsafe AP + STA with stored credentials) ---
+        Network::BeginFailsafe();
 
         // --- STEP 2: Setup OTA ---
         Serial.println(F("\n[OTA] Configuring ArduinoOTA..."));
@@ -215,13 +172,9 @@ namespace System {
         unsigned long long failsafeLoopTimeoutMs = 1000*60*10; // 10 Min timeout to avoid stuck in this state in case of a error
         unsigned long long failsafeLoopTimeoutMs_Start = millis();
         unsigned long long failsafeLoopTimeoutMs_MaxEnd = failsafeLoopTimeoutMs_Start + failsafeLoopTimeoutMs;
-        static unsigned long lastReconnect = 0;
         // --- STEP 4: FAILSAFE LOOP ---
         while (true) {
-            if (WiFi.status() != WL_CONNECTED && millis() - lastReconnect > 5000) {
-                WiFi.reconnect();
-                lastReconnect = millis();
-            }
+            Network::LoopFailsafe();
             ArduinoOTA.handle();    // Required
             HeartbeatLed::task();   // Non-blocking
 

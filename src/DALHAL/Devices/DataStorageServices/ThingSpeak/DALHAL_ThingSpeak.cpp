@@ -22,11 +22,6 @@
 */
 
 #include "DALHAL_ThingSpeak.h"
-#if defined (ESP8266)
-#include <ESP8266WiFi.h>
-#elif defined (ESP32)
-#include <WiFi.h>
-#endif
 
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
@@ -87,9 +82,7 @@ namespace DALHAL {
 
     void ThingSpeak::loop() {
         if (useOwnTaskLoop == false) return;
-#if defined(ESP8266) || defined(ESP32)
-        if (WiFi.status() != WL_CONNECTED) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("WiFi not connected, skipping ThingSpeak task"); }
-#endif
+        if (Network::IsUp() == false) { return; } // need some timer to print this otherwise it will just flood the Serial port Serial.println("network not up, skipping ThingSpeak task"); }
         uint32_t now = millis();
         if ((now - lastUpdateMs) > refreshTimeMs) {
             lastUpdateMs = now;
@@ -131,7 +124,7 @@ namespace DALHAL {
         }
         //Serial1.println(urlApi.c_str());
 
-        self.http.begin(self.wifiClient, ref_urlApi.c_str());
+        self.http.begin(self.tcpClient, ref_urlApi.c_str());
         self.http.setTimeout(2000); // set to 2 seconds so WDT would not trigger
                 
         int httpCode = self.http.GET();

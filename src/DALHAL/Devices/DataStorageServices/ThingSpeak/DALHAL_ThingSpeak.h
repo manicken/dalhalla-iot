@@ -39,9 +39,9 @@
 #elif defined(ESP32)
 #include <HTTPClient.h>
 #elif defined(_WIN32) || defined(__linux__) || defined(__MAC__)
-#include <WiFiClient.h>
 #include <HTTPClient.h>
 #endif
+#include <System/Network/Network.h>
 
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
 
@@ -83,7 +83,7 @@ namespace DALHAL {
         FlexibleString ts_root_url;
 
         HTTPClient http;
-        WiFiClient wifiClient;
+        Network::TcpClient tcpClient;
         
         char api_key[17];
         std::string urlApi;

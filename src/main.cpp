@@ -35,6 +35,7 @@
 #endif
 
 #include <System/WiFiConnectionManager.h>
+#include <System/Network/Network.h>
 #include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h>
 #ifndef ESP8266
 #include <LittleFS.h>
@@ -138,22 +139,7 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
             display.display();
             delay(2000); // allow user to see result
 #endif
-            // You could trigger WS API initialization here
-            DALHAL::WebSocketAPI::setup();
-            NTP::NTPConnect();
-            //ArduinoOTA.end();
-            ArduinoOTA.begin();
-
-            Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
-            Info::startTime = now();
-
-#if defined(ESP32) && !defined(esp32c3)
-            File test = SD_MMC.open("/StartTimes.log", "a", true);
-            test.println(Time_ext::GetTimeAsString(now()).c_str());
-            test.close();
-#endif
-            webserver.end();
-            webserver.begin();
+            // network services are started by onNetworkEvent(Up), which follows directly after this event
             break;
         }
 
@@ -205,6 +191,29 @@ void onWiFiEvent(WiFiConnectionManager::Event event, const char* info) {
 }
 #endif
 
+/** link independent, (re)starts the network services every time the network goes from down to up */
+void onNetworkEvent(Network::Event event) {
+    if (event != Network::Event::Up) {
+        Serial.println(F("network/status/down"));
+        return;
+    }
+    DALHAL::WebSocketAPI::setup();
+    NTP::NTPConnect();
+    //ArduinoOTA.end();
+    ArduinoOTA.begin();
+
+    Scheduler::setup(nameToFunctionList, sizeof(nameToFunctionList) / sizeof(nameToFunctionList[0]));
+    Info::startTime = now();
+
+#if defined(ESP32) && !defined(esp32c3)
+    File test = SD_MMC.open("/StartTimes.log", "a", true);
+    test.println(Time_ext::GetTimeAsString(now()).c_str());
+    test.close();
+#endif
+    webserver.end();
+    webserver.begin();
+}
+
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
@@ -236,9 +245,7 @@ bool DebugPrint(const char* str, size_t len) {
 }
 
 void setup() {
-    WiFi.setAutoReconnect(true);
-    WiFi.persistent(true);
-    WiFi.setSleep(false);
+    Network::PreInit();
 #ifdef DALHAL_H_
     DALHAL::GPIO_manager::triStateAvailablePins();
 #endif
@@ -284,19 +291,13 @@ void setup() {
     display.println(F("WiFi connecting..."));
     display.display();
 #endif
-// Set event callback (optional but recommended)
+    // WiFi specific events (display/log), the link independent service start is in onNetworkEvent
     WiFiConnectionManager::setEventCallback(onWiFiEvent);
-    WiFiConnectionManager::init(
-        "DALHAL-Failsafe",             // AP SSID
-        "",                            // AP Password (min 8 chars)
-        8000,                          // STA connection timeout: 8 seconds
-        60000,                         // AP timeout before reconnect attempts: 60 seconds
-        30000                          // Reconnect interval: 30 seconds
-    );
-    WiFiConnectionManager::WaitForConnectionUntilTimeout();
-    
-    Serial.println(F("Setup complete - WiFi manager initialized"));
 #endif
+    Network::SetEventCallback(onNetworkEvent);
+    Network::Begin();
+
+    Serial.println(F("Setup complete - network initialized"));
    
     HeartbeatLed::setup();
     
@@ -318,9 +319,7 @@ void loop() {
 #ifdef DALHAL_H_
     DALHAL::loop();
 #endif
-#ifdef WIFI_CONNECTION_MANAGER_H
-    WiFiConnectionManager::task();
-#endif
+    Network::Loop();
 
 }
 

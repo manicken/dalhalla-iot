@@ -27,7 +27,7 @@
 
 #include <string>
 
-#include <WiFiClient.h>
+#include <System/Network/Network.h>
 #include <PubSubClient.h>
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
@@ -58,7 +58,7 @@ namespace DALHAL {
         IPAddress ip;
         uint32_t port;
 
-        WiFiClient wifiClient;
+        Network::TcpClient tcpClient;
         PubSubClient mqttClient;
 
         Device** devices = nullptr;

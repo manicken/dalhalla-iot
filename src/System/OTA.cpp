@@ -23,15 +23,16 @@
 
 #include "OTA.h"
 #if defined(ESP32) || defined(ESP8266)
+#include <System/Network/Network.h>
 namespace OTA
 {
-    WiFiClient wifiClient;
+    Network::TcpClient tcpClient;
     
     static int otaPartProcentCount = 0;
     
     void pre_setup()
     {
-        //Pulled_check(wifiClient);
+        //Pulled_check(tcpClient);
         pre_setup_PushedOTA();
     }
 
@@ -45,7 +46,7 @@ namespace OTA
 #if defined (ESP8266)
         DEBUG_UART.println(F("checking for updates"));
         //String updateUrl = "http://espOtaServer/esp_ota/" + String(ESP.getChipId(), HEX) + ".bin";
-        t_httpUpdate_return ret = ESPhttpUpdate.update(wifiClient, url);
+        t_httpUpdate_return ret = ESPhttpUpdate.update(tcpClient, url);
         DEBUG_UART.print(F("HTTP_UPDATE_"));
         switch (ret) {
         case HTTP_UPDATE_FAILED:

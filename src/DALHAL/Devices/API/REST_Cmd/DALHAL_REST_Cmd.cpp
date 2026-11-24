@@ -27,7 +27,7 @@
 #elif defined(ESP8266)
 #include <ESP8266HTTPClient.h>
 #endif
-#include <WiFiClient.h>
+#include <System/Network/Network.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
@@ -78,8 +78,8 @@ namespace DALHAL {
     DALHAL::HALOperationResult REST_Cmd::exec(Device* device) {
         int getCode = 0;
         HTTPClient client;
-        WiFiClient wifiClient;
-        if (client.begin(wifiClient, static_cast<REST_Cmd*>(device)->remoteUrl)) {
+        Network::TcpClient tcpClient;
+        if (client.begin(tcpClient, static_cast<REST_Cmd*>(device)->remoteUrl)) {
             getCode = client.GET();
         }
 

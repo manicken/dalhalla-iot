@@ -27,6 +27,7 @@
 #elif defined(ESP8266)
 #include <ESP8266HTTPClient.h>
 #endif
+#include <System/Network/Network.h>
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include "DALHAL_REST_Value_JSON_Schema.h"
@@ -86,8 +87,8 @@ namespace DALHAL {
     void REST_Value::fetchRemoteValue() {
         int getCode = 0;
         HTTPClient client;
-        WiFiClient wifiClient;
-        if (client.begin(wifiClient, remoteUrl)) {
+        Network::TcpClient tcpClient;
+        if (client.begin(tcpClient, remoteUrl)) {
             getCode = client.GET();
         }
 
