@@ -65,6 +65,8 @@ namespace DALHAL {
         int deviceCount = 0;
 
         bool initializedOnce = false;
+        /** set when any entity discovery could not be sent at creation, warned about on next connect */
+        bool discoveryFailedAtCreate = false;
 
         unsigned long lastReconnectAttempt = 0;
         const unsigned long reconnectInterval = 10000; // 10 seconds

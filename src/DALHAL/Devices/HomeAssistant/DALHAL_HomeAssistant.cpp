@@ -77,8 +77,10 @@ namespace DALHAL {
     
     HomeAssistant::HomeAssistant(DeviceCreateContext& context) : Device(context.deviceType) {
         mqttClient.setClient(wifiClient);
+        uint32_t failedSendCountBefore = HA_DeviceDiscovery::failedSendCount;
         JsonSchema::HomeAssistant::Extractors::Apply(context, this);
-        
+        discoveryFailedAtCreate = (HA_DeviceDiscovery::failedSendCount != failedSendCountBefore);
+
         mqttClient.setOnPublishHeaderCallback(this, MqttOnPublishHeaderCallback);
         mqttClient.setOnErrorCallback(this, MqttOnErrorCallback);
     }
@@ -216,7 +218,18 @@ namespace DALHAL {
 #endif
         if (mqttClient.connected()) {
             GlobalLogger.Info(F("HASS MQTT - connected to brooker"));
-            
+            // connect uses CleanSession = true so the broker forgets all subscriptions on every reconnect,
+            // without this the switches etc. would stop receiving commands after the first reconnect
+            // (initializedOnce == false means begin() has not run yet, and it will subscribe itself)
+            if (initializedOnce) {
+                HA_DeviceDiscovery::SubscribeToCommandTopic(mqttClient);
+                HA_DeviceDiscovery::SubscribeToCleanupTopic(mqttClient);
+            }
+            if (discoveryFailedAtCreate) {
+                discoveryFailedAtCreate = false;
+                // discovery is only sent at creation and is retained, so HA still uses the previously retained cfg
+                GlobalLogger.Warn(F("HASS - discovery could not be sent at startup, new/changed entities are not published to HA, run hal/config/reload to publish them"));
+            }
         }
     }
 
@@ -349,12 +362,8 @@ namespace DALHAL {
     void HomeAssistant::MqttOnErrorCallback(void* context, PubSubClientResult error, PubSubClientErrorType type) {
         if (type == PubSubClientErrorType::FramingError) {
             HomeAssistant& self = *static_cast<HomeAssistant*>(context);
-            self.Connect();
-            if (self.mqttClient.connected() && self.initializedOnce) {
-                HA_DeviceDiscovery::SubscribeToCommandTopic(self.mqttClient);
-                HA_DeviceDiscovery::SubscribeToCleanupTopic(self.mqttClient);
-            }
-        } 
+            self.Connect(); // also re-subscribes
+        }
         GlobalLogger.Error(PubSubClientErrorToString(error));
     }
 

@@ -85,6 +85,9 @@ namespace DALHAL
 
     class HA_DeviceDiscovery {
     public:
+        /** incremented every time SendDiscovery fails, used to detect discovery that never reached the broker */
+        static uint32_t failedSendCount;
+
         /** used by both the dry run counter and the real send */
         static void SendDiscoveryPayload(PubSubClient& mqtt, const HA_DD_Context& ctx, HADiscoveryWriteFn entityWriter);
         static void SendDiscovery(PubSubClient& mqtt, const HA_DD_Context& ctx, HADiscoveryWriteFn entityWriter);

@@ -38,6 +38,8 @@
 
 namespace DALHAL
 {
+    uint32_t HA_DeviceDiscovery::failedSendCount = 0;
+
 
     void HA_DeviceDiscovery::SubscribeToCleanupTopic(PubSubClient& mqtt) {
         mqtt.subscribe_fmt(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_CLEANUP_SUBSCRIBE_TOPIC_FMT, /*QoS*/0, DeviceUID::Get());
@@ -82,6 +84,7 @@ namespace DALHAL
         );*/
 
         if (mqtt.connected() == false) {
+            failedSendCount++;
             GlobalLogger.Error(F("could NOT Begin Publish discovery because of disconnected"));
             return; // no point of continue here
         }
@@ -96,6 +99,7 @@ namespace DALHAL
         ZeroCopyString zcCfgTopic(cfgTopicOut_cStrStart, cfgTopicOut_cStrEnd);
 
         if (couldBeginPublish == false) {
+            failedSendCount++;
             GlobalLogger.Error(F("could NOT Begin Publish discovery:"), zcCfgTopic);
             return; // no point of continue here
         }
@@ -104,6 +108,7 @@ namespace DALHAL
         if (mqtt.endPublish()) {
             GlobalLogger.Info(F("sent discovery: "), zcCfgTopic);
         } else {
+            failedSendCount++;
             GlobalLogger.Error(F("could NOT send discovery: "), zcCfgTopic);
         }
         
