@@ -22,9 +22,9 @@
 */
 
 /**
-  WebSocketAPI for the ESP-IDF backend.
-  PLACEHOLDER until the web server on esp_http_server exists (step 4): same interface as the
-  Arduino version, but nothing is sent, the Broadcast functions return false (no client).
+  WebSocketAPI for the ESP-IDF backend, on esp_http_server. Same behaviour as the Arduino version
+  (src/DALHAL/API/WebSocket, ESPAsyncWebServer): port 82, WebSocket at /ws, files from LittleFS /api/...
+  or else the built in frontend (FrontendFiles, gzip), commands go through the CommandExecutor queue.
 */
 
 #pragma once
@@ -34,20 +34,23 @@
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/API/DALHAL_CommandCallback.h>
 
+#define DALHAL_WEBSOCKET_API_PORT 82
+
 namespace DALHAL {
 
     class WebSocketAPI {
     public:
-        static void setup(bool failsafeMode = false) { (void)failsafeMode; }
+        /** starts the server, calling it again (e.g. after every network up) keeps the running server */
+        static void setup(bool failsafeMode = false);
         static void loop() {}
 
-        static bool Broadcast(const char*, size_t, CmdCbType = CmdCbType::Control) { return false; }
-        static bool Broadcast(std::string&, CmdCbType = CmdCbType::Control) { return false; }
-        static bool Broadcast(const char*, CmdCbType = CmdCbType::Control) { return false; }
-        static bool Broadcast(const ZeroCopyString&, CmdCbType = CmdCbType::Control) { return false; }
-        static bool BroadcastCb(const ZeroCopyString&, CmdCbType) { return false; }
+        static bool Broadcast(const char* msg, size_t len, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(std::string& msg, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(const char* msg, CmdCbType type = CmdCbType::Control);
+        static bool Broadcast(const ZeroCopyString& zcStr, CmdCbType type = CmdCbType::Control);
+        static bool BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type);
         /** can be used to combine two messages */
-        static bool Broadcast(const char*, const char*, CmdCbType = CmdCbType::Control) { return false; }
+        static bool Broadcast(const char* source, const char* msg, CmdCbType type = CmdCbType::Control);
     };
 
 }

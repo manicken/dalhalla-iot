@@ -57,6 +57,11 @@
 #error "unknown DALHAL platform, add it to System/Platform/Platform.h"
 #endif
 
+// capabilities
+#if defined(DALHAL_PLATFORM_ESP32) || defined(DALHAL_PLATFORM_ESP8266)
+#define DALHAL_HAS_WIFI   // the Arduino WiFi API (arduino core, or ports/esp-idf/WiFi on plain ESP-IDF)
+#endif
+
 namespace Platform {
 
     /** restarts the MCU, on PC the simulation process exits */
@@ -66,6 +71,17 @@ namespace Platform {
 
     /** chip name, e.g. "ESP32-C3", "ESP8266", "PC" */
     const char* ChipName();
+
+    /** true when the last reset was a crash (panic/exception, optionally also watchdogs), used to enter failsafe mode */
+    bool ResetWasCrash(bool includeWatchdogs);
+    /** the reason of the last reset as text, e.g. "power on", "panic", "task watchdog" */
+    const char* ResetReasonStr();
+
+    /** size of the flash chip in bytes, 0 when unknown (PC) */
+    uint32_t FlashSize();
+
+    /** name of the backend that provides the Arduino subset: "arduino", "esp-idf" or "pc" */
+    const char* BackendName();
 
     /** free internal heap in bytes */
     uint32_t FreeHeap();

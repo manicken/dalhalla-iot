@@ -73,4 +73,6 @@ private:
 };
 
 extern ConsoleSerial Serial;
+/** the debug channel of the Arduino target (UART1 there), here the same console as Serial */
+extern ConsoleSerial Serial1;
 #define HardwareSerial Stream

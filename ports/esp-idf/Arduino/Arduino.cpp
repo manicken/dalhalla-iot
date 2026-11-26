@@ -59,6 +59,7 @@ int analogRead(uint8_t /*pin*/) {
 // ---------------- Serial ----------------
 
 ConsoleSerial Serial;
+ConsoleSerial Serial1;
 
 void ConsoleSerial::flush() {
     fflush(stdout);

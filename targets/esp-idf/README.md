@@ -35,9 +35,30 @@ so the partition table and the LittleFS image of the Arduino builds work unchang
 | Part | State |
 |---|---|
 | Core, JSON config, script engine | builds and links |
+| Command API over the serial console (`SerialAPI`, `CommandExecutor`) | builds and links |
+| `DALHAL::begin()` / `DALHAL::loop()`, HeartbeatLed, Scheduler | builds and links, shared with the Arduino target |
+| WiFi (`ports/esp-idf/WiFi`, `WiFiConnectionManager`, `WiFiLink`, config portal AP, `wifi/...` commands) | builds and links, credentials shared with the Arduino firmware (same NVS) |
+| TCP client (`ports/esp-idf/WiFiClient`, lwIP sockets) | builds and links, used by `Network::TcpClient` |
+| Web server and WebSocket on `esp_http_server` (port 82, `/ws`, frontend with gzip) | builds and links |
+| OTA (`ports/esp-idf/ArduinoOTA`, espota protocol, firmware and filesystem, MD5 checked) | builds and links |
+| Failsafe after a crash (network failsafe, OTA, HTTP page on port 80, WebSocket in failsafe mode, 10 min timeout), `system/EnterRecoveryMode` | builds and links |
+| NTP (esp_sntp) | builds and links |
+| HomeAssistant (MQTT via the own PubSubClient fork on `Network::TcpClient`) | builds and links |
 | Devices: script variables, DIN/DOUT/DPOUT, ADC, button, container, actuators, latching relay, PWM servo, TX433 | builds and links |
 | `analogRead` | returns 0, ADC oneshot driver todo |
-| WebSocket API | placeholder without a server (`ports/esp-idf/DALHAL_WebSocketAPI`), esp_http_server is step 4 |
-| Command executor, Serial API, network, OTA, failsafe | not built yet |
-| I2C, OneWire, DHT, WS2812, REGO600, ThingSpeak, HomeAssistant, REST | not built yet (`DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES` in the device registry) |
+| mDNS, FSBrowser, W5500 Ethernet, Scheduler functions from main.cpp | not built yet |
+| ThingSpeak, REST | not built yet (need an HTTP client port) |
+| I2C, OneWire, DHT, WS2812, REGO600 | not built yet (step 5, `DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES` in the device registry) |
 | Running on hardware | not tested yet |
+
+## First test on hardware
+
+```
+pio run -e esp32dev -t uploadfs          # from the repo root: the same LittleFS image as the Arduino build
+pio run -d targets/esp-idf -t upload     # the ESP-IDF firmware
+pio device monitor -b 115200
+```
+
+Then type a command and press Enter, e.g. `system/info`, `system/heap` or `help`.
+With WiFi up: the web UI on `http://<ip>:82/`, OTA with `pio run -d targets/esp-idf -t upload --upload-port <ip>`.
+The serial API executes a command when the line ends (`\n`), the PlatformIO monitor sends CR LF on Enter.

@@ -22,16 +22,45 @@
 */
 
 #include "NTP.h"
+#include <System/Platform/Platform.h>
+
+#if defined(DALHAL_BACKEND_ESPIDF)
+#include <cstdio>
+#include <cstdlib>
+#include "esp_sntp.h"
+#endif
 
 namespace NTP {
 
     time_t now;
 
+#if defined(DALHAL_BACKEND_ESPIDF)
+    /** what arduino-esp32 configTime(gmtOffset, 0, server1, server2) does, on plain ESP-IDF */
+    static void ConfigTime(long gmtOffsetSec, const char* server1, const char* server2) {
+        // POSIX TZ has the sign inverted: UTC+1 is "UTC-01:00"
+        char tz[32];
+        long offsetMin = gmtOffsetSec / 60;
+        char sign = offsetMin >= 0 ? '-' : '+';
+        if (offsetMin < 0) offsetMin = -offsetMin;
+        snprintf(tz, sizeof(tz), "UTC%c%02ld:%02ld", sign, offsetMin / 60, offsetMin % 60);
+        setenv("TZ", tz, 1);
+        tzset();
+
+        if (esp_sntp_enabled()) esp_sntp_stop();
+        esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+        esp_sntp_setservername(0, server1);
+        esp_sntp_setservername(1, server2);
+        esp_sntp_init();
+    }
+#endif
+
     void NTPConnect() {
 #if defined(DEBUG_UART)
         DEBUG_UART.print(F("Setting time using SNTP  "));
 #endif
-#if defined(ESP32) || defined(ESP8266)
+#if defined(DALHAL_BACKEND_ESPIDF)
+        ConfigTime(NTP_TIME_ZONE * 3600, "pool.ntp.org", "time.nist.gov");
+#elif defined(ESP32) || defined(ESP8266)
         configTime(NTP_TIME_ZONE * 3600, 0, "pool.ntp.org", "time.nist.gov");
 #endif
 

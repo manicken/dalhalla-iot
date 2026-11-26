@@ -57,6 +57,8 @@
 #ifdef ESP32
 #include <esp_heap_caps.h>
 #endif
+namespace DALHAL { class StringBuilderStreamer; }
+
 namespace Info
 {
 
@@ -64,36 +66,22 @@ namespace Info
 #ifdef ESP32
     float getHeapFragmentation();
 #endif
-    //WEBSERVER_TYPE *webserver = nullptr;
 
     extern time_t startTime;
 
-    //void printESP_info(void);
-    std::string getESP_info();
-    //void srv_handle_info(AsyncWebServerRequest *req);
-    
-    //bool resetReason_is_crash();
+    /** system info as a JSON object: chip, framework, build, uptime, reset reason, heap, flash, LittleFS */
+    void getInfo(DALHAL::StringBuilderStreamer& sbs);
+
     const char* getResetReasonStr();
 
     std::string GetHeapInfo();
 
     void PrintHeapInfo();
 
-    //void setup(WEBSERVER_TYPE &srv);
-
-    /*
-// called from setup() function
-void printESP_info(void);
-    */
-
     bool resetReason_is_crash(bool includeWatchdogs);
-
 
     const char* getResetReasonStr();
 
     uint64_t reverseBytes(uint64_t value);
 
-    //void srv_handle_info(AsyncWebServerRequest* req);
-
-    const char* getESPVariant();
 }

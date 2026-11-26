@@ -40,11 +40,8 @@
 
 #include <DALHAL/Devices/_Registry/DALHAL_DevicesRegistry.h>
 #include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
-#if defined(ESP8266) || defined(ESP32)
-#include <System/Info.h>
-
-#endif
-#include <System/Platform/Platform.h>
+#include <System/Platform/Platform.h> // DALHAL_BACKEND_*, DALHAL_HAS_*
+#include <System/Info.h> // system/info
 
 #include <DALHAL/Drivers/HearbeatLed.h>
 #include <Scheduler/Scheduler.h>
@@ -55,9 +52,9 @@
 #include <DALHAL/API/DALHAL_BlockStreamer.h>
 #include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
 
-#if defined(ESP8266)
+#if defined(DALHAL_HAS_WIFI) && defined(ESP8266)
 #include <ESP8266WiFi.h>
-#elif defined(ESP32)
+#elif defined(DALHAL_HAS_WIFI) && defined(ESP32)
 #include <WiFi.h>
 #endif
 
@@ -255,7 +252,7 @@ namespace DALHAL {
         DALHAL_CMD_GROUP_ENTRY("scripts", HalScriptItems, "script specific commands"),
         DALHAL_CMD_GROUP_ENTRY("meta", HalMetaItems, "print metadata"),
     };
-#if defined(ESP8266) || defined(ESP32)
+#if defined(DALHAL_HAS_WIFI) // Arduino WiFi API (arduino core or ports/esp-idf/WiFi)
     static constexpr CommandNode WiFiItems[] = {
         DALHAL_CMD_EXEC_ENTRY("scan", Exec_WiFi_Scan, "Scan WiFi for AP:s"),
         DALHAL_CMD_EXEC_ENTRY("set_b64", Exec_WiFi_Set_b64, "Set current WiFi settings from the given b64 encoded string"),
@@ -288,7 +285,7 @@ namespace DALHAL {
         DALHAL_CMD_GROUP_ENTRY("hal", HalItems, "HAL subsystem"),
         DALHAL_CMD_GROUP_ENTRY("api", ApiItems, "API specific commands"),
         DALHAL_CMD_GROUP_ENTRY("system", SystemItems, "System commands"),
-#if defined(ESP8266) || defined(ESP32)
+#if defined(DALHAL_HAS_WIFI) // Arduino WiFi API (arduino core or ports/esp-idf/WiFi)
         DALHAL_CMD_GROUP_ENTRY("wifi", WiFiItems, "WiFi management"),
 #endif
         DALHAL_CMD_EXEC_ENTRY_WFLAG("printLog", Exec_PrintLog, CommandNode::Flags::AUTOGEN_BUTTON, "print log"),
@@ -478,7 +475,7 @@ namespace DALHAL {
         }
     }
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(DALHAL_HAS_WIFI) // Arduino WiFi API (arduino core or ports/esp-idf/WiFi)
     bool ConnectToNewWiFi(const char* ssid, const char* pass) {
         bool anyError = false;
         WiFi.persistent(true);      // ESP8266: saves credentials to flash. ESP32: harmless, ignored.
@@ -522,12 +519,8 @@ namespace DALHAL {
         return HALOperationResult::TODO_UnsupportedCommand;
     }
     HALOperationResult Exec_System_Info(ZeroCopyString& zcStr, CommandCallback cb) {
-#if defined(ESP8266) || defined(ESP32)
-        std::string infoMsg = Info::getESP_info();
-#else
-        std::string infoMsg = "{\"mcu\":\"windows\"}";
-#endif
-        cb(infoMsg.c_str(), CmdCbType::Control);
+        BlockStreamer bs(cb, "info", BlockStreamer::DataType::Json);
+        Info::getInfo(bs.writer());
         return HALOperationResult::Success;
     }
 #if !defined(DALHAL_PLATFORM_PC)
@@ -561,7 +554,7 @@ namespace DALHAL {
         sbs.write(F("{\"build_version\":\"" BUILD_VER_STR "\"}"));
         return HALOperationResult::Success;
     }
-#if defined(ESP8266) || defined(ESP32)
+#if defined(DALHAL_HAS_WIFI) // Arduino WiFi API (arduino core or ports/esp-idf/WiFi)
     HALOperationResult Exec_WiFi_Scan(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "wifi/scan", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();

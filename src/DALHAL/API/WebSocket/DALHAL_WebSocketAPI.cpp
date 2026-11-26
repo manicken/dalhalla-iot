@@ -20,7 +20,9 @@
   You should have received a copy of the GNU General Public License 
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#if defined(ESP8266) || defined(ESP32)
+#include <System/Platform/Platform.h>
+// ESPAsyncWebServer, Arduino backend only (the other backends: DALHAL_WebSocketAPI_Backend.h)
+#if defined(DALHAL_BACKEND_ARDUINO)
 
 
 

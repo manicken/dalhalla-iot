@@ -56,7 +56,7 @@ namespace DALHAL {
         }
 
         ValidatorResult SchemaString::ValidateStringField(const char* fieldName, const char* sourceObjTypeName, const JsonVariant& jsonObj, bool& anyError) {
-            const JsonVariant& value = jsonObj[fieldName];
+            JsonVariant value = jsonObj[fieldName]; // by value, operator[] returns a temporary proxy
             if (!value.is<const char*>()) {
                 std::string errMsg = fieldName;
                 errMsg += " @ "; errMsg += sourceObjTypeName;

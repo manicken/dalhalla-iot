@@ -7,3 +7,9 @@ CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 # same partition table as the Arduino builds (app0/app1 OTA, coredump, spiffs = LittleFS)
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="../../partitions_32mbit.csv"
+# WebSocketAPI on esp_http_server
+CONFIG_HTTPD_WS_SUPPORT=y
+# browsers send long headers (user agent, cookies), the default 512 gives "431 Request Header Fields Too Large"
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
+# needed for ioctl(FIONREAD), i.e. WiFiClient::available() (OTA, MQTT)
+CONFIG_LWIP_SO_RCVBUF=y

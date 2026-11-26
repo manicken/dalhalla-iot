@@ -212,7 +212,7 @@ namespace DALHAL
         if (res == false) {
             return false;
         }
-        if (mqtt.printf("%.*s", state_cStr_length, state_cStr) == 0) { return false; }
+        if (mqtt.printf("%.*s", (int)state_cStr_length, state_cStr) /* precision must be int */ == 0) { return false; }
         return mqtt.endPublish();
     }
 

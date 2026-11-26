@@ -30,7 +30,7 @@
 #include "DALHAL_DevicesRegistry.h"
 #include <System/Platform/Platform.h>
 
-// devices that need drivers (Wire, OneWire, DHTesp, WS2812FX, UART) or network services (HTTP, MQTT)
+// devices that need drivers (Wire, OneWire, DHTesp, WS2812FX, UART) or network services (HTTP client)
 // that are not ported to the ESP-IDF backend yet, remove a device from this group when its port exists
 #if !defined(DALHAL_BACKEND_ESPIDF)
 #define DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES
@@ -67,9 +67,9 @@
 
 #if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
 #include <DALHAL/Devices/DataStorageServices/ThingSpeak/DALHAL_ThingSpeak.h>
+#endif
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
-#endif
 
 #include <DALHAL/Devices/Actuators/Actuator/DALHAL_Actuator.h>
 #include <DALHAL/Devices/Actuators/PWM_Servo/DALHAL_PWM_Servo.h>
@@ -134,11 +134,11 @@ namespace DALHAL {
         /** ---------------- Device Containers ---------------- */
         {"CONTAINER", &DeviceContainer::RegistryDefine},
         
-#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
         /** ---------------- External / Cloud / API Devices ---------------- */
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
         {"THINGSPEAK", &ThingSpeak::RegistryDefine},
-        {"HOMEASSISTANT", &HomeAssistant::RegistryDefine},
 #endif
+        {"HOMEASSISTANT", &HomeAssistant::RegistryDefine},
         
         /** ---------------- Actuators / Outputs ---------------- */
         {"ACTUATOR", &Actuator::RegistryDefine},

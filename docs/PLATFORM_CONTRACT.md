@@ -6,6 +6,8 @@ The goal is that porting DALHAL to a new MCU means writing a backend for this co
 
 Survey date: 2026-11-25 (from `#include`s and API usage under `src/`). Update this file when DALHAL starts using something new.
 
+What has been done so far, per day: [PORTING_CHANGELOG.md](PORTING_CHANGELOG.md) ([svenska](PORTING_CHANGELOG.sv.md)).
+
 ## Backends
 
 | Backend | Platforms | Provides layer A-D by | Status |

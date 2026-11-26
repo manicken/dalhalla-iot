@@ -23,6 +23,7 @@
 #include "DeviceUID.h"
 #include <cstdio>
 #include <cstdint>
+#include <cinttypes> // PRIX32, uint32_t is long on xtensa/riscv/arm gcc
 
 bool DeviceUID::initialized = false;
     bool DeviceUID::overridden = false;
@@ -35,7 +36,7 @@ bool DeviceUID::initialized = false;
         uint32_t uid_MSB  = (uid>>32) & 0xFFFF; // only care for the 4 nibbles as getDeviceUID only encode in 48 bits
         uint32_t uid_LSB  = uid & 0xFFFFFFFF;
         snprintf(g_deviceUID, sizeof(g_deviceUID),
-        "%04X%08X", uid_MSB, uid_LSB);
+        "%04" PRIX32 "%08" PRIX32, uid_MSB, uid_LSB);
         initialized = true;
     }
 
@@ -53,7 +54,7 @@ bool DeviceUID::initialized = false;
         uint64_t uid = getDeviceUID();
         uint32_t uid_MSB  = (uid>>32) & 0xFFFF; // only care for the 4 nibbles as getDeviceUID only encode in 48 bits
         uint32_t uid_LSB  = uid & 0xFFFFFFFF;
-        snprintf(target, 13, "%04X%08X", uid_MSB, uid_LSB);
+        snprintf(target, 13, "%04" PRIX32 "%08" PRIX32, uid_MSB, uid_LSB);
     }
 
 #if defined(ESP8266)
@@ -82,6 +83,7 @@ DALHAL_DeviceUID getDALHAL_DeviceUID() {
 
 #elif defined(ESP32)
 #include <esp_system.h>
+#include <esp_mac.h> // esp_read_mac, own header since ESP-IDF 5
 
 uint64_t getDeviceUID() {
     uint8_t mac[6];

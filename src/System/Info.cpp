@@ -25,6 +25,9 @@
 
 #include "System.h"
 #include <DALHAL/Support/ConvertHelper.h>
+#include <DALHAL/API/DALHAL_StringBuilderStreamer.h>
+#include <System/Platform/Platform.h>
+#include <BUILD_INFO.h>
 
 #if defined(ESP8266)
 #include <user_interface.h>
@@ -187,177 +190,35 @@ namespace Info
             ((value & 0x00FF000000000000) >> 40) |
             ((value & 0xFF00000000000000) >> 56);
     }
-/*
-    void srv_handle_info(AsyncWebServerRequest* req)
-    {
-        String srv_return_msg = getESP_info();
-        req->send(200, "text/html", srv_return_msg);
-        //server.sendContent(srv_return_msg);
 
-        //server.sendContent("");
-    }
-*/
-    std::string getESP_info() {
-   /*     std::string infoMsg = "{";  
-#if defined(ESP8266) || defined(ESP32)
-        uint32_t ideSize = ESP.getFlashChipSize();
-
-#if defined(ESP8266)
-        uint32_t realSize = ESP.getFlashChipRealSize();
+    void getInfo(DALHAL::StringBuilderStreamer& sbs) {
+        // the same on every platform, the platform specific parts come from Platform::
+        sbs.write_json_object_begin();
+        sbs.write_jsonString(F("mcu"), Platform::ChipName());
+        sbs.write_json_value_separator(); sbs.write_jsonString(F("framework"), Platform::BackendName());
+        sbs.write_json_value_separator(); sbs.write_jsonString(F("build_version"), BUILD_VER_STR);
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("uptime_ms"), (uint32_t)millis());
+        sbs.write_json_value_separator(); sbs.write_jsonString(F("reset_reason"), Platform::ResetReasonStr());
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("heap"), Platform::FreeHeap());
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("max_block"), Platform::LargestFreeBlock());
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("flash_size"), Platform::FlashSize());
+#if defined(DALHAL_PLATFORM_ESP32) || defined(DALHAL_PLATFORM_ESP8266)
+        uint32_t fsTotal = 0, fsUsed = 0;
+#if defined(DALHAL_PLATFORM_ESP32)
+        fsTotal = (uint32_t)LittleFS.totalBytes();
+        fsUsed = (uint32_t)LittleFS.usedBytes();
 #else
-        uint32_t realSize = ideSize;
+        FSInfo fsi;
+        if (LittleFS.info(fsi)) { fsTotal = (uint32_t)fsi.totalBytes; fsUsed = (uint32_t)fsi.usedBytes; }
 #endif
-
-        FlashMode_t ideMode = ESP.getFlashChipMode();
-
-        
-
-#if defined(ESP8266)
-        infoMsg.append("\"flash_real_id\":");
-        infoMsg += ESP.getFlashChipId();
-        infoMsg.append(",");
-#else
-        infoMsg.append("\"flash_real_id\":\"unsupported\",");
+        sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("littlefs"));
+        sbs.write_json_object_begin();
+        sbs.write_jsonBool(F("mounted"), fsTotal > 0);
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("total_bytes"), fsTotal);
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("used_bytes"), fsUsed);
+        sbs.write_json_object_end();
 #endif
-
-        uint64_t macAddrBigEndian = Convert::reverseMACaddress(WIFI_getChipId());
-        std::string hostString = std::string(macAddrBigEndian & 0xFFFFFF, HEX);
-        //hostString.toUpperCase();
-
-        infoMsg.append("\"chip_short_id\":\"");
-        infoMsg.append(WIFI_CHIPID_PREFIX);
-        infoMsg.append(hostString);
-        infoMsg.append("\",");
-
-        infoMsg.append("\"flash_real_size\":");
-        infoMsg += std::to_string(realSize);
-        infoMsg.append(",");
-
-        infoMsg.append("\"flash_ide_size\":");
-        infoMsg += std::to_string(ideSize);
-        infoMsg.append(",");
-
-        infoMsg.append("\"flash_ide_speed\":");
-        infoMsg += std::to_string(ESP.getFlashChipSpeed());
-        infoMsg.append(",");
-
-        infoMsg.append("\"flash_ide_mode\":\"");
-        infoMsg.append(
-            ideMode == FM_QIO  ? "QIO"  :
-            ideMode == FM_QOUT ? "QOUT" :
-            ideMode == FM_DIO  ? "DIO"  :
-            ideMode == FM_DOUT ? "DOUT" :
-            "UNKNOWN"
-        );
-        infoMsg.append("\",");
-
-        infoMsg.append("\"flash_config_ok\":");
-        infoMsg.append(ideSize == realSize ? "true" : "false");
-        infoMsg.append(",");
-
-#if defined(ESP8266)
-        infoMsg.append("\"esp_chip_id\":");
-        infoMsg += ESP.getChipId();
-        infoMsg.append(",");
-#endif
-
-        infoMsg.append("\"littlefs\":{");
-
-        if (LITTLEFS_BEGIN_FUNC_CALL) {
-
-            infoMsg.append("\"mounted\":true,");
-
-#if defined(ESP8266)
-
-            FSInfo fsi;
-            if (LittleFS.info(fsi)) {
-
-                infoMsg.append("\"block_size\":");
-                infoMsg += fsi.blockSize;
-                infoMsg.append(",");
-
-                infoMsg.append("\"max_open_files\":");
-                infoMsg += fsi.maxOpenFiles;
-                infoMsg.append(",");
-
-                infoMsg.append("\"max_path_length\":");
-                infoMsg += fsi.maxPathLength;
-                infoMsg.append(",");
-
-                infoMsg.append("\"page_size\":");
-                infoMsg += fsi.pageSize;
-                infoMsg.append(",");
-
-                infoMsg.append("\"total_bytes\":");
-                infoMsg += fsi.totalBytes;
-                infoMsg.append(",");
-
-                infoMsg.append("\"used_bytes\":");
-                infoMsg += fsi.usedBytes;
-                infoMsg.append(",");
-            }
-
-#elif defined(ESP32)
-
-            infoMsg.append("\"total_bytes\":");
-            infoMsg += std::to_string(LittleFS.totalBytes());
-            infoMsg.append(",");
-
-            infoMsg.append("\"used_bytes\":");
-            infoMsg += std::to_string(LittleFS.usedBytes());
-            infoMsg.append(",");
-
-#endif
-
-            infoMsg.append("\"files\":[");
-
-            LittleFS_ext::listDir(infoMsg, LittleFS_ext::ListMode::JSON, "/", 0);
-
-            infoMsg.append("]");
-
-        } else {
-            infoMsg.append("\"mounted\":false");
-        }
-
-        infoMsg.append("}");
-
-        
-#else
-        infoMsg.append("\"target\":\"PC\"");
-#endif
-        infoMsg.append("}");
-        return infoMsg;
-        */
-       return "";
-    }
-    const char* getESPVariant()
-    {
-        /*
-#if defined(CONFIG_IDF_TARGET_ESP32)
-        return "ESP32";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32S2)
-        return "ESP32-S2";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-        return "ESP32-S3";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32C2)
-        return "ESP32-C2";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
-        return "ESP32-C3";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32C6)
-        return "ESP32-C6";
-
-#elif defined(CONFIG_IDF_TARGET_ESP32H2)
-        return "ESP32-H2";
-
-#else
-        return "UNKNOWN";
-#endif
-*/      return "";
+        sbs.write_json_object_end();
     }
 
 }

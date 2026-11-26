@@ -201,7 +201,7 @@ namespace DALHAL {
                     const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
                     int jsonArrayItemsCount = jsonArrayItems.size();
                     for (int j=0;j<jsonArrayItemsCount;j++) {
-                        const JsonVariant& item = jsonArrayItems[j];
+                        JsonVariant item = jsonArrayItems[j]; // by value, operator[] returns a temporary proxy
                         if (Device::DisabledOrCommentItem(item)) { continue; }
                         self->deviceCount++;
                     }

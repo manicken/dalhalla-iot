@@ -36,6 +36,7 @@
 #include "DALHAL.h"
 
 namespace DALHAL {
+
     void begin() {
         //DALHAL::REST::setupRest();
        // Serial1.println(F("WebSocketAPI::setup();"));

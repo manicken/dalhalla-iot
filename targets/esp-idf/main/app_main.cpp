@@ -21,35 +21,68 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-// DALHAL on plain ESP-IDF, step 3b: config + script engine on LittleFS, no network yet
+// DALHAL on plain ESP-IDF: config, script engine, command API over the serial console and the network.
+// The same order as setup()/loop() in src/main.cpp (Arduino) for the parts that exist here.
 
 #include <Arduino.h>
 #include <LittleFS.h>
 
-#include <DALHAL/Core/Manager/DALHAL_DeviceManager.h>
-#include <DALHAL/ScriptEngine/DALHAL_SCRIPT_ENGINE.h>
-#include <DALHAL/ScriptEngine/Runtime/DALHAL_SCRIPT_ENGINE_ScriptBlocks.h>
+#include <DALHAL/DALHAL.h>
+#include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>
+#include <DALHAL/Drivers/HearbeatLed.h>
+#include <Scheduler/Scheduler.h>
+#include <System/Network/Network.h>
+#include <Support/NTP.h>
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI_Backend.h>
+#include <ArduinoOTA.h>
+#include <System/Platform/Platform.h>
+#include "failsafe.h"
+
+/** link independent: called on every Up/Down transition of the network, as in src/main.cpp */
+static void onNetworkEvent(Network::Event event) {
+    if (event != Network::Event::Up) {
+        printf("Network down\r\n");
+        return;
+    }
+    printf("Network up, IP: %s\r\n", Network::LocalIP().toString().c_str());
+    DALHAL::WebSocketAPI::setup(); // already started by DALHAL::begin(), keeps the running server
+    ArduinoOTA.begin(); // espota protocol, "pio run -t upload" with the IP as upload_port
+    NTP::NTPConnect();
+}
 
 extern "C" void app_main(void)
 {
-    printf("\nDALHAL on ESP-IDF\n");
+    Network::PreInit();
+    DALHAL::GPIO_manager::triStateAvailablePins();
+
+    // after a crash only the ways in are started, not DALHAL (as the Arduino target)
+    if (Platform::ResetWasCrash(true)) {
+        FailsafeLoop();
+    }
+
+    printf("\r\n!!!!!Start of MAIN Setup (ESP-IDF)!!!!!\r\n");
 
     // same partition and mount point as the Arduino builds, so the same LittleFS image works
     if (!LittleFS.begin(false)) {
-        printf("LittleFS mount failed, upload the filesystem image (data/ folder)\n");
+        printf("LittleFS mount failed, upload the filesystem image (data/ folder)\r\n");
     }
 
-    if (DALHAL::DeviceManager::init()) {
-        DALHAL::ScriptEngine::ValidateAndLoadAllActiveScripts();
-    } else {
-        printf("DeviceManager::init failed, see the log above\n");
-    }
+    // WiFi credentials are the ones stored in NVS (shared with the Arduino firmware)
+    Network::SetEventCallback(onNetworkEvent);
+    Network::Begin();
+
+    HeartbeatLed::setup();
+    DALHAL::begin(); // config, devices, scripts
+
+    printf("\r\n!!!!!End of MAIN Setup!!!!!\r\n");
 
     while (true) {
-        DALHAL::DeviceManager::loop();
-        if (DALHAL::ScriptEngine::ScriptBlocks::running) {
-            DALHAL::ScriptEngine::ScriptBlocks::Exec();
-        }
-        vTaskDelay(1); // 1 ms with CONFIG_FREERTOS_HZ=1000, lets the idle task feed the watchdog
+        HeartbeatLed::task();
+        Scheduler::HandleAlarms();
+        DALHAL::loop(); // command queue, devices, script engine, SerialAPI
+        Network::Loop();
+        ArduinoOTA.handle();
+        // lets the idle task run so the task watchdog is fed, 1 ms with CONFIG_FREERTOS_HZ=1000
+        vTaskDelay(1);
     }
 }
