@@ -91,7 +91,7 @@ namespace DALHAL {
                 // Second pass: actually create and store devices
                 uint32_t index = 0;
                 for (int i=0;i<arraySize;i++) {
-                    const JsonVariant& jsonItem = jsonArray[i];
+                    JsonVariant jsonItem = jsonArray[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(jsonItem) == true) { continue; }
                     out->devices[index++] = DeviceManager::CreateDeviceFromJSON(jsonItem);
                 }

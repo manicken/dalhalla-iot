@@ -33,10 +33,12 @@
 #include <pgmspace.h>
 #endif
 
-// special note here
-// __FlashStringHelper is included in pgmspace.h for pc build:s
-#if defined(ESP8266) || defined(ESP32)
-#include <WString.h> // __FlashStringHelper
+#include <WString.h> // __FlashStringHelper and F()
+
+// The Arduino cores have __FlashStringHelper as a distinct type. ports/common/WString.h (PC, ESP-IDF)
+// defines it to char and sets DALHAL_FLASH_STRING_IS_CHAR, overloads taking it would then collide with the const char* ones
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
+#define DALHAL_ZCS_HAS_FLASH_STRING_TYPE
 #endif
 
 namespace DALHAL {
@@ -53,12 +55,34 @@ namespace DALHAL {
     };
     /**
      * Note: 'end' is exclusive, i.e., points just past the last valid character
+     *
+     * Flash strings: a ZeroCopyString can be created directly from F("..."), it then points into flash.
+     * On all targets except ESP8266 flash is memory mapped and can be read like RAM, so this costs nothing.
+     * On ESP8266 flash must be read 32 bits aligned (pgm_read/memcpy_P), so only the following are
+     * flash safe there: Length, IsEmpty, NotEmpty, ToString, ToCharString, CopyTo, AppendTo, Equals(const char*).
+     * Sinks that read start/end directly must check IsFlash() and copy with CopyTo/AppendTo instead.
+     * The parsing functions (Find*, Split*, Trim, Convert* ...) are for RAM text only.
      */
     struct ZeroCopyString
     {
         const char* start;
         /** Note: 'end' is exclusive, i.e., points just past the last valid character */
         const char* end;
+
+#if defined(ESP8266)
+        /** true when the string points into flash (irom is mapped at 0x40200000, RAM is below 0x40000000) */
+        inline bool IsFlash() const { return reinterpret_cast<uintptr_t>(start) >= 0x40000000u; }
+#else
+        /** flash is memory mapped on this target, so it is read exactly like RAM */
+        static constexpr bool IsFlash() { return false; }
+#endif
+        /**
+         * Copies the string into dst (flash safe) and null terminates it,
+         * copies at most dstSize-1 chars, returns the number of chars copied
+         */
+        size_t CopyTo(char* dst, size_t dstSize) const;
+        /** Appends the string to out (flash safe) */
+        void AppendTo(std::string& out) const;
         /** 
          * Returns the lenght of the string,
          * also returns length of zero when either start or end is nullptr
@@ -98,6 +122,10 @@ namespace DALHAL {
          * as this class does not copy or own the data.
          */
         ZeroCopyString(const char* cstr);
+#if defined(DALHAL_ZCS_HAS_FLASH_STRING_TYPE)
+        /** Create a ZeroCopyString pointing to a flash string, F("...") (see the flash note at the top) */
+        ZeroCopyString(const __FlashStringHelper* fstr);
+#endif
         void Set(const char* cstr);
         void Set(const char* _start, const char* _end);
         void Set(const char* _start, const char* _end, int line, int col); // line and col are just dummy parameters
@@ -176,7 +204,7 @@ namespace DALHAL {
 
         bool Equals(const ZeroCopyString& other) const;
         bool Equals(const char* cstr) const;
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         bool Equals(const __FlashStringHelper* fstr) const;
 #endif
         bool Equals_P(PGM_P pstr) const;
@@ -184,7 +212,7 @@ namespace DALHAL {
         bool EqualsIC(char c) const;
         bool EqualsIC(const ZeroCopyString& other) const;
         bool EqualsIC(const char* cstr) const;
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         bool EqualsIC(const __FlashStringHelper* fstr) const;
 #endif
         bool EqualsIC_P(PGM_P pstr) const;
@@ -206,6 +234,9 @@ namespace DALHAL {
 
         char operator[](size_t idx) const;
     };
+
+    /** Copies a flash string F("...") into a std::string, use where the text is concatenated or kept */
+    inline std::string ToStdString(const __FlashStringHelper* fstr) { return ZeroCopyString(fstr).ToString(); }
     bool operator==(const ZeroCopyString& lhs, const ZeroCopyString& rhs);
     bool operator!=(const ZeroCopyString& lhs, const ZeroCopyString& rhs);
     bool operator==(const char* lhs, const ZeroCopyString& rhs);
@@ -213,7 +244,7 @@ namespace DALHAL {
     bool operator==(const ZeroCopyString& lhs, const char* rhs);
     bool operator!=(const ZeroCopyString& lhs, const char* rhs);
 
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
     bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs);
     bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs);

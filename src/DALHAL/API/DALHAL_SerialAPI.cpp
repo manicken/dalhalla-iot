@@ -40,7 +40,12 @@ namespace DALHAL {
             CommandExecutor::execute(zcStrCmd, [](const ZeroCopyString& zcMsg, CmdCbType type) -> bool{ 
                 // ignore type for now until we implemented a real protocol over serial
                 // maybe could use something similar to WebSocket
-                printf("%.*s\r\n", zcMsg.Length(), zcMsg.start);
+                if (zcMsg.IsFlash()) { // only possible on ESP8266
+                    Serial.print(reinterpret_cast<const __FlashStringHelper*>(zcMsg.start));
+                    Serial.print("\r\n");
+                } else {
+                    printf("%.*s\r\n", (int)zcMsg.Length(), zcMsg.start);
+                }
                 return true;
             });
         }

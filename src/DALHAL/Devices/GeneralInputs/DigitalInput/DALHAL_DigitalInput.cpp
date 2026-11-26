@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_DigitalInput.h"
+#include <Arduino.h> // INPUT, digitalRead, pinMode
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 

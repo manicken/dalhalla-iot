@@ -58,7 +58,7 @@ namespace DALHAL {
             uint32_t itemCount = items.size();
 
             for (uint32_t i = 0; i < itemCount; ++i) {
-                const JsonVariant& jsonItem = items[i];
+                JsonVariant jsonItem = items[i]; // by value, operator[] returns a temporary proxy
                 if (jsonItem.is<const char*>()) { continue; } // comment item
                 if (!jsonItem.is<JsonObject>()) {
                     GlobalLogger.Error(F("Field is not an object:"), sourceObjTypeName);

@@ -26,7 +26,10 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 
-#include <System/Info.h> // Info::getESPVariant()
+#include <System/Platform/Platform.h> // Platform::ChipName()
+#if defined(ESP32)
+#include <driver/gpio.h> // gpio_config, used by triStateAvailablePins
+#endif
 
 namespace DALHAL {
 
@@ -283,7 +286,7 @@ namespace DALHAL {
             } else if (res == CheckPinResult::NotFound) {
                 return {BASE_MSG_TYPE_FUNC("Pin to reserve - not found: "), std::to_string(pin)};
             }
-            return {BASE_MSG_TYPE_FUNC("unknown"),nullptr};
+            return {BASE_MSG_TYPE_FUNC("unknown"), ""}; // std::string from nullptr is undefined behaviour
         }
 
         void triStateAvailablePins() {
@@ -361,7 +364,7 @@ namespace DALHAL {
     #else
             sbs.write_jsonString(F("MCU"), F("UNKNOWN"));
     #endif
-            sbs.write_json_value_separator(); sbs.write_jsonString(F("variant"), Info::getESPVariant());
+            sbs.write_json_value_separator(); sbs.write_jsonString(F("variant"), Platform::ChipName());
             if (listMode != PrintListMode::String) {
                 sbs.write_json_value_separator(); sbs.write_jsonMemberStart(F("PinModes"));
                 sbs.write_json_object_begin();

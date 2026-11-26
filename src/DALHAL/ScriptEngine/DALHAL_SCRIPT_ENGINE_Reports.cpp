@@ -35,9 +35,9 @@ namespace DALHAL {
 #endif
         }
 
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void ReportError(const __FlashStringHelper* msg) {
-            GlobalLogger.Error(F("Report:"), String(msg).c_str());
+            GlobalLogger.Error(F("Report:"), ZeroCopyString(msg));
         }
 #endif
 

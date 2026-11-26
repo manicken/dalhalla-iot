@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <cstddef>
-#include "../IPAddress/IPAddress.h"
+#include <IPAddress.h>
 
 // Arduino-style Client base class (simplified)
 class Client {

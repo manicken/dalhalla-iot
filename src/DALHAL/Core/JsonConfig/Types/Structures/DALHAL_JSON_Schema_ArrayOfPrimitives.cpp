@@ -134,7 +134,7 @@ namespace DALHAL {
             valueCount = arraySize;
 
             for (int i = 0; i < (int)arraySize; ++i) {
-                const JsonVariant& item = arr[i];
+                JsonVariant item = arr[i]; // by value, operator[] returns a temporary proxy
                 HALValue hVal;
                 if (item.is<float>()) {
                     hVal.set(item.as<float>());

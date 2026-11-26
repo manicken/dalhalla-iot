@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <Arduino.h> // Needed for String class
+#include <WString.h> // __FlashStringHelper, F()
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <iostream> // including this take 209512 bytes flash
 #include <chrono>
@@ -49,7 +49,7 @@ namespace DALHAL {
 
             void ReportTokenInfo(const char* msg, const char* param = nullptr) const;
             void ReportTokenError(const __FlashStringHelper* msg, const char* param = nullptr) const;
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
             void ReportTokenError(const __FlashStringHelper* msg, const __FlashStringHelper* param) const;
 #endif
             void ReportTokenWarning(const char* msg, const char* param = nullptr) const;

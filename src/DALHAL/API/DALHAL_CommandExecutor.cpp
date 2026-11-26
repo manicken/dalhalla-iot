@@ -44,6 +44,7 @@
 #include <System/Info.h>
 
 #endif
+#include <System/Platform/Platform.h>
 
 #include <DALHAL/Drivers/HearbeatLed.h>
 #include <Scheduler/Scheduler.h>
@@ -264,7 +265,7 @@ namespace DALHAL {
     static constexpr CommandNode SystemItems[] = {
         
         DALHAL_CMD_EXEC_ENTRY("info", Exec_System_Info, "System info"),
-#if defined(ESP8266) || defined(ESP32)
+#if !defined(DALHAL_PLATFORM_PC)
         DALHAL_CMD_EXEC_ENTRY_WFLAG("heap", Exec_System_Heap, CommandNode::Flags::AUTOGEN_BUTTON, "Print heap info"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("reset", Exec_System_Reset_Restart, (CommandNode::Flags::AUTOGEN_BUTTON | CommandNode::Flags::DANGER), "Reset the system"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("restart", Exec_System_Reset_Restart, (CommandNode::Flags::DANGER), "Restart the system (same as reset)"),
@@ -456,9 +457,9 @@ namespace DALHAL {
         filePath = '/';
 #endif
         if (zcOptionalFileName.Length() == 0) {
-            filePath += String(F("hal/cfg.json")).c_str();
+            filePath += DALHAL::ToStdString(F("hal/cfg.json")).c_str();
         } else {
-            filePath += String(F("hal/")).c_str() + zcOptionalFileName.ToString();
+            filePath += DALHAL::ToStdString(F("hal/")).c_str() + zcOptionalFileName.ToString();
         }
 
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -529,17 +530,13 @@ namespace DALHAL {
         cb(infoMsg.c_str(), CmdCbType::Control);
         return HALOperationResult::Success;
     }
-#if defined(ESP8266) || defined(ESP32)
+#if !defined(DALHAL_PLATFORM_PC)
     HALOperationResult Exec_System_Heap(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "heap", BlockStreamer::DataType::Json);
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write_json_object_begin();
-        sbs.write_jsonNumber(F("Heap"), ESP.getFreeHeap());
-#if defined(ESP8266)
-        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), ESP.getMaxFreeBlockSize());
-#elif defined(ESP32)
-        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), (uint32_t)ESP.getMaxAllocHeap());
-#endif
+        sbs.write_jsonNumber(F("Heap"), Platform::FreeHeap());
+        sbs.write_json_value_separator(); sbs.write_jsonNumber(F("Max block"), Platform::LargestFreeBlock());
         sbs.write_json_object_end();
         return HALOperationResult::Success;
     }
@@ -548,9 +545,8 @@ namespace DALHAL {
         StringBuilderStreamer& sbs = bs.writer();
         sbs.write(F("the system will now restart"));
         sbs.flush();
-        
-        ESP.restart();
-        return HALOperationResult::Success;
+
+        Platform::Restart();
     }
 #endif
     HALOperationResult Exec_System_HeartbeatLed(ZeroCopyString& zcStr, CommandCallback cb) {
@@ -575,7 +571,7 @@ namespace DALHAL {
             if (i > 0) {
                 sbs.write_json_value_separator();
             }
-            String ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
+            std::string ssidB64 = b64urlEncode(WiFi.SSID(i).c_str());
             const char* enc;
             switch(WiFi.encryptionType(i)) {
 #if defined(ESP32)
@@ -613,7 +609,7 @@ namespace DALHAL {
     }
     HALOperationResult Exec_WiFi_Set_b64(ZeroCopyString& zcStr, CommandCallback cb) {
         if (zcStr.CountChar(':') == 0) {
-            cb(String(F("wifi/set_b64/error/missingparams\r\n")).c_str(), CmdCbType::Control);
+            cb(F("wifi/set_b64/error/missingparams\r\n"), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
         DALHAL::ZeroCopyString zcSSID = zcStr.SplitOffHead(':');
@@ -624,32 +620,32 @@ namespace DALHAL {
         int passLen = b64urlDecode((uint8_t*)pass, sizeof(pass) - 1, zcStr);
         if (ssidLen <= 0 || passLen < 0) {
             if (ssidLen == 0) {
-                cb(String(F("wifi/set_b64/error/ssid/empty\r\n")).c_str(), CmdCbType::Control);
+                cb(F("wifi/set_b64/error/ssid/empty\r\n"), CmdCbType::Control);
             } else if (ssidLen == -1) {
-                cb(String(F("wifi/set_b64/error/ssid/invalidchar\r\n")).c_str(), CmdCbType::Control);
+                cb(F("wifi/set_b64/error/ssid/invalidchar\r\n"), CmdCbType::Control);
             } else if (ssidLen == -2) {
-                cb(String(F("wifi/set_b64/error/ssid/long\r\n")).c_str(), CmdCbType::Control);
+                cb(F("wifi/set_b64/error/ssid/long\r\n"), CmdCbType::Control);
             }
 
             if (passLen == -1) {
-                cb(String(F("wifi/set_b64/error/pass/invalidchar\r\n")).c_str(), CmdCbType::Control);
+                cb(F("wifi/set_b64/error/pass/invalidchar\r\n"), CmdCbType::Control);
             } else if (passLen == -2) {
-                cb(String(F("wifi/set_b64/error/pass/long\r\n")).c_str(), CmdCbType::Control);
+                cb(F("wifi/set_b64/error/pass/long\r\n"), CmdCbType::Control);
             }
             return HALOperationResult::ExecutionFailed;
         }
         if (!ConnectToNewWiFi(ssid, pass)) {
-            cb(String(F("wifi/set_b64/FAIL\r\n")).c_str(), CmdCbType::Control);
+            cb(F("wifi/set_b64/FAIL\r\n"), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
-        cb(String(F("wifi/set_b64/OK\r\n")).c_str(), CmdCbType::Control);
+        cb(F("wifi/set_b64/OK\r\n"), CmdCbType::Control);
         return HALOperationResult::Success;
     }
     HALOperationResult Exec_WiFi_Set_Json(ZeroCopyString& zcStr, CommandCallback cb) {
         DynamicJsonDocument doc(256);
         DeserializationError err = deserializeJson(doc, zcStr.start); // safe to use start here as that string is null terminated
         if(err) {
-            cb(String(F("wifi/set_json/error/invalidjson\r\n")).c_str(), CmdCbType::Control);
+            cb(F("wifi/set_json/error/invalidjson\r\n"), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
 
@@ -657,17 +653,17 @@ namespace DALHAL {
         const char* pass = doc["pass"];
 
         if(ssid == nullptr || ssid[0] == '\0') {
-            cb(String(F("wifi/set_json/error/ssid/empty\r\n")).c_str(), CmdCbType::Control);
+            cb(F("wifi/set_json/error/ssid/empty\r\n"), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
 
         if(pass == nullptr) pass = ""; // allow empty password if desired
 
         if (!ConnectToNewWiFi(ssid, pass)) {
-            cb(String(F("wifi/set_json/FAIL\r\n")).c_str(), CmdCbType::Control);
+            cb(F("wifi/set_json/FAIL\r\n"), CmdCbType::Control);
             return HALOperationResult::ExecutionFailed;
         }
-        cb(String(F("wifi/set_json/OK\r\n")).c_str(), CmdCbType::Control);
+        cb(F("wifi/set_json/OK\r\n"), CmdCbType::Control);
         return HALOperationResult::Success;
     }
 #endif
@@ -697,7 +693,7 @@ namespace DALHAL {
         }
 
         if (res != HALOperationResult::Success) {
-            String str = HALOperationResultToString(res);
+            std::string str = ToStdString(HALOperationResultToString(res));
             str += outDevice->Type;
             GlobalLogger.Error(F("HALOperationResult: "), str.c_str());
             return res;

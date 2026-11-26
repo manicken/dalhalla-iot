@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_ThingSpeak.h"
+#include <Arduino.h> // delay, millis
 
 #if __has_include(<thingspeak_test_server.h>)
 #include <thingspeak_test_server.h>
@@ -88,7 +89,7 @@ namespace DALHAL {
             lastUpdateMs = now;
             HALOperationResult res = ThingSpeak::exec(this);
             if (res != HALOperationResult::Success) {
-                GlobalLogger.Error(F("ThingSpeak::exec"), String(HALOperationResultToString(res)).c_str());
+                GlobalLogger.Error(F("ThingSpeak::exec"), DALHAL::ToStdString(HALOperationResultToString(res)).c_str());
             }
         }
     }

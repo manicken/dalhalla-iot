@@ -23,9 +23,8 @@
 
 #pragma once
 
-#include <DALHAL/Drivers/DALHAL_GPIO.h>
+#include <System/Platform/FastGpio.h>
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 
@@ -39,11 +38,6 @@
 using Actuator_DeviceBase = DALHAL::Actuator_Reactive;
 #else
 using Actuator_DeviceBase = DALHAL::Device;
-#endif
-
-#if !defined(ESP8266) && !defined(ESP32)
-#define IRAM_ATTR
-#include <gpio_types.h>  // PC stub
 #endif
 
 namespace DALHAL {
@@ -67,9 +61,10 @@ namespace DALHAL {
         static HALOperationResult HALValue_primary_read(Device* device, HALValue& val);
 
     private:
+        using Pin = Platform::FastGpio::Pin;
         union DrivePins {
-            struct { gpio_num_t a, b; } hbridge;
-            struct { gpio_num_t dir, enable, brk; } diren;
+            struct { Pin a, b; } hbridge;
+            struct { Pin dir, enable, brk; } diren;
         };
         enum class DriveMode : uint8_t {
             HBridge,      // forward / backward
@@ -78,7 +73,7 @@ namespace DALHAL {
         DrivePins pins;
         DriveMode mode;
         // private Static functions
-        static void IRAM_ATTR endstop_isr(void* arg);
+        static void PLATFORM_ISR_ATTR endstop_isr(void* arg);
         static HALOperationResult exec_drive_to_min(Device* device);
         static HALOperationResult exec_drive_to_max(Device* device);
         static HALOperationResult exec_stop(Device* device);
@@ -104,9 +99,11 @@ namespace DALHAL {
             Max = 1 
         };
         struct ISR_DATA {
-            volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
-            void (* volatile gpio_reg_func)(uint32_t) = nullptr;
-            volatile uint32_t gpio_currentActivePinMask = 0;
+            /** drive pin that the ISR writes to driveOffLevel to kill the motor (NC = nothing to write) */
+            volatile Pin drivePin = Platform::FastGpio::NC;
+            volatile bool driveOffLevel = false;
+            /** the end stop pin whose interrupt is enabled (only one at a time), disabled by the ISR */
+            volatile Pin endstopPin = Platform::FastGpio::NC;
             volatile bool handled = false;
             volatile bool driveOn = false;
             volatile Location location = Location::Unknown;
@@ -117,8 +114,8 @@ namespace DALHAL {
 
         State state = State::Idle;
 
-        gpio_num_t pinMinEndStop;
-        gpio_num_t pinMaxEndStop;
+        Pin pinMinEndStop;
+        Pin pinMaxEndStop;
 
         bool pinMinEndStopActiveHigh;
         bool pinMaxEndStopActiveHigh;
@@ -136,7 +133,7 @@ namespace DALHAL {
         bool endMaxActive() const;
 
         void disableEndstopInterrupts();
-        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
+        void configureISRData(Pin drivePin, GpioRegType regType);
         
     public:
         Actuator(DeviceCreateContext& context);

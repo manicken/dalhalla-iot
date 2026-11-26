@@ -48,7 +48,7 @@ namespace DALHAL {
         Type type = Type::Null;
 
         union {
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
             const __FlashStringHelper* flash;
 #endif
             const char* cstr;
@@ -59,7 +59,7 @@ namespace DALHAL {
 
     public:
         FlexibleString() = default;
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         FlexibleString(const __FlashStringHelper* s)
             : type(Type::Flash) {
             data.flash = s;
@@ -79,7 +79,7 @@ namespace DALHAL {
         FlexibleString& operator=(const FlexibleString&) = delete;
 
         FlexibleString& operator=(const char* s);
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         FlexibleString& operator=(const __FlashStringHelper* s);
 #endif
         FlexibleString& operator=(FlexibleString&& other) noexcept;
@@ -114,7 +114,7 @@ namespace DALHAL {
             }
             return nullptr;
         }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         inline const __FlashStringHelper* flashStr() const {
             return type == Type::Flash ? data.flash : nullptr;
         }

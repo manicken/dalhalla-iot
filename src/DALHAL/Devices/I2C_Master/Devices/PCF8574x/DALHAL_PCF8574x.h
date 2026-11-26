@@ -25,7 +25,6 @@
 
 #include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>

@@ -204,9 +204,9 @@ namespace DALHAL {
         const char* cStr_resolvedPath = cStr_path;
         // this need to be here to ensure the lifetime of the temp string is valid
         // until the end of this function
-        String strPath;
+        std::string strPath;
         if (cStr_resolvedPath == nullptr) {
-            strPath = String(F(DALHAL_ROOT_URL "/cfg.json")); // wrap in String as 
+            strPath = ToStdString(F(DALHAL_ROOT_URL "/cfg.json")); // RAM copy, flash strings cannot be used as a file path on ESP8266
             cStr_resolvedPath = strPath.c_str();
         }
 

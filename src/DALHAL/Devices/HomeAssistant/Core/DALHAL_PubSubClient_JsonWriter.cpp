@@ -108,7 +108,7 @@ namespace DALHAL {
         } else if (valueObj.isNull()) {
             mqtt.write((uint8_t*)"null", 4);
         } else {
-            String tmp;
+            std::string tmp;
             serializeJson(valueObj, tmp);
             mqtt.write((uint8_t*)tmp.c_str(), tmp.length());
         }

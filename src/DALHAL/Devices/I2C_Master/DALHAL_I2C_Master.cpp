@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_I2C_Master.h"
+#include <Arduino.h> // INPUT, byte, pinMode
 
 #include <DALHAL/Devices/I2C_Master/_DevicesRegistry/DALHAL_I2C_Master_DevicesRegistry.h>
 

@@ -25,7 +25,6 @@
 
 #define DALHAL_DEVICE_REGO600_HEATPUMP_CONTROLLER
 
-#include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
 

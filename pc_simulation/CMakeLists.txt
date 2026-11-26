@@ -24,46 +24,65 @@ endif()
 # Include directories
 # ---------------------------------------
 
+set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+# ports/common: platform independent Arduino core subset, shared by all non Arduino targets
+set(PORTS_COMMON_DIRS
+    ${REPO_ROOT}/ports/common/Arduino
+    ${REPO_ROOT}/ports/common/WString
+    ${REPO_ROOT}/ports/common/Print
+    ${REPO_ROOT}/ports/common/IPAddress
+    ${REPO_ROOT}/ports/common/PgmSpace
+)
+
+# ports/pc: implementations on top of the host OS (threads, sockets, files, iostream)
+set(PORTS_PC_DIRS
+    ${REPO_ROOT}/ports/pc/Arduino
+    ${REPO_ROOT}/ports/pc/Stream
+    ${REPO_ROOT}/ports/pc/Ticker
+    ${REPO_ROOT}/ports/pc/LittleFS
+    ${REPO_ROOT}/ports/pc/WiFi
+    ${REPO_ROOT}/ports/pc/WiFiClient
+    ${REPO_ROOT}/ports/pc/HTTPClient
+    ${REPO_ROOT}/ports/pc/DALHAL_WebSocketAPI
+)
+
+# ports/pc/stubs: fake hardware drivers, replaced by real drivers on hardware targets
+set(PORTS_PC_STUB_DIRS
+    ${REPO_ROOT}/ports/pc/stubs/DHTesp
+    ${REPO_ROOT}/ports/pc/stubs/OneWire
+    ${REPO_ROOT}/ports/pc/stubs/DallasTemperature
+    ${REPO_ROOT}/ports/pc/stubs/WS2812FX
+    ${REPO_ROOT}/ports/pc/stubs/Adafruit_GFX
+    ${REPO_ROOT}/ports/pc/stubs/Adafruit_SSD1306
+    ${REPO_ROOT}/ports/pc/stubs/Wire
+)
+
 set(INCLUDE_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/../src   # <-- THIS IS THE IMPORTANT ONE
-	
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Arduino
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/IPAddress
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/PrintStream
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/ArduinoJson/src
-	${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/Time
-    ${CMAKE_CURRENT_SOURCE_DIR}/../.pio/libdeps/esp32dev/TimeAlarms
-    ${CMAKE_CURRENT_SOURCE_DIR}/../lib/PubSubClient/src
-	${CMAKE_CURRENT_SOURCE_DIR}/ports/PgmSpace
-	${CMAKE_CURRENT_SOURCE_DIR}/stubs/WString
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/Ticker
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/LittleFS
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/WiFiClient
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/HTTPClient
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/DALHAL_WebSocketAPI
-    ${CMAKE_CURRENT_SOURCE_DIR}/ports/WiFi
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/DHTesp
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/OneWire
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/DallasTemperature
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/WS2812FX
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Adafruit_GFX
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Adafruit_SSD1306
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/Wire
-    ${CMAKE_CURRENT_SOURCE_DIR}/stubs/ESP-IDF
+    ${REPO_ROOT}/src   # <-- THIS IS THE IMPORTANT ONE
+    ${PORTS_COMMON_DIRS}
+    ${PORTS_PC_DIRS}
+    ${PORTS_PC_STUB_DIRS}
+    ${REPO_ROOT}/.pio/libdeps/esp32dev/ArduinoJson/src
+    ${REPO_ROOT}/.pio/libdeps/esp32dev/Time
+    ${REPO_ROOT}/.pio/libdeps/esp32dev/TimeAlarms
+    ${REPO_ROOT}/lib/PubSubClient/src
 )
 
 # ---------------------------------------
-# Recursive source discovery
+# Source discovery
 # ---------------------------------------
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    *.cpp
-    ../src/*.cpp
-    ../lib/PubSubClient/src/PubSubClient.cpp
-	../lib/PubSubClient/src/PubSubClient_ErrorStrings.cpp
-	../.pio/libdeps/esp32dev/Time/Time.cpp
-    ../.pio/libdeps/esp32dev/TimeAlarms/TimeAlarms.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/main_pc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/commandLoop.cpp
+    ${REPO_ROOT}/src/*.cpp
+    ${REPO_ROOT}/ports/common/*.cpp
+    ${REPO_ROOT}/ports/pc/*.cpp
+    ${REPO_ROOT}/lib/PubSubClient/src/PubSubClient.cpp
+    ${REPO_ROOT}/lib/PubSubClient/src/PubSubClient_ErrorStrings.cpp
+    ${REPO_ROOT}/.pio/libdeps/esp32dev/Time/Time.cpp
+    ${REPO_ROOT}/.pio/libdeps/esp32dev/TimeAlarms/TimeAlarms.cpp
 )
 
 # Remove CMake-generated files

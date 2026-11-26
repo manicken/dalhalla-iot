@@ -26,7 +26,6 @@
 #include "DALHAL_OneWireTempBus.h"
 #include "DALHAL_OneWireTempAutoRefresh.h"
 
-#include <Arduino.h> // Needed for String class
 
 #include <ArduinoJson.h>
 

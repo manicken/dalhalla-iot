@@ -127,7 +127,7 @@ namespace DALHAL {
             void Extractors::Apply(const DALHAL::DeviceCreateContext& context, DALHAL::PWM_Servo* out) {
                 out->uid = encodeUID(JsonSchema::CommonBase::uidFieldRequired.ExtractFrom(*(context.jsonObjItem)));
                 out->pin = JsonSchema::CommonPins::OutputPinField.ExtractFrom(*(context.jsonObjItem));
-                out->pwmChannel = (ledc_channel_t)JsonSchema::PWM_Servo::chField.ExtractFrom(*(context.jsonObjItem));
+                out->pwmChannel = (uint8_t)JsonSchema::PWM_Servo::chField.ExtractFrom(*(context.jsonObjItem));
 
                 out->minPulseLength = JsonSchema::PWM_Servo::minPulseLengthField.ExtractFrom(*(context.jsonObjItem));
                 out->maxPulseLength = JsonSchema::PWM_Servo::maxPulseLengthField.ExtractFrom(*(context.jsonObjItem));

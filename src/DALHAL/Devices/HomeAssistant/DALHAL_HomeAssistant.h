@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <Arduino.h> // Needed for String class
+#include <Arduino.h> // IPAddress, byte
 
 #include <string>
 

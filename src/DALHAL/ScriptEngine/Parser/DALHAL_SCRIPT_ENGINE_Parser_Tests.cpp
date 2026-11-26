@@ -48,33 +48,33 @@ namespace DALHAL {
                     char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
                     LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
                     if (fileResult != LittleFS_ext::FileResult::Success) {
-                        ReportInfo(String(F("Error: file could not be read/or is empty\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: file could not be read/or is empty\n")));
                         return false;
                     }
 
                     int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
-                    ReportInfo(String(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
+                    ReportInfo(DALHAL::ToStdString(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
                     ScriptTokens tokens(tokenCount);
                     
-                    MEASURE_TIME(String(F("Tokenize time: ")).c_str(),
+                    MEASURE_TIME(DALHAL::ToStdString(F("Tokenize time: ")).c_str(),
 
                     if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
-                        ReportInfo(String(F("Error: could not Tokenize\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: could not Tokenize\n")));
                         delete[] fileContents;
                         return false;
                     }
                     
                     );
                     
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
-                    ReportInfo(String(F("*                            PARSED TOKEN LIST                                   *\n")).c_str());
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
+                    ReportInfo(DALHAL::ToStdString(F("*                            PARSED TOKEN LIST                                   *\n")));
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
 
                     ReportInfo(PrintScriptTokens(tokens,0) + "\n");
 
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
-                    ReportInfo(String(F("*                            VALIDATE PARSED TOKEN LIST                          *\n")).c_str());
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
+                    ReportInfo(DALHAL::ToStdString(F("*                            VALIDATE PARSED TOKEN LIST                          *\n")));
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
                     // need to be done before any ValidateExpression
                     // and that normally mean before any validation first occur
                     // i.e if many script files are to be validated this need to happen before any of that happens
@@ -84,21 +84,21 @@ namespace DALHAL {
                     tokens.currIndex = 0;
                     if (false == Expressions::ValidateExpression(tokens))
                     {
-                        ReportInfo(String(F("Error: validate tokens fail\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: validate tokens fail\n")));
                         delete[] fileContents;
                         return false;
                     }
                     Expressions::PrintCalcedStackSizes();
                     Expressions::InitStacks();
 
-                    ReportInfo(String(F("\nInput expression: ")).c_str() + tokens.ToString());
+                    ReportInfo(DALHAL::ToStdString(F("\nInput expression: ")).c_str() + tokens.ToString());
 
                     ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(tokens);
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     LogicRPNNode* lrpnNode = 
 #endif
                         Expressions::BuildLogicTree(newDirect);
-                    ReportInfo(String(F("\n\nnew complete RPN:")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("\n\nnew complete RPN:")));
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
                         //ExpressionToken& tok = newDirect->items[i];
@@ -109,7 +109,7 @@ namespace DALHAL {
                     }
     #endif
                     ReportInfo("\n");
-                    ReportInfo(String(F("\n\ntree view:\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("\n\ntree view:\n")));
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
                     Expressions::printLogicRPNNodeTree(lrpnNode, 0);
                     //ReportInfo("\n\nadvanced tree view:\n");
@@ -118,7 +118,7 @@ namespace DALHAL {
                     Expressions::ClearStacks();
                     delete[] fileContents;
 
-                    ReportInfo(String(F("\nAll done!!!\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("\nAll done!!!\n")));
                     return true;
                 }
 
@@ -127,69 +127,69 @@ namespace DALHAL {
                     char* fileContents = nullptr;
                     LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
                     if (fileResult != LittleFS_ext::FileResult::Success) {
-                        ReportInfo(String(F("Error: file could not be read/or is empty\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: file could not be read/or is empty\n")));
                         return false;
                     }
 
                     int tokenCount = ParseAndTokenize<ScriptToken>(fileContents);
-                    ReportInfo(String(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
+                    ReportInfo(DALHAL::ToStdString(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
                     ScriptTokens tokens(tokenCount);
                     
-                    MEASURE_TIME(String(F("Tokenize time: ")).c_str(),
+                    MEASURE_TIME(DALHAL::ToStdString(F("Tokenize time: ")).c_str(),
 
                     if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == false) {
-                        ReportInfo(String(F("Error: could not Tokenize\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: could not Tokenize\n")));
                         delete[] fileContents;
                         return false;
                     }
                     
                     );
                     
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
-                    ReportInfo(String(F("*                            PARSED TOKEN LIST                                   *\n")).c_str());
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
+                    ReportInfo(DALHAL::ToStdString(F("*                            PARSED TOKEN LIST                                   *\n")));
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
 
                     ReportInfo(PrintScriptTokens(tokens,0) + "\n");
 
-                    ReportInfo(String(F("\nInput action expression: ")).c_str() + tokens.ToString() + "\n");
+                    ReportInfo(DALHAL::ToStdString(F("\nInput action expression: ")).c_str() + tokens.ToString() + "\n");
 
                     tokens.currIndex = 0;
                     tokens.items[0].itemsInBlock = tokens.count; // set as a block so that ExtractAssignmentParts can work as expected
                     if (false == DALHAL::ScriptEngine::Parser::Actions::ExtractAssignmentParts(tokens))
                     {
-                        ReportInfo(String(F("Error: ExtractAssignmentParts fail\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: ExtractAssignmentParts fail\n")));
                         delete[] fileContents;
                         return false;
                     }
 
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
-                    ReportInfo(String(F("*                            VALIDATE PARSED TOKEN LIST                          *\n")).c_str());
-                    ReportInfo(String(F("**********************************************************************************\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
+                    ReportInfo(DALHAL::ToStdString(F("*                            VALIDATE PARSED TOKEN LIST                          *\n")));
+                    ReportInfo(DALHAL::ToStdString(F("**********************************************************************************\n")));
                     // need to be done before any ValidateExpression
                     // and that normally mean before any validation first occur
                     // i.e if many script files are to be validated this need to happen before any of that happens
                     Expressions::CalcStackSizesInit();
                     if (Expressions::ValidateExpression(DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::rhs) == false)
                     {
-                        ReportInfo(String(F("Error: validate tokens fail\n")).c_str());
+                        ReportInfo(DALHAL::ToStdString(F("Error: validate tokens fail\n")));
                         delete[] fileContents;
                         return false;
                     }
                     Expressions::PrintCalcedStackSizes();
                     Expressions::InitStacks();
 
-                    ReportInfo(String(F("\nAction lhs:")).c_str() + DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
-                    ReportInfo(String(F("Action assigment operator:")).c_str() + std::string(1, DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::op) + "\n\n");
+                    ReportInfo(DALHAL::ToStdString(F("\nAction lhs:")).c_str() + DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::lhs.ToString() + "\n");
+                    ReportInfo(DALHAL::ToStdString(F("Action assigment operator:")).c_str() + std::string(1, DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::op) + "\n\n");
 
                     ExpressionTokens* newDirect = Expressions::GenerateRPNTokens(DALHAL::ScriptEngine::Parser::Actions::AssignmentParts::rhs);
                     if (newDirect == nullptr) {
-                        printf(String(F("\n!!!!!!!!!!!!!!!!!!!!!!!!!! ParseActionExpressionTest - newDirect was nullptr\n")).c_str());
+                        printf(DALHAL::ToStdString(F("\n!!!!!!!!!!!!!!!!!!!!!!!!!! ParseActionExpressionTest - newDirect was nullptr\n")).c_str());
                         Expressions::ClearStacks();
                         delete[] fileContents;
                         return false;
                     }
                     
-                    ReportInfo(String(F("\n\nAction rhs calc RPN:")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("\n\nAction rhs calc RPN:")));
                     for (int i=0;i<newDirect->currentCount;i++) { // currentCount is set by GenerateRPNTokens and defines the current 'size'
                         //ExpressionToken& tok = newDirect->items[i];
                         //if (tok->type == TokenType::Operand)
@@ -202,7 +202,7 @@ namespace DALHAL {
                     Expressions::ClearStacks();
                     delete[] fileContents;
 
-                    ReportInfo(String(F("\nAll done!!!\n")).c_str());
+                    ReportInfo(DALHAL::ToStdString(F("\nAll done!!!\n")));
                     return true;
                 }
             }

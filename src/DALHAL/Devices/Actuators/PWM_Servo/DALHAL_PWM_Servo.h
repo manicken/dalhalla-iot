@@ -24,13 +24,6 @@
 #pragma once
 
 #include <Arduino.h> // TODO remove depend
-#if defined(ESP32)
-#include <driver/ledc.h> // esp-idf
-#elif defined(ESP8266)
-#include <../pc_simulation/stubs/ESP-IDF/ledc_types.h>
-#else
-#include <ledc_types.h> // PC stub
-#endif
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
@@ -82,7 +75,7 @@ namespace DALHAL {
         float maxVal;  // max for ratio type
         uint8_t pin = 0;
 
-        ledc_channel_t pwmChannel = ledc_channel_t::LEDC_CHANNEL_0;
+        uint8_t pwmChannel = 0; // only used on platforms with explicit PWM channels (ESP32 LEDC)
 
 
         HALValue lastValue = 0.0f;

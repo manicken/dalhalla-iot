@@ -1,0 +1,9 @@
+# same tick rate as the Arduino core, millis() resolution and vTaskDelay(1) == 1 ms
+CONFIG_FREERTOS_HZ=1000
+# DALHAL runs its main loop in the main task, the Arduino loopTask has 8 KB
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+# esp32dev boards have 4 MB flash
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+# same partition table as the Arduino builds (app0/app1 OTA, coredump, spiffs = LittleFS)
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="../../partitions_32mbit.csv"

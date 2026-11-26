@@ -254,7 +254,7 @@ namespace DALHAL {
             if (res != HALOperationResult::Success) {
                 // really need to modify so that the second parameter given to GlobalLogger.Error can be annother FlashStringHelper
                 // or maybe a given struct so that the type can be given
-                GlobalLogger.Error(F("PSCP Complete CB - item->exec fail:"), String(HALOperationResultToString(res)).c_str() );
+                GlobalLogger.Error(F("PSCP Complete CB - item->exec fail:"), DALHAL::ToStdString(HALOperationResultToString(res)).c_str() );
             }
 
         } else if (zcHead.Equals(F(DALHAL_DEV_HOME_ASSISTANT_DD_CONFIG_TOPIC_HEAD)) &&

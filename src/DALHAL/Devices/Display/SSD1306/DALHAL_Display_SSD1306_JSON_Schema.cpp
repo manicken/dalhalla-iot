@@ -115,7 +115,7 @@ namespace DALHAL {
                 DeviceCreateContext createContext;
                 createContext.deviceType = "Display_SSD1306_Element";
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     createContext.jsonObjItem = &item;
                     out->elements[index++] = new DALHAL::Display_SSD1306_Element(createContext);

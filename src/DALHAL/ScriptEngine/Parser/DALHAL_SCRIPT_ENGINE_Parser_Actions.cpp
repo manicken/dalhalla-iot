@@ -55,7 +55,7 @@ namespace DALHAL {
                         if (token.type == ScriptTokenType::EndIf || token.type == ScriptTokenType::EndOn) { 
                             level--;
                             if (level == 0) {
-                                token.ReportTokenInfo(String(F("level is zero")).c_str());
+                                token.ReportTokenInfo(DALHAL::ToStdString(F("level is zero")).c_str());
                                 continue; // skip start endif if at root level
                             }
                         }

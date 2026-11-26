@@ -71,7 +71,7 @@ namespace DALHAL {
                 int itemCount = items.size();
                 // first pass count valid busses
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     out->busCount++;
                 }
@@ -83,7 +83,7 @@ namespace DALHAL {
                 
                 uint32_t index = 0;
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
                     createContext.jsonObjItem = &item;

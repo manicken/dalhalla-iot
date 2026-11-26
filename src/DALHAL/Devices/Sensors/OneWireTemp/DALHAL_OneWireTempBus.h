@@ -26,7 +26,6 @@
 #include "DALHAL_OneWireTempDevice.h"
 #include "DALHAL_OneWireTempAutoRefresh.h"
 
-#include <Arduino.h> // Needed for String class
 #include <OneWire.h>
 #include <DallasTemperature.h>
 

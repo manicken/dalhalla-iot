@@ -286,15 +286,15 @@ namespace Scheduler
         DALHAL::ZeroCopyString zcCmd = zcStr.SplitOffHead('/');
         if (zcCmd.EqualsIC(F(SCHEDULER_URL_REFRESH))) {
             if (LoadJson(SCHEDULER_CFG_FILE_PATH)) {
-                res = String(F("\"info\":\"schedule ld OK\"")).c_str();
+                res = DALHAL::ToStdString(F("\"info\":\"schedule ld OK\"")).c_str();
                 return true;
             }
             else {
-                res = String(F("\"error\":\"schedule ld err\"")).c_str();
+                res = DALHAL::ToStdString(F("\"error\":\"schedule ld err\"")).c_str();
                 return false;
             }
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_MAX_NUMBER_OF_ALARMS))) {
-            res = String(F("\"count\":\"")).c_str() + std::to_string(dtNBR_ALARMS) + '"';
+            res = DALHAL::ToStdString(F("\"count\":\"")).c_str() + std::to_string(dtNBR_ALARMS) + '"';
             return true;
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_FUNCTION_NAMES))) {
             std::string jsonStr;
@@ -316,13 +316,13 @@ namespace Scheduler
             res = GetShortFormDowListAsJson();
             return true;
         } else if (zcCmd.EqualsIC(F(SCHEDULER_URL_GET_TIME))) {
-            std::string nowstr = String(F("{\n\"now\":\"")).c_str() + Time_ext::GetTimeAsString(now());
-            nowstr += String(F("\",\"next trigger\":\"")).c_str() + Time_ext::GetTimeAsString(Scheduler->getNextTrigger());
+            std::string nowstr = DALHAL::ToStdString(F("{\n\"now\":\"")).c_str() + Time_ext::GetTimeAsString(now());
+            nowstr += DALHAL::ToStdString(F("\",\"next trigger\":\"")).c_str() + Time_ext::GetTimeAsString(Scheduler->getNextTrigger());
             nowstr += '"'; nowstr += '}';
             res = nowstr;
             return true;
         } else {
-            res = String(F("\"error\":\"schedule unknown cmd >>>")).c_str()+zcCmd.ToString()+String(F("<<<\"")).c_str();
+            res = DALHAL::ToStdString(F("\"error\":\"schedule unknown cmd >>>")).c_str()+zcCmd.ToString()+DALHAL::ToStdString(F("<<<\"")).c_str();
             return false;
         }
     }

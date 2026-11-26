@@ -138,9 +138,9 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
 
-                self->pins.diren.dir = (gpio_num_t)pin_direnable_dir_field.ExtractFrom(*ctx.jsonObjItem);
-                self->pins.diren.enable = (gpio_num_t)pin_direnable_enable_field.ExtractFrom(*ctx.jsonObjItem);
-                self->pins.diren.brk =  (gpio_num_t)pin_direnable_break_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.diren.dir = (Platform::FastGpio::Pin)pin_direnable_dir_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.diren.enable = (Platform::FastGpio::Pin)pin_direnable_enable_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.diren.brk =  (Platform::FastGpio::Pin)pin_direnable_break_field.ExtractFrom(*ctx.jsonObjItem);
 
                 self->mode = DALHAL::Actuator::DriveMode::DirEnable;
             }
@@ -149,8 +149,8 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
 
-                self->pins.hbridge.a = (gpio_num_t)pin_hbridge_a_field.ExtractFrom(*ctx.jsonObjItem);
-                self->pins.hbridge.b = (gpio_num_t)pin_hbridge_b_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.hbridge.a = (Platform::FastGpio::Pin)pin_hbridge_a_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.hbridge.b = (Platform::FastGpio::Pin)pin_hbridge_b_field.ExtractFrom(*ctx.jsonObjItem);
 
                 self->mode = DALHAL::Actuator::DriveMode::HBridge;
             }
@@ -159,8 +159,8 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::Actuator*>(out);
 
-                self->pins.hbridge.a = (gpio_num_t)pin_hbridge_open_field.ExtractFrom(*ctx.jsonObjItem);
-                self->pins.hbridge.b = (gpio_num_t)pin_hbridge_close_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.hbridge.a = (Platform::FastGpio::Pin)pin_hbridge_open_field.ExtractFrom(*ctx.jsonObjItem);
+                self->pins.hbridge.b = (Platform::FastGpio::Pin)pin_hbridge_close_field.ExtractFrom(*ctx.jsonObjItem);
 
                 self->mode = DALHAL::Actuator::DriveMode::HBridge;
             }
@@ -172,16 +172,16 @@ namespace DALHAL {
 
                 JsonSchema::PinConfig endStopPinCfg;
                 if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::minEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-                    out->pinMinEndStop = (gpio_num_t)endStopPinCfg.pin;
+                    out->pinMinEndStop = (Platform::FastGpio::Pin)endStopPinCfg.pin;
                     out->pinMinEndStopActiveHigh = endStopPinCfg.activeHigh;
                 } else {
-                    out->pinMinEndStop = gpio_num_t::GPIO_NUM_NC;
+                    out->pinMinEndStop = Platform::FastGpio::NC;
                 }
                 if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::Actuator::maxEndStopField, *(context.jsonObjItem), &endStopPinCfg)) {
-                    out->pinMaxEndStop = (gpio_num_t)endStopPinCfg.pin;
+                    out->pinMaxEndStop = (Platform::FastGpio::Pin)endStopPinCfg.pin;
                     out->pinMaxEndStopActiveHigh = endStopPinCfg.activeHigh;
                 } else {
-                    out->pinMaxEndStop = gpio_num_t::GPIO_NUM_NC;
+                    out->pinMaxEndStop = Platform::FastGpio::NC;
                 }
 
                 out->timeoutMs = JsonSchema::Actuator::timeout_ms_field.ExtractFrom(*context.jsonObjItem);

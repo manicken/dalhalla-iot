@@ -24,13 +24,7 @@
 #include "DALHAL_PWM_Servo.h"
 #include <DALHAL/Support/DALHAL_Logger.h>
 
-// need to go hardcore on this stuff as arduino is only for beginners
-#if defined(ESP32)
-#include <driver/ledc.h> // esp-idf
-#include <esp_err.h> // esp-idf
-#elif defined(ESP8266)
-
-#endif
+#include <System/Platform/Pwm.h>
 
 #include "DALHAL_PWM_Servo_JSON_Schema.h"
 
@@ -89,73 +83,17 @@ namespace DALHAL {
     }
 
     PWM_Servo::~PWM_Servo() {
-#if defined(ESP32)
-        ledcDetachPin(pin);
-        //ledcWrite(ledcChannel, 0);
-#elif defined(ESP8266)
-        pinMode(pin, INPUT);
-#endif
+        Platform::Pwm::Detach({pin, pwmChannel});
     }
 
     void PWM_Servo::begin() {
         printf("PWM_Servo::begin\r\n");
-#if defined(ESP32)
-        // setup LEDC channel hardcore
-        // Configure the timer first
-        /* ledc_timer_config_t timer_conf = {
-                .speed_mode       = LEDC_LOW_SPEED_MODE,  // or HIGH_SPEED_MODE if needed
-                .duty_resolution  = (ledc_timer_bit_t)DALHAL_LEDC_SERVO_RESOLUTION_BITS,
-                .timer_num        = (ledc_timer_t)(ledcChannel / 2), // simple mapping
-                .freq_hz          = DALHAL_LEDC_SERVO_PWM_FREQ,
-                .clk_cfg          = LEDC_AUTO_CLK
-            };
-
-            esp_err_t err = ledc_timer_config(&timer_conf);
-            if (err != ESP_OK) {
-                printf("ledc_timer_config failed: %d\n", err);
-                
-            }
-
-            // Configure the channel
-            ledc_channel_config_t ch_conf = {
-                .gpio_num       = pin,
-                .speed_mode     = LEDC_LOW_SPEED_MODE,
-                .channel        = ledcChannel,
-                .intr_type      = LEDC_INTR_DISABLE,
-                .timer_sel      = timer_conf.timer_num,
-                .duty           = 0,  // start with zero
-                .hpoint         = 0
-            };
-
-            err = ledc_channel_config(&ch_conf);
-            if (err != ESP_OK) {
-                printf("ledc_channel_config failed: %d\n", err);
-                //return err;
-            }
-
-            // Start the duty at zero
-            ledc_set_duty(ch_conf.speed_mode, ch_conf.channel, 0) ||
-                ledc_update_duty(ch_conf.speed_mode, ch_conf.channel);*/
-        //channels_resolution[chan] = bit_num;
-        //return ledc_get_freq(group,timer);
-
-        // Setup LEDC channel
-        if (ledcSetup(pwmChannel, DALHAL_LEDC_SERVO_PWM_FREQ, DALHAL_LEDC_SERVO_RESOLUTION_BITS) == 0) {
-            printf("ledcSetup fail\r\n");
-        } 
-        ledcAttachPin(pin, pwmChannel);
+        if (Platform::Pwm::Attach({pin, pwmChannel}, DALHAL_LEDC_SERVO_PWM_FREQ, DALHAL_LEDC_SERVO_RESOLUTION_BITS) == false) {
+            printf("PWM_Servo Pwm::Attach fail\r\n");
+        }
         // Initialize to center
-        uint32_t pulseUs = startPulseLength + pulseLengthOffset;
         uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        ledcWrite(pwmChannel, duty);
-#elif defined(ESP8266)
-        pinMode(pin, OUTPUT);        
-        analogWriteFreq(DALHAL_LEDC_SERVO_PWM_FREQ);
-        analogWriteResolution(DALHAL_LEDC_SERVO_RESOLUTION_BITS);
-        //uint32_t pulseUs = startPulseLength + pulseLengthOffset;
-        uint32_t duty = (startPulseLength * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
-        analogWrite(pin, duty);
-#endif
+        Platform::Pwm::Write({pin, pwmChannel}, duty);
     }
 
     /*virtual override*/
@@ -164,11 +102,7 @@ namespace DALHAL {
         uint32_t now = millis();
         if ((now - lastWriteMs) > autoOffAfterMs) {
             autoOffActive = false;
-#if defined(ESP32)
-            ledcWrite(pwmChannel, 0); // turn pwm off
-#elif defined(ESP8266)
-            analogWrite(pin, 0);
-#endif
+            Platform::Pwm::Write({pin, pwmChannel}, 0); // turn pwm off
         }
     }
 
@@ -207,13 +141,7 @@ namespace DALHAL {
         // Serial.printf("\r\n PWM_Servo write pulseUs:%d\r\n", pulseUs);
         uint32_t duty = (pulseUs * DALHAL_LEDC_SERVO_RESOLUTION_MAX_VAL) / DALHAL_LEDC_SERVO_PWM_DUTY_US;
         //Serial.printf("\r\n PWM_Servo write duty:%d\r\n", duty);
-#if defined(ESP32)
-        ledcWrite(pwmChannel, duty);
-#elif defined(ESP8266)
-        analogWrite(pin, duty);
-#else
-        printf("\r\n PWM_Servo write duty:%d\r\n", duty);
-#endif
+        Platform::Pwm::Write({pin, pwmChannel}, duty);
 
         if (autoOffAfterMs != 0) {
             autoOffActive = true;

@@ -93,7 +93,7 @@ namespace DALHAL {
                 // first pass count valid items
                 out->deviceCount = 0;
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     out->deviceCount++;
                 }
@@ -108,7 +108,7 @@ namespace DALHAL {
                 int index = 0;
                 I2C_Master_CreateFunctionContext createContext(*out->wire);
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     
                     const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(item);

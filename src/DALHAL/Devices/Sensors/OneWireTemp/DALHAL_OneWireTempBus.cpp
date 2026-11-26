@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_OneWireTempBus.h"
+#include <Arduino.h> // INPUT, pinMode
 
 #include <cinttypes> // PRIu32
 

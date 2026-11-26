@@ -120,7 +120,7 @@ namespace DALHAL {
             if (readFunc_GetRes.result == HALOperationResult::UnsupportedCommand) {
                 GlobalLogger.Error(F("CachedDeviceRead - could not find source device function: "), funcName);
             } else {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), String(HALOperationResultToString(readFunc_GetRes.result)).c_str());
+                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), ZeroCopyString(HALOperationResultToString(readFunc_GetRes.result)));
             }
             // this mean we requested to use a function name 
             // that did not exist thus the default is no op
@@ -167,7 +167,7 @@ namespace DALHAL {
             if (bracketFunc_GetRes.result == HALOperationResult::UnsupportedCommand) {
                 GlobalLogger.Error(F("CachedDeviceRead - bracket could not find source device function: "), zcStrUidPathAndFuncName);
             } else {
-                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), String(HALOperationResultToString(bracketFunc_GetRes.result)).c_str());
+                GlobalLogger.Error(F("CachedDeviceRead - bracket get function, other error: "), ZeroCopyString(HALOperationResultToString(bracketFunc_GetRes.result)));
             }
 
             

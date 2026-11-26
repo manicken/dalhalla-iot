@@ -23,12 +23,7 @@
 
 #include "DALHAL_ButtonInput.h"
 
-#if defined(ESP8266) || defined(ESP32)
-#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h> // for SendMessage
-
-#else
-#include <DALHAL_WebSocketAPI_Windows.h> // PC port - for SendMessage
-#endif
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI_Backend.h> // WebSocketAPI::Broadcast of the current backend
 
 #include <DALHAL/API/DALHAL_BlockStreamer.h>
 

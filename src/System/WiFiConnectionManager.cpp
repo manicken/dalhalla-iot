@@ -302,9 +302,9 @@ bool WiFiConnectionManager::isAPActive() {
     return currentState == State::AP_RUNNING;
 }
 
-String WiFiConnectionManager::getSSID() {
+std::string WiFiConnectionManager::getSSID() {
     if (currentState == State::STA_CONNECTED) {
-        return WiFi.SSID();
+        return WiFi.SSID().c_str();
     }
     return "";
 }

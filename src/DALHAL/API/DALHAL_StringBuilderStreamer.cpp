@@ -177,7 +177,7 @@ namespace DALHAL {
             write(F("false"));
         }
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     void StringBuilderStreamer::write(const __FlashStringHelper* fstr) {
         return write_P(reinterpret_cast<PGM_P>(fstr));
     }
@@ -366,7 +366,7 @@ namespace DALHAL {
     void StringBuilderStreamer::write_json_object_end() {
         write_char('}');
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     void StringBuilderStreamer::write_jsonQuoted(const __FlashStringHelper* fstr) {
         if (fstr == nullptr) {
             write(F("null"));
@@ -411,7 +411,7 @@ namespace DALHAL {
 
         write_doublequote();
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     void StringBuilderStreamer::write_jsonMemberStart(const __FlashStringHelper* fstr) {
         write_jsonQuoted(fstr);
         write_json_member_separator();
@@ -433,7 +433,7 @@ namespace DALHAL {
         write_jsonMemberStart(key);
         write_jsonQuoted(zcStr.start, zcStr.Length());
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     void StringBuilderStreamer::write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr) {
         write_jsonMemberStart(key);
         write_jsonQuoted(fstr);

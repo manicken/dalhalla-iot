@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_HA_Switch.h"
+#include <Arduino.h> // Serial
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>

@@ -8,7 +8,7 @@
   GNU General Public License v3.0 or later
 */
 
-#include "DALHAL_WebSocketAPI_Windows.h"
+#include "DALHAL_WebSocketAPI_PC.h"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -26,7 +26,8 @@
 //#pragma comment(lib, "bcrypt.lib")
 #endif
 
-#include <DALHAL/API/DALHAL_WebSocketAPI_httpFile.h>
+#include <DALHAL/API/WebSocket/FrontendFiles/DALHAL_VirtualFile.h>
+#include <DALHAL/API/WebSocket/FrontendFiles/DALHAL_FileList.h>
 
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
 
@@ -184,20 +185,50 @@ namespace DALHAL {
             }
         }
 
-        bool safeHtmlSend(SOCKET clientSocket, const char* data, int len) {
-            std::string header = "HTTP/1.1 200 OK\r\n";
-            header += "Content-Length: " + std::to_string(len) + "\r\n";
-            header += "Content-Type: text/html\r\nConnection: close\r\n\r\n";
+        bool sendHttpResponse(SOCKET clientSocket, const char* status, const char* mime, const uint8_t* data, size_t len, bool gzip) {
+            std::string header = "HTTP/1.1 ";
+            header += status;
+            header += "\r\nContent-Length: " + std::to_string(len) + "\r\n";
+            header += "Content-Type: ";
+            header += mime;
+            header += "\r\n";
+            if (gzip) {
+                header += "Content-Encoding: gzip\r\n";
+            }
+            header += "Connection: close\r\n\r\n";
             send(clientSocket, header.c_str(), (int)header.length(), 0);
-            
-            int total = 0;
+
+            size_t total = 0;
             while (total < len) {
-                int sent = send(clientSocket, data + total, len - total, 0);
+                int sent = send(clientSocket, (const char*)data + total, (int)(len - total), 0);
                 if (sent <= 0) return false;
                 total += sent;
             }
             return true;
         };
+
+        /** serves the same virtual frontend files as the device (FrontendFiles/www, gzip where possible) */
+        void sendVirtualFile(SOCKET clientSocket, const char* request) {
+            // request line: "GET /path?query HTTP/1.1"
+            std::string path;
+            const char* start = strchr(request, ' ');
+            if (start != nullptr) {
+                start++;
+                const char* end = start;
+                while (*end != '\0' && *end != ' ' && *end != '?' && *end != '\r' && *end != '\n') { end++; }
+                path.assign(start, end);
+            }
+            if (path.empty() || path == "/") { path = "/index.html"; }
+
+            ZeroCopyString zcFilePath(path.c_str() + 1, path.length() - 1); // without leading '/'
+            const ApiVirtualFile* vFile = GetApiVirtualFile(zcFilePath);
+            if (vFile == nullptr) {
+                const char* msg = "file not found";
+                sendHttpResponse(clientSocket, "404 Not Found", "text/plain", (const uint8_t*)msg, strlen(msg), false);
+                return;
+            }
+            sendHttpResponse(clientSocket, "200 OK", vFile->mime, vFile->data, vFile->size, vFile->gzip);
+        }
 
         void clientHandler(int clientId, SOCKET clientSocket) {
             char buffer[4096];
@@ -220,9 +251,7 @@ namespace DALHAL {
                         send(clientSocket, upgradeResponse.c_str(), (int)upgradeResponse.length(), 0);
                     }
                 } else {
-                    
-                    safeHtmlSend(clientSocket, HTML_WS_CONSOLE, (int)strlen(HTML_WS_CONSOLE));
-                    //send(clientSocket, HTML_WS_CONSOLE, (int)strlen(HTML_WS_CONSOLE), 0);
+                    sendVirtualFile(clientSocket, buffer);
                 }
             }
 

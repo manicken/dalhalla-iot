@@ -160,7 +160,7 @@ namespace DALHAL {
                         if (lastOn)
                             lastOn->ReportTokenError(F("Unmatched 'on' block: "));
                         else
-                            ReportError(String(F("Unmatched 'on' block: <null>")).c_str());
+                            ReportError(DALHAL::ToStdString(F("Unmatched 'on' block: <null>")).c_str());
                     }
                     delete[] ifStack;
                     return (ifLevel == 0) && (onLevel == 0) && (otherErrors == false);

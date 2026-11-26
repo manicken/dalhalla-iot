@@ -25,7 +25,6 @@
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_DeviceTypeReg.h>
 
-#include <Arduino.h> // Needed for String class
 #include <string>
 #include <ArduinoJson.h>
 #include <WiFiClient.h>

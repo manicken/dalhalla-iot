@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_PCF8574x.h"
+#include <Arduino.h> // LOW, digitalRead
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 

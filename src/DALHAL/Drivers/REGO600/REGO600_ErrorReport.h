@@ -23,11 +23,16 @@
 
 #pragma once
 
+#include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h> // __FlashStringHelper, DALHAL_ZCS_HAS_FLASH_STRING_TYPE
+
 namespace Drivers {
     namespace REGO600 {
 
         struct ErrorReport {
             static void DebugMessage(const char* msg);
+#if defined(DALHAL_ZCS_HAS_FLASH_STRING_TYPE)
+            static void DebugMessage(const __FlashStringHelper* msg);
+#endif
             static bool emitErrorsToWebSocket;
         };
         

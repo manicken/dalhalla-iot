@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_AnalogInput.h"
+#include <Arduino.h> // INPUT, analogRead, pinMode
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 

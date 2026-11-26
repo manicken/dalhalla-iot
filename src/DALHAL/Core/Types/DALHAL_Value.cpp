@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_Value.h"
+#include <cinttypes> // PRId32, PRIu32: int32_t is long on xtensa/riscv/arm gcc, int on x86
 
 namespace DALHAL {
     HALValue::HALValue() : type(Type::UNSET) {}
@@ -232,10 +233,10 @@ namespace DALHAL {
         char buf[20]; // allocated on the stack
         switch (type) {
             case Type::INT:
-                snprintf(buf, sizeof(buf), "%d", ival);
+                snprintf(buf, sizeof(buf), "%" PRId32, ival);
                 break;
             case Type::UINT:
-                snprintf(buf, sizeof(buf), "%u", uval);
+                snprintf(buf, sizeof(buf), "%" PRIu32, uval);
                 break;
             case Type::FLOAT:
                 snprintf(buf, sizeof(buf), "%f", fval);

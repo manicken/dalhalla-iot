@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_SinglePulseOutput.h"
+#include <Arduino.h> // INPUT, OUTPUT, digitalWrite, pinMode
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>
 #include <DALHAL/Core/Manager/DALHAL_GPIO_Manager.h>

@@ -37,6 +37,7 @@
 #include "OTA.h"
 #include "FSBrowserAsync.h"
 #include <System/Network/Network.h>
+#include <System/Platform/Platform.h>
 
 #include <DALHAL/API/DALHAL_API.h>
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
@@ -45,11 +46,7 @@ namespace System {
 
     void EnterRecoveryMode()
     {
-#if defined(ESP32)
-        esp_system_abort("******** FORCED_RECOVERY ********");
-#elif defined(ESP8266)
-        abort();
-#endif
+        Platform::Abort("******** FORCED_RECOVERY ********");
     }
 
     void Setup()
@@ -161,7 +158,7 @@ namespace System {
             String msg = F("Restarting...");
             req->send(200, type, msg);
             delay(200);
-            ESP.restart();
+            Platform::Restart();
         });
 
         FSBrowser::setup(*server);
@@ -184,7 +181,7 @@ namespace System {
                 Serial.println(F("  FAILSAFE TIMEOUT REACHED (10 MIN)"));
                 Serial.println(F("  Restarting device..."));
                 Serial.println(F("======================================\r\n"));
-                ESP.restart();
+                Platform::Restart();
             }
             failsafeLoop_API_exec_cmd();           
             delay(1);              // Prevent WDT reset
@@ -197,7 +194,7 @@ namespace System {
         FSBrowser::setup(webserver);
         webserver.on("/reset", [](AsyncWebServerRequest* req) {
             req->send(200, "text/html", "system will now reset");
-            ESP.restart();
+            Platform::Restart();
             
         });
         webserver.on(MAIN_URLS_FORMAT_LITTLE_FS, [](AsyncWebServerRequest* req) {

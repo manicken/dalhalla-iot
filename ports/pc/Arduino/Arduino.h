@@ -21,37 +21,22 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+/**
+  PC part of the Arduino core subset: time via std::chrono/std::thread,
+  GPIO functions that only print, and Serial on top of std::cout.
+  The platform independent part is in ports/common/Arduino/ArduinoCommon.h
+*/
+
 #pragma once
 
-#include <cmath>
-#include <stdint.h>
-#include <stdio.h>
+#include <ArduinoCommon.h>
 #include <chrono>
 #include <thread>
-#include <string>    // std::string for Windows
-#include <cstring>
-#include <cstdint>
-#include "../PrintStream/Stream.h"
-#include <cstdarg> // variadic
-
-#include <pgmspace.h>
-#include <WString.h>
-
+#include <Stream.h>
 
 #if defined(_WIN32)
 #define strdup _strdup
 #endif
-
-
-//#define pgm_read_byte_near(addr) (*(const unsigned char*)(addr))
-
-
-#define HIGH 1
-#define LOW  0
-#define INPUT 0
-#define OUTPUT 1
-#define INPUT_PULLDOWN 0x09
-#define INPUT_PULLUP 0x05
 
 inline void yield() {
     std::this_thread::yield();

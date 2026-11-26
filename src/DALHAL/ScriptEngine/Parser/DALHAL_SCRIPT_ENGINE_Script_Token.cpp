@@ -257,7 +257,7 @@ namespace DALHAL {
 
         ScriptToken& ScriptTokens::GetNextAndConsume() {
             if (currIndex >= count) {
-                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token GetNextAndConsume() EXTREME ERROR out of bounds\n")).c_str());
+                printf(DALHAL::ToStdString(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token GetNextAndConsume() EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -266,7 +266,7 @@ namespace DALHAL {
 
         ScriptToken& ScriptTokens::Current() {
             if (currIndex >= count) {
-                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() EXTREME ERROR out of bounds\n")).c_str());
+                printf(DALHAL::ToStdString(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -274,7 +274,7 @@ namespace DALHAL {
         }
         const ScriptToken& ScriptTokens::Current() const {
             if (currIndex >= count) {
-                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() const EXTREME ERROR out of bounds\n")).c_str());
+                printf(DALHAL::ToStdString(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! token Current() const EXTREME ERROR out of bounds\n")).c_str());
                 static ScriptToken EmptyToken;
                 return EmptyToken;
             }
@@ -287,12 +287,12 @@ namespace DALHAL {
                 if (token.type != ScriptTokenType::Ignore && token.type != ScriptTokenType::EndIf) {
                     break;
                 }
-                token.ReportTokenInfo(String(F("--------- skipping token:")).c_str());
+                token.ReportTokenInfo(DALHAL::ToStdString(F("--------- skipping token:")).c_str());
                 currIndex++;
             }
 
             if (currIndex >= count) {
-                ReportError(String(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unexpected end of tokens while building items")).c_str());
+                ReportError(DALHAL::ToStdString(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unexpected end of tokens while building items")).c_str());
                 return SkipTokenResult::ReachedEnd;
             }
             return SkipTokenResult::Success;
@@ -358,10 +358,10 @@ namespace DALHAL {
             int tokenCount = _tokens.count;
             std::string msg;
             if (subTokenIndexOffset == 0)
-                msg += String(F("rootLevelBlockCount: ")).c_str() + std::to_string(_tokens.rootBlockCount) + "\n";
+                msg += DALHAL::ToStdString(F("rootLevelBlockCount: ")).c_str() + std::to_string(_tokens.rootBlockCount) + "\n";
 
             if (_tokens.firstTokenStartOffset != nullptr) {
-                msg += String(F("firstTokenStartOffset set, ")).c_str();
+                msg += DALHAL::ToStdString(F("firstTokenStartOffset set, ")).c_str();
             }
             bool lastWasBlock = false;
             for (int i=0;i<tokenCount;i++) {
@@ -379,7 +379,7 @@ namespace DALHAL {
                 if (subTokenIndexOffset == 0 && tok.itemsInBlock > 1 && (tok.type == ScriptTokenType::Action || tok.type == ScriptTokenType::IfCondition)) {
                     if (lastWasBlock == false)
                         msgLine += "\n";
-                    msgLine += String(F("Tokens block:\n")).c_str();
+                    msgLine += DALHAL::ToStdString(F("Tokens block:\n")).c_str();
                     ScriptTokens tokens;
                     tokens.items = &tok;
                     tokens.count = tok.itemsInBlock;
@@ -387,12 +387,12 @@ namespace DALHAL {
                     lastWasBlock = true;
                 } else {
                     msgLine +=
-                    String(F("Token(")).c_str() + std::to_string(i+subTokenIndexOffset) + "): " +
-                    String(F("(line:")).c_str() + std::to_string(tok.line) + 
-                    String(F(", col:")).c_str() + std::to_string(tok.column) + 
-                    String(F(", count:")).c_str() + std::to_string(tok.itemsInBlock) + 
-                    String(F(", type:")).c_str() + String(ScriptTokenTypeToString(tok.type)).c_str() +
-                    ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?String(F(", hasElse:true")).c_str():String(F(", hasElse:false")).c_str()):"")+
+                    DALHAL::ToStdString(F("Token(")).c_str() + std::to_string(i+subTokenIndexOffset) + "): " +
+                    DALHAL::ToStdString(F("(line:")).c_str() + std::to_string(tok.line) + 
+                    DALHAL::ToStdString(F(", col:")).c_str() + std::to_string(tok.column) + 
+                    DALHAL::ToStdString(F(", count:")).c_str() + std::to_string(tok.itemsInBlock) + 
+                    DALHAL::ToStdString(F(", type:")).c_str() + DALHAL::ToStdString(ScriptTokenTypeToString(tok.type)).c_str() +
+                    ((tok.type == ScriptTokenType::If)?((tok.hasElse==1)?DALHAL::ToStdString(F(", hasElse:true")).c_str():DALHAL::ToStdString(F(", hasElse:false")).c_str()):"")+
                     "): ";
 
                     lastWasBlock = false;

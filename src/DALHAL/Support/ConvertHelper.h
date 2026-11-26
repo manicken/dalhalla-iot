@@ -45,7 +45,7 @@ namespace Convert
 
     /** with padding */
     //String toHex(const char *data, size_t len);
-    String convertISO88591toUTF8(const String &input);
+    std::string convertISO88591toUTF8(const std::string &input);
     bool IsValidHexString(const char* str);
 
     std::string toHex(uint8_t value);

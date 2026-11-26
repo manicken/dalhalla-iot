@@ -199,9 +199,9 @@ namespace Convert
         return hex;
     }
 */
-    String convertISO88591toUTF8(const String &input) {
-        String output = "";
-        for (unsigned int i = 0; i < input.length(); i++) {
+    std::string convertISO88591toUTF8(const std::string &input) {
+        std::string output;
+        for (size_t i = 0; i < input.length(); i++) {
             unsigned char c = input[i];
             if (c == 1) output += "\u2581";
             else if (c == 2) output += "\u2582";
@@ -211,7 +211,7 @@ namespace Convert
             else if (c == 6) output += "\u2586";
             else if (c == 7) output += "\u2587";
             else if (c == 8) output += "\u2588";
-            else if (c < 32) { output += "{"; output += Convert::toHex(c).c_str(); output+="}"; }
+            else if (c < 32) { output += "{"; output += Convert::toHex(c); output+="}"; }
             else if (c < 128) {
             output += (char)c;
             } else {

@@ -126,13 +126,18 @@ namespace DALHAL {
                             return false;
                         }
                     }      // TCP buffer full / closing
-                    if (type == CmdCbType::Control) {
+                    if (body.IsFlash()) {
+                        // F("...") string on ESP8266, the library copies it straight from flash into its send buffer
+                        const __FlashStringHelper* fstr = reinterpret_cast<const __FlashStringHelper*>(body.start);
+                        if (type == CmdCbType::Control) c->text(fstr);
+                        else if (type == CmdCbType::Data) c->binary(fstr, body.Length());
+                    } else if (type == CmdCbType::Control) {
                         // send control as text
                         c->text(body.start, body.Length());
                     } else if (type == CmdCbType::Data) {
                         // send data as binary to make it separate from control
                         c->binary(body.start, body.Length());
-                    }                    
+                    }
                     return true;
                 }
             });
@@ -247,10 +252,14 @@ namespace DALHAL {
         return Broadcast(msg, strlen(msg), type);
     }
     bool WebSocketAPI::Broadcast(const ZeroCopyString& zcStr, CmdCbType type) {
+        if (zcStr.IsFlash()) { // only possible on ESP8266
+            std::string ramCopy = zcStr.ToString();
+            return Broadcast(ramCopy.c_str(), ramCopy.length(), type);
+        }
         return Broadcast(zcStr.start, zcStr.Length(), type);
     }
     bool WebSocketAPI::BroadcastCb(const ZeroCopyString& zcStr, CmdCbType type) {
-        return Broadcast(zcStr.start, zcStr.Length(), type);
+        return Broadcast(zcStr, type);
     }
     bool WebSocketAPI::Broadcast(const char* source, const char* msg, CmdCbType type) {
         if (asyncWebSocket->availableForWriteAll()) {

@@ -1,6 +1,7 @@
 #ifndef WIFI_CONNECTION_MANAGER_H
 #define WIFI_CONNECTION_MANAGER_H
 
+#include <string>
 #include <Arduino.h>
 #if defined(ESP32) || defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <WiFi.h>
@@ -99,7 +100,7 @@ public:
     /**
      * @brief Get current WiFi SSID (empty if in AP mode)
      */
-    static String getSSID();
+    static std::string getSSID();
 
     /**
      * @brief Get current local IP

@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_LatchingRelay.h"
+#include <Arduino.h> // millis
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
@@ -91,187 +92,65 @@ namespace DALHAL {
 
     /*override*/
     LatchingRelay::~LatchingRelay() {
-#if defined(ESP32)
         // FREE all used pins by setting them to INPUTS
-        uint64_t mask = 0;
-
+        using namespace Platform::FastGpio;
         if (mode == DriveMode::Direct) {
-            mask |= (1ULL << pins.direct.a);
-            mask |= (1ULL << pins.direct.b);
+            Release(pins.direct.a);
+            Release(pins.direct.b);
         } else if (mode == DriveMode::DataEnable) {
-            mask |= (1ULL << pins.data_enable.data);
-            mask |= (1ULL << pins.data_enable.enable);
+            Release(pins.data_enable.data);
+            Release(pins.data_enable.enable);
         }
-
-        mask |= (1ULL << pinFeedbackReset);
-        mask |= (1ULL << pinFeedbackSet);
-
-        if (mask == 0) return;  // nothing to configure
-
-        gpio_config_t io_conf = {};
-        io_conf.pin_bit_mask = mask;
-        io_conf.mode = GPIO_MODE_INPUT;      // set all to input
-        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.intr_type = GPIO_INTR_DISABLE; // no interrupts
-
-        esp_err_t res = gpio_config(&io_conf);
-        if (res != ESP_OK) {
-            printf("\r\nesp erro while gpio_config @ ~Actuator:%d\r\n", (uint32_t)res);
-        }
-#elif defined(ESP8266)
-        if (mode == DriveMode::Direct) {
-            pinMode((uint8_t)pins.direct.a, INPUT);
-            pinMode((uint8_t)pins.direct.b, INPUT);
-        } else if (mode == DriveMode::DataEnable) {
-            pinMode((uint8_t)pins.data_enable.data, INPUT);
-            pinMode((uint8_t)pins.data_enable.enable, INPUT);
-        }
-#endif
+        // the ISR arg points to this object, so the handlers must be removed
+        DetachIsr(pinFeedbackReset);
+        DetachIsr(pinFeedbackSet);
+        Release(pinFeedbackReset);
+        Release(pinFeedbackSet);
     }
 
-#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
-    static void IRAM_ATTR WriteTo_GPIOs_A_SetReg(uint32_t mask) {
-        GPIO.out_w1ts = mask;
-    }
-
-    static void IRAM_ATTR WriteTo_GPIOs_A_ClearReg(uint32_t mask) {
-        GPIO.out_w1tc = mask;
-    }
-
-    static void IRAM_ATTR WriteTo_GPIOs_B_SetReg(uint32_t mask) {
-        GPIO.out1_w1ts.val = mask;
-    }
-
-    static void IRAM_ATTR WriteTo_GPIOs_B_ClearReg(uint32_t mask) {
-        GPIO.out1_w1tc.val = mask;
-    }
-
-#elif defined(esp32c3) || defined(esp32c6)
-    static void IRAM_ATTR WriteTo_GPIOs_SetReg(uint32_t mask) {
-        GPIO.out_w1ts.val = mask;
-    }
-
-    static void IRAM_ATTR WriteTo_GPIOs_ClearReg(uint32_t mask) {
-        GPIO.out_w1tc.val = mask;
-    }
-
-#endif
-
-void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
+    void LatchingRelay::configureISRData(Pin drivePin, GpioRegType regType) {
         isr_data.handled = false;
         isr_data.driveOn = true;
-        isr_data.gpio_currentPin = somePin;
-        
-#if defined(ESP32) && !defined(esp32c3) && !defined(esp32c6)
-        if (somePin < 32) {
-            isr_data.gpio_currentActivePinMask = (1UL << somePin);
-            if (regType == GpioRegType::Set) {
-                isr_data.gpio_reg_func = &WriteTo_GPIOs_A_SetReg;
-            } else if (regType == GpioRegType::Clear) {
-                isr_data.gpio_reg_func = &WriteTo_GPIOs_A_ClearReg;
-            }
- 
-        } else {
-            isr_data.gpio_currentActivePinMask = (1UL << (somePin - 32));
-            if (regType == GpioRegType::Set) {
-                isr_data.gpio_reg_func = &WriteTo_GPIOs_B_SetReg;
-            } else if (regType == GpioRegType::Clear) {
-                isr_data.gpio_reg_func = &WriteTo_GPIOs_B_ClearReg;
-            }
-        }
-#elif defined(esp32c3) || defined(esp32c6)
-        isr_data.gpio_currentActivePinMask = (1UL << somePin);
-        if (regType == GpioRegType::Set) {
-            isr_data.gpio_reg_func = &WriteTo_GPIOs_SetReg;
-        } else if (regType == GpioRegType::Clear) {
-            isr_data.gpio_reg_func = &WriteTo_GPIOs_ClearReg;
-        }
-#endif
+        isr_data.driveOffLevel = (regType == GpioRegType::Set);
+        isr_data.drivePin = drivePin;
     }
 
     /*static*/
-    void IRAM_ATTR LatchingRelay::endstop_isr(void* arg) {
+    void PLATFORM_ISR_ATTR LatchingRelay::endstop_isr(void* arg) {
         LatchingRelay::ISR_DATA* isr_data = static_cast<LatchingRelay::ISR_DATA*>(arg);
 
-        // Immediate motor kill
-        // Minimal ISR: just write precomputed register and mask
-        if (isr_data->gpio_reg_func != nullptr) {
-            isr_data->gpio_reg_func(isr_data->gpio_currentActivePinMask);
+        // Immediate coil drive kill
+        // Minimal ISR: just a single precomputed register write
+        if (isr_data->drivePin != Platform::FastGpio::NC) {
+            Platform::FastGpio::IsrWrite(isr_data->drivePin, isr_data->driveOffLevel);
             isr_data->driveOn = false;
         }
-#if defined(ESP32)
-        // Disable only the triggering interrupt
-        gpio_intr_disable(isr_data->gpio_currentPin);
-#elif defined(ESP8266)
-
-#endif
+        // Disable only the triggering feedback interrupt (to ignore contact bounce)
+        Platform::FastGpio::IsrDisable(isr_data->feedbackPin);
         // signal to "main loop"
         isr_data->handled = true;
     }
 
     void LatchingRelay::setup() {
+        using namespace Platform::FastGpio;
         isr_data.location = Location::Unknown;
         isr_data.handled = false;
 
-#if defined(ESP32)
-        gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-
-
         if (mode == DriveMode::DataEnable) {
-            gpio_config_t io_conf{};
-            io_conf.intr_type = GPIO_INTR_DISABLE;
-            io_conf.mode = GPIO_MODE_OUTPUT;
-            io_conf.pin_bit_mask = (1ULL << pins.data_enable.data) | (1ULL << pins.data_enable.enable);
-            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
-            gpio_config(&io_conf);
+            ConfigureOutput(pins.data_enable.data);
+            ConfigureOutput(pins.data_enable.enable);
         } else if (mode == DriveMode::Direct) {
-            gpio_config_t io_conf{};
-            io_conf.intr_type = GPIO_INTR_DISABLE;
-            io_conf.mode = GPIO_MODE_OUTPUT;
-            io_conf.pin_bit_mask = (1ULL << pins.direct.a) | (1ULL << pins.direct.b);
-            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
-            gpio_config(&io_conf);
+            ConfigureOutput(pins.direct.a);
+            ConfigureOutput(pins.direct.b);
         }
         // reserved for future modes
 
-
         // --------------------------
-        // Configure endstop pins
+        // Configure feedback pins
         // --------------------------
-        if (pinFeedbackReset != GPIO_NUM_NC) {
-            gpio_config_t io_conf{};
-            io_conf.intr_type = pinFeedbackResetActiveHigh
-                                ? GPIO_INTR_POSEDGE
-                                : GPIO_INTR_NEGEDGE;
-            io_conf.mode = GPIO_MODE_INPUT;
-            io_conf.pin_bit_mask = (1ULL << pinFeedbackReset);
-            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMinActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
-            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMinActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
-            gpio_config(&io_conf);
+        AttachEdgeIsr(pinFeedbackReset, pinFeedbackResetActiveHigh ? Edge::Rising : Edge::Falling, &endstop_isr, (void*)&this->isr_data);
+        AttachEdgeIsr(pinFeedbackSet, pinFeedbackSetActiveHigh ? Edge::Rising : Edge::Falling, &endstop_isr, (void*)&this->isr_data);
 
-            // Attach interrupt handler
-            gpio_isr_handler_add(pinFeedbackReset, &endstop_isr, (void*)&this->isr_data);
-        }
-
-        if (pinFeedbackSet != GPIO_NUM_NC) {
-            gpio_config_t io_conf{};
-            io_conf.intr_type = pinFeedbackSetActiveHigh
-                                ? GPIO_INTR_POSEDGE
-                                : GPIO_INTR_NEGEDGE;
-            io_conf.mode = GPIO_MODE_INPUT;
-            io_conf.pin_bit_mask = (1ULL << pinFeedbackSet);
-            io_conf.pull_up_en   = GPIO_PULLUP_DISABLE;//pinEndMaxActiveHigh ? gpio_pullup_t::GPIO_PULLUP_DISABLE : gpio_pullup_t::GPIO_PULLUP_ENABLE;
-            io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;//pinEndMaxActiveHigh ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
-            gpio_config(&io_conf);
-
-            gpio_isr_handler_add(pinFeedbackSet, &endstop_isr, (void*)&this->isr_data);
-        }
-#elif defined(ESP8266)
-
-#endif
         driveToReset();
         stopDrive();
     }
@@ -437,97 +316,72 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
     }
 
     void LatchingRelay::disableFeedbackSignalInterrupts() {
-#if defined(ESP32)
-        if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_disable(pinFeedbackReset);
-        }
-        if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_disable(pinFeedbackSet);
-        }
-#elif defined(ESP8266)
-
-#endif
+        Platform::FastGpio::IsrDisable(pinFeedbackReset);
+        Platform::FastGpio::IsrDisable(pinFeedbackSet);
     }
 
     void LatchingRelay::stopDrive() {
+        using namespace Platform::FastGpio;
         if (state != State::TimeoutFault)
             state = State::Idle;
         motionStartMs = 0;
         disableFeedbackSignalInterrupts();
-#if defined(ESP32)
         if (mode == DriveMode::Direct) {
-            gpio_set_level(pins.direct.a, 0);
-            gpio_set_level(pins.direct.b, 0);
+            Write(pins.direct.a, false);
+            Write(pins.direct.b, false);
         } else if (mode == DriveMode::DataEnable) {
-            gpio_set_level(pins.data_enable.enable, 0);
+            Write(pins.data_enable.enable, false);
         }
-#elif defined(ESP8266)
-
-#endif
     }
 
     void LatchingRelay::driveToReset() {
+        using namespace Platform::FastGpio;
         if (resetActive()) return;
         disableFeedbackSignalInterrupts();
         state = State::DrivingReset;
         isr_data.location = Location::Unknown;
-#if defined(ESP32)
         if (mode == DriveMode::Direct) {
-            gpio_set_level(pins.direct.b, 0);
-            gpio_set_level(pins.direct.a, 1);            
+            Write(pins.direct.b, false);
+            Write(pins.direct.a, true);
             configureISRData(pins.direct.a, GpioRegType::Clear);
         } else if (mode == DriveMode::DataEnable) {
-            gpio_set_level(pins.data_enable.data, 0);
-            gpio_set_level(pins.data_enable.enable, 1);
+            Write(pins.data_enable.data, false);
+            Write(pins.data_enable.enable, true);
             configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
-#elif defined(ESP8266)
-
-#endif
         motionStartMs = millis();
-#if defined(ESP32)
-        //gpio_intr_disable(pinMaxEndStop); allready disabled in disableEndstopInterrupts
-        if (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_enable(pinFeedbackReset);
-        }
-#elif defined(ESP8266)
-
-#endif
+        // the set feedback interrupt is already disabled in disableFeedbackSignalInterrupts
+        isr_data.feedbackPin = pinFeedbackReset;
+        IsrEnable(pinFeedbackReset);
     }
 
     void LatchingRelay::driveToSet() {
+        using namespace Platform::FastGpio;
         if (setActive()) return;
         disableFeedbackSignalInterrupts();
         state = State::DrivingSet;
         isr_data.location = Location::Unknown;
-#if defined(ESP32)
         if (mode == DriveMode::Direct) {
-            gpio_set_level(pins.direct.a, 0);
-            gpio_set_level(pins.direct.b, 1);
+            Write(pins.direct.a, false);
+            Write(pins.direct.b, true);
             configureISRData(pins.direct.b, GpioRegType::Clear);
         } else if (mode == DriveMode::DataEnable) {
-            gpio_set_level(pins.data_enable.data, 0);
-            gpio_set_level(pins.data_enable.enable, 1);
+            Write(pins.data_enable.data, true); // opposite coil polarity of driveToReset
+            Write(pins.data_enable.enable, true);
             configureISRData(pins.data_enable.enable, GpioRegType::Clear);
         }
-#elif defined(ESP8266)
-
-#endif
         motionStartMs = millis();
-#if defined(ESP32)
-        // gpio_intr_disable(pinMinEndStop); allready disabled in disableEndstopInterrupts
-        if (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC) {
-            gpio_intr_enable(pinFeedbackSet);
-        }
-#elif defined(ESP8266)
-
-#endif
+        // the reset feedback interrupt is already disabled in disableFeedbackSignalInterrupts
+        isr_data.feedbackPin = pinFeedbackSet;
+        IsrEnable(pinFeedbackSet);
     }
 
     bool LatchingRelay::resetActive() const {
-#if defined(ESP32)
+        if (Platform::FastGpio::Available == false) {
+            return true; // no GPIO backend, never drive
+        }
         // 1) Physical pin says active
-        int level = (pinFeedbackReset != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackReset):0;
+        int level = (pinFeedbackReset != Platform::FastGpio::NC) ? Platform::FastGpio::Read(pinFeedbackReset) : 0;
         bool pinActive = pinFeedbackResetActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
@@ -540,15 +394,14 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
-#else
-        return true;
-#endif
     }
 
     bool LatchingRelay::setActive() const {
-#if defined(ESP32)
+        if (Platform::FastGpio::Available == false) {
+            return true; // no GPIO backend, never drive
+        }
         // 1) Physical pin says active
-        int level = (pinFeedbackSet != gpio_num_t::GPIO_NUM_NC)?gpio_get_level(pinFeedbackSet):0;
+        int level = (pinFeedbackSet != Platform::FastGpio::NC) ? Platform::FastGpio::Read(pinFeedbackSet) : 0;
         bool pinActive = pinFeedbackSetActiveHigh ? (level == 1) : (level == 0);
 
         if (pinActive) {
@@ -560,9 +413,6 @@ void LatchingRelay::configureISRData(gpio_num_t& somePin, GpioRegType regType) {
         }
 
         return false;
-#else
-        return true;
-#endif
     }
 
     void LatchingRelay::PrintTo(StringBuilderStreamer& sbs) {

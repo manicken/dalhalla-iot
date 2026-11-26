@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_DHT.h"
+#include <Arduino.h> // millis
 #include <strings.h>
 
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>

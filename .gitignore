@@ -12,3 +12,6 @@ pc_simulation/src
 secrets
 html/node_modules
 src/DALHAL/API/WebSocket/FrontendFiles/Generated
+
+# linker map written by the build
+output.map

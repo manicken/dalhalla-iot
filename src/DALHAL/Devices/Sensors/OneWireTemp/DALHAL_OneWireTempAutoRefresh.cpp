@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_OneWireTempAutoRefresh.h"
+#include <Arduino.h> // Serial, millis
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/Types/DALHAL_Device.h> // DeviceConstStrings

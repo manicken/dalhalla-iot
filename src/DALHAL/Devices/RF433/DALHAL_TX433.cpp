@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_TX433.h"
+#include <Arduino.h> // INPUT, pinMode
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 #include <DALHAL/Core/JsonConfig/DALHAL_JSON_Config_Strings.h>

@@ -83,8 +83,8 @@ namespace DALHAL {
                 }
 
                 if (devFindRes != DeviceFindResult::Success) { // failsafe
-                    String str = DeviceFindResultToString(devFindRes);
-                    str += uidPath.ToString().c_str();
+                    std::string str = DALHAL::ToStdString(DeviceFindResultToString(devFindRes));
+                    str += uidPath.ToString();
                     GlobalLogger.Error(F("@CalcRPNToken - CachedDeviceAccess - "), str.c_str());
                     //printf("@CalcRPNToken - CachedDeviceAccess - %s:>>%s<<\n", DeviceFindResultToString(devFindRes), uidPath.ToString().c_str());
                     handler = &DummyHandler;

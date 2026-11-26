@@ -23,20 +23,14 @@
 
 #pragma once
 
-#include <DALHAL/Drivers/DALHAL_GPIO.h>
+#include <System/Platform/FastGpio.h>
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Core/Types/DALHAL_DeviceFunctionTable.h>
-
-#if !defined(ESP8266) && !defined(ESP32)
-#define IRAM_ATTR
-#include <gpio_types.h> // PC stub
-#endif
 
 #include <DALHAL/Core/Reactive/DALHAL_ReactiveConfig.h>
 #if USING_REACTIVE(RELAY_LATCHING)
@@ -68,7 +62,7 @@ namespace DALHAL {
         
     private:
         // private Static functions
-        static void IRAM_ATTR endstop_isr(void* arg);
+        static void PLATFORM_ISR_ATTR endstop_isr(void* arg);
         static HALOperationResult exec_drive_to_reset(Device* device);
         static HALOperationResult exec_drive_to_set(Device* device);
         static HALOperationResult exec_stop(Device* device);
@@ -78,9 +72,10 @@ namespace DALHAL {
         static HALOperationResult getSetActive(Device* device, HALValue& val);
 
         // private structures/enums/types
+        using Pin = Platform::FastGpio::Pin;
         union DrivePins {
-            struct { gpio_num_t a, b; } direct;
-            struct { gpio_num_t data, enable; } data_enable;
+            struct { Pin a, b; } direct;
+            struct { Pin data, enable; } data_enable;
         };
         enum class DriveMode : uint8_t {
             Direct,      // set / reset
@@ -102,9 +97,11 @@ namespace DALHAL {
             Set = 1 
         };
         struct ISR_DATA {
-            volatile gpio_num_t gpio_currentPin = gpio_num_t::GPIO_NUM_NC;
-            void (* volatile gpio_reg_func)(uint32_t) = nullptr;
-            volatile uint32_t gpio_currentActivePinMask = 0;
+            /** drive pin that the ISR writes to driveOffLevel to kill the coil drive (NC = nothing to write) */
+            volatile Pin drivePin = Platform::FastGpio::NC;
+            volatile bool driveOffLevel = false;
+            /** the feedback pin whose interrupt is enabled (only one at a time), disabled by the ISR */
+            volatile Pin feedbackPin = Platform::FastGpio::NC;
             volatile bool handled = false;
             volatile bool driveOn = false;
             volatile Location location = Location::Unknown;
@@ -117,8 +114,8 @@ namespace DALHAL {
         DrivePins pins;
         DriveMode mode;
 
-        gpio_num_t pinFeedbackReset;
-        gpio_num_t pinFeedbackSet;
+        Pin pinFeedbackReset;
+        Pin pinFeedbackSet;
 
         bool pinFeedbackResetActiveHigh;
         bool pinFeedbackSetActiveHigh;
@@ -135,7 +132,7 @@ namespace DALHAL {
         bool setActive() const;
 
         void disableFeedbackSignalInterrupts();
-        void configureISRData(gpio_num_t& somePin, GpioRegType regType);
+        void configureISRData(Pin drivePin, GpioRegType regType);
     
     public:
         LatchingRelay(DeviceCreateContext& context);

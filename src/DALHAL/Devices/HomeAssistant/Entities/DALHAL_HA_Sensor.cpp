@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_HA_Sensor.h"
+#include <Arduino.h> // millis
 
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_HA_DeviceDiscovery.h>
 #include <DALHAL/Devices/HomeAssistant/Core/DALHAL_PubSubClient_JsonWriter.h>

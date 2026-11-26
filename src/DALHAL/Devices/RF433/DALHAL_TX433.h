@@ -25,7 +25,6 @@
 
 #include "DALHAL_TX433_Unit.h"
 
-#include <Arduino.h> // Needed for String class
 #include <ArduinoJson.h>
 
 #include <DALHAL/Core/Types/DALHAL_Device.h>

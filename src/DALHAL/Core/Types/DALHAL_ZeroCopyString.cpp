@@ -35,6 +35,11 @@ namespace DALHAL {
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
     }
+#if defined(DALHAL_ZCS_HAS_FLASH_STRING_TYPE)
+    ZeroCopyString::ZeroCopyString(const __FlashStringHelper* fstr) : start(reinterpret_cast<PGM_P>(fstr)), end(nullptr) {
+        if (start) end = start + strlen_P(start);
+    }
+#endif
     ZeroCopyString::ZeroCopyString(const char* start, size_t length) : start(start), end(start ? (start + length) : start) {
         if (this->end == nullptr) this->start = nullptr; 
         else if (this->start == nullptr) this->end = nullptr;
@@ -65,7 +70,36 @@ namespace DALHAL {
 
     std::string ZeroCopyString::ToString() const {
         if (!start || !end || end < start) return {};
+        if (IsFlash()) {
+            std::string out;
+            AppendTo(out);
+            return out;
+        }
         return std::string(start, end);
+    }
+
+    void ZeroCopyString::AppendTo(std::string& out) const {
+        const size_t len = Length();
+        if (len == 0) return;
+        if (IsFlash()) {
+            const size_t oldSize = out.size();
+            out.resize(oldSize + len);
+            memcpy_P(&out[oldSize], start, len);
+        } else {
+            out.append(start, len);
+        }
+    }
+
+    size_t ZeroCopyString::CopyTo(char* dst, size_t dstSize) const {
+        if (!dst || dstSize == 0) return 0;
+        size_t len = Length();
+        if (len > dstSize - 1) len = dstSize - 1;
+        if (len) {
+            if (IsFlash()) memcpy_P(dst, start, len);
+            else memcpy(dst, start, len);
+        }
+        dst[len] = '\0';
+        return len;
     }
 
     char* ZeroCopyString::ToCharString() const {
@@ -74,7 +108,8 @@ namespace DALHAL {
         char* str = static_cast<char*>(malloc(len + 1));
         if (!str) return nullptr;  // malloc failed
 
-        memcpy(str, start, len);  // Data() is assumed to return pointer to content
+        if (IsFlash()) memcpy_P(str, start, len);
+        else memcpy(str, start, len);
         str[len] = '\0';
 
         return str;
@@ -422,9 +457,11 @@ namespace DALHAL {
 
         size_t len = Length();
         //if (len == 0) return false;
-        return std::strlen(cstr) == len && std::memcmp(start, cstr, len) == 0;
+        if (std::strlen(cstr) != len) return false;
+        if (IsFlash()) return memcmp_P(cstr, start, len) == 0; // memcmp_P(ram, flash, n)
+        return std::memcmp(start, cstr, len) == 0;
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     bool ZeroCopyString::Equals(const __FlashStringHelper* fstr) const {
         return Equals_P(reinterpret_cast<PGM_P>(fstr));
     }
@@ -490,7 +527,7 @@ namespace DALHAL {
         }
         return true; // lengths already checked, all characters matched
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     bool ZeroCopyString::EqualsIC(const __FlashStringHelper* fstr) const {
         return EqualsIC_P(reinterpret_cast<PGM_P>(fstr));
     }
@@ -812,7 +849,7 @@ namespace DALHAL {
     bool operator!=(const char* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
     bool operator==(const ZeroCopyString& lhs, const char* rhs) { return lhs.Equals(rhs); }
     bool operator!=(const ZeroCopyString& lhs, const char* rhs) { return !lhs.Equals(rhs); }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     bool operator==(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return rhs.Equals(lhs); }
     bool operator!=(const __FlashStringHelper* lhs, const ZeroCopyString& rhs) { return !rhs.Equals(lhs); }
     bool operator==(const ZeroCopyString& lhs, const __FlashStringHelper* rhs) { return lhs.Equals(rhs); }

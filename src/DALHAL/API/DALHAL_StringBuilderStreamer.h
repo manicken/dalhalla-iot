@@ -75,7 +75,7 @@ namespace DALHAL {
         inline void write_doublequote() {
             write_char('"');
         }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void write(const __FlashStringHelper* fstr);
         void write(const __FlashStringHelper* fstr, size_t len);
 #endif
@@ -121,13 +121,13 @@ namespace DALHAL {
         /** write a simple } */
         void write_json_object_end();
         void write_json(float v);
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void write_jsonQuoted(const __FlashStringHelper* fstr);
 #endif
         void write_jsonQuoted(const char* cstr, size_t len);
         void write_jsonQuoted(const char* cstr);
         /** write a key followed by a colon : */
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void write_jsonMemberStart(const __FlashStringHelper* fstr);
 #endif
         /** write a key followed by a colon : */
@@ -137,7 +137,7 @@ namespace DALHAL {
 
         void write_jsonString(const __FlashStringHelper* key, const char* cstr);
         void write_jsonString(const __FlashStringHelper* key, const ZeroCopyString& zcStr);
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void write_jsonString(const __FlashStringHelper* key, const __FlashStringHelper* fstr);
 #endif
         void write_jsonBool(const __FlashStringHelper* key, bool v);

@@ -99,7 +99,7 @@ namespace Drivers {
                         if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
                             response.value->set((int32_t)(sVal*def.multiplier));
                         } else {
-                            ErrorReport::DebugMessage(String(F("skipped Signed value because out of range")).c_str());
+                            ErrorReport::DebugMessage(F("skipped Signed value because out of range"));
                             return Request::ValidateSetResult::Retry;
                         }
                         break;
@@ -108,7 +108,7 @@ namespace Drivers {
                         if (rawValue == 0 || rawValue == 1) {
                             response.value->set((uint32_t)rawValue);
                         } else {
-                            ErrorReport::DebugMessage(String(F("skipped Bool value because out of range")).c_str());
+                            ErrorReport::DebugMessage(F("skipped Bool value because out of range"));
                             return Request::ValidateSetResult::Retry;
                         }
                         break;
@@ -116,7 +116,7 @@ namespace Drivers {
                         if (rawValue >= def.minVal.u16 && rawValue <= def.maxVal.u16) {
                             response.value->set((uint32_t)(rawValue*def.multiplier));
                         } else {
-                            ErrorReport::DebugMessage(String(F("skipped Unsigned value because out of range")).c_str());
+                            ErrorReport::DebugMessage(F("skipped Unsigned value because out of range"));
                             return Request::ValidateSetResult::Retry;
                         }
                         break;
@@ -125,7 +125,7 @@ namespace Drivers {
                         if (sVal >= def.minVal.s16 && sVal <= def.maxVal.s16) {
                             response.value->set(sVal*def.multiplier);
                         } else {
-                            ErrorReport::DebugMessage(String(F("skipped Float value because out of range")).c_str());
+                            ErrorReport::DebugMessage(F("skipped Float value because out of range"));
                             return Request::ValidateSetResult::Retry;
                         }
                         break;
@@ -138,7 +138,7 @@ namespace Drivers {
                 uint8_t tmp[20];
                 
                 if (!unpack_nibbles(&buff[1], tmp, 20)) {
-                    ErrorReport::DebugMessage(String(F("LCD data corruption detected - discarding frame - ")).c_str());
+                    ErrorReport::DebugMessage(F("LCD data corruption detected - discarding frame - "));
                     return Request::ValidateSetResult::Retry;
                 }
 
@@ -161,7 +161,7 @@ namespace Drivers {
                 uint8_t tmp[20];
                 
                 if (!unpack_nibbles(&buff[1], tmp, 20)) {
-                    ErrorReport::DebugMessage(String(F("RAW ram dump data corruption detected - discarding frame - ")).c_str());
+                    ErrorReport::DebugMessage(F("RAW ram dump data corruption detected - discarding frame - "));
                     return Request::ValidateSetResult::Retry;
                 }
 
@@ -169,10 +169,10 @@ namespace Drivers {
             } */else if (info.responseType == ResponseType::WriteConfirm) {
                 return Request::ValidateSetResult::Success;
             } else if (info.responseType == ResponseType::NotSet) {
-                ErrorReport::DebugMessage(String(F("responseType not set - discarding frame - ")).c_str());
+                ErrorReport::DebugMessage(F("responseType not set - discarding frame - "));
                 return Request::ValidateSetResult::UnsetType;   
             } else {
-                ErrorReport::DebugMessage(String(F("unknown responseType - discarding frame - ")).c_str());
+                ErrorReport::DebugMessage(F("unknown responseType - discarding frame - "));
                 return Request::ValidateSetResult::UnknownType;   
                 // there are currently no more types right now
             }

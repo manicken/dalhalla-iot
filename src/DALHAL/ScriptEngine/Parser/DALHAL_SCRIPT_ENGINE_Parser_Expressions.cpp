@@ -468,11 +468,11 @@ namespace DALHAL {
 
             const char* invalidChar = ValidOperandVariableName(operandToken);
             if (invalidChar) {
-                std::string msg = String(F("Invalid character <")).c_str();
+                std::string msg = DALHAL::ToStdString(F("Invalid character <")).c_str();
                 msg += (*invalidChar);
                 msg += "> (";
                 msg += std::to_string(*invalidChar);
-                msg += String(F(") in operand: ")).c_str();
+                msg += DALHAL::ToStdString(F(") in operand: ")).c_str();
                 msg += operandToken.ToString();
                 operandToken.ReportTokenWarning(msg.c_str());
                 anyError = true;
@@ -528,8 +528,8 @@ namespace DALHAL {
             DeviceFindResult devFindRes = DeviceManager::findDevice(path, outInfo.device);
             if (devFindRes != DeviceFindResult::Success) {
                 std::string msg = varOperand.ToString();
-                msg += String(F(" because: ")).c_str();
-                msg += String(DeviceFindResultToString(devFindRes)).c_str();
+                msg += DALHAL::ToStdString(F(" because: ")).c_str();
+                msg += DALHAL::ToStdString(DeviceFindResultToString(devFindRes)).c_str();
                 operandToken.ReportTokenError(F("Could not find device: "), msg.c_str());
                 anyError = true;
                 return OperandTargetInfoResult::DeviceNotFound;
@@ -846,7 +846,7 @@ namespace DALHAL {
             const int startindex = tokens.currIndex;
             const int endIndex = tokens.currentEndIndex;
             if (endIndex > tokens.count) {
-                printf(String(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MASTER ERROR: endIndex >= tokens.count @ GenerateRPNTokens\n")).c_str());
+                printf(DALHAL::ToStdString(F("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MASTER ERROR: endIndex >= tokens.count @ GenerateRPNTokens\n")).c_str());
                 return nullptr;
             }
             //printf("\nGenerateRPNTokens - startindex:%d, endIndex:%d\n\n",startindex,endIndex);
@@ -965,8 +965,8 @@ namespace DALHAL {
             while (opStackIndex != 0)
                 outTokenItems[outTokensIndex++] = opStack[--opStackIndex];
 
-            ReportInfo(String(F("GenerateRPNTokens used: ")).c_str() + std::to_string(outTokensIndex) + " of " + std::to_string(rpnOutputStackNeededSize) + "\n");
-            ReportInfo(String(F("GenerateRPNTokens used op: ")).c_str() + std::to_string(maxOperatorUsage) + " of " + std::to_string(opStackSizeNeededSize) + "\n");
+            ReportInfo(DALHAL::ToStdString(F("GenerateRPNTokens used: ")).c_str() + std::to_string(outTokensIndex) + " of " + std::to_string(rpnOutputStackNeededSize) + "\n");
+            ReportInfo(DALHAL::ToStdString(F("GenerateRPNTokens used op: ")).c_str() + std::to_string(maxOperatorUsage) + " of " + std::to_string(opStackSizeNeededSize) + "\n");
 
             rpnOutputStack->currentCount = outTokensIndex;
 
@@ -1010,7 +1010,7 @@ namespace DALHAL {
                     
                         if (stackIndex > stackMaxUsed) stackMaxUsed = stackIndex;
                     }
-                    ReportInfo(String(F("BuildLogicTree stack size:")).c_str() + std::to_string(stackIndex) + "\n");
+                    ReportInfo(DALHAL::ToStdString(F("BuildLogicTree stack size:")).c_str() + std::to_string(stackIndex) + "\n");
                     // This should never happen under normal use.
                     // It can occur if logical and arithmetic expressions are improperly combined,
                     // e.g., (a == 0 || b == 1) + 2, which is invalid.
@@ -1048,7 +1048,7 @@ namespace DALHAL {
                 currentCalcStartIndex = -1; // clear
             }
 
-            ReportInfo(String(F("BuildLogicTree - used ")).c_str() + std::to_string(stackMaxUsed) + " of " + std::to_string(finalOutputStackNeededSize) + "\n");
+            ReportInfo(DALHAL::ToStdString(F("BuildLogicTree - used ")).c_str() + std::to_string(stackMaxUsed) + " of " + std::to_string(finalOutputStackNeededSize) + "\n");
             if (stackIndex != 1) {
                 std::string msg = PrintExpressionTokensOneRow(*tokens, 0, tokens->currentCount);
                 msg = std::to_string(stackIndex) + msg;

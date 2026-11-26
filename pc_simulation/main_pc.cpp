@@ -37,7 +37,7 @@
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__) // use this to avoid getting vscode error here
    // #include "ports/DALHAL_REST/DALHAL_REST.h"
 #endif
-    #include "ports/DALHAL_WebSocketAPI/DALHAL_WebSocketAPI_Windows.h"
+    #include <DALHAL_WebSocketAPI_PC.h>
     #include <DALHAL/Support/ConvertHelper.h>
     #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
     #include <ArduinoJson.h>
@@ -98,8 +98,8 @@
             long currmillis = millis();
             if (currmillis-lastmillis > 100) {
                 lastmillis = currmillis;
-                if (DALHAL::ScriptEngine::ScriptsBlock::running)
-                    DALHAL::ScriptEngine::Exec(); // runs the scriptengine
+                if (DALHAL::ScriptEngine::ScriptBlocks::running)
+                    DALHAL::ScriptEngine::ScriptBlocks::Exec(); // runs the scriptengine
             }
             //test_mqtt::loop();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -90,7 +90,7 @@ namespace DALHAL {
                 TX433_Unit_CreateFunctionContext createContext(out->pin);
                 for (int i=0;i<jsonItems_count;i++) {
                     if (Device::DisabledOrCommentItem(jsonItems[i]) == true) { continue; }
-                    const JsonVariant& item = jsonItems[i];
+                    JsonVariant item = jsonItems[i]; // by value, operator[] returns a temporary proxy
                     createContext.jsonObjItem = &item;
                     const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(item);
                     const Registry::Item& regItem = Registry::GetItem(TX433_UnitTypeRegistry, type_cStr);

@@ -54,7 +54,7 @@ namespace DALHAL {
         }
         void Token::ReportTokenError(const __FlashStringHelper* msg, const char* param) const {
             std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): ";
-            message += String(msg).c_str();
+            ZeroCopyString(msg).AppendTo(message);
             if (param != nullptr)
                 message += param;
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -63,12 +63,12 @@ namespace DALHAL {
             GlobalLogger.Error(F("Token:"), message.c_str());
     #endif
         }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void Token::ReportTokenError(const __FlashStringHelper* msg, const __FlashStringHelper* param) const {
             std::string message = " (line " + std::to_string(line) + ", col " + std::to_string(column) + "): ";
-            message += String(msg).c_str();
+            ZeroCopyString(msg).AppendTo(message);
             if (param != nullptr)
-                message += String(param).c_str();
+                ZeroCopyString(param).AppendTo(message);
     #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
             std::cerr << "Error " << message << std::endl;
     #else

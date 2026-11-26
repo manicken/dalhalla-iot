@@ -29,7 +29,7 @@
 namespace DALHAL {
     namespace ScriptEngine {
         void ReportError(const char* msg);
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
         void ReportError(const __FlashStringHelper* msg);
 #endif
         void ReportWarning(const char* msg, const char* param = nullptr);

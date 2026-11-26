@@ -91,7 +91,7 @@ namespace DALHAL {
                 uint32_t index = 0;
                 
                 for (int i=0;i<arraySize;i++) {
-                    const JsonVariant& jsonItem = jsonArray[i];
+                    JsonVariant jsonItem = jsonArray[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(jsonItem)) { continue; } // comment or disabled item
 
                     const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(jsonItem);

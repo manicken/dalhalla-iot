@@ -25,7 +25,6 @@
 
 #define DALHAL_DEVICE__TEMPLATE_
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>

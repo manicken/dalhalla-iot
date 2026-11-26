@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <Ticker.h>

@@ -122,8 +122,8 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
 
-                self->pins.data_enable.data = (gpio_num_t)pin_dataenable_data_field.ExtractFrom(*(ctx.jsonObjItem));
-                self->pins.data_enable.enable = (gpio_num_t)pin_dataenable_enable_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.data_enable.data = (Platform::FastGpio::Pin)pin_dataenable_data_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.data_enable.enable = (Platform::FastGpio::Pin)pin_dataenable_enable_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::DataEnable;
             }
@@ -132,8 +132,8 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
 
-                self->pins.direct.a = (gpio_num_t)pin_direct_a_field.ExtractFrom(*(ctx.jsonObjItem));
-                self->pins.direct.b = (gpio_num_t)pin_direct_b_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.a = (Platform::FastGpio::Pin)pin_direct_a_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.b = (Platform::FastGpio::Pin)pin_direct_b_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
@@ -142,8 +142,8 @@ namespace DALHAL {
             {
                 auto* self = static_cast<DALHAL::LatchingRelay*>(out);
 
-                self->pins.direct.a = (gpio_num_t)pin_direct_set_field.ExtractFrom(*(ctx.jsonObjItem));
-                self->pins.direct.b = (gpio_num_t)pin_direct_reset_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.a = (Platform::FastGpio::Pin)pin_direct_set_field.ExtractFrom(*(ctx.jsonObjItem));
+                self->pins.direct.b = (Platform::FastGpio::Pin)pin_direct_reset_field.ExtractFrom(*(ctx.jsonObjItem));
 
                 self->mode = DALHAL::LatchingRelay::DriveMode::Direct;
             }
@@ -154,16 +154,16 @@ namespace DALHAL {
 
                 JsonSchema::PinConfig statePinCfg;
                 if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::setStateField, *(context.jsonObjItem), &statePinCfg)) {
-                    out->pinFeedbackSet = (gpio_num_t)statePinCfg.pin;
+                    out->pinFeedbackSet = (Platform::FastGpio::Pin)statePinCfg.pin;
                     out->pinFeedbackSetActiveHigh = statePinCfg.activeHigh;
                 } else {
-                    out->pinFeedbackSet = gpio_num_t::GPIO_NUM_NC;
+                    out->pinFeedbackSet = Platform::FastGpio::NC;
                 }
                 if (JsonSchema::SchemaObject::ExtractValues(JsonSchema::LatchingRelay::resetStateField, *(context.jsonObjItem), &statePinCfg)) {
-                    out->pinFeedbackReset = (gpio_num_t)statePinCfg.pin;
+                    out->pinFeedbackReset = (Platform::FastGpio::Pin)statePinCfg.pin;
                     out->pinFeedbackResetActiveHigh = statePinCfg.activeHigh;
                 } else {
-                    out->pinFeedbackReset = gpio_num_t::GPIO_NUM_NC;
+                    out->pinFeedbackReset = Platform::FastGpio::NC;
                 }
 
                 out->timeoutMs = JsonSchema::LatchingRelay::timeout_ms_field.ExtractFrom(*(context.jsonObjItem));

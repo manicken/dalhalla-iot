@@ -27,6 +27,7 @@
 #include "REGO600_CommandID.h"
 #include "REGO600_RequestType.h"
 #include "WString.h"
+#include <pgmspace.h> // PGM_P
 
 namespace Drivers {
     namespace REGO600 {

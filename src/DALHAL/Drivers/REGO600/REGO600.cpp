@@ -23,11 +23,7 @@
 
 #include "REGO600.h"
 
-#if defined(ESP8266) || defined(ESP32)
-#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h> // for SendMessage
-#else
-#include <DALHAL_WebSocketAPI_Windows.h> // for SendMessage
-#endif
+#include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI_Backend.h> // WebSocketAPI::Broadcast of the current backend
 
 #include <WString.h>
 
@@ -266,14 +262,14 @@ namespace Drivers {
 
         bool REGO600Driver::OneTimeRequest(std::unique_ptr<Request> req, RequestCallback cb, void* cb_ctx) {
             if (cb == nullptr) {
-                ErrorReport::DebugMessage(String(F("OneTimeRequest - callback cannot be nullptr")).c_str());
+                ErrorReport::DebugMessage(F("OneTimeRequest - callback cannot be nullptr"));
                 return false; // no point if cb for some reason is nullptr
             }
             if (req->info.responseType == ResponseType::NotSet) {
                 return false; // 
             }
             if (mode != RequestMode::RefreshLoop) { 
-                ErrorReport::DebugMessage(String(F("OTReq - manual request allready in progress")).c_str());
+                ErrorReport::DebugMessage(F("OTReq - manual request allready in progress"));
                 return false;
             }
             manualRequest_Callback = cb;
@@ -286,11 +282,11 @@ namespace Drivers {
 
         bool REGO600Driver::RequestWholeLCD(RequestCallback cb, void* cb_ctx) {
             if (cb == nullptr) {
-                ErrorReport::DebugMessage(String(F("ReqLCD - callback cannot be nullptr")).c_str());
+                ErrorReport::DebugMessage(F("ReqLCD - callback cannot be nullptr"));
                 return false; // no point if cb for some reason is nullptr
             }
             if (mode != RequestMode::RefreshLoop) { 
-                ErrorReport::DebugMessage(String(F("ReqLCD - manual request allready in progress")).c_str());
+                ErrorReport::DebugMessage(F("ReqLCD - manual request allready in progress"));
                 return false;
             }
             manualRequest_Callback = cb;
@@ -300,11 +296,11 @@ namespace Drivers {
         }
         bool REGO600Driver::RequestFrontPanelLeds(RequestCallback cb, void* cb_ctx) {
             if (cb == nullptr) {
-                ErrorReport::DebugMessage(String(F("ReqFrontPanelLeds - callback cannot be nullptr")).c_str());
+                ErrorReport::DebugMessage(F("ReqFrontPanelLeds - callback cannot be nullptr"));
                 return false; // no point if cb for some reason is nullptr
             }
             if (mode != RequestMode::RefreshLoop) { 
-                ErrorReport::DebugMessage(String(F("ReqFrontPanelLeds - manual request allready in progress")).c_str());
+                ErrorReport::DebugMessage(F("ReqFrontPanelLeds - manual request allready in progress"));
                 return false;
             }
             manualRequest_Callback = cb;
@@ -350,7 +346,7 @@ namespace Drivers {
 
         void REGO600Driver::RxDone_RefreshLoop() {
             if (refreshLoopList[refreshLoopIndex]->ValidateAndSetFromBuffer(uartRxBuffer) == Request::ValidateSetResult::Retry) {
-                ErrorReport::DebugMessage(String(F("refreshLoopList RX - invalid value ")).c_str());
+                ErrorReport::DebugMessage(F("refreshLoopList RX - invalid value "));
                 SendRequestFrameAndResetRx(); // retry @ RefreshLoop value error
                 return;
             }
@@ -366,7 +362,7 @@ namespace Drivers {
         void REGO600Driver::RxDone_LCD() {
             uint8_t tmp[20];
             if (!Request::unpack_nibbles(&uartRxBuffer[1], tmp, 20)) {
-                ErrorReport::DebugMessage(String(F("LCD data corruption detected - discarding frame - ")).c_str());
+                ErrorReport::DebugMessage(F("LCD data corruption detected - discarding frame - "));
                 SendRequestFrameAndResetRx(); // retry @ LCD data error
                 return;
             }
@@ -379,7 +375,7 @@ namespace Drivers {
                 if (manualRequest_Callback != nullptr) {
                     manualRequest_Callback(manualRequest_Context, readLCD_Text, manualRequest_Mode);
                 } else {
-                    ErrorReport::DebugMessage(String(F("LCD - mReqCB not set")).c_str());
+                    ErrorReport::DebugMessage(F("LCD - mReqCB not set"));
                 }
                 ReturnToRefreshLoop();
             } else {
@@ -404,7 +400,7 @@ namespace Drivers {
                 if (manualRequest_Callback != nullptr) {
                     manualRequest_Callback(manualRequest_Context, &readFrontPanelLeds_Data, manualRequest_Mode);
                 } else {
-                    ErrorReport::DebugMessage(String(F("FP - mReqCB not set")).c_str());
+                    ErrorReport::DebugMessage(F("FP - mReqCB not set"));
                 }
                 ReturnToRefreshLoop();
             }
@@ -425,7 +421,7 @@ namespace Drivers {
                 }
             }
             else {
-                ErrorReport::DebugMessage(String(F("OT - mReqCB not set")).c_str());
+                ErrorReport::DebugMessage(F("OT - mReqCB not set"));
             }
             manualRequest.reset(); // free the current data
             ReturnToRefreshLoop();
@@ -504,19 +500,21 @@ namespace Drivers {
             FlushCleanUARTRxBuffer(REGO600_UART_TO_USE); // allways flush remaining garbage if any
 
             if (uartRxBuffer[0] == 0x40) {
-                ErrorReport::DebugMessage(String(F("REGO600 RX failure: device returned error 0x40 in ACK, restarting request")).c_str());
+                ErrorReport::DebugMessage(F("REGO600 RX failure: device returned error 0x40 in ACK, restarting request"));
                 SendRequestFrameAndResetRx(); // retry @ start byte error
                 return;
             }
             if (uartRxBuffer[0] != 0x01) {
-                ErrorReport::DebugMessage((String(F("RX done - corrupted frame - start byte mismatch:")) + String(uartRxBuffer[0], 16)).c_str());
+                char errMsg[64];
+                snprintf_P(errMsg, sizeof(errMsg), PSTR("RX done - corrupted frame - start byte mismatch:%x"), (unsigned)uartRxBuffer[0]);
+                ErrorReport::DebugMessage(errMsg);
                 SendRequestFrameAndResetRx(); // retry @ start byte error
                 return;
             }
 
             if (CalcAndCompareRxDataChecksum() == false) {
                 // try the request again
-                ErrorReport::DebugMessage(String(F("manualReq RX - Checksum error")).c_str());
+                ErrorReport::DebugMessage(F("manualReq RX - Checksum error"));
                 SendRequestFrameAndResetRx(); // retry @ checksum error
                 return;
             }
@@ -548,7 +546,7 @@ namespace Drivers {
                     commState = CommState::Idle;
                     mode = RequestMode::RefreshLoop;
                     FlushCleanUARTRxBuffer(REGO600_UART_TO_USE);
-                    ErrorReport::DebugMessage(String(F("uartRxBuffer full - this is likely to a hw problem")).c_str());
+                    ErrorReport::DebugMessage(F("uartRxBuffer full - this is likely to a hw problem"));
                 }
                 lastRequestMs = millis();
             }
@@ -556,7 +554,9 @@ namespace Drivers {
             unsigned long now = millis();
             if ((now - lastRequestMs) >= requestTimeoutMs) {
 
-                ErrorReport::DebugMessage((String(F("REGO600-request-timeout @ index=")) + String(uartRxBufferIndex) + String(F(", expected length=")) + String(currentExpectedRxLength)).c_str());
+                char errMsg[80];
+                snprintf_P(errMsg, sizeof(errMsg), PSTR("REGO600-request-timeout @ index=%u, expected length=%u"), (unsigned)uartRxBufferIndex, (unsigned)currentExpectedRxLength);
+                ErrorReport::DebugMessage(errMsg);
                 //GlobalLogger.Error(F("REGO600-request-timeout")); // only log to logger to not fill serial/websocket with stuff
                 //DALHAL::WebSocketAPI::Broadcast("REGO600-request-timeout"); // not needed anymore as logging to GlobalLogger automatically do it on websocket as well
                 
@@ -564,7 +564,7 @@ namespace Drivers {
                 SendRequestFrameAndResetRx(); // retry @ timeout
             }
             if (failsafeReadCount >= REGO600_UART_RX_MAX_FAILSAFECOUNT) {
-                ErrorReport::DebugMessage(String(F("read failsafe overflow")).c_str());
+                ErrorReport::DebugMessage(F("read failsafe overflow"));
             }
         }
 

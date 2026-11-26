@@ -107,7 +107,7 @@ namespace DALHAL {
                 DeviceCreateContext createContext;
                 createContext.deviceType = "REGO600reg";
                 for (int i=0;i<itemCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
                     createContext.jsonObjItem = &item;

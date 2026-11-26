@@ -26,7 +26,6 @@
 #include <DALHAL/Core/Types/DALHAL_Registry.h>
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HA_CreateFunctionContext.h>
 
-#include <Arduino.h> // Needed for String class
 
 #include <string>
 #include <ArduinoJson.h>

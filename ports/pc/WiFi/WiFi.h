@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <cstring>
-#include "../IPAddress/IPAddress.h"
+#include <IPAddress.h>
 
 #include <WString.h>
 

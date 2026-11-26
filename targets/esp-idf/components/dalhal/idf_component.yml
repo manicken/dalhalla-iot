@@ -1,0 +1,5 @@
+## ESP-IDF component manager dependencies of the DALHAL component
+dependencies:
+  idf: ">=5.1"
+  # LittleFS on the VFS, used by ports/esp-idf/LittleFS
+  joltwallet/littlefs: "^1.14"

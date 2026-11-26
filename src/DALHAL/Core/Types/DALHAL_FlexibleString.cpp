@@ -101,7 +101,7 @@ namespace DALHAL {
 
     size_t FlexibleString::length() const {
         switch (type) {
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
             case Type::Flash:
                 return strlen_P((PGM_P)data.flash);
 #endif
@@ -117,7 +117,7 @@ namespace DALHAL {
 
     void FlexibleString::appendTo(std::string& out) const {
         switch (type) {
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
             case Type::Flash: {
 #if defined(ARDUINO_ARCH_AVR) || defined(ESP8266)
                 PGM_P p = reinterpret_cast<PGM_P>(data.flash);
@@ -163,7 +163,7 @@ namespace DALHAL {
 
         return *this;
     }
-#if !(defined(_WIN32) || defined(__linux__) || defined(__APPLE__))
+#if !defined(DALHAL_FLASH_STRING_IS_CHAR)
     FlexibleString& FlexibleString::operator=(const __FlashStringHelper* s) {
         clear();
 

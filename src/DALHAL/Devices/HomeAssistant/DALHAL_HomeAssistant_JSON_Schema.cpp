@@ -148,7 +148,7 @@ namespace DALHAL {
             void Extractors::CreateDevicesFromItems(const JsonArray& items, DALHAL::HA_CreateFunctionContext& createFuncContext, DALHAL::Device** devices, int& index) {
                 int arrayCount = items.size();
                 for (int i=0;i<arrayCount;i++) {
-                    const JsonVariant& item = items[i];
+                    JsonVariant item = items[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
 
                     const char* type_cStr = JsonSchema::CommonBase::typeField.ExtractFrom(item);
@@ -170,7 +170,7 @@ namespace DALHAL {
                 self->deviceCount = 0;
                 // first pass count and check valid items
                 for (int i=0;i<arrayCount;i++) {
-                    const JsonVariant& item = jsonArrayItems[i];
+                    JsonVariant item = jsonArrayItems[i]; // by value, operator[] returns a temporary proxy
                     if (Device::DisabledOrCommentItem(item)) { continue; }
                     self->deviceCount++;
                 }
@@ -197,7 +197,7 @@ namespace DALHAL {
                 self->deviceCount = 0;
                 // first pass count enabled/"non comment" items
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
-                    const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
+                    JsonVariant jsonObjGrpItem = jsonArrayGroups[i]; // by value, operator[] returns a temporary proxy
                     const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
                     int jsonArrayItemsCount = jsonArrayItems.size();
                     for (int j=0;j<jsonArrayItemsCount;j++) {
@@ -221,7 +221,7 @@ namespace DALHAL {
                 HA_CreateFunctionContext createFuncContext(self->mqttClient);
 
                 for (int i=0;i<jsonArrayGroupsCount;i++) {
-                    const JsonVariant& jsonObjGrpItem = jsonArrayGroups[i];
+                    JsonVariant jsonObjGrpItem = jsonArrayGroups[i]; // by value, operator[] returns a temporary proxy
                     const JsonArray& jsonArrayItems = JsonSchema::HomeAssistant::itemsField.GetValidatedJsonArray(jsonObjGrpItem);
 
                     createFuncContext.groupID_cStr = JsonSchema::HomeAssistant::groupUIDField.ExtractFrom(jsonObjGrpItem);

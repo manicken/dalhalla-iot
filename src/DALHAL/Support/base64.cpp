@@ -81,9 +81,9 @@ int b64urlDecode(uint8_t *dst, size_t dstSize, const DALHAL::ZeroCopyString& src
 }
 
 
-String b64urlEncode(const uint8_t *data, size_t len) {
+std::string b64urlEncode(const uint8_t *data, size_t len) {
     
-    String out;
+    std::string out;
     out.reserve(((len + 2) / 3) * 4);
 
     int val = 0, valb = -6;
@@ -101,6 +101,6 @@ String b64urlEncode(const uint8_t *data, size_t len) {
     return out;
 }
 
-String b64urlEncode(const char *str) {
+std::string b64urlEncode(const char *str) {
     return b64urlEncode((const uint8_t*)str, strlen(str));
 }

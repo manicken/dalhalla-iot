@@ -22,6 +22,7 @@
 */
 
 #include "DALHAL_OneWireTempDevice.h"
+#include <Arduino.h> // INPUT, pinMode
 
 #include <DALHAL/Support/ConvertHelper.h>
 

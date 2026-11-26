@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include <Arduino.h> // Needed for String class
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
 #include <iostream> // including this take 209512 bytes flash
 #include <chrono>

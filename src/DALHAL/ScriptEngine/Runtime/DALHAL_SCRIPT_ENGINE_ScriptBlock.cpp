@@ -121,9 +121,9 @@ namespace DALHAL {
                 // only log actual errors, HALOperationResult::DataNotReady is just a signal to certain consumers that 
                 // the value is not yet ready for read
                 if (res != HALOperationResult::Success && res != HALOperationResult::DataNotReady) {
-                    GlobalLogger.Error(F("script exec error: "), String(HALOperationResultToString(res)).c_str());
+                    GlobalLogger.Error(F("script exec error: "), DALHAL::ToStdString(HALOperationResultToString(res)).c_str());
 #if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-                    printf("script exec error:%s\n", String(HALOperationResultToString(res)).c_str());
+                    printf("script exec error:%s\n", DALHAL::ToStdString(HALOperationResultToString(res)).c_str());
 #endif
                 } /*else if(res == HALOperationResult::DataNotReady) {
                     GlobalLogger.Warn(F("script exec warning: DataNotReady"));

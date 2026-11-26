@@ -28,6 +28,13 @@
 
 
 #include "DALHAL_DevicesRegistry.h"
+#include <System/Platform/Platform.h>
+
+// devices that need drivers (Wire, OneWire, DHTesp, WS2812FX, UART) or network services (HTTP, MQTT)
+// that are not ported to the ESP-IDF backend yet, remove a device from this group when its port exists
+#if !defined(DALHAL_BACKEND_ESPIDF)
+#define DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES
+#endif
 
 // all HAL devices to use here
 #include <DALHAL/Devices/Script/ScriptVariable/DALHAL_ScriptVariable.h>
@@ -43,29 +50,35 @@
 //#include <DALHAL/Devices/GeneralOutputs/PWMAnalogWrite/DALHAL_PWMAnalogWrite.h> OBSOLETE TO BE REMOVED
 #include <DALHAL/Devices/GeneralOutputs/SinglePulseOutput/DALHAL_SinglePulseOutput.h>
 
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
 #include <DALHAL/Devices/I2C_Master/DALHAL_I2C_Master.h>
 
 #include <DALHAL/Devices/Sensors/OneWireTemp/DALHAL_OneWireTemp.h>
 #include <DALHAL/Devices/Sensors/DHT/DALHAL_DHT.h>
 
-#include <DALHAL/Devices/RF433/DALHAL_TX433.h>
 #include <DALHAL/Devices/REGO600/DALHAL_REGO600.h>
 
-
 #include <DALHAL/Devices/Lights/WS2812/DALHAL_WS2812.h>
+#endif
+
+#include <DALHAL/Devices/RF433/DALHAL_TX433.h>
 
 #include <DALHAL/Devices/DeviceContainer/DALHAL_DeviceContainer.h>
 
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
 #include <DALHAL/Devices/DataStorageServices/ThingSpeak/DALHAL_ThingSpeak.h>
 
 #include <DALHAL/Devices/HomeAssistant/DALHAL_HomeAssistant.h>
+#endif
 
 #include <DALHAL/Devices/Actuators/Actuator/DALHAL_Actuator.h>
 #include <DALHAL/Devices/Actuators/PWM_Servo/DALHAL_PWM_Servo.h>
 #include <DALHAL/Devices/Actuators/LatchingRelay/DALHAL_LatchingRelay.h>
 
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
 #include <DALHAL/Devices/API/REST_Value/DALHAL_REST_Value.h>
 #include <DALHAL/Devices/API/REST_Cmd/DALHAL_REST_Cmd.h>
+#endif
 
 // this is only a template device and should only be enabled(uncommented)
 // when major changes are done to the system, 
@@ -92,6 +105,7 @@ namespace DALHAL {
         //{"PWM_AW", PWMAnalogWrite::RegistryDefine}, OBSOLETE TO BE REMOVED
         //{"PWM_AW_CFG", PWMAnalogWriteConfig::RegistryDefine}, OBSOLETE TO BE REMOVED
 
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
         /** ---------------- OneWire / Sensors ---------------- */
 #if defined(DALHAL_DEVICE_ONEWIRE_TEMPERATURE_SENSORS)
         {"1WTG", &OneWireTempGroup::RegistryDefine},
@@ -101,8 +115,6 @@ namespace DALHAL {
         /** ---------------- Other / Sensors ---------------- */
         {"DHT", &DHT::RegistryDefine},
 
-        /** ---------------- RF / Communication ---------------- */
-        {"TX433", &TX433::RegistryDefine},
 #if defined(DALHAL_DEVICE_REGO600_HEATPUMP_CONTROLLER)
         {"REGO600", &REGO600::RegistryDefine},
 #endif
@@ -110,6 +122,10 @@ namespace DALHAL {
 
         /** ---------------- Lights ---------------- */
         {"WS2812", &WS2812::RegistryDefine},
+#endif // DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES
+
+        /** ---------------- RF / Communication ---------------- */
+        {"TX433", &TX433::RegistryDefine},
         
         /** -------------- Virtual Devices --------- */
         //{"REST_VAR", REST_Value::RegistryDefine}, // obsolete as the REST API cannot handle long running requests, and is extremely unstable
@@ -118,9 +134,11 @@ namespace DALHAL {
         /** ---------------- Device Containers ---------------- */
         {"CONTAINER", &DeviceContainer::RegistryDefine},
         
+#if defined(DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES)
         /** ---------------- External / Cloud / API Devices ---------------- */
         {"THINGSPEAK", &ThingSpeak::RegistryDefine},
         {"HOMEASSISTANT", &HomeAssistant::RegistryDefine},
+#endif
         
         /** ---------------- Actuators / Outputs ---------------- */
         {"ACTUATOR", &Actuator::RegistryDefine},
