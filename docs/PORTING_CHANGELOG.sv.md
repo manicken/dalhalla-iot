@@ -9,7 +9,7 @@ Arduino-byggena (ESP32, ESP8266) fortsätter att fungera hela tiden.
 
 **Läget:** pågående arbete. Alla riktiga enhetsbyggen i `platformio.ini` använder fortfarande `framework = arduino`.
 Det enda bygget utan Arduino-ramverket är `targets/esp-idf`. Det har WiFi, webbgränssnittet, OTA, failsafe och HomeAssistant,
-men ännu inga externa drivrutiner, ThingSpeak/REST, mDNS eller FSBrowser, och det är inte testat på hårdvara (se dess [README](../targets/esp-idf/README.md)). DALHAL-kärnan använder fortfarande Arduinos
+men ännu inga externa drivrutiner, ThingSpeak/REST, mDNS eller fillistning, och på hårdvara är hittills uppstart, WiFi, LittleFS, NTP, WebSocket-API, OTA och failsafe verifierade (se dess [README](../targets/esp-idf/README.md)). DALHAL-kärnan använder fortfarande Arduinos
 *API* (`millis`, `digitalWrite`, `Serial`, `F()` …) med avsikt: på backends utan Arduino kommer det från de tunna portarna i `ports/`.
 ESP8266 blir troligen kvar på Arduino-kärnan, backend-modellen klarar båda.
 
@@ -22,8 +22,8 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
 |---|---|---|
 | 1 | PC-simuleringen bygger igen | klart |
 | 2 | Portar i `ports/common` + `ports/pc` | klart |
-| 3 | ESP-IDF-target utan Arduino (`targets/esp-idf`) | bygger och länkar, inte testat på hårdvara |
-| 4 | Nätverk, webbserver/WebSocket, OTA, failsafe, HomeAssistant på ESP-IDF | bygger och länkar, inte testat på hårdvara; mDNS, FSBrowser, W5500, HTTP-klient kvar |
+| 3 | ESP-IDF-target utan Arduino (`targets/esp-idf`) | körs på esp32dev |
+| 4 | Nätverk, webbserver/WebSocket, OTA, failsafe, HomeAssistant på ESP-IDF | WiFi, WebSocket, OTA, failsafe verifierade på esp32dev, HomeAssistant inte än; mDNS, SD-kort, W5500, HTTP-klient kvar |
 | 5 | Drivrutiner en i taget (I2C, OneWire, DHT, WS2812, REGO600 …) | |
 
 ## Byggen
@@ -36,6 +36,121 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
 | ESP32 på ren ESP-IDF | `pio run -d targets/esp-idf` |
 
 ---
+
+## 2026-11-27
+
+### Tillagt
+- ESP-IDF: en HTTP-server för allt, `ports/esp-idf/HttpServer` (esp_http_server på port 80).
+  Den äger bara servern, modulerna lägger till sina routes med `HttpServer::On()`; GET-reserven hålls sist
+  (esp_http_server matchar i registreringsordning). `/reset` är inbyggd.
+- Filsystemen över HTTP, samma routes och svar på båda backends (`ports/esp-idf/FS_Http`,
+  Arduino `src/System/FS_Http`): `GET /fs/mounts`, `GET /fs/list`, `GET`/`PUT`/`DELETE /fs/file`,
+  `POST /fs/mkdir`, `POST /fs/rename`, alla med `fs=` (filsystem, `littlefs` om den saknas) och `path=`.
+  En uppladdning skrivs till `<path>.tmp` och ersätter filen först när den är komplett. Sökvägar måste vara absoluta, utan `..`.
+  HTTP och inte WebSocket-kommandon med avsikt: en request får sitt svar direkt, enklare för frontenden.
+  Filsystemsväljaren, listningen och monteringarna kommer från nya portabla `src/Support/FS_Json`
+  (ESP32 Arduino, ESP8266, ESP-IDF), så alla firmware ger samma JSON:
+  `/fs/mounts` = `[{"fs":"littlefs","total":983040,"used":389120},{"fs":"sd",...}]` (bara monterade),
+  `/fs/list` = `[{"name":"cfg.json","dir":false,"size":2482}]`.
+  `fs=sd` är SD-kortet (ESP32 med SDMMC på Arduino-kärnan, när ett kort är monterat); SD på ESP-IDF återstår.
+- Arduino: `src/System/HttpServer` (`HttpServer::Get()`), den enda `AsyncWebServer` på port 80, samma idé som på ESP-IDF.
+- Frontend med flikar (`tabs.js`, väljs med url-hash `#console` / `#files`, WebSocket delas):
+  - Console: den befintliga terminalen, knapparna och loggen.
+  - Files (`files.js`, laddas första gången fliken visas, `css/files.css`), upplagd som gamla FSBrowsers edit-sida:
+    ett fast mappträd till vänster med en rot per monterat filsystem (flash, SD-kort), (fäll ut/ihop, högerklicksmeny: ladda upp hit, ny fil/mapp, byt namn/flytta,
+    radera, hämta; dra och släpp-uppladdning på en mapp), ACE-editorn till höger (läge efter filändelse,
+    Ctrl+S sparar, JSON kontrolleras innan sparning, `{ } format`), bilder visas (små förstoras), andra binärfiler
+    som hexdump. Filsystemets användning i huvudet.
+    ACE 1.36.2 ligger inte i firmwaren: den laddas från cdnjs, annars från LittleFS `/edit/ace.js` (som FSBrowser),
+    annars används en enkel textruta (failsafe-AP utan internet). `#files=/cfg.json` (eller `#files=sd:/a.txt`)
+    öppnar en fil direkt.
+    Använder `/fs/...`-routerna, så den är likadan på Arduino- och ESP-IDF-firmwaren.
+  - Packa upp zip (`zip.js`, inget bibliotek, ~2 kB gzip): en .zip från datorn (`⇪ unzip`, högerklick på mapp) eller en
+    på enheten (klicka på den: förhandsvisning av innehållet, eller högerklick `unzip into`) packas upp i webbläsaren till
+    aktuell mapp, mappar skapas, sedan skickas filerna en och en med `PUT /fs/file`. En fråga när filer redan finns:
+    skriv över eller behåll. `..`, `__MACOSX/` och `.DS_Store` hoppas över.
+    Zip-filens innehållsförteckning läses i JS, deflate görs av webbläsaren (`DecompressionStream`), så det fungerar
+    även offline; stored och deflate, inte ZIP64, inte kryptering. Testat mot zip från Python zipfile och Windows
+    `Compress-Archive`, och på esp32dev (Arduino) i en riktig webbläsare: byte-identiska filer.
+  - Hämta som zip (backup), åt andra hållet: `⬇ zip` i verktygsraden (aktuell mapp) eller `download as .zip` i mappens
+    högerklicksmeny. Mappen läses fil för fil och packas i webbläsaren (`zip.js`: CRC32 i JS, deflate med
+    `CompressionStream` när det gör filen mindre, UTF-8-namn, tomma mappar följer med); roten ger
+    `dalhal-<fs>-<datum>.zip`. Kontrollerat med Python `zipfile.testzip` och Windows `Expand-Archive`, och på esp32dev:
+    en zip av hela LittleFS gjord i webbläsaren stämde med varje fil på enheten.
+
+- Config-flik (`config.js`, `css/config.css`): en cfg.json-editor i "cfg::editor"-utseendet från `html/cfgeditor/from claude ver3`
+  (enhetsträd till vänster, formulär till höger, JSON-panel, statusrad), omskriven för att följa firmwaren exakt:
+  - Schemat kommer från den körande firmwaren (`hal/meta/reg/cfgschema`), GPIO-listan från `hal/meta/gpio`,
+    så editorn stämmer alltid med firmwaren den pratar med; cfg är `/hal/cfg.json` via `/fs/...`.
+  - Lägen som i `ModeSelector::evaluate`: en conjunction med required måste finnas, en utan får inte finnas,
+    exakt ett läge ska matcha, en AllOfFieldsGroup räknas bara när den är komplett. Val av läge lägger till/tar bort fälten.
+  - Formulär per fälttyp: GPIO-lista (bara pinnar som klarar läget, strapping-pinnar markerade, vem som använder en pinne,
+    negativ pinne = avstängd pinne som i firmwaren), tillåtna värden som lista, one-of-grupper (t.ex. enhet + värde för
+    uppdateringstid), allt-eller-inget-grupper, nästlade objekt, underenheter (registertyper och objekt-arrayer, t.ex. 1-wire,
+    TX433-enheter, HomeAssistant-entiteter), REGO600-register som chips, autokomplettering av uid-sökvägar, fria JSON-fält,
+    okända fält, kommentarer (strängar) behålls och kan redigeras. Valfria fält kan tas bort (standardvärdet används).
+    Lösenords-/nyckelfält maskeras.
+  - Validering direkt med firmwarens regler (obligatoriskt, intervall där maxValue 0 = ingen gräns, stränglängder, hex-bytes,
+    uid max 8 och unikt, GPIO-förmåga och konflikter, constraints som minPulseLength < maxPulseLength, lägen);
+    fel under fälten, prickar i trädet, klickbar problemlista. Avstängda enheter ger bara varningar.
+  - Lägg till/duplicera/flytta/radera, import/export, `#config=uid:uid`-länkar (adressen följer valet).
+  - Save skriver `/hal/cfg.json`. Apply skriver `/hal/cfg.new.json`, låter firmwaren validera och ladda den
+    (`hal/config/reload/cfg.new.json`) och skriver först då `/hal/cfg.json`; när firmwaren vägrar fortsätter den
+    körande konfigurationen och firmwarens nya loggrader visas. Filer skrivs en rotenhet per rad
+    (firmwaren reserverar ungefär dubbla filstorleken i RAM för att läsa den).
+  - Testat på esp32dev (Arduino) med den riktiga konfigurationen på 32 enheter i en riktig webbläsare: laddar, validerar
+    (stämmer med vad firmwaren rapporterar), redigering, lägesbyten och en underkänd apply (enheten behöll sin konfiguration
+    och visade varför).
+- `main.js`: `wsRequest(cmd, tag)` ger ett Promise med svaret på ett kommando (efter dess BlockStreamer-tagg);
+  svar som hämtas så skrivs inte ut i konsolloggen.
+### Ändrat
+- ESP-IDF: WebSocket-API:t (`/ws`) och den inbyggda frontenden flyttade från en egen server på port 82 till den
+  gemensamma servern på port 80. Filer letas upp så här: LittleFS `/api/...` (åsidosätter), inbyggd frontend, annan
+  LittleFS-fil (en mapp ger sin `index.htm`), annars 404.
+- ESP-IDF failsafe: ingen egen server längre, den använder samma server (frontend, `/ws` i failsafe-läge, `/fs/...`
+  för att rätta en trasig `cfg.json`, `/reset`) och monterar LittleFS för det.
+- Arduino: allt på port 80 även här, inget portnummer att skriva längre. WebSocket-API:t (`/ws`, reserv för frontenden)
+  ligger på den gemensamma servern i stället för en egen server på port 82; `main.h` har ingen egen `webserver` längre.
+  Filreserven är densamma som på ESP-IDF (LittleFS `/api/...`, inbyggd frontend, andra LittleFS-filer, 404).
+  Failsafe använder samma server.
+- Arduino: gamla FSBrowser (`FSBrowser.h`, `FSBrowserAsync.h`, flyttade till `attic/`) är borta, Files-fliken ersätter den.
+  Med den försvann dess routes (`/edit`, `/list`, `/status`, `/upload`, `/mkdir`, `/sdcard_listfiles`) och
+  sökvägsprefixen `/LittleFS/...` och `/sdcard/...`: filsystemet väljs med `fs=` i stället.
+  LittleFS monteras nu i `System::Setup()` och i failsafe (det gjordes av `FSBrowser::setup()`).
+  `/` visar nu frontenden (eller LittleFS `/api/index.html`), en gammal LittleFS `/index.htm` nås på `/index.htm`.
+- PC-simuleringen behåller en egen port (82 som standard, `WebSocketAPI::setup(port)`), eftersom port 80 ofta är upptagen på en PC.
+- Frontend `main.js`: WebSocket ansluter till servern som sidan kom ifrån (var alltid port 82).
+- ESP-IDF-bygget: frontenden genereras vid varje bygge (`extra_scripts = pre:../../tools/gen_frontend.py`
+  i `targets/esp-idf/platformio.ini`, generatorn hittar repo-roten därifrån), tidigare bara vid ett rent bygge.
+  För vanliga `idf.py`-byggen körs cmake om när en `www/`-fil ändras.
+
+### Testat på hårdvara (esp32dev, ESP-IDF-firmware)
+- USB-flashning, uppstart, WiFi STA med uppgifterna som Arduino-firmwaren sparat, LittleFS med befintliga filer, NTP.
+- GPIO-listan med det nya kortmakrot: felen vid tri-state och pinreservation är borta.
+- WebSocket-API på port 82: `system/info`, `system/heap`, hälsningen "normal mode".
+- OTA med espota (utan lösenord): image mottagen, MD5 ok, startade från den andra app-partitionen.
+- Failsafe: `system/EnterRecoveryMode` gör abort, nästa uppstart går till failsafe (WiFi, OTA, sida på port 80,
+  WebSocket med "failsafe/recovery mode is active", kommandon fungerar), `/reset` går tillbaka till normalt läge.
+- Gemensam server på port 80 (uppdaterad via OTA): frontend, kommandon via `/ws`, uppladdning/hämtning/radering med
+  `/fs/file`, LittleFS-filer via sökväg, 404, failsafe på port 80 inklusive `/fs/file`, `/reset` tillbaka till normalt läge.
+- Inte verifierat än: HomeAssistant/MQTT och enheter, eftersom testkonfigurationen använder enhetstyper som inte
+  är portade än (1WTG, DHT, I2C, WS2812) och en ogiltig konfiguration laddas inte alls.
+
+- Upptäckt, inte ändrat: `DeviceManager::ParseJSON` rensar alla GPIO-reservationer innan den validerar, så en underkänd
+  `hal/config/reload` lämnar de körande enheterna utan sina reservationer (påverkar bara dubblettkontrollen vid nästa laddning).
+### Rättat
+- **LittleFS förlorat på esp32dev** vid byte från ESP-IDF-firmwaren tillbaka till Arduino-firmwaren: esp_littlefs 1.23
+  (ESP-IDF-bygget) skriver diskformat 2.1 och uppgraderar filsystemet vid första skrivningen, Arduino-kärnan 2.0.18
+  är byggd med `CONFIG_LITTLEFS_DISK_VERSION_2_0` och kan inte montera 2.1, och `LittleFS.begin(formatOnFail = true)`
+  formaterade det då. ESP-IDF-bygget använder nu samma diskformat (`CONFIG_LITTLEFS_MULTIVERSION=y`,
+  `CONFIG_LITTLEFS_DISK_VERSION_2_0=y`), så båda firmware kan flashas om vartannat utan att filer försvinner.
+- Arduino: `/` gav 404, filreserven mappade inte `/` till den inbyggda `index.html` (ESP-IDF gjorde det).
+- ESP-IDF: frontendens WebSocket kunde inte ansluta efter att Files-fliken använts: lwIP hade bara
+  10 sockets, httpd (7 anslutningar + 2 interna) och OTA tog alla, så accept() misslyckades (ENFILE) innan httpd
+  hann stänga sin äldsta anslutning. Nu `CONFIG_LWIP_MAX_SOCKETS=20` och httpd `max_open_sockets = 12`;
+  testat med 14 öppna keep-alive-anslutningar: WebSocket, HTTP och OTA fungerar fortfarande.
+  (OTA behöver också en ledig socket, så även den misslyckades i det läget.)
+- Loggposter på serieporten avslutas nu med radbrytning (de skrevs på en lång rad, även på Arduino).
 
 ## 2026-11-26
 

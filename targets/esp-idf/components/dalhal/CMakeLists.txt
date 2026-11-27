@@ -40,6 +40,7 @@ list(APPEND DALHAL_SRCS
     "${REPO_ROOT}/src/DALHAL/Drivers/RF433.cpp"
     "${REPO_ROOT}/src/DALHAL/Drivers/HeartbeatLed.cpp"
     "${REPO_ROOT}/src/Support/LittleFS_ext.cpp"
+    "${REPO_ROOT}/src/Support/FS_Json.cpp"
     "${REPO_ROOT}/src/Support/NTP.cpp"
     "${REPO_ROOT}/src/Support/mimetable.cpp"
     "${REPO_ROOT}/src/Support/Time_ext.cpp"
@@ -88,4 +89,7 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-unused-variable -Wno-unused
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     idf_build_get_property(python PYTHON)
     execute_process(COMMAND ${python} "${REPO_ROOT}/tools/gen_frontend.py" WORKING_DIRECTORY "${REPO_ROOT}")
+    # re-run cmake (and so the generator) when a www/ file changes, a new file is seen by the next re-run
+    file(GLOB_RECURSE FRONTEND_WWW_FILES "${REPO_ROOT}/src/DALHAL/API/WebSocket/FrontendFiles/www/*")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${FRONTEND_WWW_FILES})
 endif()

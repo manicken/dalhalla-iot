@@ -42,7 +42,7 @@
 
 
 
-#define DALHAL_WEBSOCKET_API_PORT 82
+// on the shared web server (port 80), see src/System/HttpServer.h
 
 namespace DALHAL {
     class WebSocketAPI {

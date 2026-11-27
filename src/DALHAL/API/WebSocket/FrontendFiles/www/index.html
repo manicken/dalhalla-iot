@@ -2,59 +2,153 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>DALHAL Terminal</title>
+<title>DALHAL</title>
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/wifi-config.css">
 <link rel="stylesheet" href="css/modal.css">
+<link rel="stylesheet" href="css/files.css">
+<link rel="stylesheet" href="css/config.css">
 </head>
 <body class="light">
 
-<!-- ── Toolbar ── -->
+<!-- ── Toolbar: title, tabs, theme ── -->
 <div id="toolbar">
   <div id="toolbar-top">
-    <h1>DALHAL WebSocket Terminal</h1>
+    <h1>DALHAL</h1>
+    <nav id="tabs">
+      <a href="#console" data-tab="console">Console</a>
+      <a href="#files" data-tab="files">Files</a>
+      <a href="#config" data-tab="config">Config</a>
+    </nav>
     <button id="theme-toggle" onclick="toggleTheme()">🌙 dark</button>
   </div>
-  <div class="btn-row" id="extensions_toolbar"></div>
-  <div id="btn-container"></div>
 </div>
 
-<!-- ── Status bar ── -->
+<!-- ── Status bar (WebSocket, shared by all tabs) ── -->
 <div id="status-bar">
   <span id="ws-indicator" class="disconnected"></span>
   <span id="ws-status">Disconnected</span>
 </div>
 
-<!-- ── Main area ── -->
-<div id="main">
-
-  <!-- Autocomplete terminal -->
-  <div id="terminal-wrap">
-    <div id="terminal-label">autocomplete terminal &nbsp;·&nbsp; delimiter: /</div>
-    <div id="autocomplete-output">
-      <div class="line-hint">Type commands with / delimiter, e.g. hal/read/string/deviceId. Enter sends via WebSocket.</div>
-    </div>
-    <div id="autocomplete-area">
-      <div id="suggestions" role="listbox"></div>
-    </div>
-    <div id="input-row">
-      <span id="prompt-lbl">&gt;&nbsp;</span>
-      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false"
-             placeholder="hal/read/…"
-             aria-label="Command input" aria-autocomplete="list" aria-haspopup="listbox"/>
-    </div>
-    <div id="key-hint">Tab — complete &nbsp;·&nbsp; ↑↓ — select / history &nbsp;·&nbsp; Esc — dismiss &nbsp;·&nbsp; Enter — send</div>
+<!-- ── Tab: Console ── -->
+<div id="tab-console" class="tab-page">
+  <div id="console-toolbar">
+    <div class="btn-row" id="extensions_toolbar"></div>
   </div>
+  <div id="btn-container"></div>
 
-  <!-- Log pane -->
-  <div id="log-wrap">
-    <div id="log-label">
-      <span>WebSocket log</span>
-      <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+  <div id="main">
+    <!-- Autocomplete terminal -->
+    <div id="terminal-wrap">
+      <div id="terminal-label">autocomplete terminal &nbsp;·&nbsp; delimiter: /</div>
+      <div id="autocomplete-output">
+        <div class="line-hint">Type commands with / delimiter, e.g. hal/read/string/deviceId. Enter sends via WebSocket.</div>
+      </div>
+      <div id="autocomplete-area">
+        <div id="suggestions" role="listbox"></div>
+      </div>
+      <div id="input-row">
+        <span id="prompt-lbl">&gt;&nbsp;</span>
+        <input id="cmd-input" type="text" autocomplete="off" spellcheck="false"
+               placeholder="hal/read/…"
+               aria-label="Command input" aria-autocomplete="list" aria-haspopup="listbox"/>
+      </div>
+      <div id="key-hint">Tab — complete &nbsp;·&nbsp; ↑↓ — select / history &nbsp;·&nbsp; Esc — dismiss &nbsp;·&nbsp; Enter — send</div>
     </div>
-    <div id="log"></div>
-  </div>
 
+    <!-- Log pane -->
+    <div id="log-wrap">
+      <div id="log-label">
+        <span>WebSocket log</span>
+        <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+      </div>
+      <div id="log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab: Files, FSBrowser style (LittleFS over HTTP /fs/..., files.js is loaded when the tab is first shown) ── -->
+<div id="tab-files" class="tab-page" hidden>
+  <div id="fsb-header">
+    <span id="fsb-folder" title="uploads and new files go here"></span>
+    <div class="btn-row">
+      <button class="cmd-btn" id="fsb-upload-btn" title="upload files to the current folder">⇪ upload</button>
+      <button class="cmd-btn" id="fsb-unzip-btn" title="unpack a .zip from this computer into the current folder">⇪ unzip</button>
+      <button class="cmd-btn" id="fsb-zip-btn" title="download the current folder with all sub folders as a .zip (backup)">⬇ zip</button>
+      <button class="cmd-btn" id="fsb-newfile">+ file</button>
+      <button class="cmd-btn" id="fsb-mkdir">+ folder</button>
+      <button class="cmd-btn" id="fsb-refresh" title="reload the tree">⟳</button>
+    </div>
+    <span id="fsb-usage"></span>
+  </div>
+  <div id="fsb-main">
+    <div id="fsb-tree" title="right click for more"></div>
+    <div id="fsb-right">
+      <div id="fsb-filebar">
+        <span id="fsb-path">select a file in the tree</span>
+        <div class="btn-row">
+          <button class="cmd-btn" id="fsb-format" title="pretty print JSON" hidden>{ } format</button>
+          <button class="cmd-btn" id="fsb-save" title="Ctrl+S" disabled>save</button>
+          <button class="cmd-btn" id="fsb-discard" title="reload from the device" disabled>discard</button>
+          <button class="cmd-btn" id="fsb-download" disabled>⬇ download</button>
+        </div>
+      </div>
+      <div id="fsb-editor" hidden></div>
+      <div id="fsb-preview"></div>
+    </div>
+  </div>
+  <div id="fsb-footer"><span id="fsb-msg"></span><span id="fsb-editor-kind"></span></div>
+  <input type="file" id="fsb-upload" multiple hidden>
+  <div id="fsb-menu" hidden></div>
+</div>
+
+<!-- ── Tab: Config, the cfg.json editor (config.js is loaded when the tab is first shown) ── -->
+<div id="tab-config" class="tab-page" hidden>
+  <div id="cfg-topbar">
+    <div class="logo">cfg<span>::</span>editor</div>
+    <button class="btn" id="cfg-reload" title="load /hal/cfg.json from the device (discards changes)">⟳ load</button>
+    <button class="btn" id="cfg-import" title="load a cfg.json from this computer into the editor">↑ import</button>
+    <button class="btn" id="cfg-export" title="download the config in the editor">↓ export</button>
+    <input type="file" id="cfg-import-file" accept=".json,application/json" hidden>
+    <button class="btn" id="cfg-json-btn">{ } JSON</button>
+    <span class="sep"></span>
+    <span id="cfg-dirty" class="pill pill-yel" hidden>unsaved changes</span>
+    <div id="cfg-problems-wrap">
+      <button class="btn sml ok" id="cfg-problems">…</button>
+      <div id="cfg-problem-list" hidden></div>
+    </div>
+    <button class="btn" id="cfg-save" title="save /hal/cfg.json, used at the next start">✓ save</button>
+    <button class="btn suc" id="cfg-apply" title="the device checks and loads it now; saved only when it is accepted">▶ apply</button>
+  </div>
+  <div id="cfg-main">
+    <div id="cfg-sidebar">
+      <div id="cfg-sb-head"><span class="lbl">devices</span><span id="cfg-dev-cnt" class="cnt">0</span></div>
+      <div id="cfg-tree"></div>
+      <div id="cfg-add-bar">
+        <select id="cfg-add-type" title="type of the new root device"></select>
+        <button class="btn pri sml" id="cfg-add">+ add</button>
+        <button class="btn sml" id="cfg-add-comment" title="add a comment (a text item)">//</button>
+      </div>
+    </div>
+    <div id="cfg-panel">
+      <div id="cfg-toolbar">
+        <span id="cfg-path">root</span>
+        <span class="sep"></span>
+        <button class="btn sml" id="cfg-up" title="move up">▲</button>
+        <button class="btn sml" id="cfg-down" title="move down">▼</button>
+        <button class="btn sml" id="cfg-dup" title="duplicate with a new uid">⧉ duplicate</button>
+        <button class="btn dan sml" id="cfg-del">✕ delete</button>
+      </div>
+      <div id="cfg-devlog" hidden></div>
+      <div id="cfg-form"></div>
+      <div id="cfg-json-panel" hidden>
+        <div id="cfg-json-what"></div>
+        <textarea id="cfg-json" spellcheck="false"></textarea>
+      </div>
+      <div id="cfg-statusbar"><span class="sdot" id="cfg-sdot"></span><span id="cfg-smsg">ready</span></div>
+    </div>
+  </div>
+  <datalist id="cfg-uidpaths"></datalist>
 </div>
 
 <script src="main.js"></script>
@@ -63,5 +157,6 @@
 <script src="wifi-config.js"></script>
 <script src="modal.js"></script>
 <script src="control-panel.js"></script>
+<script src="tabs.js"></script>
 </body>
 </html>

@@ -13,3 +13,12 @@ CONFIG_HTTPD_WS_SUPPORT=y
 CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
 # needed for ioctl(FIONREAD), i.e. WiFiClient::available() (OTA, MQTT)
 CONFIG_LWIP_SO_RCVBUF=y
+# the default 10 sockets run out with one browser: httpd (12 connections + 2 internal, HttpServer.cpp),
+# OTA (UDP + TCP while updating), MQTT, SNTP, DNS. Without a free socket accept() fails (ENFILE) before
+# httpd can drop its oldest connection, e.g. the WebSocket of the frontend could not connect.
+CONFIG_LWIP_MAX_SOCKETS=20
+# the same LittleFS on-disk version as the Arduino core (2.0.x is built with DISK_VERSION_2_0):
+# with the default (most recent = 2.1) the first write upgrades the filesystem, the Arduino firmware
+# then can not mount it and formats it (LittleFS.begin(formatOnFail = true)), all files are lost
+CONFIG_LITTLEFS_MULTIVERSION=y
+CONFIG_LITTLEFS_DISK_VERSION_2_0=y

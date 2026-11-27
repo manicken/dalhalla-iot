@@ -38,6 +38,8 @@
 #endif
 //#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <string>
+#include <Support/FS_Json.h>
 
 
 
@@ -344,6 +346,133 @@ namespace FSBrowser {
         replyOKWithMsg(request, path.substring(0, path.lastIndexOf('/')));
     }
 
+    // ---------------- /fs/... the same routes and answers as the ESP-IDF version (ports/esp-idf/FSBrowser) ----------------
+    // HTTP so the frontend gets a direct (synchronous) answer, LittleFS only, paths are absolute without ".."
+
+    /** the value of ?<key>=, empty when missing or not a valid path (the error is then already sent) */
+    String fsGetPath(AsyncWebServerRequest *request, const char* key = "path") {
+        if (!fsOK) { request->send(500, FPSTR(TEXT_PLAIN), FPSTR(FS_INIT_ERROR)); return String(); }
+        if (!request->hasParam(key)) { request->send(400, FPSTR(TEXT_PLAIN), F("missing path parameter")); return String(); }
+        String path = request->getParam(key)->value();
+        if (!FS_Json::IsValidPath(path.c_str())) {
+            request->send(400, FPSTR(TEXT_PLAIN), F("path must start with / and must not contain .."));
+            return String();
+        }
+        return path;
+    }
+
+    void fsSendJson(AsyncWebServerRequest *request, const std::string& json) {
+        AsyncWebServerResponse* response = request->beginResponse(200, FPSTR(APPLICATION_JSON), json.c_str());
+        response->addHeader(F("Cache-Control"), F("no-store"));
+        request->send(response);
+    }
+
+    void fsHandleGet(AsyncWebServerRequest *request) {
+        String path = fsGetPath(request);
+        if (path.length() == 0) return;
+        File f = LittleFS.open(path, "r");
+        const bool isFile = f && !f.isDirectory();
+        f.close();
+        if (!isFile) { request->send(404, FPSTR(TEXT_PLAIN), F("file not found")); return; }
+        request->send(LittleFS, path); // content type from the extension
+    }
+
+    // one upload at a time, written to <path>.tmp and renamed when complete
+    File fsPutFile;
+    String fsPutPath;
+    bool fsPutFailed = false;
+
+    void fsHandlePutBody(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+        if (index == 0) {
+            fsPutFailed = false;
+            fsPutPath = request->hasParam("path") ? request->getParam("path")->value() : String();
+            if (!fsOK || !FS_Json::IsValidPath(fsPutPath.c_str())) { fsPutFailed = true; return; }
+            if (fsPutFile) fsPutFile.close(); // a previous broken upload
+            fsPutFile = LittleFS.open(fsPutPath + ".tmp", "w");
+            if (!fsPutFile) { fsPutFailed = true; return; }
+        }
+        if (fsPutFailed || !fsPutFile) return;
+        if (fsPutFile.write(data, len) != len) {
+            fsPutFailed = true;
+            fsPutFile.close();
+            LittleFS.remove(fsPutPath + ".tmp");
+            return;
+        }
+        if (index + len == total) fsPutFile.close();
+    }
+
+    void fsHandlePut(AsyncWebServerRequest *request) { // called when the whole body is received
+        String path = fsGetPath(request);
+        if (path.length() == 0) return;
+        if (request->contentLength() == 0) { // no body: an empty file
+            File f = LittleFS.open(path, "w");
+            const bool ok = (bool)f;
+            f.close();
+            request->send(ok ? 200 : 500, FPSTR(TEXT_PLAIN), ok ? F("OK") : F("could not create the file (does the folder exist?)"));
+            return;
+        }
+        if (fsPutFailed || path != fsPutPath) {
+            if (fsPutFile) fsPutFile.close();
+            LittleFS.remove(path + ".tmp");
+            request->send(500, FPSTR(TEXT_PLAIN), F("write failed (does the folder exist? filesystem full?)"));
+            return;
+        }
+        if (fsPutFile) fsPutFile.close();
+        // replace the old file only now that the new one is complete
+        if (LittleFS.exists(path)) LittleFS.remove(path);
+        if (!LittleFS.rename(path + ".tmp", path)) {
+            request->send(500, FPSTR(TEXT_PLAIN), F("rename failed, the upload is kept as .tmp"));
+            return;
+        }
+        request->send(200, FPSTR(TEXT_PLAIN), F("OK"));
+    }
+
+    void fsHandleDelete(AsyncWebServerRequest *request) {
+        String path = fsGetPath(request);
+        if (path.length() == 0) return;
+        if (path == "/") { request->send(400, FPSTR(TEXT_PLAIN), F("the root can not be deleted")); return; }
+        File f = LittleFS.open(path, "r");
+        if (!f) { request->send(404, FPSTR(TEXT_PLAIN), F("file not found")); return; }
+        const bool isDir = f.isDirectory();
+        f.close();
+        const bool ok = isDir ? LittleFS.rmdir(path) : LittleFS.remove(path);
+        if (!ok) { request->send(500, FPSTR(TEXT_PLAIN), isDir ? F("could not delete (folder not empty?)") : F("could not delete")); return; }
+        request->send(200, FPSTR(TEXT_PLAIN), F("OK"));
+    }
+
+    void fsHandleList(AsyncWebServerRequest *request) {
+        String path = fsGetPath(request);
+        if (path.length() == 0) return;
+        std::string json;
+        if (!FS_Json::List(path.c_str(), json)) { request->send(404, FPSTR(TEXT_PLAIN), F("folder not found")); return; }
+        fsSendJson(request, json);
+    }
+
+    void fsHandleStatus(AsyncWebServerRequest *request) {
+        std::string json;
+        FS_Json::Status(json);
+        fsSendJson(request, json);
+    }
+
+    void fsHandleMkdir(AsyncWebServerRequest *request) {
+        String path = fsGetPath(request);
+        if (path.length() == 0) return;
+        if (LittleFS.exists(path)) { request->send(409, FPSTR(TEXT_PLAIN), F("already exists")); return; }
+        if (!LittleFS.mkdir(path)) { request->send(500, FPSTR(TEXT_PLAIN), F("mkdir failed")); return; }
+        request->send(200, FPSTR(TEXT_PLAIN), F("OK"));
+    }
+
+    void fsHandleRename(AsyncWebServerRequest *request) {
+        String from = fsGetPath(request, "from");
+        if (from.length() == 0) return;
+        String to = fsGetPath(request, "to");
+        if (to.length() == 0) return;
+        if (!LittleFS.exists(from)) { request->send(404, FPSTR(TEXT_PLAIN), F("file not found")); return; }
+        if (LittleFS.exists(to)) { request->send(409, FPSTR(TEXT_PLAIN), F("target already exists")); return; }
+        if (!LittleFS.rename(from, to)) { request->send(500, FPSTR(TEXT_PLAIN), F("rename failed")); return; }
+        request->send(200, FPSTR(TEXT_PLAIN), F("OK"));
+    }
+
     void setup(AsyncWebServer &srv) {
         
         fsOK = LITTLEFS_BEGIN_FUNC_CALL;
@@ -360,8 +489,20 @@ namespace FSBrowser {
         srv.on("/upload", HTTP_POST, [](AsyncWebServerRequest *r){ Serial.println(F("send OK")); r->send(200); }, handleFileUploadFailsafe);
         srv.on("/edit", HTTP_POST, [](AsyncWebServerRequest *r){ r->send(200); }, handleFileUpload);
 
-        srv.serveStatic("/", LittleFS, "/").setDefaultFile("index.htm");
-        srv.onNotFound(handleFileRead);
+        // the old edit page reads files as /LittleFS/... and /sdcard/...
+        // (all other files: the WebSocketAPI fallback on the same server, LittleFS files by their path)
+        srv.on("/LittleFS*", HTTP_GET, handleFileRead);
+#if defined(ESP32) && !defined(esp32c3)
+        srv.on("/sdcard*", HTTP_GET, handleFileRead);
+#endif
+
+        srv.on("/fs/file", HTTP_GET, fsHandleGet);
+        srv.on("/fs/file", HTTP_PUT, fsHandlePut, nullptr, fsHandlePutBody);
+        srv.on("/fs/file", HTTP_DELETE, fsHandleDelete);
+        srv.on("/fs/list", HTTP_GET, fsHandleList);
+        srv.on("/fs/status", HTTP_GET, fsHandleStatus);
+        srv.on("/fs/mkdir", HTTP_POST, fsHandleMkdir);
+        srv.on("/fs/rename", HTTP_POST, fsHandleRename);
     }
 
 }

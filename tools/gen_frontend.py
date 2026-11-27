@@ -25,6 +25,10 @@ try:
 except NameError:
     PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# targets/esp-idf has its own platformio.ini, the sources are two levels up from there
+if not os.path.isdir(os.path.join(PROJECT_DIR, "src", "DALHAL")) and os.path.isdir(os.path.join(PROJECT_DIR, "..", "..", "src", "DALHAL")):
+    PROJECT_DIR = os.path.normpath(os.path.join(PROJECT_DIR, "..", ".."))
+
 FRONTEND_DIR = os.path.join(PROJECT_DIR, "src", "DALHAL", "API", "WebSocket", "FrontendFiles")
 SOURCE_DIR = os.path.join(FRONTEND_DIR, "www")
 OUTPUT_FILE = os.path.join(FRONTEND_DIR, "Generated", "DALHAL_FrontendFiles.h")

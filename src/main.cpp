@@ -37,6 +37,7 @@
 #include <System/WiFiConnectionManager.h>
 #include <System/Network/Network.h>
 #include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI.h>
+#include <System/HttpServer.h>
 #ifndef ESP8266
 #include <LittleFS.h>
 #include "esp_partition.h"
@@ -210,8 +211,8 @@ void onNetworkEvent(Network::Event event) {
     test.println(Time_ext::GetTimeAsString(now()).c_str());
     test.close();
 #endif
-    webserver.end();
-    webserver.begin();
+    HttpServer::Get().end();
+    HttpServer::Get().begin();
 }
 
 /**************************************************************************/
@@ -280,11 +281,8 @@ void setup() {
 #if defined(USE_DISPLAY)
     init_display();
 #endif
-
-#if defined(ESP32) && defined(FSBROWSER_SYNCED_WS_H_)
-    if (InitSD_MMC()) FSBrowser::fsOK = true;
-#endif
-
+    // SD card (fs=sd in the /fs/... routes when mounted), board specific: InitSD_MMC() probes GPIO23 -> GPIO2
+    //InitSD_MMC();
 #ifdef WIFI_CONNECTION_MANAGER_H
 #if defined(USE_DISPLAY)
     display.setCursor(0, 0);
@@ -301,7 +299,7 @@ void setup() {
    
     HeartbeatLed::setup();
     
-    System::initWebServerHandlers(webserver);
+    System::initWebServerHandlers(HttpServer::Get());
 #ifdef DALHAL_H_
     DALHAL::begin();
 #endif

@@ -45,6 +45,7 @@
 
 #include "FrontendFiles/DALHAL_VirtualFile.h"
 #include "FrontendFiles/DALHAL_FileList.h"
+#include <System/HttpServer.h>
 
 namespace DALHAL {
 
@@ -193,13 +194,24 @@ namespace DALHAL {
             request->send(LittleFS, path);
         } else {
             
-            ZeroCopyString zcFilePath = url.c_str();
+            ZeroCopyString zcFilePath = isRoot ? "index.html" : url.c_str(); // the built in frontend at /
             if (zcFilePath.StartsWith('/')) {
                 zcFilePath.start++;
             }
             const ApiVirtualFile* vFile = GetApiVirtualFile(zcFilePath);
             if (vFile == nullptr) {
-                request->send(404, F("text/plain"), F("file not found"));
+                // any other LittleFS file (own pages), a folder gives its index.htm
+                if (!isRoot) {
+                    String fsPath = url;
+                    File f = LittleFS.open(fsPath, "r");
+                    if (f && f.isDirectory()) fsPath += fsPath.endsWith("/") ? F("index.htm") : F("/index.htm");
+                    f.close();
+                    if (LittleFS.exists(fsPath)) {
+                        request->send(LittleFS, fsPath);
+                        return;
+                    }
+                }
+                request->send(404, F("text/plain"), F("404: Not Found"));
                 return;
             }
             AsyncWebServerResponse* response = request->beginResponse_P(200, FPSTR(vFile->mime), vFile->data, vFile->size);
@@ -212,22 +224,18 @@ namespace DALHAL {
 
     void WebSocketAPI::setup(bool failsafeMode) {
         WebSocketAPI::failsafeMode = failsafeMode;
-        if (asyncWebserver != nullptr) {
-            // just restart server
-            if (asyncWebSocket != nullptr) {
-                asyncWebSocket->cleanupClients();
-            }
-            asyncWebserver->end();
-            asyncWebserver->begin();
+        if (asyncWebSocket != nullptr) {
+            // already on the server, its owner (main.cpp / failsafe) (re)starts it
+            asyncWebSocket->cleanupClients();
             return;
         }
-        asyncWebserver = new AsyncWebServer(82);
+        // the shared server on port 80 (System/HttpServer.h), no own server any more
+        asyncWebserver = &HttpServer::Get();
         asyncWebSocket = new AsyncWebSocket("/ws");
         asyncWebSocket->onEvent(onWsEvent);
         asyncWebserver->addHandler(asyncWebSocket);
-        //asyncWebserver->on("/", GetRootPage_Handler);
+        // GET of anything no route took: LittleFS /api/ override, built in frontend, other LittleFS files, 404
         asyncWebserver->onNotFound(GetAnyFile_Handler);
-        asyncWebserver->begin();
         asyncWebSocket->enable(true);
 
     }

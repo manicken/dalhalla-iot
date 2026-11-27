@@ -284,7 +284,7 @@ namespace DALHAL {
             case HALValue::Type::BOOL:  return write(v.asRawBool());
             case HALValue::Type::UINT: return write(v.asRawUInt());
             case HALValue::Type::CSTRING: return write(v.asRawConstChar());
-            case HALValue::Type::UNSET: return write(F("_UNSET_"));
+            case HALValue::Type::UNSET: return write(F("null")); //return write(F("_UNSET_"));
             default: return write(F("_unknown_"));
         }
 

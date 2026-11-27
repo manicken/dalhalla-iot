@@ -29,10 +29,10 @@ namespace DALHAL {
         switch (v.getType()) {
             case HALValue::Type::INT:   return p.print(v.asRawInt());
             case HALValue::Type::FLOAT: return p.print(v.asRawFloat());
-            case HALValue::Type::BOOL:  return p.print(v.asRawBool() ? "true" : "false");
+            case HALValue::Type::BOOL:  return p.print(v.asRawBool() ? F("true") : F("false"));
             case HALValue::Type::UINT: return p.print(v.asRawUInt());
             case HALValue::Type::CSTRING: return p.print(v.asRawConstChar());
-            case HALValue::Type::UNSET: return p.print("_UNSET_");
+            case HALValue::Type::UNSET: return p.print(F("null")); //return p.print("_UNSET_");
         }
         return 0;
     }

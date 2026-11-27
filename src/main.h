@@ -108,9 +108,7 @@
 #define max(a,b) ((a)>(b)?(a):(b))
 
 #define WIFI_TIMEOUT 30000              // checks WiFi every ...ms. Reset after this time, if WiFi cannot reconnect.
-#define HTTP_PORT 80
-
-AsyncWebServer webserver(HTTP_PORT);
+// the web server (port 80) is HttpServer::Get(), src/System/HttpServer.h
 
 #ifdef ESP8266
 #define LITTLEFS_BEGIN_FUNC_CALL LittleFS.begin()

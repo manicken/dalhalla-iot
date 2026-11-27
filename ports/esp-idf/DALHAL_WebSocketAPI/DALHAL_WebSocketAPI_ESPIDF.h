@@ -23,8 +23,10 @@
 
 /**
   WebSocketAPI for the ESP-IDF backend, on esp_http_server. Same behaviour as the Arduino version
-  (src/DALHAL/API/WebSocket, ESPAsyncWebServer): port 82, WebSocket at /ws, files from LittleFS /api/...
-  or else the built in frontend (FrontendFiles, gzip), commands go through the CommandExecutor queue.
+  (src/DALHAL/API/WebSocket, ESPAsyncWebServer), but on the shared HttpServer on port 80 instead of an own
+  server on port 82: WebSocket at /ws, files from LittleFS /api/...
+  or else the built in frontend (FrontendFiles, gzip) or else other LittleFS files,
+  commands go through the CommandExecutor queue.
 */
 
 #pragma once
@@ -34,7 +36,7 @@
 #include <DALHAL/Core/Types/DALHAL_ZeroCopyString.h>
 #include <DALHAL/API/DALHAL_CommandCallback.h>
 
-#define DALHAL_WEBSOCKET_API_PORT 82
+// on the shared HttpServer (port 80), see ports/esp-idf/HttpServer
 
 namespace DALHAL {
 

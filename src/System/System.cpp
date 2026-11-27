@@ -35,7 +35,8 @@
 #endif
 
 #include "OTA.h"
-#include "FSBrowserAsync.h"
+#include "HttpServer.h"
+#include "FS_Http.h"
 #include <System/Network/Network.h>
 #include <System/Platform/Platform.h>
 
@@ -51,7 +52,8 @@ namespace System {
 
     void Setup()
     {
-        if (LITTLEFS_BEGIN_FUNC_CALL == true) FSBrowser::fsOK = true; // this call is needed before all access to internal Flash file system
+        // needed before all access to the internal flash filesystem (cfg.json, scripts, /fs/... routes)
+        if (!LITTLEFS_BEGIN_FUNC_CALL) Serial.println(F("LittleFS mount failed"));
     }
 
 #if defined(ESP32) && !defined(esp32c3)
@@ -144,16 +146,10 @@ namespace System {
         });
         ArduinoOTA.begin();
 
-        // --- STEP 3: AsyncWebServer ---
-        AsyncWebServer* server = new AsyncWebServer(80);
+        // --- STEP 3: the web server (port 80): frontend + /ws in failsafe mode, /fs/... to fix a broken cfg, /reset ---
+        AsyncWebServer& server = HttpServer::Get();
 
-        server->on("/", HTTP_GET, [](AsyncWebServerRequest *req){
-            String msg = F("Device is in FAILSAFE mode.\nUse OTA or /reset");
-            String type = F("text/plain");
-            req->send(200, type, msg);
-        });
-
-        server->on("/reset", HTTP_GET, [](AsyncWebServerRequest *req){
+        server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *req){
             String type = F("text/plain");
             String msg = F("Restarting...");
             req->send(200, type, msg);
@@ -161,10 +157,11 @@ namespace System {
             Platform::Restart();
         });
 
-        FSBrowser::setup(*server);
+        if (!LITTLEFS_BEGIN_FUNC_CALL) Serial.println(F("LittleFS mount failed")); // for /fs/..., DALHAL does not read it here
+        FS_Http::setup(server);
         DALHAL::WebSocketAPI::setup(/*failsafemode*/true);
 
-        server->begin();
+        server.begin();
         Serial.println(F("\r\nFailsafe HTTP server started"));
         unsigned long long failsafeLoopTimeoutMs = 1000*60*10; // 10 Min timeout to avoid stuck in this state in case of a error
         unsigned long long failsafeLoopTimeoutMs_Start = millis();
@@ -191,7 +188,7 @@ namespace System {
 
     void initWebServerHandlers(AsyncWebServer& webserver)
     {
-        FSBrowser::setup(webserver);
+        FS_Http::setup(webserver); // /fs/... for the Files tab of the frontend
         webserver.on("/reset", [](AsyncWebServerRequest* req) {
             req->send(200, "text/html", "system will now reset");
             Platform::Restart();
@@ -208,47 +205,7 @@ namespace System {
             } else {
                 req->send(500, "text/html", "Format failed");
             }
-        });/*
-        webserver.on(MAIN_URLS_MKDIR, [](AsyncWebServerRequest* req) {
-            if (!req->hasArg("dir")) { req->send(200,"text/html", "Error: dir argument missing"); }
-            else
-            {
-                String path = req->arg("dir");
-                
-                if (LittleFS.mkdir(path.c_str()) == false) {
-                    req->send(200,"text/html", "Error: could not create dir:" + path);
-                }
-                else
-                {
-                    req->send(200,"text/html", "create new dir OK");
-                }
-
-            }
-
-        });*/
-#if defined(ESP32) && !defined(esp32c3)
-        webserver.on("/sdcard_listfiles", [](AsyncWebServerRequest* req) {
-            
-            //if (SD_MMC.begin("/sdcard", true, false, 20000)) {
-                File root = SD_MMC.open("/");
-                if (!root) {
-                    req->send(200, "text/plain", "error while open sd card again");
-                    return;
-                }
-
-                File file;
-                String ret;
-                while (file = root.openNextFile())
-                {
-                    ret.concat("Name:"); ret.concat(file.name());
-                    ret.concat(", Size:"); ret.concat(file.size());
-                    ret.concat(", Dir:"); ret.concat(file.isDirectory()?"true":"false");
-                    ret.concat("\n");
-                }
-                req->send(200, "text/plain", ret.c_str());
-        // }else {webserver.send(200, CONSTSTR::htmlContentType_TextPlain, "could not open sd card a second time");}
         });
-#endif
         /*webserver.on("/crashTest", [](AsyncWebServerRequest* req) {
             req->send_P(200, F("text/plain"), F("The system will now crash!!!, and luckily go into failsafe OTA upload mode."));
             int *ptr = nullptr; // Null pointer
@@ -258,40 +215,6 @@ namespace System {
             req->send(200, "text/plain", "ArduinoOTA is now guarranteed to work");
             ArduinoOTA.begin();
         });*/
-        /*
-        webserver.onNotFound([](AsyncWebServerRequest* req) {                              // If the client requests any URI
-            String uri = req->uri();
-            DEBUG_UART.println("onNotFound - hostHeader:" + req->hostHeader());
-            //bool isDir = false;
-            //DEBUG_UART.println("webserver on not found:" + uri);
-            if (uri.startsWith("/LittleFS") == false && uri.startsWith("/sdcard") == false)
-            {
-#if defined(ESP32)
-                File fileToCheck = LittleFS.open(uri);
-#elif defined(ESP8266)
-                File fileToCheck = LittleFS.open(uri, "r");
-#endif
-                if (!fileToCheck) {
-                    webserver.send(404, CONSTSTR::htmlContentType_TextPlain, F("404: Not Found")); // otherwise, respond with a 404 (Not Found) error
-                    return;
-                }
-
-                if (fileToCheck.isDirectory()) // if it's a folder, try to find index.htm or index.html
-                {
-                    if (LittleFS.exists(uri + "/index.html"))
-                        uri += "/index.html";
-                    else if (LittleFS.exists(uri + "/index.htm"))
-                        uri += "/index.htm";
-                }
-                fileToCheck.close();
-                uri = "/LittleFS" + uri; // default to LittleFS
-            }
-#ifdef FSBROWSER_SYNCED_WS_H_
-            if (!FSBrowser::handleFileRead(uri))                  // send it if it exists
-                webserver.send(404, CONSTSTR::htmlContentType_TextPlain, F("404: Not Found")); // otherwise, respond with a 404 (Not Found) error
-#endif
-        });
-        */
     }
 }
 

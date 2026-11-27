@@ -23,14 +23,16 @@
 
 // Failsafe mode after a crash, the same as System::failsafeLoop() of the Arduino target (src/System/System.cpp):
 // DALHAL itself is not started (it is what crashed), only the ways in: network (failsafe AP + STA),
-// OTA, a minimal HTTP page on port 80 and the WebSocket API in failsafe mode. Restarts after 10 minutes.
+// OTA, the HttpServer on port 80 with the WebSocket API in failsafe mode, the built in frontend, /fs/... file
+// transfer (to fix a broken cfg.json) and /reset. Restarts after 10 minutes.
 
 #include "failsafe.h"
 
 #include <Arduino.h>
-#include "esp_http_server.h"
+#include <LittleFS.h>
 
 #include <ArduinoOTA.h>
+#include <FS_Http.h>
 #include <DALHAL/Drivers/HearbeatLed.h>
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
 #include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI_Backend.h>
@@ -38,41 +40,6 @@
 #include <System/Platform/Platform.h>
 
 #define FAILSAFE_TIMEOUT_MS (10UL * 60UL * 1000UL)
-
-static esp_err_t RootHandler(httpd_req_t* req) {
-    httpd_resp_set_type(req, "text/plain");
-    return httpd_resp_sendstr(req, "Device is in FAILSAFE mode.\nUse OTA or /reset");
-}
-
-static esp_err_t ResetHandler(httpd_req_t* req) {
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_sendstr(req, "Restarting...");
-    delay(200);
-    Platform::Restart();
-}
-
-static void StartHttpServer() {
-    httpd_handle_t server = nullptr;
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.server_port = 80;
-    config.ctrl_port = 32769; // the WebSocketAPI server has its own ctrl port
-    if (httpd_start(&server, &config) != ESP_OK) {
-        printf("Failsafe HTTP server start failed\r\n");
-        return;
-    }
-    httpd_uri_t root = {};
-    root.uri = "/";
-    root.method = HTTP_GET;
-    root.handler = RootHandler;
-    httpd_register_uri_handler(server, &root);
-
-    httpd_uri_t reset = {};
-    reset.uri = "/reset";
-    reset.method = HTTP_GET;
-    reset.handler = ResetHandler;
-    httpd_register_uri_handler(server, &reset);
-    printf("\r\nFailsafe HTTP server started\r\n");
-}
 
 /** only the command queue, no devices or scripts */
 static void ExecPendingCommands() {
@@ -102,8 +69,11 @@ void FailsafeLoop() {
     ArduinoOTA.onError([](ota_error_t err) { printf("OTA Error %d\r\n", (int)err); });
     ArduinoOTA.begin();
 
-    StartHttpServer();
-    DALHAL::WebSocketAPI::setup(/*failsafeMode*/ true);
+    if (!LittleFS.begin(false)) printf("LittleFS mount failed\r\n"); // for /fs/..., DALHAL does not read it here
+
+    DALHAL::WebSocketAPI::setup(/*failsafeMode*/ true); // starts the HttpServer (port 80, /reset)
+    FS_Http::setup();
+    printf("\r\nFailsafe HTTP server started\r\n");
 
     const unsigned long start = millis();
     while (true) {

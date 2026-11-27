@@ -1,0 +1,178 @@
+/* ── Config tab: the cfg::editor look (light and dark follow the page theme) ── */
+body.light #tab-config {
+  --bg0: #f0f2f5; --bg1: #ffffff; --bg2: #f7f8fa; --bg3: #eef0f4; --line: #dde0e8; --line2: #c8ccd8;
+  --txt0: #1a1d2e; --txt1: #3a3f56; --txt2: #6b7494; --txt3: #9ba3be;
+  --acc: #2563eb; --acc2: #1d4ed8; --acc-bg: #eff4ff; --acc-line: #bfdbfe;
+  --grn: #16a34a; --grn2: #15803d; --red: #dc2626; --red2: #b91c1c; --red-line: #fca5a5;
+  --yel: #d97706; --pur: #7c3aed; --cya: #0e7490;
+  --pill-grn: #dcfce7; --pill-yel: #fef9c3; --pill-pur: #ede9fe; --pill-cya: #cffafe;
+}
+body.dark #tab-config {
+  --bg0: #0f1117; --bg1: #171b26; --bg2: #1e2333; --bg3: #252b3d; --line: #2e3550; --line2: #3d4666;
+  --txt0: #e8ecf5; --txt1: #a8b3d0; --txt2: #6b7a9e; --txt3: #4f5a7a;
+  --acc: #5b8af5; --acc2: #3d6de0; --acc-bg: #252b3d; --acc-line: #3d6de0;
+  --grn: #3dd68c; --grn2: #2ab070; --red: #f5596b; --red2: #d43a4d; --red-line: #6b2a35;
+  --yel: #f5c842; --pur: #9b6dff; --cya: #3dd6d6;
+  --pill-grn: rgba(61,214,140,0.15); --pill-yel: rgba(245,200,66,0.15); --pill-pur: rgba(155,109,255,0.15); --pill-cya: rgba(61,214,214,0.15);
+}
+#tab-config {
+  --font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  --font2: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --r: 5px; --r2: 8px;
+  background: var(--bg0); color: var(--txt0); font-family: var(--font2); font-size: 13px;
+}
+#tab-config .sep { flex: 1; }
+
+/* ── top bar ── */
+#cfg-topbar { display: flex; align-items: center; gap: 8px; padding: 7px 14px; background: var(--bg1); border-bottom: 1px solid var(--line); flex-shrink: 0; flex-wrap: wrap; }
+#cfg-topbar .logo { font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--acc); letter-spacing: 0.05em; margin-right: 8px; }
+#cfg-topbar .logo span { color: var(--txt2); font-weight: 400; }
+#cfg-main { display: flex; flex: 1; min-height: 0; }
+
+/* ── buttons ── */
+#tab-config .btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: var(--r); border: 1px solid var(--line2); background: var(--bg1); color: var(--txt1); cursor: pointer; font-family: var(--font); font-size: 11px; height: 27px; white-space: nowrap; }
+#tab-config .btn:hover { background: var(--bg3); color: var(--txt0); }
+#tab-config .btn:disabled { opacity: 0.4; cursor: default; }
+#tab-config .btn.on { background: var(--acc-bg); border-color: var(--acc-line); color: var(--acc); }
+#tab-config .btn.pri { background: var(--acc2); color: #fff; border-color: transparent; }
+#tab-config .btn.pri:hover { background: var(--acc); }
+#tab-config .btn.suc { background: var(--grn2); color: #fff; border-color: transparent; }
+#tab-config .btn.suc:hover { background: var(--grn); }
+#tab-config .btn.dan { background: transparent; color: var(--red); border-color: var(--red-line); }
+#tab-config .btn.dan:hover:not(:disabled) { background: var(--red2); color: #fff; border-color: transparent; }
+#tab-config .btn.wrn { color: var(--yel); border-color: var(--yel); background: transparent; }
+#tab-config .btn.ok { color: var(--grn); border-color: var(--grn); background: transparent; }
+#tab-config .btn.sml { height: 22px; padding: 2px 8px; font-size: 10px; }
+
+/* ── problems dropdown ── */
+#cfg-problems-wrap { position: relative; }
+#cfg-problem-list { position: absolute; right: 0; top: 26px; z-index: 50; width: min(560px, 80vw); max-height: 50vh; overflow: auto; background: var(--bg1); border: 1px solid var(--line2); border-radius: var(--r2); box-shadow: 0 4px 16px rgba(0,0,0,0.2); padding: 4px 0; }
+#cfg-problem-list[hidden] { display: none; }
+.prob { padding: 4px 12px; font-size: 11px; cursor: pointer; border-left: 3px solid transparent; }
+.prob:hover { background: var(--bg2); }
+.prob.err { border-left-color: var(--red); }
+.prob.warn { border-left-color: var(--yel); }
+.prob-where { font-family: var(--font); color: var(--acc); }
+
+/* ── sidebar (device tree) ── */
+#cfg-sidebar { width: 320px; min-width: 260px; background: var(--bg1); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+#cfg-sb-head { padding: 8px 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 6px; }
+#cfg-sb-head .lbl { font-size: 10px; font-weight: 600; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; flex: 1; }
+#tab-config .cnt { font-family: var(--font); font-size: 10px; background: var(--bg3); color: var(--txt2); padding: 1px 6px; border-radius: 10px; border: 1px solid var(--line2); }
+#cfg-tree { flex: 1; overflow-y: auto; padding: 4px; }
+#tab-config .di { display: flex; align-items: center; gap: 6px; padding: 4px 7px; border-radius: var(--r); cursor: pointer; margin: 1px 0; border: 1px solid transparent; }
+#tab-config .di:hover { background: var(--bg2); }
+#tab-config .di.active { background: var(--acc-bg); border-color: var(--acc-line); }
+#tab-config .di.dis { opacity: 0.45; }
+#tab-config .di.comment .du { color: var(--txt3); font-style: italic; }
+#tab-config .di .du { font-family: var(--font); font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--txt0); }
+#tab-config .di.active .du { color: var(--acc2); }
+#tab-config .di .tb { font-family: var(--font); font-size: 9px; padding: 1px 5px; border-radius: 3px; background: var(--bg3); color: var(--txt2); border: 1px solid var(--line2); white-space: nowrap; }
+#tab-config .di.active .tb { background: var(--acc2); color: #fff; border-color: transparent; }
+#tab-config .di .ch { font-size: 9px; color: var(--txt3); }
+#tab-config .pb { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+#tab-config .pb.err { background: var(--red); }
+#tab-config .pb.warn { background: var(--yel); }
+#cfg-add-bar { padding: 6px 8px; border-top: 1px solid var(--line); display: flex; gap: 5px; }
+#cfg-add-bar select { flex: 1; min-width: 0; font-family: var(--font); font-size: 10px; padding: 3px 5px; background: var(--bg1); color: var(--txt0); border: 1px solid var(--line2); border-radius: var(--r); }
+
+/* ── panel ── */
+#cfg-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#cfg-toolbar { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--line); background: var(--bg1); flex-shrink: 0; }
+#cfg-path { font-family: var(--font); font-size: 11px; color: var(--txt2); display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+#tab-config .bc-cur { color: var(--txt0); font-weight: 700; }
+#cfg-form { flex: 1; overflow-y: auto; padding: 14px 16px; min-height: 0; }
+
+/* ── device log after apply ── */
+#cfg-devlog { margin: 10px 16px 0; padding: 8px 12px; border: 1px solid var(--line2); border-radius: var(--r2); background: var(--bg2); font-family: var(--font); font-size: 11px; max-height: 30vh; overflow: auto; flex-shrink: 0; }
+#cfg-devlog[hidden] { display: none; }
+#cfg-devlog.failed { border-color: var(--red); }
+#cfg-devlog .devlog-title { display: flex; justify-content: space-between; font-weight: 700; color: var(--txt2); margin-bottom: 4px; font-family: var(--font2); }
+#cfg-devlog .l-err { color: var(--red); }
+#cfg-devlog .l-warn { color: var(--yel); }
+
+/* ── form ── */
+#tab-config .fr { margin-bottom: 10px; }
+#tab-config .fr > label { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+#tab-config .fr > label.unknown { color: var(--yel); text-transform: none; }
+#tab-config .req { color: var(--red); }
+#tab-config .type-hint { font-size: 9px; color: var(--txt3); font-weight: 400; text-transform: none; letter-spacing: 0; background: var(--bg3); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); }
+#tab-config .fr input[type=text], #tab-config .fr input[type=password], #tab-config .fr input[type=number], #tab-config .fr select, #tab-config .fr textarea, #tab-config .rfg select, #tab-config .mode-box select {
+  width: 100%; background: var(--bg1); color: var(--txt0); border: 1px solid var(--line2); border-radius: var(--r); padding: 5px 8px; font-family: var(--font); font-size: 12px; outline: none;
+}
+#tab-config .fr input:focus, #tab-config .fr select:focus, #tab-config .fr textarea:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--acc-line); }
+#tab-config .fr input[type=checkbox], #tab-config .grp-title input[type=checkbox], #tab-config .dis-wrap input { width: 15px; height: 15px; accent-color: var(--acc); cursor: pointer; }
+#tab-config .fr textarea { min-height: 34px; resize: vertical; font-size: 11px; }
+#tab-config textarea.bad { border-color: var(--red) !important; }
+#tab-config .fr-line { display: flex; gap: 4px; align-items: center; }
+#tab-config .fr-check { display: flex; align-items: center; gap: 8px; }
+#tab-config .fn { font-size: 10px; color: var(--txt3); margin-top: 3px; }
+#tab-config .err { font-size: 10px; color: var(--red); margin-top: 3px; }
+#tab-config .err.warn { color: var(--yel); }
+#tab-config .err:empty { display: none; }
+#tab-config .clr { border: 1px solid var(--line2); background: transparent; color: var(--txt2); border-radius: var(--r); cursor: pointer; width: 24px; height: 24px; flex-shrink: 0; }
+#tab-config .clr:hover { color: var(--red); border-color: var(--red); }
+#tab-config .warn-box { font-size: 11px; color: var(--yel); border: 1px solid var(--yel); border-radius: var(--r); padding: 6px 10px; margin-bottom: 10px; }
+
+/* ── sections, pills ── */
+#tab-config .sec-title { font-family: var(--font); font-size: 10px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.1em; padding: 8px 0 5px; border-bottom: 1px solid var(--line); margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; }
+#tab-config .pill { font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+#tab-config .pill-grn { background: var(--pill-grn); color: var(--grn); }
+#tab-config .pill-yel { background: var(--pill-yel); color: var(--yel); }
+#tab-config .pill-pur { background: var(--pill-pur); color: var(--pur); }
+#tab-config .pill-cya { background: var(--pill-cya); color: var(--cya); }
+
+/* ── device header, breadcrumb, mode ── */
+#tab-config .dev-hdr { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r2); margin-bottom: 14px; }
+#tab-config .dev-hdr .dname { font-family: var(--font); font-size: 14px; font-weight: 700; flex: 1; }
+#tab-config .dev-hdr .dtype { font-family: var(--font); font-size: 10px; color: var(--txt2); background: var(--bg3); border: 1px solid var(--line2); padding: 2px 7px; border-radius: var(--r); }
+#tab-config .dis-wrap { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--txt2); }
+#tab-config .bc { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; font-family: var(--font); font-size: 10px; }
+#tab-config .bc-seg { cursor: pointer; color: var(--txt2); padding: 2px 5px; border-radius: 3px; }
+#tab-config .bc-seg:hover { background: var(--bg3); color: var(--acc); }
+#tab-config .bc-arr { color: var(--txt3); }
+#tab-config .mode-box { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 7px 10px; background: var(--acc-bg); border: 1px solid var(--acc-line); border-radius: var(--r); margin-bottom: 12px; }
+#tab-config .mode-box label { font-size: 10px; color: var(--acc2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+#tab-config .mode-box select { flex: 1; width: auto; }
+#tab-config .mode-box .err { flex-basis: 100%; }
+
+/* ── groups ── */
+#tab-config .grp-box { border: 1px solid var(--line); border-radius: var(--r2); padding: 10px 12px; margin-bottom: 10px; background: var(--bg2); }
+#tab-config .grp-title { font-family: var(--font); font-size: 10px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+#tab-config .rfg { display: flex; gap: 6px; align-items: center; }
+#tab-config .rfg select { width: 110px; flex-shrink: 0; }
+#tab-config .rfg input { flex: 1; }
+
+/* ── child items ── */
+#tab-config .items-box { border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; margin-top: 4px; }
+#tab-config .items-hdr { display: flex; align-items: center; padding: 6px 10px; background: var(--bg3); border-bottom: 1px solid var(--line); font-size: 10px; color: var(--txt2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; gap: 6px; }
+#tab-config .items-hdr .ic { margin-left: auto; }
+#tab-config .ni { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-bottom: 1px solid var(--line); background: var(--bg1); cursor: pointer; }
+#tab-config .ni:hover { background: var(--bg2); }
+#tab-config .ni.dis { opacity: 0.45; }
+#tab-config .ni.comment .ni-uid { color: var(--txt3); font-style: italic; }
+#tab-config .ni-uid { font-family: var(--font); font-size: 11px; flex: 1; color: var(--txt1); }
+#tab-config .ni-type { font-family: var(--font); font-size: 9px; padding: 1px 5px; border-radius: 3px; background: var(--bg3); color: var(--txt2); border: 1px solid var(--line); }
+#tab-config .ni-btn { font-family: var(--font); font-size: 10px; padding: 2px 7px; border-radius: 3px; border: 1px solid var(--line2); background: transparent; color: var(--txt2); cursor: pointer; }
+#tab-config .ni-btn:hover { background: var(--acc2); color: #fff; border-color: transparent; }
+#tab-config .ni-del { color: var(--red); border-color: var(--red-line); }
+#tab-config .ni-del:hover { background: var(--red2); }
+#tab-config .items-add { display: flex; gap: 5px; padding: 6px 10px; background: var(--bg2); }
+#tab-config .items-add select { flex: 1; min-width: 0; background: var(--bg1); color: var(--txt1); border: 1px solid var(--line); border-radius: var(--r); padding: 3px 6px; font-family: var(--font); font-size: 10px; }
+
+/* ── chips (all allowed values, e.g. REGO600 registers) ── */
+#tab-config .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; }
+#tab-config .chip { padding: 5px 8px; border-radius: 4px; border: 1px solid var(--line2); cursor: pointer; font-family: var(--font); font-size: 11px; text-align: center; background: var(--bg2); color: var(--txt2); user-select: none; }
+#tab-config .chip.on { background: var(--grn2); color: #fff; border-color: transparent; }
+
+/* ── JSON panel, status bar, empty ── */
+#cfg-json-panel { height: 200px; flex-shrink: 0; border-top: 1px solid var(--line); background: var(--bg2); display: flex; flex-direction: column; }
+#cfg-json-panel[hidden] { display: none; }
+#cfg-json-what { font-size: 10px; color: var(--txt2); padding: 3px 14px; border-bottom: 1px solid var(--line); }
+#cfg-json { flex: 1; width: 100%; font-family: var(--font); font-size: 11px; background: transparent; color: var(--txt1); border: 1px solid transparent; padding: 8px 14px; resize: none; outline: none; line-height: 1.5; }
+#cfg-statusbar { padding: 3px 12px; background: var(--bg1); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 7px; font-family: var(--font); font-size: 10px; color: var(--txt2); flex-shrink: 0; }
+#tab-config .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--grn); flex-shrink: 0; }
+#tab-config .sdot.err { background: var(--red); }
+#tab-config .sdot.warn { background: var(--yel); }
+#tab-config .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--txt3); }
+#tab-config .em-icon { font-size: 32px; }

@@ -35,6 +35,7 @@
 #include <Support/NTP.h>
 #include <DALHAL/API/WebSocket/DALHAL_WebSocketAPI_Backend.h>
 #include <ArduinoOTA.h>
+#include <FS_Http.h>
 #include <System/Platform/Platform.h>
 #include "failsafe.h"
 
@@ -46,6 +47,7 @@ static void onNetworkEvent(Network::Event event) {
     }
     printf("Network up, IP: %s\r\n", Network::LocalIP().toString().c_str());
     DALHAL::WebSocketAPI::setup(); // already started by DALHAL::begin(), keeps the running server
+    FS_Http::setup();            // /fs/... on the same server (port 80), adding them again is a no-op
     ArduinoOTA.begin(); // espota protocol, "pio run -t upload" with the IP as upload_port
     NTP::NTPConnect();
 }
@@ -72,7 +74,8 @@ extern "C" void app_main(void)
     Network::Begin();
 
     HeartbeatLed::setup();
-    DALHAL::begin(); // config, devices, scripts
+    DALHAL::begin(); // config, devices, scripts, starts the HttpServer (port 80) with the WebSocketAPI
+    FS_Http::setup();
 
     printf("\r\n!!!!!End of MAIN Setup!!!!!\r\n");
 

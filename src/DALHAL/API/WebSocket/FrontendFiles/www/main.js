@@ -13,8 +13,37 @@ let chunks = [];
 const decoder = new TextDecoder('utf-8');
 const customParsers = [];
 
-let location_host = location.host;
-if (!location_host.endsWith(':82')) location_host += ':82';
+// ── wsRequest: a command whose answer is wanted by code (e.g. a tab), not shown in the console log ──
+// The device answers only the client that asked, every chunked answer has a tag (BlockStreamer),
+// an unknown/failed command answers {"error":..,"cmd":..} as one text frame.
+const wsWaiters = []; // { cmd, tag, resolve, reject, timer }
+
+/** sends cmd, resolves with the text of the next chunked answer with the given tag */
+function wsRequest(cmd, tag, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) { reject(new Error('WebSocket not connected')); return; }
+    const w = { cmd, tag, resolve, reject };
+    w.timer = setTimeout(() => {
+      wsWaiters.splice(wsWaiters.indexOf(w), 1);
+      reject(new Error(`no answer to ${cmd}`));
+    }, timeoutMs);
+    wsWaiters.push(w);
+    ws.send(cmd);
+  });
+}
+
+/** true when a waiter took this answer */
+function wsDeliver(match, settle) {
+  const i = wsWaiters.findIndex(match);
+  if (i < 0) return false;
+  const w = wsWaiters.splice(i, 1)[0];
+  clearTimeout(w.timer);
+  settle(w);
+  return true;
+}
+
+// same server as the page: port 80 on ESP-IDF, port 82 on the Arduino build (until it also moves to port 80)
+const location_host = location.host;
 
 function setWsStatus(connected, text) {
   const dot = document.getElementById('ws-indicator');
@@ -45,6 +74,7 @@ function connect() {
           let offset = 0;
           for (const c of chunks) { merged.set(c, offset); offset += c.length; }
           const text = decoder.decode(merged);
+          if (wsDeliver((w) => w.tag === jsonData.tag, (w) => w.resolve(text))) return;
           if (jsonData.dataType === 'json') {
             try { 
               let parsedJson = JSON.parse(text);
@@ -65,6 +95,8 @@ function connect() {
             logText(text);
           }
         } else {
+          if (jsonData.error && jsonData.cmd &&
+              wsDeliver((w) => w.cmd === jsonData.cmd, (w) => w.reject(new Error(`${jsonData.error}: ${jsonData.cmd}`)))) return;
           logCollapsible(jsonData);
         }
       } catch(e) {
@@ -76,6 +108,7 @@ function connect() {
   };
 
   ws.onclose = () => {
+    for (const w of wsWaiters.splice(0)) { clearTimeout(w.timer); w.reject(new Error('WebSocket closed')); }
     setWsStatus(false, `Disconnected — reconnecting in ${RECONNECT_MS/1000}s…`);
     logText('Disconnected, reconnecting…\n');
     setTimeout(connect, RECONNECT_MS);

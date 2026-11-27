@@ -29,6 +29,7 @@
 #include <string>
 
 #include "esp_http_server.h"
+#include <HttpServer.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -129,6 +130,20 @@ namespace DALHAL {
 
     // ---------------- files ----------------
 
+    /** sends a LittleFS file, false when there is no such file (nothing sent then) */
+    static bool SendLittleFSFile(httpd_req_t* req, const std::string& path) {
+        File f = LittleFS.open(path.c_str(), "r");
+        if (!f || f.isDirectory()) return false;
+        httpd_resp_set_type(req, mime::getContentType(path));
+        char buf[1024];
+        size_t n;
+        while ((n = f.readBytes(buf, sizeof(buf))) > 0) {
+            if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) break; // client gone
+        }
+        httpd_resp_send_chunk(req, nullptr, 0);
+        return true;
+    }
+
     static esp_err_t FileHandler(httpd_req_t* req) {
         // the path without query
         std::string url(req->uri);
@@ -137,34 +152,23 @@ namespace DALHAL {
         const bool isRoot = url == "/";
 
         // a file in LittleFS /api/ overrides the built in frontend, as on the Arduino version
-        std::string fsPath = "/api";
-        fsPath += isRoot ? "/index.html" : url;
-        if (LittleFS.exists(fsPath.c_str())) {
-            File f = LittleFS.open(fsPath.c_str(), "r");
-            if (f && !f.isDirectory()) {
-                httpd_resp_set_type(req, mime::getContentType(fsPath));
-                char buf[1024];
-                size_t n;
-                while ((n = f.readBytes(buf, sizeof(buf))) > 0) {
-                    if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
-                        httpd_resp_send_chunk(req, nullptr, 0);
-                        return ESP_FAIL;
-                    }
-                }
-                return httpd_resp_send_chunk(req, nullptr, 0);
-            }
-        }
+        if (SendLittleFSFile(req, std::string("/api") + (isRoot ? "/index.html" : url))) return ESP_OK;
 
         ZeroCopyString zcFilePath(isRoot ? "index.html" : url.c_str() + 1);
         const ApiVirtualFile* vFile = GetApiVirtualFile(zcFilePath);
-        if (vFile == nullptr) {
-            httpd_resp_set_status(req, "404 Not Found");
-            httpd_resp_set_type(req, "text/plain");
-            return httpd_resp_sendstr(req, "file not found");
+        if (vFile != nullptr) {
+            httpd_resp_set_type(req, vFile->mime);
+            if (vFile->gzip) httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+            return httpd_resp_send(req, reinterpret_cast<const char*>(vFile->data), vFile->size);
         }
-        httpd_resp_set_type(req, vFile->mime);
-        if (vFile->gzip) httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-        return httpd_resp_send(req, reinterpret_cast<const char*>(vFile->data), vFile->size);
+
+        // any other file in LittleFS (own pages, as on the Arduino port 80 server), a folder gives its index.htm
+        if (!isRoot && SendLittleFSFile(req, url)) return ESP_OK;
+        if (!isRoot) {
+            std::string index = url + (url.back() == '/' ? "index.htm" : "/index.htm");
+            if (SendLittleFSFile(req, index)) return ESP_OK;
+        }
+        return HttpServer::SendText(req, "404 Not Found", "404: Not Found");
     }
 
     // ---------------- API ----------------
@@ -172,34 +176,12 @@ namespace DALHAL {
     void WebSocketAPI::setup(bool failsafeMode) {
         failsafe = failsafeMode;
         if (server != nullptr) return; // keeps running over network down/up, it listens on all interfaces
+        if (!HttpServer::Start()) return;
 
-        httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-        config.server_port = DALHAL_WEBSOCKET_API_PORT;
-        config.ctrl_port = DALHAL_WEBSOCKET_API_PORT + 32768; // must differ from other httpd instances
-        config.uri_match_fn = httpd_uri_match_wildcard;
-        config.lru_purge_enable = true;
-        config.stack_size = 6144;
-
-        if (httpd_start(&server, &config) != ESP_OK) {
-            printf("WebSocketAPI: httpd_start failed\r\n");
-            server = nullptr;
-            return;
-        }
-
-        httpd_uri_t ws = {};
-        ws.uri = "/ws";
-        ws.method = HTTP_GET;
-        ws.handler = WsHandler;
-        ws.is_websocket = true;
-        httpd_register_uri_handler(server, &ws);
-
-        httpd_uri_t files = {};
-        files.uri = "/*";
-        files.method = HTTP_GET;
-        files.handler = FileHandler;
-        httpd_register_uri_handler(server, &files);
-
-        printf("WebSocketAPI: listening on port %d\r\n", DALHAL_WEBSOCKET_API_PORT);
+        server = HttpServer::Handle();
+        HttpServer::On("/ws", HTTP_GET, WsHandler, /*websocket*/ true);
+        HttpServer::SetFallback(FileHandler); // the frontend, LittleFS /api/ overrides and other LittleFS files
+        printf("WebSocketAPI: /ws on port %d\r\n", DALHAL_HTTP_PORT);
     }
 
     bool WebSocketAPI::Broadcast(const char* msg, size_t len, CmdCbType type) {

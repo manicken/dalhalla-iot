@@ -322,8 +322,10 @@ void Logger::EmitLastEntry()
 
 #if defined(ESP32)
     getLastEntry().PrintTo(Serial);
+    Serial.println(); // one entry per line
 #elif defined(ESP8266)
     getLastEntry().PrintTo(Serial1);
+    Serial1.println();
 #endif
 
 }

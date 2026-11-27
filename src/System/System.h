@@ -28,7 +28,6 @@
 //#include <ESPAsyncWebServer.h>
 
 #define MAIN_URLS_FORMAT_LITTLE_FS      "/formatLittleFs"
-#define MAIN_URLS_MKDIR                 "/mkdir"
 
 
 

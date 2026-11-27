@@ -39,17 +39,18 @@ so the partition table and the LittleFS image of the Arduino builds work unchang
 | `DALHAL::begin()` / `DALHAL::loop()`, HeartbeatLed, Scheduler | builds and links, shared with the Arduino target |
 | WiFi (`ports/esp-idf/WiFi`, `WiFiConnectionManager`, `WiFiLink`, config portal AP, `wifi/...` commands) | builds and links, credentials shared with the Arduino firmware (same NVS) |
 | TCP client (`ports/esp-idf/WiFiClient`, lwIP sockets) | builds and links, used by `Network::TcpClient` |
-| Web server and WebSocket on `esp_http_server` (port 82, `/ws`, frontend with gzip) | builds and links |
-| OTA (`ports/esp-idf/ArduinoOTA`, espota protocol, firmware and filesystem, MD5 checked) | builds and links |
-| Failsafe after a crash (network failsafe, OTA, HTTP page on port 80, WebSocket in failsafe mode, 10 min timeout), `system/EnterRecoveryMode` | builds and links |
+| One web server on `esp_http_server` (`ports/esp-idf/HttpServer`, port 80): WebSocket `/ws`, frontend with gzip, LittleFS files, `/reset` | works on esp32dev |
+| Filesystems over HTTP (`ports/esp-idf/FS_Http`): `/fs/mounts`, `/fs/list`, `GET`/`PUT`/`DELETE /fs/file`, `POST /fs/mkdir`, `POST /fs/rename`, with `fs=` and `path=` | works on esp32dev (LittleFS; SD card not yet on ESP-IDF) |
+| OTA (`ports/esp-idf/ArduinoOTA`, espota protocol, firmware and filesystem, MD5 checked) | firmware OTA works on esp32dev |
+| Failsafe after a crash (network failsafe, OTA, the same server on port 80 with `/ws` in failsafe mode and `/fs/...`, 10 min timeout), `system/EnterRecoveryMode` | works on esp32dev |
 | NTP (esp_sntp) | builds and links |
 | HomeAssistant (MQTT via the own PubSubClient fork on `Network::TcpClient`) | builds and links |
 | Devices: script variables, DIN/DOUT/DPOUT, ADC, button, container, actuators, latching relay, PWM servo, TX433 | builds and links |
 | `analogRead` | returns 0, ADC oneshot driver todo |
-| mDNS, FSBrowser, W5500 Ethernet, Scheduler functions from main.cpp | not built yet |
+| mDNS, W5500 Ethernet, Scheduler functions from main.cpp | not built yet |
 | ThingSpeak, REST | not built yet (need an HTTP client port) |
 | I2C, OneWire, DHT, WS2812, REGO600 | not built yet (step 5, `DALHAL_REGISTRY_ARDUINO_ONLY_DEVICES` in the device registry) |
-| Running on hardware | not tested yet |
+| Running on hardware | esp32dev: boot, WiFi, LittleFS, NTP, WebSocket API, OTA and failsafe verified; HomeAssistant and devices not yet |
 
 ## First test on hardware
 
@@ -60,5 +61,5 @@ pio device monitor -b 115200
 ```
 
 Then type a command and press Enter, e.g. `system/info`, `system/heap` or `help`.
-With WiFi up: the web UI on `http://<ip>:82/`, OTA with `pio run -d targets/esp-idf -t upload --upload-port <ip>`.
+With WiFi up: the web UI on `http://<ip>/`, OTA with `pio run -d targets/esp-idf -t upload --upload-port <ip>`.
 The serial API executes a command when the line ends (`\n`), the PlatformIO monitor sends CR LF on Enter.
