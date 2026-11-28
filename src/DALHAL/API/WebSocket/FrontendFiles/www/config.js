@@ -56,53 +56,10 @@
   // ═══════════════════════════════════════════════════════════════
   // SCHEMA
   // ═══════════════════════════════════════════════════════════════
-  const byRef = {};
-  const objects = {};
-
+  // the schema helpers are shared with the Import/Export tab (cfgSchema.js)
+  const { fieldsOf, typeDef, objectDef, defOf } = CfgSchema;
   function initSchema(raw) {
-    SCHEMA = raw;
-    for (const r of raw.ByReference || []) byRef[r.name] = r;
-    for (const o of raw.objects || []) objects[o.name] = o;
-  }
-
-  /** fields with _byref_ FieldsGroups flattened; a referenced OneOfFieldsGroup stays one (group) field */
-  function expand(fields, seen = new Set()) {
-    const out = [];
-    for (const f of fields || []) {
-      if (f.type !== '_byref_') { out.push(f); continue; }
-      const r = byRef[f.name];
-      if (!r || seen.has(f.name)) continue;
-      if (r.type === 'FieldsGroup') out.push(...expand(r.fields, new Set([...seen, f.name])));
-      else out.push(r);
-    }
-    return out;
-  }
-
-  const defCache = new WeakMap();
-  /** the expanded fields of a type definition (cached) */
-  function fieldsOf(def) {
-    if (!def) return [];
-    if (!defCache.has(def)) defCache.set(def, expand(def.fields));
-    return defCache.get(def);
-  }
-
-  function typeDef(regPath, type) {
-    const group = SCHEMA.registers[regPath];
-    if (!group || typeof type !== 'string') return null;
-    if (group[type]) return group[type];
-    const k = Object.keys(group).find((x) => x.toUpperCase() === type.toUpperCase());
-    return k ? group[k] : null;
-  }
-
-  function objectDef(subtype) {
-    if (typeof subtype === 'string') return objects[subtype] || null;
-    return isObj(subtype) && subtype.fields ? subtype : null;
-  }
-
-  /** the definition of an item: a registry type (by its "type") or a fixed object type */
-  function defOf(item, ctx) {
-    if (!isObj(item)) return null;
-    return ctx.kind === 'reg' ? typeDef(ctx.regPath, item.type) : ctx.def;
+    SCHEMA = CfgSchema.init(raw);
   }
 
   /** the fields that hold child items shown in the tree: registry arrays and object arrays (not inline ones) */
@@ -812,7 +769,7 @@
       });
       row.append(newEl('div', { cls: 'fr-line' }, input, clearButton(obj, f, () => { input.value = ''; })));
     } else {
-      const secret = /^(pass|password|passwd|pwd|secret|key|apikey|token)$/i.test(f.name);
+      const secret = (f.gui || []).includes('Secret'); // firmware schema flag: masked, the eye button shows it
       input = newEl('input', { type: secret ? 'password' : 'text', spellcheck: 'false', autocomplete: secret ? 'new-password' : 'off' });
       if (f.type === 'StringUID') input.maxLength = UID_MAX;
       if (f.type === 'StringSizeConstrained' && f.maxLength) input.maxLength = f.maxLength;
@@ -1135,17 +1092,7 @@
         ]},
       other values (objects, arrays of values, empty arrays) stay inline. Not much bigger than compact JSON,
       which matters as the firmware reserves about twice the file size in RAM to parse it. */
-  function cfgText() {
-    const isItemArray = (v) => Array.isArray(v) && v.some(isObj);
-    const fmt = (v, indent) => {
-      if (!isObj(v)) return JSON.stringify(v);
-      const parts = Object.entries(v).map(([k, x]) => JSON.stringify(k) + ':' + (isItemArray(x)
-        ? '[\n' + x.map((c) => ' '.repeat(indent + 2) + fmt(c, indent + 2)).join(',\n') + '\n' + ' '.repeat(indent) + ']'
-        : JSON.stringify(x)));
-      return '{' + parts.join(',') + '}';
-    };
-    return '[\n' + cfg.map((d) => '  ' + fmt(d, 2)).join(',\n') + '\n]\n';
-  }
+  const cfgText = () => CfgSchema.format(cfg);
 
   async function loadFromDevice(force = false) {
     if (!force && refreshDirty() && !confirm('Discard the unsaved changes and load the config from the device?')) return;
@@ -1247,7 +1194,11 @@
     el('cfg-save').onclick = saveOnly;
     el('cfg-apply').onclick = apply;
     el('cfg-problems').onclick = () => { el('cfg-problem-list').hidden = !el('cfg-problem-list').hidden || !problems.length; };
-    el('cfg-export').onclick = () => downloadUrl(URL.createObjectURL(new Blob([cfgText()], { type: 'application/json' })), 'cfg.json');
+    el('cfg-export').onclick = () => { // a config to share: the NoExport fields (secrets) are left out
+      const { cfg: out, removed } = CfgSchema.strip(cfg, 'NoExport');
+      downloadUrl(URL.createObjectURL(new Blob([CfgSchema.format(out)], { type: 'application/json' })), 'cfg.json');
+      status(`exported cfg.json` + (removed.length ? `, without the values of ${removed.map((r) => r.path + '.' + r.key).join(', ')} (NoExport)` : ''));
+    };
     el('cfg-import').onclick = () => el('cfg-import-file').click();
     el('cfg-import-file').onchange = async (e) => {
       const f = e.target.files[0];
@@ -1257,10 +1208,11 @@
         const parsed = JSON.parse(await f.text());
         if (!Array.isArray(parsed)) throw new Error('not a JSON array');
         if (refreshDirty() && !confirm('Replace the config in the editor (not saved yet)?')) return;
+        const { filled } = CfgSchema.fillFrom(parsed, cfg, 'NoExport'); // an exported cfg has no secrets: keep the current ones
         cfg = parsed;
         sel = null;
         renderTree(); renderForm(); changed();
-        status(`imported ${f.name} into the editor, not saved on the device yet`, 'warn');
+        status(`imported ${f.name} into the editor, not saved on the device yet` + (filled.length ? ` (kept ${filled.map((x) => x.path + '.' + x.key).join(', ')} from the current config)` : ''), 'warn');
       } catch (err) { status(`import failed: ${err.message}`, 'err'); }
     };
     el('cfg-json-btn').onclick = () => {
@@ -1348,7 +1300,7 @@
     status('loading the schema from the firmware…', 'warn');
     try {
       await waitForWs();
-      initSchema(JSON.parse(await wsRequest('hal/meta/reg/cfgschema', 'schema', 30000)));
+      initSchema(await CfgSchema.load());
       try { GPIO = JSON.parse(await wsRequest('hal/meta/gpio', 'getAvailableGPIOs')); } catch (e) { GPIO = null; }
     } catch (e) {
       status(`could not get the schema from the device: ${e.message}`, 'err');

@@ -78,6 +78,35 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
     Save och apply vägras så länge ett aktivt skript använder en enhet som konfigurationen inte skapar.
     Inaktiva skript ger varningar. Byta namn på en enhet som ett skript använder: gör skriptet inaktivt, ändra
     konfigurationen, rätta skriptet, aktivera det igen.
+- Schemats gui-flaggor `Secret` och `NoExport` (`DALHAL_JSON_Schema_FieldGuiFlags`), satta på HOMEASSISTANT `host`
+  (NoExport, default "example.com"), `user` (NoExport) och `pass` (Secret + NoExport) och THINGSPEAK `key`
+  (Secret + NoExport). Schemat visar dem som
+  `"gui":["Secret","NoExport"]`.
+  - Config-fliken: ett `Secret`-fält är ett lösenordsfält (visas som prickar) med en ögonknapp för visa/dölj; förut
+    gissades det från fältnamnet. Config-flikens Export-knapp utelämnar NoExport-fälten, dess Import behåller de
+    nuvarande värdena för NoExport-fält som den importerade filen saknar.
+- Frontend: ny flik Import/Export (`transfer.js`, `css/transfer.css`): hela uppsättningen som en zip.
+  - Export: `hal/cfg.json` utan NoExport-fältens värden + alla filer i `/scripts` (även list.txt) + `export.json`
+    (datum, vilka fält: bara namn, aldrig värden). Ett obligatoriskt NoExport-fält får sitt default-värde (så den
+    delade cfg:n förblir giltig och ändras i Config-fliken efter importen), ett valfritt utelämnas.
+    Kryssruta "complete backup": cfg.json som den är, med lösenord och nycklar (en backup åt sig själv, eller för att
+    kopiera uppsättningen till en egen enhet), visas med en varning; zip-filen heter dalhal-backup-<datum>.zip.
+    Görs i webbläsaren med `zip.js`, som Files-fliken.
+  - Import: en sådan zip (eller en zip från Files-fliken med hal/ och scripts/ i). Förhandsvisning först: antal
+    enheter, skripten (✓ = aktiv i list.txt), vilka NoExport-fält som behålls från konfigurationen på enheten (samma
+    uid-sökväg; även de med default-värde, export.json listar dem) och vilka som inte finns på enheten (default-värde
+    eller inget, sätts efteråt). En komplett backup importeras som den är. Sedan: backup av nuvarande cfg.json (byte för byte) och skript i
+    webbläsaren, skripten skrivs, cfg kontrolleras och laddas av enheten (cfg.new.json + hal/config/reload), skripten
+    laddas igen (hal/scripts/reload). När enheten inte godkänner cfg eller skripten läggs allt tillbaka från backupen
+    (den gamla cfg laddas igen), så en konfiguration och skript som inte passar ihop blir aldrig kvar.
+  - Testat på esp32dev: exporten innehåller inga NoExport-värden (kontrollerat mot enhetens cfg, utan att skriva ut
+    dem), skripten är byte-lika; import av oförändrade skript fungerar; en ogiltig cfg och ett ogiltigt aktivt skript
+    vägras båda och läggs tillbaka; cfg.json och alla skript har samma md5 före och efter testerna.
+- Frontend: `cfgSchema.js` innehåller schemahjälparna (expandera byref-grupper, fält/typ-uppslag, genomgång av alla
+  enheter inkl. objektarrayer och objekt, `flagged`/`strip`/`fillFrom` per gui-flagga, cfg.json-formateringen), används
+  av Config- och Import/Export-fliken; schemat hämtas från enheten en gång per sida. config.js använder den i stället
+  för sin egen kopia; kontrollerat: samma problemlista som förut på enhetens konfiguration.
+  Inbäddad frontend nu 24 filer, 57987 byte.
 
 ### Ändrat
 - Config-fliken: enhetsträdet har hopfällbara noder (▸/▾, dubbelklick fäller också), hopfällda från start så bara

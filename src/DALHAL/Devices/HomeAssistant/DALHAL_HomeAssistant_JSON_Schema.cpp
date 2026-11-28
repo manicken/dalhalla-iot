@@ -54,10 +54,10 @@ namespace DALHAL {
         namespace HomeAssistant {
 
             //constexpr SchemaString deviceIdField = {"deviceId", FieldPolicy::Required};
-            constexpr SchemaString hostField = {"host", FieldPolicy::Required};
+            constexpr SchemaString hostField = {"host", FieldPolicy::Required, Gui::NoExport, "example.com"};
             constexpr SchemaUInt   portField = {"port", FieldPolicy::Optional, (uint32_t)1, (uint32_t)65535, (uint32_t)1883};
-            constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup};
-            constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup};
+            constexpr SchemaString userField = {"user", FieldPolicy::AllOfFieldsGroup, Gui::NoExport}; // not in exports (sharing a config)
+            constexpr SchemaString passField = {"pass", FieldPolicy::AllOfFieldsGroup, Gui::Secret | Gui::NoExport}; // masked in the editor, not in exports
 
             constexpr const SchemaTypeBase* credentialsFields[] = {&userField, &passField, nullptr};
             constexpr SchemaAllOfFieldsGroup credentialsGroup = {"credentials", FieldPolicy::Optional, credentialsFields};

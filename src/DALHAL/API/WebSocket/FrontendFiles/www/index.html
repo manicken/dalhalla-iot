@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/files.css">
 <link rel="stylesheet" href="css/config.css">
 <link rel="stylesheet" href="css/scripts.css">
+<link rel="stylesheet" href="css/transfer.css">
 </head>
 <body class="light">
 
@@ -21,6 +22,7 @@
       <a href="#files" data-tab="files">Files</a>
       <a href="#config" data-tab="config">Config</a>
       <a href="#scripts" data-tab="scripts">Scripts</a>
+      <a href="#transfer" data-tab="transfer">Import/Export</a>
     </nav>
     <button id="theme-toggle" onclick="toggleTheme()">🌙 dark</button>
   </div>
@@ -193,7 +195,42 @@
   <div id="scr-footer"><span id="scr-msg"></span><span id="scr-editor-kind"></span></div>
 </div>
 
+<!-- ── Tab: Import/Export, cfg.json + the scripts as one zip (transfer.js is loaded when the tab is first shown) ── -->
+<div id="tab-transfer" class="tab-page" hidden>
+  <div id="xp-main">
+    <div class="xp-panel">
+      <h3>Export</h3>
+      <div class="xp-note">The config and the scripts of this device as one zip. Fields that the firmware marks
+        NoExport (passwords, hosts, api keys) are left out, a required one gets its default value, so the zip
+        can be shared. A complete backup has them too.</div>
+      <div class="xp-opts">
+        <label><input type="checkbox" id="xp-ex-cfg" checked> config (/hal/cfg.json)</label>
+        <label><input type="checkbox" id="xp-ex-scripts" checked> scripts (/scripts)</label>
+      </div>
+      <div class="xp-opts">
+        <label title="the NoExport fields too: a backup for yourself, or to copy the setup to an own device">
+          <input type="checkbox" id="xp-ex-complete"> complete backup (with passwords and keys)</label>
+      </div>
+      <div id="xp-export-info"></div>
+      <div class="btn-row"><button class="cmd-btn" id="xp-export-btn">⬇ export zip</button></div>
+    </div>
+    <div class="xp-panel">
+      <h3>Import</h3>
+      <div class="xp-note">A zip from Export (hal/cfg.json, scripts/...). Fields that it does not have because of
+        NoExport are taken from the config on this device. The device checks the config and the scripts;
+        when it does not accept them everything is put back as it was.</div>
+      <div id="xp-drop">drop a zip here, or <button class="cmd-btn" id="xp-choose">choose zip…</button>
+        <input type="file" id="xp-file" accept=".zip,application/zip" hidden></div>
+      <div id="xp-preview"></div>
+      <div class="btn-row"><button class="cmd-btn" id="xp-import-btn" disabled>⬆ import to the device</button></div>
+      <div id="xp-steps"></div>
+    </div>
+  </div>
+  <div id="xp-msg"></div>
+</div>
+
 <script src="domHelpers.js"></script>
+<script src="cfgSchema.js"></script>
 <script src="codeEditor.js"></script>
 <script src="scriptTools.js"></script>
 <script src="main.js"></script>

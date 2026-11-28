@@ -9,6 +9,7 @@ const TABS = {
   files:   { script: 'files.js', api: () => window.FilesTab },
   config:  { script: 'config.js', api: () => window.ConfigTab },
   scripts: { script: 'scripts.js', api: () => window.ScriptsTab },
+  transfer: { script: 'transfer.js', api: () => window.TransferTab },
 };
 const tabLoaded = {};
 

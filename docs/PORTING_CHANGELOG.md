@@ -78,6 +78,35 @@ This file lists what has been done, one chapter per day, newest first.
     Save and apply are refused while an active script uses a device that the config does not create.
     Inactive scripts give warnings. Renaming a device that a script uses: make the script inactive, change the
     config, fix the script, activate it again.
+- Schema gui flags `Secret` and `NoExport` (`DALHAL_JSON_Schema_FieldGuiFlags`), set on the HOMEASSISTANT `host`
+  (NoExport, default "example.com"), `user` (NoExport) and `pass` (Secret + NoExport) and the THINGSPEAK `key`
+  (Secret + NoExport). The schema shows them
+  as `"gui":["Secret","NoExport"]`.
+  - Config tab: a `Secret` field is a password input (shown as dots) with an eye button to show/hide it; before,
+    this was guessed from the field name. The Export button of the Config tab leaves the NoExport fields out,
+    its Import keeps the current values of NoExport fields that the imported file does not have.
+- Frontend: new tab Import/Export (`transfer.js`, `css/transfer.css`): the whole setup as one zip.
+  - Export: `hal/cfg.json` without the values of the NoExport fields + every file of `/scripts` (list.txt too) +
+    `export.json` (date, which fields: names only, never values). A required NoExport field gets its default value
+    (so the shared cfg stays valid and is changed in the Config tab after the import), an optional one is left out.
+    Checkbox "complete backup": cfg.json as it is, with the passwords and keys (a backup for yourself, or to copy the
+    setup to an own device), shown with a warning; the zip is called dalhal-backup-<date>.zip.
+    Made in the browser with `zip.js`, as the Files tab.
+  - Import: a zip like that (or a Files tab zip with hal/ and scripts/ in it). Preview first: number of devices,
+    the scripts (✓ = active in list.txt), which NoExport fields are kept from the config on the device (same uid path;
+    also the ones with the default value, export.json lists them) and which are not on the device (default value or
+    nothing, to be set afterwards). A complete backup is imported as it is. Then: backup of the current cfg.json (byte for byte) and scripts in the
+    browser, scripts written, the cfg checked and loaded by the device (cfg.new.json + hal/config/reload), the
+    scripts loaded again (hal/scripts/reload). When the device refuses the cfg or the scripts, everything is put
+    back from the backup (the old cfg is loaded again), so a config and scripts that do not fit are never left running.
+  - Tested on esp32dev: export contains no NoExport values (checked against the device cfg, without printing them),
+    the scripts are byte equal; importing the scripts unchanged works; an invalid cfg and an invalid active script are
+    both refused and put back; cfg.json and every script have the same md5 before and after the tests.
+- Frontend: `cfgSchema.js` holds the schema helpers (expand byref groups, field/type lookup, walk over all items
+  incl. object arrays and objects, `flagged`/`strip`/`fillFrom` by gui flag, the cfg.json formatting), used by the
+  Config and the Import/Export tab; the schema is asked from the device once per page. config.js uses it instead of
+  its own copy; checked: the same problem list as before on the device config.
+  Embedded frontend now 24 files, 57987 bytes.
 
 ### Changed
 - Config tab: the device tree has collapsible nodes (▸/▾, double click also toggles), collapsed at start so only the

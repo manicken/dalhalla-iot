@@ -71,6 +71,16 @@ namespace DALHAL {
                     first = false;
                     sbs.write_jsonQuoted(F("UseInline"));
                 }
+                if (hasFlag(flags, Secret)) {
+                    if (first == false) { sbs.write_json_value_separator(); }
+                    first = false;
+                    sbs.write_jsonQuoted(F("Secret"));
+                }
+                if (hasFlag(flags, NoExport)) {
+                    if (first == false) { sbs.write_json_value_separator(); }
+                    first = false;
+                    sbs.write_jsonQuoted(F("NoExport"));
+                }
                 sbs.write_json_array_end();
             }
 

@@ -44,7 +44,7 @@ namespace DALHAL {
 
             constexpr SchemaUInt firstUpdateAfterSecondsField = {"firstUpdateAfterSeconds", FieldPolicy::Optional, (uint32_t)0, (uint32_t)0, (uint32_t)0};
             constexpr SchemaString serverOverrideField = {"serverOverride", FieldPolicy::Optional};
-            constexpr SchemaStringSizeConstrained keyField = {"key", FieldPolicy::Required, "0123456789ABCDEF", (uint32_t)16, (uint32_t)16}; // here min/max defines so that the string must be exact 16 characters long
+            constexpr SchemaStringSizeConstrained keyField = {"key", FieldPolicy::Required, Gui::Secret | Gui::NoExport, "0123456789ABCDEF", (uint32_t)16, (uint32_t)16}; // exact 16 characters (min = max); the API key: masked in the editor, not in exports
 
             constexpr SchemaStringUID_Path itemsF1 = {"1", FieldPolicy::Optional};
             constexpr SchemaStringUID_Path itemsF2 = {"2", FieldPolicy::Optional};
