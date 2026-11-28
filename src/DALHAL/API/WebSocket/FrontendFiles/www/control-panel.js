@@ -39,11 +39,11 @@ class ControlPanel {
 		this.onAction = onAction;
 		this.nodes = {};
 
-		this.el = document.createElement("div");
-		this.el.className = `control-panel ${className}`.trim();
-		if (background) this.el.style.backgroundImage = `url('${background}')`;
-    if (width) this.el.style.width = `${width}px`;
-		if (height) this.el.style.height = `${height}px`;
+		this.el = newEl("div", { cls: `control-panel ${className}`.trim(), styles: {
+			backgroundImage: background ? `url('${background}')` : "",
+			width: width ? `${width}px` : "",
+			height: height ? `${height}px` : "",
+		} });
 
 		for (const control of controls) this._renderControl(control);
 	}
@@ -76,32 +76,20 @@ class ControlPanel {
 		node.dataset.controlId = control.id;
 
 		this.nodes[control.id] = node;
-		this.el.appendChild(node);
+		this.el.append(node);
 	}
 
 	_buildButton(control) {
-		const btn = document.createElement("div");
-		btn.className = "control-btn";
-		btn.textContent = control.label ?? "";
-		btn.addEventListener("click", (evt) => this.onAction?.(control.action, control, evt));
-		return btn;
+		return newEl("div", { cls: "control-btn", text: control.label ?? "", onclick: (evt) => this.onAction?.(control.action, control, evt) });
 	}
 
 	_buildImage(control) {
-		const img = document.createElement("img");
-		img.className = "control-image";
-		img.src = control.src;
-		img.alt = control.label ?? control.id;
-		if (control.action) {
-			img.addEventListener("click", (evt) => this.onAction?.(control.action, control, evt));
-		}
-		return img;
+		return newEl("img", { cls: "control-image", src: control.src, alt: control.label ?? control.id,
+			onclick: control.action && ((evt) => this.onAction?.(control.action, control, evt)) });
 	}
 
 	_buildSprite(control) {
-		const div = document.createElement("div");
-		div.className = "control-sprite";
-		div.style.backgroundImage = `url('${control.src}')`;
+		const div = newEl("div", { cls: "control-sprite", styles: { backgroundImage: `url('${control.src}')` } });
  
 		// Display size can differ from the sheet's native frame size (e.g. a
 		// 72x74 sheet rendered at 124x124) — an explicit style.width/height
@@ -134,10 +122,7 @@ class ControlPanel {
 	}
 
 	_buildText(control) {
-		const div = document.createElement("div");
-		div.className = "control-text";
-		div.textContent = control.label ?? "";
-		return div;
+		return newEl("div", { cls: "control-text", text: control.label ?? "" });
 	}
 
 	/** Get the live DOM node for a control id (e.g. to init a 3rd-party widget on it). */

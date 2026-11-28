@@ -41,72 +41,30 @@ const WifiModal = (() => {
 	}
 
 	function formRow(labelText, contentNode) {
-		const row = document.createElement("div");
-		row.className = "form-row";
-		const label = document.createElement("label");
-		label.className = "form-label";
-		label.textContent = labelText;
-		row.append(label, contentNode);
-		return row;
+		return newEl("div", { cls: "form-row" }, newEl("label", { cls: "form-label", text: labelText }), contentNode);
 	}
 
 	function buildBody() {
-		const body = document.createElement("div");
-
 		// Network select + Scan
-		const scanRow = document.createElement("div");
-		scanRow.className = "form-input-wrap";
-		dom.ssid = document.createElement("select");
-		dom.ssid.innerHTML = '<option value="">— press Scan —</option>';
-		dom.scanBtn = document.createElement("button");
-		dom.scanBtn.type = "button";
-		dom.scanBtn.className = "btn btn-secondary";
-		dom.scanBtn.textContent = "\ud83d\udd0d Scan";
-		dom.scanBtn.addEventListener("click", () => WifiModal.scan());
-		scanRow.append(dom.ssid, dom.scanBtn);
-		body.appendChild(formRow("Network", scanRow));
-
+		dom.ssid = newEl("select", {}, newEl("option", { value: "", text: "— press Scan —" }));
+		dom.scanBtn = newEl("button", { type: "button", cls: "btn btn-secondary", text: "\ud83d\udd0d Scan", onclick: () => WifiModal.scan() });
 		// Password + visibility toggle
-		const pwRow = document.createElement("div");
-		pwRow.className = "form-input-wrap";
-		dom.password = document.createElement("input");
-		dom.password.type = "password";
-		dom.password.placeholder = "Enter password";
-		dom.password.autocomplete = "current-password";
-		dom.pwToggle = document.createElement("button");
-		dom.pwToggle.type = "button";
-		dom.pwToggle.className = "btn btn-secondary";
-		dom.pwToggle.setAttribute("aria-label", "Toggle password visibility");
-		dom.pwToggle.textContent = "\ud83d\udc41\ufe0f";
-		dom.pwToggle.addEventListener("click", () => WifiModal._togglePw());
-		pwRow.append(dom.password, dom.pwToggle);
-		body.appendChild(formRow("Password", pwRow));
-
+		dom.password = newEl("input", { type: "password", placeholder: "Enter password", autocomplete: "current-password" });
+		dom.pwToggle = newEl("button", { type: "button", cls: "btn btn-secondary", "aria-label": "Toggle password visibility",
+			text: "\ud83d\udc41\ufe0f", onclick: () => WifiModal._togglePw() });
 		// Status line
-		dom.status = document.createElement("div");
-		dom.status.className = "form-status";
-		body.appendChild(dom.status);
-
-		return body;
+		dom.status = newEl("div", { cls: "form-status" });
+		return newEl("div", {},
+			formRow("Network", newEl("div", { cls: "form-input-wrap" }, dom.ssid, dom.scanBtn)),
+			formRow("Password", newEl("div", { cls: "form-input-wrap" }, dom.password, dom.pwToggle)),
+			dom.status);
 	}
 
 	function buildFooter() {
-		const footer = document.createElement("div");
-
-		const cancelBtn = document.createElement("button");
-		cancelBtn.type = "button";
-		cancelBtn.className = "btn btn-secondary";
-		cancelBtn.textContent = "Cancel";
-		cancelBtn.addEventListener("click", () => WifiModal.close());
-
-		dom.sendBtn = document.createElement("button");
-		dom.sendBtn.type = "button";
-		dom.sendBtn.className = "btn btn-primary";
-		dom.sendBtn.textContent = "Send & Restart";
-		dom.sendBtn.addEventListener("click", () => WifiModal.send());
-
-		footer.append(cancelBtn, dom.sendBtn);
-		return footer;
+		dom.sendBtn = newEl("button", { type: "button", cls: "btn btn-primary", text: "Send & Restart", onclick: () => WifiModal.send() });
+		return newEl("div", {},
+			newEl("button", { type: "button", cls: "btn btn-secondary", text: "Cancel", onclick: () => WifiModal.close() }),
+			dom.sendBtn);
 	}
 
 	/** Build the Modal + DOM lazily, on first open() — no markup needed in index.html. */
@@ -139,10 +97,8 @@ const WifiModal = (() => {
 				const jsonItem = jsonData[i];
 				let ssidDecoded;
 				try { ssidDecoded = b64urlDecode(jsonItem.ssid); } catch { ssidDecoded = jsonItem.ssid; }
-				const opt = document.createElement("option");
-				opt.value = jsonItem.ssid;
-				opt.textContent = `${ssidDecoded} (ch${jsonItem.ch}, ${jsonItem.freq}MHz, ${jsonItem.rssi}dBm, ${jsonItem.encryption})`;
-				dom.ssid.appendChild(opt);
+				dom.ssid.append(newEl("option", { value: jsonItem.ssid,
+					text: `${ssidDecoded} (ch${jsonItem.ch}, ${jsonItem.freq}MHz, ${jsonItem.rssi}dBm, ${jsonItem.encryption})` }));
 			}
 		},
 

@@ -37,6 +37,28 @@ This file lists what has been done, one chapter per day, newest first.
 
 ---
 
+## 2026-11-28
+
+### Changed
+- Config tab: the device tree has collapsible nodes (▸/▾, double click also toggles), collapsed at start so only the
+  root devices show; child count and problem dots stay visible on collapsed nodes. Selecting an item from elsewhere
+  (form, link, problem list, a new item) expands the way to it. Expand all / collapse all buttons. The expanded nodes
+  are remembered in the browser (by uid path), so a reload keeps the tree as it was.
+- Frontend: all elements are built with `newEl()` from `domHelpers.js` (loaded first) instead of
+  createElement/className/textContent/appendChild chains: `newEl('div', { cls, text, title, onclick, styles }, ...children)`,
+  plus `downloadUrl()`. config.js lost its own copy (`h`), the command suggestions are built as elements
+  (texts from the device are shown as text, no longer as HTML). Size, as embedded (gzip -9 per file): 52016 -> 51924 bytes
+  (the code files shrink by about 660 bytes, domHelpers.js adds 181); mainly it is shorter and easier to read.
+  Checked in a real browser on esp32dev: console buttons/suggestions/log, WiFi dialog, files tree/menu/editor, config tab.
+- Config tab: the problem list shows errors before warnings.
+- `tools/gen_frontend.py` minifies JS, CSS and HTML before gzip: comments, indentation and trailing spaces out.
+  Every line keeps its line number (a comment or empty line becomes an empty line), so an error at line N in the
+  browser dev tools is at line N in the source file; that costs about 300 bytes after gzip.
+  A small tokenizer copies strings, template literals (nested `${}`) and regex literals exactly, so `//` in a URL
+  is not a comment. No new dependency. Embedded frontend: 51960 -> 41870 bytes (-19 %). Checked: every JS file has
+  an identical syntax tree before/after (TypeScript parser) with every node on the same line, and the whole UI works on esp32dev.
+  `DALHAL_FRONTEND_MINIFY=0` keeps the files as they are.
+
 ## 2026-11-27
 
 ### Added

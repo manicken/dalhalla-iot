@@ -34,18 +34,6 @@
   let formErr = {};      // field name -> element showing its error, for the selected item
 
   // ── small helpers ──
-  function h(tag, attrs = {}, ...children) {
-    const e = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v === undefined || v === null || v === false) continue;
-      if (k === 'text') e.textContent = v;
-      else if (k === 'cls') e.className = v;
-      else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
-      else e.setAttribute(k, v === true ? '' : v);
-    }
-    for (const c of children) if (c) e.append(c);
-    return e;
-  }
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
   const has = (o, k) => isObj(o) && Object.prototype.hasOwnProperty.call(o, k);
   const fsUrl = (name) => `/fs/file?fs=littlefs&path=${encodeURIComponent(CFG_DIR + '/' + name)}`;
@@ -457,6 +445,30 @@
   // ═══════════════════════════════════════════════════════════════
   const treeRows = new Map(); // item -> row element
 
+  // expanded tree nodes by uid path ("temps", "temps:a"), kept in the browser so a reload keeps the tree as it was
+  const EXPANDED_KEY = 'dalhal.cfg.expanded';
+  const expanded = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem(EXPANDED_KEY)) || []); } catch (e) { return new Set(); }
+  })();
+  function saveExpanded() {
+    try { localStorage.setItem(EXPANDED_KEY, JSON.stringify([...expanded])); } catch (e) { /* private mode */ }
+  }
+  const pathOf = (parents, item) => [...parents.map((p) => p.item.uid), item.uid].join(':');
+
+  function toggleNode(path) {
+    if (expanded.has(path)) expanded.delete(path); else expanded.add(path);
+    saveExpanded();
+    renderTree();
+  }
+
+  /** expands (all = true) or collapses every node */
+  function expandAll(all) {
+    expanded.clear();
+    if (all) walk(cfg, { kind: 'reg', regPath: 'ROOT' }, [], (item, arr, ctx, parents) => expanded.add(pathOf(parents, item)));
+    saveExpanded();
+    renderTree();
+  }
+
   function renderTree() {
     const list = $('cfg-tree');
     list.innerHTML = '';
@@ -469,8 +481,8 @@
   function renderTreeLevel(container, arr, ctx, parents, depth) {
     arr.forEach((item, idx) => {
       if (typeof item === 'string') { // a comment item
-        const row = h('div', { cls: 'di comment', style: `padding-left:${7 + depth * 14}px`, title: 'comment (a text item, ignored by the firmware)' },
-          h('span', { cls: 'du', text: '// ' + item }));
+        const row = newEl('div', { cls: 'di comment', style: `padding-left:${4 + depth * 14}px`, title: 'comment (a text item, ignored by the firmware)' },
+          newEl('span', { cls: 'tw' }), newEl('span', { cls: 'du', text: '// ' + item }));
         row.addEventListener('click', () => {
           const t = prompt('Comment:', item);
           if (t === null) return;
@@ -485,17 +497,26 @@
       const kids = childArrays(def);
       const childCount = kids.reduce((n, k) => n + (Array.isArray(item[k.f.name]) ? item[k.f.name].filter(isObj).length : 0), 0);
       const isSel = sel && sel.item === item;
-      const row = h('div', {
+      const path = pathOf(parents, item);
+      const hasKids = kids.some((k) => Array.isArray(item[k.f.name]) && item[k.f.name].length > 0);
+      const open = hasKids && expanded.has(path);
+      const row = newEl('div', {
         cls: `di${isSel ? ' active' : ''}${item.disabled === true ? ' dis' : ''}`,
-        style: `padding-left:${7 + depth * 14}px`,
+        style: `padding-left:${4 + depth * 14}px`,
         onclick: () => select(item, arr, ctx, parents),
+        ondblclick: () => { if (hasKids) toggleNode(path); },
       },
-      h('span', { cls: 'du', text: item.uid || '(no uid)' }),
-      h('span', { cls: 'tb', text: ctx.kind === 'reg' ? (item.type || '?') : (ctx.def.name || 'item') }),
-      childCount ? h('span', { cls: 'ch', text: `▾${childCount}` }) : null,
-      h('span', { cls: 'pb' }));
+      hasKids
+        ? newEl('span', { cls: 'tw', text: open ? '▾' : '▸', title: open ? 'collapse' : 'expand',
+            onclick: (e) => { e.stopPropagation(); toggleNode(path); } })
+        : newEl('span', { cls: 'tw' }),
+      newEl('span', { cls: 'du', text: item.uid || '(no uid)' }),
+      newEl('span', { cls: 'tb', text: ctx.kind === 'reg' ? (item.type || '?') : (ctx.def.name || 'item') }),
+      childCount ? newEl('span', { cls: 'ch', text: String(childCount), title: `${childCount} item${childCount === 1 ? '' : 's'} inside` }) : null,
+      newEl('span', { cls: 'pb' }));
       treeRows.set(item, row);
       container.append(row);
+      if (!open) return;
       for (const k of kids) {
         if (Array.isArray(item[k.f.name])) renderTreeLevel(container, item[k.f.name], k.ctx, [...parents, { item, ctx }], depth + 1);
       }
@@ -525,7 +546,16 @@
     // window.history: autocomplete.js has a global "history" (the command history)
     const path = sel ? [...parents.map((p) => p.item.uid), item.uid].join(':') : '';
     if (location.hash.startsWith('#config')) window.history.replaceState(null, '', path ? '#config=' + encodeURIComponent(path).replace(/%3A/gi, ':') : '#config');
+    let opened = false;
+    if (sel) {
+      parents.forEach((p, i) => {
+        const pp = pathOf(parents.slice(0, i), p.item);
+        if (!expanded.has(pp)) { expanded.add(pp); opened = true; }
+      });
+    }
+    if (opened) { saveExpanded(); renderTree(); }
     for (const [it, row] of treeRows) row.classList.toggle('active', it === item);
+    if (sel) treeRows.get(item)?.scrollIntoView({ block: 'nearest' });
     renderForm();
     syncJson();
   }
@@ -535,7 +565,7 @@
     const s = $('cfg-add-type');
     s.innerHTML = '';
     for (const [k, def] of Object.entries(SCHEMA.registers.ROOT || {})) {
-      s.append(h('option', { value: k, text: `${k} – ${def.name}` }));
+      s.append(newEl('option', { value: k, text: `${k} – ${def.name}` }));
     }
   }
 
@@ -552,23 +582,23 @@
     $('cfg-up').disabled = !sel || sel.arr.indexOf(sel.item) <= 0;
     $('cfg-down').disabled = !sel || sel.arr.indexOf(sel.item) >= sel.arr.length - 1;
     if (!sel) {
-      fa.append(h('div', { cls: 'empty' }, h('div', { cls: 'em-icon', text: '⬡' }),
-        h('div', { cls: 'em-txt', text: SCHEMA ? 'Select a device or add one' : 'Loading…' })));
+      fa.append(newEl('div', { cls: 'empty' }, newEl('div', { cls: 'em-icon', text: '⬡' }),
+        newEl('div', { cls: 'em-txt', text: SCHEMA ? 'Select a device or add one' : 'Loading…' })));
       return;
     }
     const { item, ctx } = sel;
     const def = defOf(item, ctx);
 
-    const dis = h('input', { type: 'checkbox', id: 'cfg-f-disabled' });
+    const dis = newEl('input', { type: 'checkbox', id: 'cfg-f-disabled' });
     dis.checked = item.disabled === true;
     dis.addEventListener('change', () => { if (dis.checked) item.disabled = true; else delete item.disabled; changed({ tree: true }); });
-    fa.append(h('div', { cls: 'dev-hdr' },
-      h('span', { cls: 'dname', text: item.uid || '(no uid)' }),
-      h('span', { cls: 'dtype', text: (ctx.kind === 'reg' ? (item.type || '?') + ' — ' : '') + (def ? def.name : 'unknown') }),
-      h('div', { cls: 'dis-wrap' }, dis, h('label', { for: 'cfg-f-disabled', text: 'disabled' }))));
+    fa.append(newEl('div', { cls: 'dev-hdr' },
+      newEl('span', { cls: 'dname', text: item.uid || '(no uid)' }),
+      newEl('span', { cls: 'dtype', text: (ctx.kind === 'reg' ? (item.type || '?') + ' — ' : '') + (def ? def.name : 'unknown') }),
+      newEl('div', { cls: 'dis-wrap' }, dis, newEl('label', { for: 'cfg-f-disabled', text: 'disabled' }))));
 
     if (!def) {
-      fa.append(h('div', { cls: 'warn-box', text: ctx.kind === 'reg'
+      fa.append(newEl('div', { cls: 'warn-box', text: ctx.kind === 'reg'
         ? `The type "${item.type}" is not known by this firmware. Its fields are shown as they are.`
         : 'Unknown item, its fields are shown as they are.' }));
       renderExtraFields(fa, item, new Set());
@@ -584,12 +614,12 @@
   function renderPath() {
     const box = $('cfg-path');
     box.innerHTML = '';
-    box.append(h('span', { cls: 'bc-seg', text: 'root', onclick: () => select(null) }));
+    box.append(newEl('span', { cls: 'bc-seg', text: 'root', onclick: () => select(null) }));
     if (!sel) return;
     const chain = [...sel.parents, { item: sel.item, ctx: sel.ctx }];
     chain.forEach((p, i) => {
-      box.append(h('span', { cls: 'bc-arr', text: '›' }));
-      box.append(h('span', { cls: 'bc-seg' + (i === chain.length - 1 ? ' bc-cur' : ''), text: p.item.uid || '?', onclick: () => {
+      box.append(newEl('span', { cls: 'bc-arr', text: '›' }));
+      box.append(newEl('span', { cls: 'bc-seg' + (i === chain.length - 1 ? ' bc-cur' : ''), text: p.item.uid || '?', onclick: () => {
         const parents = chain.slice(0, i);
         const owner = parents[parents.length - 1];
         const arr = owner
@@ -602,18 +632,18 @@
 
   function renderModeBox(item, def) {
     const m = evalMode(item, def);
-    const s = h('select');
-    if (m < 0) s.append(h('option', { value: '', text: m === -1 ? '(no mode matches, choose one)' : '(more than one mode matches)' }));
-    def.modes.forEach((mode, i) => s.append(h('option', { value: i, text: mode.name })));
+    const s = newEl('select');
+    if (m < 0) s.append(newEl('option', { value: '', text: m === -1 ? '(no mode matches, choose one)' : '(more than one mode matches)' }));
+    def.modes.forEach((mode, i) => s.append(newEl('option', { value: i, text: mode.name })));
     s.value = m >= 0 ? m : '';
     s.addEventListener('change', () => {
       if (s.value === '') return;
       applyMode(item, def, def.modes[s.value]);
       changed({ form: true, tree: true });
     });
-    const errEl = h('div', { cls: 'err' });
+    const errEl = newEl('div', { cls: 'err' });
     formErr._mode = errEl;
-    return h('div', { cls: 'mode-box' }, h('label', { text: 'mode' }), s, errEl);
+    return newEl('div', { cls: 'mode-box' }, newEl('label', { text: 'mode' }), s, errEl);
   }
 
   /** all fields of def for obj (an item or an Object field value); prefix is for nested error names */
@@ -652,8 +682,8 @@
 
   // ── one value ──
   function label(f, extraHint) {
-    return h('label', {}, f.name, f.required ? h('span', { cls: 'req', text: ' *' }) : null,
-      h('span', { cls: 'type-hint', text: extraHint || f.type }));
+    return newEl('label', {}, f.name, f.required ? newEl('span', { cls: 'req', text: ' *' }) : null,
+      newEl('span', { cls: 'type-hint', text: extraHint || f.type }));
   }
 
   function hintOf(f) {
@@ -683,25 +713,25 @@
 
   function clearButton(obj, f, onClear) {
     if (f.required) return null;
-    return h('button', { cls: 'clr', title: 'remove this field (use the default)', text: '×', onclick: () => { delete obj[f.name]; onClear(); changed(); } });
+    return newEl('button', { cls: 'clr', title: 'remove this field (use the default)', text: '×', onclick: () => { delete obj[f.name]; onClear(); changed(); } });
   }
 
   function renderField(obj, f, prefix) {
-    const row = h('div', { cls: 'fr' }, label(f));
+    const row = newEl('div', { cls: 'fr' }, label(f));
     const there = has(obj, f.name);
     const val = obj[f.name];
     let input;
 
     if (f.type === 'Bool') {
-      input = h('input', { type: 'checkbox' });
+      input = newEl('input', { type: 'checkbox' });
       input.checked = there ? val === true : f.default === true;
       input.addEventListener('change', () => setVal(obj, f, input.checked));
-      row.append(h('div', { cls: 'fr-check' }, input, h('span', { cls: 'fn', text: there ? '' : '(default)' })));
+      row.append(newEl('div', { cls: 'fr-check' }, input, newEl('span', { cls: 'fn', text: there ? '' : '(default)' })));
     } else if (f.type === 'StringAnyOfByFuncConstrained') {
-      input = h('select');
-      if (!f.required) input.append(h('option', { value: '', text: f.default ? `(default: ${f.default})` : '(not set)' }));
-      for (const v of f.allowedValues || []) input.append(h('option', { value: v, text: v }));
-      if (there && !(f.allowedValues || []).some((a) => a.toUpperCase() === String(val).toUpperCase())) input.append(h('option', { value: val, text: `${val} (not allowed)` }));
+      input = newEl('select');
+      if (!f.required) input.append(newEl('option', { value: '', text: f.default ? `(default: ${f.default})` : '(not set)' }));
+      for (const v of f.allowedValues || []) input.append(newEl('option', { value: v, text: v }));
+      if (there && !(f.allowedValues || []).some((a) => a.toUpperCase() === String(val).toUpperCase())) input.append(newEl('option', { value: val, text: `${val} (not allowed)` }));
       input.value = there ? (f.allowedValues || []).find((a) => a.toUpperCase() === String(val).toUpperCase()) || val : '';
       input.addEventListener('change', () => setVal(obj, f, input.value === '' ? undefined : input.value));
       row.append(input);
@@ -709,7 +739,7 @@
       input = renderPinSelect(obj, f);
       row.append(input);
     } else if (['UInt', 'Int', 'Float', 'Number'].includes(f.type)) {
-      input = h('input', { type: 'number', step: f.type === 'UInt' || f.type === 'Int' ? '1' : 'any' });
+      input = newEl('input', { type: 'number', step: f.type === 'UInt' || f.type === 'Int' ? '1' : 'any' });
       if (f.minValue || f.minValue === 0) input.min = f.minValue;
       if (f.maxValue) input.max = f.maxValue;
       input.value = there && typeof val === 'number' ? val : '';
@@ -720,10 +750,10 @@
         const n = Number(input.value);
         setVal(obj, f, isNaN(n) ? input.value : n);
       });
-      row.append(h('div', { cls: 'fr-line' }, input, clearButton(obj, f, () => { input.value = ''; })));
+      row.append(newEl('div', { cls: 'fr-line' }, input, clearButton(obj, f, () => { input.value = ''; })));
     } else {
       const secret = /^(pass|password|passwd|pwd|secret|key|apikey|token)$/i.test(f.name);
-      input = h('input', { type: secret ? 'password' : 'text', spellcheck: 'false', autocomplete: secret ? 'new-password' : 'off' });
+      input = newEl('input', { type: secret ? 'password' : 'text', spellcheck: 'false', autocomplete: secret ? 'new-password' : 'off' });
       if (f.type === 'StringUID') input.maxLength = UID_MAX;
       if (f.type === 'StringSizeConstrained' && f.maxLength) input.maxLength = f.maxLength;
       if (f.type === 'StringUID_Path') input.setAttribute('list', 'cfg-uidpaths');
@@ -734,21 +764,21 @@
         if (v === '' && !f.required && f.type !== 'StringUID') { setVal(obj, f, undefined, { tree: f.name === 'uid' }); return; }
         setVal(obj, f, v, { tree: f.name === 'uid', header: f.name === 'uid' });
       });
-      const show = secret ? h('button', { cls: 'clr', title: 'show / hide', text: '👁', onclick: () => { input.type = input.type === 'password' ? 'text' : 'password'; } }) : null;
-      row.append(h('div', { cls: 'fr-line' }, input, show, clearButton(obj, f, () => { input.value = ''; })));
+      const show = secret ? newEl('button', { cls: 'clr', title: 'show / hide', text: '👁', onclick: () => { input.type = input.type === 'password' ? 'text' : 'password'; } }) : null;
+      row.append(newEl('div', { cls: 'fr-line' }, input, show, clearButton(obj, f, () => { input.value = ''; })));
     }
     const hint = hintOf(f);
-    if (hint) row.append(h('div', { cls: 'fn', text: hint }));
-    const err = h('div', { cls: 'err' });
+    if (hint) row.append(newEl('div', { cls: 'fn', text: hint }));
+    const err = newEl('div', { cls: 'err' });
     formErr[prefix + f.name] = err;
     row.append(err);
     return row;
   }
 
   function renderPinSelect(obj, f) {
-    const s = h('select');
+    const s = newEl('select');
     const val = obj[f.name];
-    s.append(h('option', { value: '', text: f.required ? '— choose a GPIO —' : '— not used —' }));
+    s.append(newEl('option', { value: '', text: f.required ? '— choose a GPIO —' : '— not used —' }));
     const users = pinUsers();
     const need = pinNeeds(f);
     const pins = GPIO ? Object.keys(GPIO.list).map(Number).sort((a, b) => a - b) : [];
@@ -760,10 +790,10 @@
       if (mask & PIN_WARN) txt += '  ⚠ boot';
       if (others.length) txt += `  ← ${others.map((u) => u.item.uid).join(', ')}`;
       const unusable = (mask & PIN_BAD) || (mask & need) !== need;
-      s.append(h('option', { value: p, text: txt, disabled: unusable && p !== val }));
+      s.append(newEl('option', { value: p, text: txt, disabled: unusable && p !== val }));
     }
-    if (typeof val === 'number' && val < 0) s.append(h('option', { value: val, text: `GPIO ${-val} disabled (${val})` }));
-    else if (typeof val === 'number' && !pins.includes(val)) s.append(h('option', { value: val, text: `GPIO ${val} (not on this chip)` }));
+    if (typeof val === 'number' && val < 0) s.append(newEl('option', { value: val, text: `GPIO ${-val} disabled (${val})` }));
+    else if (typeof val === 'number' && !pins.includes(val)) s.append(newEl('option', { value: val, text: `GPIO ${val} (not on this chip)` }));
     s.value = typeof val === 'number' ? String(val) : '';
     s.addEventListener('change', () => setVal(obj, f, s.value === '' ? (f.required ? null : undefined) : Number(s.value)));
     return s;
@@ -771,13 +801,13 @@
 
   // ── groups ──
   function renderOneOf(obj, f, prefix) {
-    const row = h('div', { cls: 'fr' }, label(f, 'one of'));
+    const row = newEl('div', { cls: 'fr' }, label(f, 'one of'));
     const cur = f.fields.find((x) => has(obj, x.name));
-    const sel_ = h('select');
-    if (!f.required || !cur) sel_.append(h('option', { value: '', text: f.required ? '(choose)' : '(not set)' }));
-    for (const x of f.fields) sel_.append(h('option', { value: x.name, text: x.name.replace(/^refreshtime/, '') || x.name }));
+    const sel_ = newEl('select');
+    if (!f.required || !cur) sel_.append(newEl('option', { value: '', text: f.required ? '(choose)' : '(not set)' }));
+    for (const x of f.fields) sel_.append(newEl('option', { value: x.name, text: x.name.replace(/^refreshtime/, '') || x.name }));
     sel_.value = cur ? cur.name : '';
-    const inp = h('input', { type: 'number', step: 'any' });
+    const inp = newEl('input', { type: 'number', step: 'any' });
     inp.value = cur && typeof obj[cur.name] === 'number' ? obj[cur.name] : '';
     inp.disabled = !cur;
     const write = () => {
@@ -788,9 +818,9 @@
     };
     sel_.addEventListener('change', () => { inp.disabled = !sel_.value; if (sel_.value && inp.value === '') inp.value = 1; write(); });
     inp.addEventListener('input', write);
-    row.append(h('div', { cls: 'rfg' }, sel_, inp));
-    row.append(h('div', { cls: 'fn', text: f.fields.map((x) => x.name).join(' / ') }));
-    const err = h('div', { cls: 'err' });
+    row.append(newEl('div', { cls: 'rfg' }, sel_, inp));
+    row.append(newEl('div', { cls: 'fn', text: f.fields.map((x) => x.name).join(' / ') }));
+    const err = newEl('div', { cls: 'err' });
     formErr[prefix + f.name] = err;
     f.fields.forEach((x) => { formErr[prefix + x.name] = err; });
     row.append(err);
@@ -798,11 +828,11 @@
   }
 
   function renderAllOf(obj, f, prefix, byMode) {
-    const box = h('div', { cls: 'grp-box' });
+    const box = newEl('div', { cls: 'grp-box' });
     const there = f.fields.some((x) => has(obj, x.name));
-    const title = h('div', { cls: 'grp-title' }, f.name, h('span', { cls: 'pill pill-pur', text: byMode ? 'needed by the mode' : 'all or none' }));
+    const title = newEl('div', { cls: 'grp-title' }, f.name, newEl('span', { cls: 'pill pill-pur', text: byMode ? 'needed by the mode' : 'all or none' }));
     if (!byMode) {
-      const toggle = h('input', { type: 'checkbox', title: 'use this group' });
+      const toggle = newEl('input', { type: 'checkbox', title: 'use this group' });
       toggle.checked = there;
       toggle.addEventListener('change', () => {
         if (toggle.checked) addField(obj, f);
@@ -812,7 +842,7 @@
       title.prepend(toggle);
     }
     box.append(title);
-    const err = h('div', { cls: 'err' });
+    const err = newEl('div', { cls: 'err' });
     formErr[prefix + f.name] = err;
     box.append(err);
     if (there) for (const x of f.fields) box.append(renderField(obj, x, prefix));
@@ -820,11 +850,11 @@
   }
 
   function renderObject(obj, f, sub, prefix) {
-    const box = h('div', { cls: 'grp-box' });
+    const box = newEl('div', { cls: 'grp-box' });
     const there = isObj(obj[f.name]);
-    const title = h('div', { cls: 'grp-title' }, f.name, h('span', { cls: 'pill pill-cya', text: sub.name || 'object' }));
+    const title = newEl('div', { cls: 'grp-title' }, f.name, newEl('span', { cls: 'pill pill-cya', text: sub.name || 'object' }));
     if (!f.required) {
-      const toggle = h('input', { type: 'checkbox', title: 'use this object' });
+      const toggle = newEl('input', { type: 'checkbox', title: 'use this object' });
       toggle.checked = there;
       toggle.addEventListener('change', () => {
         if (toggle.checked) {
@@ -837,18 +867,18 @@
       title.prepend(toggle);
     }
     box.append(title);
-    const err = h('div', { cls: 'err' });
+    const err = newEl('div', { cls: 'err' });
     formErr[prefix + f.name] = err;
     box.append(err);
     if (there) renderFields(box, obj[f.name], sub, prefix + f.name + '.');
-    else if (f.required) box.append(h('button', { cls: 'btn sml', text: '+ create', onclick: () => { obj[f.name] = {}; changed({ form: true }); } }));
+    else if (f.required) box.append(newEl('button', { cls: 'btn sml', text: '+ create', onclick: () => { obj[f.name] = {}; changed({ form: true }); } }));
     return box;
   }
 
   /** free JSON (Object without a known subtype, arrays of values) */
   function renderJsonField(obj, f, prefix) {
-    const row = h('div', { cls: 'fr' }, label(f, f.type === 'ArrayOfPrimitives' ? 'array of values' : 'JSON'));
-    const ta = h('textarea', { spellcheck: 'false', placeholder: f.type === 'ArrayOfPrimitives' ? '[1, 2, 3]' : '{ }' });
+    const row = newEl('div', { cls: 'fr' }, label(f, f.type === 'ArrayOfPrimitives' ? 'array of values' : 'JSON'));
+    const ta = newEl('textarea', { spellcheck: 'false', placeholder: f.type === 'ArrayOfPrimitives' ? '[1, 2, 3]' : '{ }' });
     ta.value = has(obj, f.name) ? JSON.stringify(obj[f.name], null, f.type === 'ArrayOfPrimitives' ? 0 : 2) : '';
     ta.addEventListener('input', () => {
       if (ta.value.trim() === '' && !f.required) { ta.classList.remove('bad'); setVal(obj, f, undefined); return; }
@@ -856,7 +886,7 @@
       catch (e) { ta.classList.add('bad'); }
     });
     row.append(ta);
-    const err = h('div', { cls: 'err' });
+    const err = newEl('div', { cls: 'err' });
     formErr[prefix + f.name] = err;
     row.append(err);
     return row;
@@ -864,39 +894,39 @@
 
   // ── child items ──
   function renderChildArray(obj, f, ctx) {
-    const wrap = h('div');
+    const wrap = newEl('div');
     const there = Array.isArray(obj[f.name]);
     const arr = there ? obj[f.name] : [];
-    wrap.append(h('div', { cls: 'sec-title' }, f.name, f.required ? h('span', { cls: 'req', text: '*' }) : null,
-      h('span', { cls: 'pill pill-grn', text: ctx.kind === 'reg' ? `types: ${ctx.regPath}` : (ctx.def.name || 'objects') })));
-    const box = h('div', { cls: 'items-box' });
-    box.append(h('div', { cls: 'items-hdr' }, 'items', h('span', { cls: 'cnt ic', text: arr.filter(isObj).length })));
+    wrap.append(newEl('div', { cls: 'sec-title' }, f.name, f.required ? newEl('span', { cls: 'req', text: '*' }) : null,
+      newEl('span', { cls: 'pill pill-grn', text: ctx.kind === 'reg' ? `types: ${ctx.regPath}` : (ctx.def.name || 'objects') })));
+    const box = newEl('div', { cls: 'items-box' });
+    box.append(newEl('div', { cls: 'items-hdr' }, 'items', newEl('span', { cls: 'cnt ic', text: arr.filter(isObj).length })));
     arr.forEach((child) => {
       if (!isObj(child)) {
-        if (typeof child === 'string') box.append(h('div', { cls: 'ni comment' }, h('span', { cls: 'ni-uid', text: '// ' + child })));
+        if (typeof child === 'string') box.append(newEl('div', { cls: 'ni comment' }, newEl('span', { cls: 'ni-uid', text: '// ' + child })));
         return;
       }
       const parents = [...sel.parents, { item: sel.item, ctx: sel.ctx }];
       const open = () => select(child, arr, ctx, parents);
-      box.append(h('div', { cls: `ni${child.disabled === true ? ' dis' : ''}`, onclick: open },
-        h('span', { cls: 'ni-uid', text: child.uid || '(no uid)' }),
-        child.type ? h('span', { cls: 'ni-type', text: child.type }) : null,
-        h('button', { cls: 'ni-btn', text: 'edit ›', onclick: (e) => { e.stopPropagation(); open(); } }),
-        h('button', { cls: 'ni-btn ni-del', text: '✕', title: 'delete', onclick: (e) => {
+      box.append(newEl('div', { cls: `ni${child.disabled === true ? ' dis' : ''}`, onclick: open },
+        newEl('span', { cls: 'ni-uid', text: child.uid || '(no uid)' }),
+        child.type ? newEl('span', { cls: 'ni-type', text: child.type }) : null,
+        newEl('button', { cls: 'ni-btn', text: 'edit ›', onclick: (e) => { e.stopPropagation(); open(); } }),
+        newEl('button', { cls: 'ni-btn ni-del', text: '✕', title: 'delete', onclick: (e) => {
           e.stopPropagation();
           if (!confirm(`Delete "${child.uid || '?'}"?`)) return;
           arr.splice(arr.indexOf(child), 1);
           changed({ form: true, tree: true });
         } })));
     });
-    const add = h('div', { cls: 'items-add' });
+    const add = newEl('div', { cls: 'items-add' });
     let typeSel = null;
     if (ctx.kind === 'reg') {
-      typeSel = h('select');
-      for (const [k, d] of Object.entries(SCHEMA.registers[ctx.regPath] || {})) typeSel.append(h('option', { value: k, text: `${k} – ${d.name}` }));
+      typeSel = newEl('select');
+      for (const [k, d] of Object.entries(SCHEMA.registers[ctx.regPath] || {})) typeSel.append(newEl('option', { value: k, text: `${k} – ${d.name}` }));
       add.append(typeSel);
     }
-    add.append(h('button', { cls: 'btn pri sml', text: '+ add', onclick: () => {
+    add.append(newEl('button', { cls: 'btn pri sml', text: '+ add', onclick: () => {
       if (!Array.isArray(obj[f.name])) obj[f.name] = [];
       const n = newItem(obj[f.name], ctx, typeSel && typeSel.value);
       obj[f.name].push(n);
@@ -905,7 +935,7 @@
     } }));
     box.append(add);
     wrap.append(box);
-    const err = h('div', { cls: 'err' });
+    const err = newEl('div', { cls: 'err' });
     formErr[f.name] = err;
     wrap.append(err);
     return wrap;
@@ -915,13 +945,13 @@
   function renderChips(obj, f, sub) {
     const key = f.renderAllAllowedValuesFromStringConstraint;
     const vf = fieldsOf(sub).find((x) => x.name === key);
-    const wrap = h('div');
-    wrap.append(h('div', { cls: 'sec-title' }, f.name, h('span', { cls: 'pill pill-grn', text: `${key}: click to toggle` })));
-    const grid = h('div', { cls: 'chips' });
+    const wrap = newEl('div');
+    wrap.append(newEl('div', { cls: 'sec-title' }, f.name, newEl('span', { cls: 'pill pill-grn', text: `${key}: click to toggle` })));
+    const grid = newEl('div', { cls: 'chips' });
     const arr = () => (Array.isArray(obj[f.name]) ? obj[f.name] : (obj[f.name] = []));
     for (const v of (vf && vf.allowedValues) || []) {
       const on = Array.isArray(obj[f.name]) && obj[f.name].some((r) => isObj(r) && String(r[key]).toUpperCase() === v.toUpperCase());
-      grid.append(h('div', { cls: 'chip' + (on ? ' on' : ''), text: v, onclick: () => {
+      grid.append(newEl('div', { cls: 'chip' + (on ? ' on' : ''), text: v, onclick: () => {
         const a = arr();
         const i = a.findIndex((r) => isObj(r) && String(r[key]).toUpperCase() === v.toUpperCase());
         if (i >= 0) a.splice(i, 1);
@@ -933,7 +963,7 @@
       } }));
     }
     wrap.append(grid);
-    const err = h('div', { cls: 'err' });
+    const err = newEl('div', { cls: 'err' });
     formErr[f.name] = err;
     wrap.append(err);
     return wrap;
@@ -943,16 +973,16 @@
   function renderExtraFields(container, obj, known) {
     const extra = Object.keys(obj).filter((k) => !known.has(k));
     if (!extra.length) return;
-    container.append(h('div', { cls: 'sec-title' }, 'unknown fields', h('span', { cls: 'pill pill-yel', text: 'not in the schema' })));
+    container.append(newEl('div', { cls: 'sec-title' }, 'unknown fields', newEl('span', { cls: 'pill pill-yel', text: 'not in the schema' })));
     for (const k of extra) {
-      const row = h('div', { cls: 'fr' }, h('label', { cls: 'unknown', text: k }));
-      const ta = h('textarea', { spellcheck: 'false', rows: 1 });
+      const row = newEl('div', { cls: 'fr' }, newEl('label', { cls: 'unknown', text: k }));
+      const ta = newEl('textarea', { spellcheck: 'false', rows: 1 });
       ta.value = JSON.stringify(obj[k]);
       ta.addEventListener('input', () => {
         try { obj[k] = JSON.parse(ta.value); ta.classList.remove('bad'); changed(); } catch (e) { ta.classList.add('bad'); }
       });
-      row.append(h('div', { cls: 'fr-line' }, ta, h('button', { cls: 'clr', title: 'remove', text: '×', onclick: () => { delete obj[k]; changed({ form: true }); } })));
-      const err = h('div', { cls: 'err' });
+      row.append(newEl('div', { cls: 'fr-line' }, ta, newEl('button', { cls: 'clr', title: 'remove', text: '×', onclick: () => { delete obj[k]; changed({ form: true }); } })));
+      const err = newEl('div', { cls: 'err' });
       formErr[k] = err;
       row.append(err);
       container.append(row);
@@ -989,10 +1019,10 @@
     b.className = 'btn sml ' + (errs ? 'dan' : warns ? 'wrn' : 'ok');
     const list = $('cfg-problem-list');
     list.innerHTML = '';
-    for (const p of problems) {
+    for (const p of [...problems].sort((a, b) => (a.level === b.level ? 0 : a.level === 'err' ? -1 : 1))) { // errors first
       const where = p.item ? [...(p.parents || []).map((x) => x.item.uid), p.item.uid].join(':') : 'config';
-      list.append(h('div', { cls: 'prob ' + p.level, onclick: () => { if (p.item) select(p.item, p.arr, p.ctx, p.parents); list.hidden = true; } },
-        h('span', { cls: 'prob-where', text: where + (p.field && !p.field.startsWith('_') ? '.' + p.field : '') }), ' ', p.msg));
+      list.append(newEl('div', { cls: 'prob ' + p.level, onclick: () => { if (p.item) select(p.item, p.arr, p.ctx, p.parents); list.hidden = true; } },
+        newEl('span', { cls: 'prob-where', text: where + (p.field && !p.field.startsWith('_') ? '.' + p.field : '') }), ' ', p.msg));
     }
   }
 
@@ -1025,7 +1055,7 @@
     refreshDirty();
     const list = $('cfg-uidpaths');
     list.innerHTML = '';
-    for (const p of allUidPaths()) list.append(h('option', { value: p }));
+    for (const p of allUidPaths()) list.append(newEl('option', { value: p }));
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1120,10 +1150,10 @@
     box.hidden = false;
     box.className = failed ? 'failed' : '';
     box.innerHTML = '';
-    box.append(h('div', { cls: 'devlog-title' }, failed ? 'device log: why the config was not accepted' : 'device log', h('button', { cls: 'clr', text: '×', onclick: () => { box.hidden = true; } })));
+    box.append(newEl('div', { cls: 'devlog-title' }, failed ? 'device log: why the config was not accepted' : 'device log', newEl('button', { cls: 'clr', text: '×', onclick: () => { box.hidden = true; } })));
     const shown = lines.filter((l) => !/raw (u)?int value converted/.test(l)); // conversion info is noise here
     for (const l of shown.length ? shown : ['(no new log entries)']) {
-      box.append(h('div', { cls: /\[ERR\]/.test(l) ? 'l-err' : /\[WARN\]/.test(l) ? 'l-warn' : '', text: l }));
+      box.append(newEl('div', { cls: /\[ERR\]/.test(l) ? 'l-err' : /\[WARN\]/.test(l) ? 'l-warn' : '', text: l }));
     }
   }
 
@@ -1135,10 +1165,7 @@
     $('cfg-save').onclick = saveOnly;
     $('cfg-apply').onclick = apply;
     $('cfg-problems').onclick = () => { $('cfg-problem-list').hidden = !$('cfg-problem-list').hidden || !problems.length; };
-    $('cfg-export').onclick = () => {
-      const a = h('a', { href: URL.createObjectURL(new Blob([cfgText()], { type: 'application/json' })), download: 'cfg.json' });
-      document.body.append(a); a.click(); a.remove();
-    };
+    $('cfg-export').onclick = () => downloadUrl(URL.createObjectURL(new Blob([cfgText()], { type: 'application/json' })), 'cfg.json');
     $('cfg-import').onclick = () => $('cfg-import-file').click();
     $('cfg-import-file').onchange = async (e) => {
       const f = e.target.files[0];
@@ -1176,6 +1203,8 @@
         changed({ tree: true, form: true });
       } catch (err) { ta.classList.add('bad'); }
     });
+    $('cfg-expand-all').onclick = () => expandAll(true);
+    $('cfg-collapse-all').onclick = () => expandAll(false);
     $('cfg-add').onclick = () => {
       const t = $('cfg-add-type').value;
       const root = { kind: 'reg', regPath: 'ROOT' };

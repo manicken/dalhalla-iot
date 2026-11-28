@@ -122,7 +122,11 @@
   </div>
   <div id="cfg-main">
     <div id="cfg-sidebar">
-      <div id="cfg-sb-head"><span class="lbl">devices</span><span id="cfg-dev-cnt" class="cnt">0</span></div>
+      <div id="cfg-sb-head">
+        <span class="lbl">devices</span><span id="cfg-dev-cnt" class="cnt">0</span>
+        <button class="btn sml" id="cfg-expand-all" title="expand all">⊞</button>
+        <button class="btn sml" id="cfg-collapse-all" title="collapse all">⊟</button>
+      </div>
       <div id="cfg-tree"></div>
       <div id="cfg-add-bar">
         <select id="cfg-add-type" title="type of the new root device"></select>
@@ -151,6 +155,7 @@
   <datalist id="cfg-uidpaths"></datalist>
 </div>
 
+<script src="domHelpers.js"></script>
 <script src="main.js"></script>
 <script src="log-helpers.js"></script>
 <script src="autocomplete.js"></script>

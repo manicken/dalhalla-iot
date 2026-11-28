@@ -41,20 +41,9 @@ class Modal {
 		this.onOpen = onOpen;
 		this.hasBackdrop = backdrop;
 
-		this.el = document.createElement("div");
-		this.el.className = "modal";
-		this.el.id = this.id;
-		if (width) this.el.style.width = `${width}px`;
-		if (height) this.el.style.height = `${height}px`;
-
-		this.headerEl = document.createElement("div");
-		this.headerEl.className = "modal-header";
-
-		this.titleEl = document.createElement("div");
-		this.titleEl.className = "modal-title";
-		this.titleEl.id = `${this.id}-title`;
-		this.titleEl.textContent = title;
-		this.headerEl.appendChild(this.titleEl);
+		this.el = newEl("div", { cls: "modal", id: this.id, styles: { width: width ? `${width}px` : "", height: height ? `${height}px` : "" } });
+		this.titleEl = newEl("div", { cls: "modal-title", id: `${this.id}-title`, text: title });
+		this.headerEl = newEl("div", { cls: "modal-header" }, this.titleEl);
 
 		if (backdrop) {
 			this.el.setAttribute("role", "dialog");
@@ -63,30 +52,16 @@ class Modal {
 		}
 
 		if (closable) {
-			this.closeBtn = document.createElement("button");
-			this.closeBtn.className = "modal-close";
-			this.closeBtn.type = "button";
-			this.closeBtn.setAttribute("aria-label", "Close");
-			this.closeBtn.textContent = "\u00d7";
-			this.closeBtn.addEventListener("click", () => this.close());
-			this.headerEl.appendChild(this.closeBtn);
+			this.closeBtn = newEl("button", { cls: "modal-close", type: "button", "aria-label": "Close", text: "\u00d7", onclick: () => this.close() });
+			this.headerEl.append(this.closeBtn);
 		}
 
-		this.bodyEl = document.createElement("div");
-		this.bodyEl.className = "modal-body";
-
-		this.footerEl = document.createElement("div");
-		this.footerEl.className = "modal-footer";
-		this.footerEl.style.display = "none"; // hidden until setFooter() is used
-
-		this.el.appendChild(this.headerEl);
-		this.el.appendChild(this.bodyEl);
-		this.el.appendChild(this.footerEl);
+		this.bodyEl = newEl("div", { cls: "modal-body" });
+		this.footerEl = newEl("div", { cls: "modal-footer", styles: { display: "none" } }); // hidden until setFooter() is used
+		this.el.append(this.headerEl, this.bodyEl, this.footerEl);
 
 		if (backdrop) {
-			this.backdropEl = document.createElement("div");
-			this.backdropEl.className = "modal-backdrop";
-			this.backdropEl.appendChild(this.el);
+			this.backdropEl = newEl("div", { cls: "modal-backdrop" }, this.el);
 			if (closeOnBackdropClick) {
 				this.backdropEl.addEventListener("click", (e) => {
 					if (e.target === this.backdropEl) this.close();

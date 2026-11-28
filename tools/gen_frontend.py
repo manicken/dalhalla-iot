@@ -5,6 +5,8 @@ Source:  src/DALHAL/API/WebSocket/FrontendFiles/www/**      (plain html/js/css/.
 Output:  src/DALHAL/API/WebSocket/FrontendFiles/Generated/DALHAL_FrontendFiles.h
 
 The path of a file relative to www/ is used as its virtual path (e.g. css/main.css).
+JS, CSS and HTML are minified first: comments, indentation and empty lines out (see minify()),
+DALHAL_FRONTEND_MINIFY=0 keeps the files as they are.
 Files are gzip compressed when that makes them smaller, and are then served
 with "Content-Encoding: gzip" so the browser decompresses them transparently.
 
@@ -72,6 +74,206 @@ def collect_files():
     return files
 
 
+# ---------------- minify: comments and indentation out, nothing else ----------------
+# Not a full minifier on purpose (no renaming): small, no dependencies, and the code in the browser stays
+# readable. Every line stays on its line number: a comment line or an empty line becomes an empty line,
+# so an error at line N in the browser dev tools is at line N in the source file (only the columns move
+# by the removed indentation); runs of empty lines cost next to nothing after gzip.
+# Strings, template literals (with nested ${...}) and regex literals are copied exactly, so "//" or "/*"
+# inside them is never taken as a comment.
+# DALHAL_FRONTEND_MINIFY=0 turns it off (e.g. to debug against the original files).
+
+MINIFY = os.environ.get("DALHAL_FRONTEND_MINIFY", "1") != "0"
+
+# after these a "/" starts a regex literal, otherwise it is a division
+_REGEX_AFTER_CHARS = set("(,=:[!&|?{};+-*%<>~^")
+_REGEX_AFTER_WORDS = {"return", "typeof", "case", "do", "else", "in", "of", "new", "delete", "void",
+                      "throw", "instanceof", "yield", "await"}
+
+
+class _Out:
+    """collects the output: no indentation, no trailing spaces, every line break kept (same line numbers)"""
+
+    def __init__(self):
+        self.parts = []
+        self.line_start = True
+
+    def code(self, ch):
+        if ch == "\n":
+            while self.parts and self.parts[-1] in (" ", "\t"):
+                self.parts.pop()
+            self.parts.append("\n")
+            self.line_start = True
+        elif ch in " \t\r":
+            if not self.line_start:
+                self.parts.append(ch)
+        else:
+            self.parts.append(ch)
+            self.line_start = False
+
+    def raw(self, text):  # strings, templates, regex: exactly as they are
+        if text:
+            self.parts.append(text)
+            self.line_start = False
+
+    def text(self):
+        return "".join(self.parts)
+
+
+def minify_js(src):
+    out = _Out()
+    n = len(src)
+    last = ""  # last significant char or word, for the regex/division decision
+
+    def copy_quoted(i, q):  # 'string' or "string", i at the opening quote
+        j = i + 1
+        while j < n and src[j] != q:
+            j += 2 if src[j] == "\\" else 1
+        return j + 1
+
+    def copy_regex(i):  # /regex/flags, i at the opening /
+        j, in_class = i + 1, False
+        while j < n:
+            c = src[j]
+            if c == "\\":
+                j += 2
+                continue
+            if c == "[":
+                in_class = True
+            elif c == "]":
+                in_class = False
+            elif c == "/" and not in_class:
+                break
+            elif c == "\n":
+                raise ValueError("unterminated regex literal")
+            j += 1
+        j += 1
+        while j < n and (src[j].isalnum() or src[j] == "_"):
+            j += 1
+        return j
+
+    def code(i, until_brace):
+        """code from i; with until_brace it stops at the } that closes a template ${ (returns its index)"""
+        nonlocal last
+        depth = 0
+        while i < n:
+            c = src[i]
+            nxt = src[i + 1] if i + 1 < n else ""
+            if c in "'\"":
+                j = copy_quoted(i, c)
+                out.raw(src[i:j]); last = c; i = j
+            elif c == "`":
+                i = template(i)
+                last = "`"
+            elif c == "/" and nxt == "/":
+                while i < n and src[i] != "\n":
+                    i += 1
+            elif c == "/" and nxt == "*":
+                end = src.find("*/", i + 2)
+                end = n if end < 0 else end + 2
+                lines = src.count("\n", i, end)
+                for _ in range(lines):
+                    out.code("\n")
+                if not lines:
+                    out.code(" ")
+                i = end
+            elif c == "/" and (last == "" or last in _REGEX_AFTER_CHARS or last in _REGEX_AFTER_WORDS):
+                j = copy_regex(i)
+                out.raw(src[i:j]); last = "/regex/"; i = j
+            elif c.isalnum() or c in "_$":
+                j = i
+                while j < n and (src[j].isalnum() or src[j] in "_$"):
+                    j += 1
+                out.raw(src[i:j]); last = src[i:j]; i = j
+            else:
+                if until_brace:
+                    if c == "{":
+                        depth += 1
+                    elif c == "}":
+                        if depth == 0:
+                            return i
+                        depth -= 1
+                out.code(c)
+                if c not in " \t\r\n":
+                    last = c
+                i += 1
+        return i
+
+    def template(i):  # `...${code}...`, i at the opening backtick, returns the index after the closing one
+        j = i + 1
+        start = i
+        while j < n:
+            c = src[j]
+            if c == "\\":
+                j += 2
+            elif c == "`":
+                out.raw(src[start:j + 1])
+                return j + 1
+            elif c == "$" and j + 1 < n and src[j + 1] == "{":
+                out.raw(src[start:j + 2])
+                j = code(j + 2, True)
+                start = j  # the closing } of ${ is copied with the next template part
+                j += 1
+            else:
+                j += 1
+        raise ValueError("unterminated template literal")
+
+    code(0, False)
+    return out.text()
+
+
+def minify_css(src):
+    out = _Out()
+    i, n = 0, len(src)
+    while i < n:
+        c = src[i]
+        if c in "'\"":
+            j = i + 1
+            while j < n and src[j] != c:
+                j += 2 if src[j] == "\\" else 1
+            out.raw(src[i:j + 1]); i = j + 1
+        elif c == "/" and i + 1 < n and src[i + 1] == "*":
+            end = src.find("*/", i + 2)
+            end = n if end < 0 else end + 2
+            for _ in range(src.count("\n", i, end)):
+                out.code("\n")
+            i = end
+        else:
+            out.code(c); i += 1
+    return out.text()
+
+
+def minify_html(src):
+    """<!-- comments --> and indentation out (same line numbers), pre/textarea/script/style stay as they are"""
+    src = re.sub(r"<!--(?!\[).*?-->", lambda m: "\n" * m.group(0).count("\n"), src, flags=re.S)
+    keep = re.compile(r"(<(pre|textarea|script|style)\b.*?</\2\s*>)", re.S | re.I)
+    pieces = keep.split(src)
+    result = []
+    for k, piece in enumerate(pieces):
+        if k % 3 == 1:
+            result.append(piece)          # a kept block, as it is
+        elif k % 3 == 0:
+            # line by line: indentation and trailing spaces out, the line breaks themselves stay
+            result.append("\n".join(l.strip() for l in piece.split("\n")))
+        # k % 3 == 2 is the tag name group of the split
+    return "".join(result)
+
+
+def minify(ext, data):
+    if not MINIFY:
+        return data
+    text = data.decode("utf-8")
+    if ext == ".js":
+        text = minify_js(text)
+    elif ext == ".css":
+        text = minify_css(text)
+    elif ext in (".html", ".htm"):
+        text = minify_html(text)
+    else:
+        return data
+    return text.encode("utf-8")
+
+
 def load_file(vpath, full):
     ext = os.path.splitext(vpath)[1].lower()
     with open(full, "rb") as f:
@@ -79,6 +281,7 @@ def load_file(vpath, full):
     if ext in TEXT_EXTENSIONS:
         # make output independent of git autocrlf
         data = data.replace(b"\r\n", b"\n")
+        data = minify(ext, data)
     raw_size = len(data)
     gzipped = False
     if ext not in NO_GZIP_EXTENSIONS and data:

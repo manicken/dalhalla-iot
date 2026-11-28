@@ -20,9 +20,7 @@ function showTab(hash) {
   const tab = TABS[name];
   if (tab.script && !tabLoaded[name]) {
     tabLoaded[name] = true;
-    const s = document.createElement('script');
-    s.src = tab.script; // calls its own onShow when loaded
-    document.body.appendChild(s);
+    document.body.append(newEl('script', { src: tab.script })); // calls its own onShow when loaded
   } else if (tab.api && tab.api()) {
     tab.api().onShow();
   }

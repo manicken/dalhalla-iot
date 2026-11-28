@@ -8,10 +8,7 @@ const termOut = document.getElementById('autocomplete-output');
 let activeIdx = -1, currentSugs = [], history = [], histIdx = -1;
 
 function termPrintLine(text, cls) {
-  const div = document.createElement('div');
-  div.className = cls;
-  div.textContent = text;
-  termOut.appendChild(div);
+  termOut.append(newEl('div', { cls, text }));
   termOut.scrollTop = termOut.scrollHeight;
 }
 
@@ -59,13 +56,12 @@ function renderSuggestions(sugs) {
   currentSugs = sugs; activeIdx = -1;
   if (!sugs.length) { sugBox.style.display = 'none'; return; }
   sugBox.style.display = 'block';
-  sugBox.innerHTML = sugs.map((s,i) => `<div class="sug" data-idx="${i}" role="option" aria-selected="false">
-    <span class="sug-name${s.hasChildren?' has-children':''}">${s.name}</span>
-    <span class="sug-help">${s.help}</span>
-  </div>`).join('');
-  sugBox.querySelectorAll('.sug').forEach(el =>
-    el.addEventListener('mousedown', e => { e.preventDefault(); pickSuggestion(+el.dataset.idx); })
-  );
+  // built as elements: names and help texts from the device are shown as text, never as HTML
+  sugBox.replaceChildren(...sugs.map((s, i) =>
+    newEl('div', { cls: 'sug', 'data-idx': i, role: 'option', 'aria-selected': 'false',
+        onmousedown: (e) => { e.preventDefault(); pickSuggestion(i); } },
+      newEl('span', { cls: 'sug-name' + (s.hasChildren ? ' has-children' : ''), text: s.name }),
+      newEl('span', { cls: 'sug-help', text: s.help }))));
 }
 
 function hideSuggestions() { sugBox.style.display='none'; currentSugs=[]; activeIdx=-1; }

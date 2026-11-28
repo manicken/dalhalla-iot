@@ -37,6 +37,28 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
 
 ---
 
+## 2026-11-28
+
+### Ändrat
+- Config-fliken: enhetsträdet har hopfällbara noder (▸/▾, dubbelklick fäller också), hopfällda från start så bara
+  rotenheterna syns; antal och problemprickar syns även på hopfällda noder. När något väljs någon annanstans ifrån
+  (formulär, länk, problemlista, ny enhet) fälls vägen dit ut. Knappar för fäll ut allt / fäll ihop allt. Utfällda noder
+  sparas i webbläsaren (per uid-sökväg), så en omladdning behåller trädet som det var.
+- Frontend: alla element byggs med `newEl()` från `domHelpers.js` (laddas först) i stället för
+  createElement/className/textContent/appendChild-kedjor: `newEl('div', { cls, text, title, onclick, styles }, ...barn)`,
+  plus `downloadUrl()`. config.js tappade sin egen kopia (`h`), kommandoförslagen byggs som element
+  (texter från enheten visas som text, inte längre som HTML). Storlek som inbäddat (gzip -9 per fil): 52016 -> 51924 byte
+  (kodfilerna krymper med ca 660 byte, domHelpers.js lägger till 181); framför allt blir koden kortare och lättare att läsa.
+  Kontrollerat i en riktig webbläsare på esp32dev: konsolens knappar/förslag/logg, WiFi-dialogen, filträd/meny/editor, config-fliken.
+- Config-fliken: problemlistan visar fel före varningar.
+- `tools/gen_frontend.py` minifierar JS, CSS och HTML före gzip: kommentarer, indentering och avslutande mellanslag bort.
+  Varje rad behåller sitt radnummer (en kommentar eller tom rad blir en tom rad), så ett fel på rad N i webbläsarens
+  dev tools finns på rad N i källfilen; det kostar ca 300 byte efter gzip.
+  En liten tokenizer kopierar strängar, template literals (nästlade `${}`) och regex-literaler exakt, så `//` i en URL
+  tas inte för en kommentar. Inget nytt beroende. Inbäddad frontend: 51960 -> 41870 byte (-19 %). Kontrollerat: varje
+  JS-fil har identiskt syntaxträd före/efter (TypeScripts parser) med varje nod på samma rad, och hela gränssnittet fungerar på esp32dev.
+  `DALHAL_FRONTEND_MINIFY=0` behåller filerna som de är.
+
 ## 2026-11-27
 
 ### Tillagt

@@ -155,34 +155,21 @@ function renderAutoButtons(tree, container, wsSend) {
   container.innerHTML = '';
   const rows = collectRows(tree.root, []);
   for (const row of rows) {
-    const div = document.createElement('div');
-    div.className = 'btn-row';
-    for (const btn of row.buttons) {
-      const b = document.createElement('button');
-      b.className = 'cmd-btn' + (btn.danger ? ' danger' : '');
-      b.textContent = btn.parent ? `${btn.parent}/${btn.name}` : btn.name;
-      b.title = btn.path;  // full path as tooltip
-      b.onclick = () => wsSend(btn.path);
-      div.appendChild(b);
-    }
-    container.appendChild(div);
+    container.append(newEl('div', { cls: 'btn-row' }, ...row.buttons.map((btn) =>
+      newEl('button', {
+        cls: 'cmd-btn' + (btn.danger ? ' danger' : ''),
+        text: btn.parent ? `${btn.parent}/${btn.name}` : btn.name,
+        title: btn.path, // full path as tooltip
+        onclick: () => wsSend(btn.path),
+      }))));
   }
 }
 
 const ext_toolbar = document.getElementById("extensions_toolbar");
 
 function registerToolbarButton(text, onclick, id = "") {
-    const btn = document.createElement("button");
-
-    btn.textContent = text;
-
-    if (id)
-        btn.id = id;
-
-    btn.onclick = onclick;
-
-    ext_toolbar.appendChild(btn);
-
+    const btn = newEl('button', { text, id: id || null, onclick });
+    ext_toolbar.append(btn);
     return btn;
 }
 

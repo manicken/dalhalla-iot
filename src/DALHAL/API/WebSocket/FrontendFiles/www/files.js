@@ -81,11 +81,8 @@
 
   function loadScript(src) {
     return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = () => { s.remove(); reject(new Error('could not load ' + src)); };
-      document.head.appendChild(s);
+      const s = newEl('script', { src, onload: resolve, onerror: () => { s.remove(); reject(new Error('could not load ' + src)); } });
+      document.head.append(s);
     });
   }
 
@@ -118,19 +115,15 @@
       };
     }
     // no ACE: plain textarea
-    const ta = document.createElement('textarea');
-    ta.id = 'fsb-textarea';
-    ta.spellcheck = false;
-    host.appendChild(ta);
-    ta.addEventListener('input', onEdit);
-    ta.addEventListener('keydown', (e) => {
+    const ta = newEl('textarea', { id: 'fsb-textarea', spellcheck: 'false', oninput: onEdit, onkeydown: (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); }
       if (e.key === 'Tab') {
         e.preventDefault();
         ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end');
         onEdit();
       }
-    });
+    } });
+    host.append(ta);
     el('fsb-editor-kind').textContent = 'plain editor (ACE could not be loaded)';
     return { get: () => ta.value, set: (text) => { ta.value = text; }, resize: () => {}, focus: () => ta.focus() };
   }
@@ -143,34 +136,18 @@
 
   // ── tree ──
   function makeRow(node, label, isDir, extra) {
-    const row = document.createElement('div');
-    row.className = 'fsb-row';
-    const icon = document.createElement('span');
-    icon.className = 'fsb-icon';
-    icon.textContent = isDir ? '▸' : '';
-    const name = document.createElement('span');
-    name.className = 'fsb-name';
-    name.textContent = label;
-    row.append(icon, name);
-    if (extra) {
-      const size = document.createElement('span');
-      size.className = 'fsb-size';
-      size.textContent = extra;
-      row.appendChild(size);
-    }
-    node.appendChild(row);
+    const row = newEl('div', { cls: 'fsb-row' },
+      newEl('span', { cls: 'fsb-icon', text: isDir ? '▸' : '' }),
+      newEl('span', { cls: 'fsb-name', text: label }),
+      extra && newEl('span', { cls: 'fsb-size', text: extra }));
+    node.append(row);
     return row;
   }
 
   function makeDirNode(l, label, extra) {
-    const node = document.createElement('div');
-    node.className = 'fsb-node dir' + (split(l).path === '/' ? ' root' : '');
-    node.dataset.path = l;
+    const node = newEl('div', { cls: 'fsb-node dir' + (split(l).path === '/' ? ' root' : ''), 'data-path': l });
     const row = makeRow(node, label, true, extra);
-    const kids = document.createElement('div');
-    kids.className = 'fsb-children';
-    kids.hidden = true;
-    node.appendChild(kids);
+    node.append(newEl('div', { cls: 'fsb-children', hidden: true }));
     row.onclick = () => { setCurDir(l); node.classList.contains('open') ? collapse(node) : expand(node); };
     row.oncontextmenu = (e) => { e.preventDefault(); setCurDir(l); dirMenu(e, l); };
     addDropTarget(row, l);
@@ -178,10 +155,7 @@
   }
 
   function makeFileNode(l, size) {
-    const node = document.createElement('div');
-    node.className = 'fsb-node file';
-    node.dataset.path = l;
-    node.dataset.size = size;
+    const node = newEl('div', { cls: 'fsb-node file', 'data-path': l, 'data-size': size });
     const row = makeRow(node, baseName(l), false, fmtSize(size));
     row.onclick = () => openFile(l, size);
     row.oncontextmenu = (e) => { e.preventDefault(); fileMenu(e, l, size); };
@@ -205,17 +179,14 @@
       const p = join(l, it.name);
       if (it.dir) {
         const child = makeDirNode(p, it.name);
-        kids.appendChild(child);
+        kids.append(child);
         if (expanded.has(p)) await expand(child);
       } else {
-        kids.appendChild(makeFileNode(p, it.size));
+        kids.append(makeFileNode(p, it.size));
       }
     }
     if (!items.length) {
-      const empty = document.createElement('div');
-      empty.className = 'fsb-empty';
-      empty.textContent = '(empty)';
-      kids.appendChild(empty);
+      kids.append(newEl('div', { cls: 'fsb-empty', text: '(empty)' }));
     }
     kids.hidden = false;
     node.classList.add('open');
@@ -337,12 +308,8 @@
     if (IMAGE_EXT.includes(ext)) {
       open = { path: l, kind: 'image' };
       dirty = false;
-      const img = document.createElement('img');
-      img.src = fileUrl(l) + '&t=' + Date.now();
-      img.alt = l;
-      const info = document.createElement('div');
-      info.className = 'fsb-info';
-      info.textContent = `${baseName(l)}, ${fmtSize(size)}`;
+      const img = newEl('img', { src: fileUrl(l) + '&t=' + Date.now(), alt: l });
+      const info = newEl('div', { cls: 'fsb-info', text: `${baseName(l)}, ${fmtSize(size)}` });
       img.onload = () => {
         // small images (icons) are scaled up by a whole factor so they can be seen
         const scale = Math.min(16, Math.max(1, Math.floor(256 / Math.max(img.naturalWidth, img.naturalHeight, 1))));
@@ -385,14 +352,10 @@
     } else {
       open = { path: l, kind: 'binary' };
       dirty = false;
-      const info = document.createElement('div');
-      info.className = 'fsb-info';
-      info.textContent = `${baseName(l)}, ${fmtSize(bytes.length)}, binary` +
-        (bytes.length > MAX_HEX_BYTES ? ` (first ${fmtSize(MAX_HEX_BYTES)} shown)` : '');
-      const pre = document.createElement('pre');
-      pre.className = 'fsb-hex';
-      pre.textContent = hexDump(bytes.subarray(0, MAX_HEX_BYTES));
-      setPreview(info, pre);
+      setPreview(
+        newEl('div', { cls: 'fsb-info', text: `${baseName(l)}, ${fmtSize(bytes.length)}, binary` +
+          (bytes.length > MAX_HEX_BYTES ? ` (first ${fmtSize(MAX_HEX_BYTES)} shown)` : '') }),
+        newEl('pre', { cls: 'fsb-hex', text: hexDump(bytes.subarray(0, MAX_HEX_BYTES)) }));
       showPane('binary');
     }
     updateFileBar();
@@ -445,14 +408,7 @@
     } catch (e) { msg(`not valid JSON: ${e.message}`, true); }
   }
 
-  function download(l) {
-    const a = document.createElement('a');
-    a.href = fileUrl(l);
-    a.download = baseName(l);
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
+  const download = (l) => downloadUrl(fileUrl(l), baseName(l));
 
   // ── zip: unpacked in the browser, the files are sent one by one ──
   async function ensureZip() {
@@ -560,15 +516,9 @@
   async function openZip(l, size) {
     open = { path: l, kind: 'binary' };
     dirty = false;
-    const info = document.createElement('div');
-    info.className = 'fsb-info';
-    info.textContent = `${baseName(l)}, ${fmtSize(size)}, zip`;
-    const btn = document.createElement('button');
-    btn.className = 'cmd-btn';
-    btn.textContent = `⇪ unzip into ${parentOf(l)}`;
-    btn.onclick = () => unzipFromDevice(l);
-    const table = document.createElement('table');
-    table.className = 'fsb-zip';
+    const info = newEl('div', { cls: 'fsb-info', text: `${baseName(l)}, ${fmtSize(size)}, zip` });
+    const btn = newEl('button', { cls: 'cmd-btn', text: `⇪ unzip into ${parentOf(l)}`, onclick: () => unzipFromDevice(l) });
+    const table = newEl('table', { cls: 'fsb-zip' });
     setPreview(info, btn, table);
     showPane('binary');
     updateFileBar();
@@ -581,15 +531,10 @@
       const files = entries.filter((e) => !e.dir);
       info.textContent += `, ${files.length} files, ${fmtSize(files.reduce((n, e) => n + e.size, 0))} unpacked`;
       for (const e of entries) {
-        const tr = document.createElement('tr');
-        const name = document.createElement('td');
-        name.textContent = e.name;
-        const sz = document.createElement('td');
-        sz.className = 'num';
-        sz.textContent = e.dir ? '' : fmtSize(e.size);
-        if (safeZipName(e.name) === null) { tr.className = 'skipped'; sz.textContent = 'skipped'; }
-        tr.append(name, sz);
-        table.appendChild(tr);
+        const skipped = safeZipName(e.name) === null;
+        table.append(newEl('tr', { cls: skipped && 'skipped' },
+          newEl('td', { text: e.name }),
+          newEl('td', { cls: 'num', text: skipped ? 'skipped' : e.dir ? '' : fmtSize(e.size) })));
       }
     } catch (e) {
       info.textContent += `: ${e.message}`;
@@ -631,13 +576,9 @@
     const zipName = path === '/' ? `dalhal-${fs}-${day}.zip` : `${baseName(path)}-${day}.zip`;
     try {
       const { blob, count } = await buildZip(dir);
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = zipName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      const href = URL.createObjectURL(blob);
+      downloadUrl(href, zipName);
+      setTimeout(() => URL.revokeObjectURL(href), 10000);
       msg(`${zipName}: ${count} files, ${fmtSize(blob.size)}`);
     } catch (e) { msg(`zip of ${dir} failed: ${e.message}`, true); }
   }
@@ -718,17 +659,9 @@
   function showMenu(e, title, items) {
     const menu = el('fsb-menu');
     menu.innerHTML = '';
-    const head = document.createElement('div');
-    head.className = 'fsb-menu-title';
-    head.textContent = title;
-    menu.appendChild(head);
-    for (const it of items) {
-      const b = document.createElement('div');
-      b.className = 'fsb-menu-item' + (it.danger ? ' danger' : '');
-      b.textContent = it.label;
-      b.onclick = () => { menu.hidden = true; it.fn(); };
-      menu.appendChild(b);
-    }
+    menu.append(newEl('div', { cls: 'fsb-menu-title', text: title }),
+      ...items.map((it) => newEl('div', { cls: 'fsb-menu-item' + (it.danger ? ' danger' : ''), text: it.label,
+        onclick: () => { menu.hidden = true; it.fn(); } })));
     menu.hidden = false;
     const r = menu.getBoundingClientRect();
     menu.style.left = Math.min(e.clientX, window.innerWidth - r.width - 4) + 'px';
