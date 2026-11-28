@@ -1,7 +1,7 @@
 /* ── Config tab: the cfg::editor look (light and dark follow the page theme) ── */
 body.light #tab-config {
   --bg0: #f0f2f5; --bg1: #ffffff; --bg2: #f7f8fa; --bg3: #eef0f4; --line: #dde0e8; --line2: #c8ccd8;
-  --txt0: #1a1d2e; --txt1: #3a3f56; --txt2: #6b7494; --txt3: #9ba3be;
+  --txt0: #1a1d2e; --txt1: #3a3f56; --txt2: #6b7494; --txt3: #9ba3be; --treeArrow: #000;
   --acc: #2563eb; --acc2: #1d4ed8; --acc-bg: #eff4ff; --acc-line: #bfdbfe;
   --grn: #16a34a; --grn2: #15803d; --red: #dc2626; --red2: #b91c1c; --red-line: #fca5a5;
   --yel: #d97706; --pur: #7c3aed; --cya: #0e7490;
@@ -9,13 +9,14 @@ body.light #tab-config {
 }
 body.dark #tab-config {
   --bg0: #0f1117; --bg1: #171b26; --bg2: #1e2333; --bg3: #252b3d; --line: #2e3550; --line2: #3d4666;
-  --txt0: #e8ecf5; --txt1: #a8b3d0; --txt2: #6b7a9e; --txt3: #4f5a7a;
+  --txt0: #e8ecf5; --txt1: #a8b3d0; --txt2: #6b7a9e; --txt3: #4f5a7a; --treeArrow: #FFF;
   --acc: #5b8af5; --acc2: #3d6de0; --acc-bg: #252b3d; --acc-line: #3d6de0;
   --grn: #3dd68c; --grn2: #2ab070; --red: #f5596b; --red2: #d43a4d; --red-line: #6b2a35;
   --yel: #f5c842; --pur: #9b6dff; --cya: #3dd6d6;
   --pill-grn: rgba(61,214,140,0.15); --pill-yel: rgba(245,200,66,0.15); --pill-pur: rgba(155,109,255,0.15); --pill-cya: rgba(61,214,214,0.15);
 }
 #tab-config {
+  --treeArrowSize: 20px;
   --font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
   --font2: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --r: 5px; --r2: 8px;
@@ -70,7 +71,7 @@ body.dark #tab-config {
 #tab-config .di .tb { font-family: var(--font); font-size: 9px; padding: 1px 5px; border-radius: 3px; background: var(--bg3); color: var(--txt2); border: 1px solid var(--line2); white-space: nowrap; }
 #tab-config .di.active .tb { background: var(--acc2); color: #fff; border-color: transparent; }
 #tab-config .di .ch { font-size: 9px; color: var(--txt3); min-width: 14px; text-align: right; }
-#tab-config .di .tw { width: 14px; flex-shrink: 0; text-align: center; color: var(--txt3); font-size: 10px; border-radius: 3px; user-select: none; }
+#tab-config .di .tw { width: 14px; flex-shrink: 0; text-align: center; color: var(--treeArrow); font-size: var(--treeArrowSize); border-radius: 3px; user-select: none; }
 #tab-config .di .tw:not(:empty) { cursor: pointer; }
 #tab-config .di .tw:not(:empty):hover { background: var(--bg3); color: var(--acc); }
 #tab-config .di.active .tw { color: var(--acc2); }

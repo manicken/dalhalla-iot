@@ -1,5 +1,5 @@
 // ── Log helpers ───────────────────────────────────────────────────────────────
-const log = document.getElementById('log');
+const log = el('log');
 
 function logText(text) {
   log.append(newEl('div', { text, styles: { whiteSpace: 'pre-wrap' } }));

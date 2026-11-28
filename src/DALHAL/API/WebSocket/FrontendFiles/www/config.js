@@ -12,9 +12,11 @@
 //   modes: in a mode every conjunction with required must be there, every one without must NOT be there,
 //          exactly one mode must match; an AllOfFieldsGroup counts as there only when all its fields are
 //   UInt/Int maxValue 0 = no limit, uid max 8 chars, uid paths are uid:uid:..., a string item is a comment
+// The scripts in /scripts are checked against the config too: the firmware loads the scripts again after every
+// config load, and a script that uses a device that is not there (removed, renamed, disabled) stops all scripts.
+// So save/apply is refused while an active script (list.txt) uses such a device; inactive scripts give warnings.
 
 (() => {
-  const $ = (id) => document.getElementById(id);
   const CFG_DIR = '/hal';
   const CFG_FILE = 'cfg.json';
   const CFG_TEST_FILE = 'cfg.new.json';
@@ -32,6 +34,7 @@
   let jsonOpen = false;
   let problems = [];     // [{ item, arr, ctx, parents, field, msg, level: 'err'|'warn' }]
   let formErr = {};      // field name -> element showing its error, for the selected item
+  let scripts = [];      // [{ name, active, refs: [{ row, column, path, suffix }] }] from /scripts (scriptTools.js)
 
   // ── small helpers ──
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -39,8 +42,8 @@
   const fsUrl = (name) => `/fs/file?fs=littlefs&path=${encodeURIComponent(CFG_DIR + '/' + name)}`;
 
   function status(text, kind = 'ok') {
-    $('cfg-smsg').textContent = text;
-    $('cfg-sdot').className = 'sdot' + (kind === 'err' ? ' err' : kind === 'warn' ? ' warn' : '');
+    el('cfg-smsg').textContent = text;
+    el('cfg-sdot').className = 'sdot' + (kind === 'err' ? ' err' : kind === 'warn' ? ' warn' : '');
   }
 
   async function http(method, url, body) {
@@ -435,9 +438,66 @@
         }
       }
     });
+    checkScripts();
     renderProblems();
     renderTreeBadges();
     renderFormErrors();
+  }
+
+  /** the uid paths of the devices the firmware will create: enabled, with all parents enabled */
+  function enabledUidPaths() {
+    const out = new Set();
+    walk(cfg, { kind: 'reg', regPath: 'ROOT' }, [], (item, arr, ctx, parents) => {
+      if (typeof item.uid !== 'string' || item.disabled === true || parents.some((p) => p.item.disabled === true)) return;
+      out.add([...parents.map((p) => p.item.uid), item.uid].join(':'));
+    });
+    return out;
+  }
+
+  /** every device a script uses must be an enabled device of this config */
+  function checkScripts() {
+    if (!scripts.length) return;
+    const enabled = enabledUidPaths();
+    const all = new Set(allUidPaths());
+    for (const sc of scripts) {
+      for (const r of sc.refs) {
+        if (enabled.has(r.path)) continue;
+        const why = all.has(r.path) ? 'is disabled' : 'is not in the config';
+        problems.push({ item: null, field: '', script: sc.name, row: r.row, level: sc.active ? 'err' : 'warn',
+          msg: `${sc.active ? 'active' : 'inactive'} script ${sc.name} line ${r.row + 1} uses "${r.path}", which ${why}` +
+            (sc.active ? ' (the firmware would stop all scripts)' : '') });
+      }
+    }
+  }
+
+  /** reads the scripts and list.txt from the device (fresh before save/apply) */
+  async function loadScripts() {
+    try {
+      const items = JSON.parse(await http('GET', '/fs/list?fs=littlefs&path=' + encodeURIComponent('/scripts')));
+      let listText = '';
+      try { listText = await http('GET', '/fs/file?fs=littlefs&path=' + encodeURIComponent('/scripts/list.txt')); } catch (e) { /* no list */ }
+      const activeNames = ScriptTools.listNames(listText);
+      const names = items.filter((i) => !i.dir && i.name !== 'list.txt').map((i) => i.name);
+      scripts = [];
+      for (const name of names) {
+        const text = await http('GET', '/fs/file?fs=littlefs&path=' + encodeURIComponent('/scripts/' + name));
+        scripts.push({ name, active: activeNames.includes(name), refs: ScriptTools.refs(text.replace(/\r\n/g, '\n')) });
+      }
+    } catch (e) {
+      scripts = []; // no /scripts folder
+    }
+  }
+
+  /** true when no active script uses a device that this config does not create; else it says so */
+  async function scriptsOk() {
+    await loadScripts();
+    validate();
+    const bad = problems.filter((p) => p.script && p.level === 'err');
+    if (!bad.length) return true;
+    status(`not saved: ${bad.length} use(s) in active scripts of devices that this config does not create ` +
+      '(see the problem list). Change the scripts first, or make them inactive in the Scripts tab.', 'err');
+    el('cfg-problem-list').hidden = false;
+    return false;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -470,11 +530,11 @@
   }
 
   function renderTree() {
-    const list = $('cfg-tree');
+    const list = el('cfg-tree');
     list.innerHTML = '';
     treeRows.clear();
     renderTreeLevel(list, cfg, { kind: 'reg', regPath: 'ROOT' }, [], 0);
-    $('cfg-dev-cnt').textContent = cfg.filter(isObj).length;
+    el('cfg-dev-cnt').textContent = cfg.filter(isObj).length;
     renderTreeBadges();
   }
 
@@ -562,7 +622,7 @@
 
   /** the add bar adds root devices */
   function fillAddSelect() {
-    const s = $('cfg-add-type');
+    const s = el('cfg-add-type');
     s.innerHTML = '';
     for (const [k, def] of Object.entries(SCHEMA.registers.ROOT || {})) {
       s.append(newEl('option', { value: k, text: `${k} – ${def.name}` }));
@@ -573,14 +633,14 @@
   // FORM
   // ═══════════════════════════════════════════════════════════════
   function renderForm() {
-    const fa = $('cfg-form');
+    const fa = el('cfg-form');
     fa.innerHTML = '';
     formErr = {};
     renderPath();
-    $('cfg-del').disabled = !sel;
-    $('cfg-dup').disabled = !sel;
-    $('cfg-up').disabled = !sel || sel.arr.indexOf(sel.item) <= 0;
-    $('cfg-down').disabled = !sel || sel.arr.indexOf(sel.item) >= sel.arr.length - 1;
+    el('cfg-del').disabled = !sel;
+    el('cfg-dup').disabled = !sel;
+    el('cfg-up').disabled = !sel || sel.arr.indexOf(sel.item) <= 0;
+    el('cfg-down').disabled = !sel || sel.arr.indexOf(sel.item) >= sel.arr.length - 1;
     if (!sel) {
       fa.append(newEl('div', { cls: 'empty' }, newEl('div', { cls: 'em-icon', text: '⬡' }),
         newEl('div', { cls: 'em-txt', text: SCHEMA ? 'Select a device or add one' : 'Loading…' })));
@@ -612,7 +672,7 @@
 
   /** root › parent › item in the toolbar, every part opens that item */
   function renderPath() {
-    const box = $('cfg-path');
+    const box = el('cfg-path');
     box.innerHTML = '';
     box.append(newEl('span', { cls: 'bc-seg', text: 'root', onclick: () => select(null) }));
     if (!sel) return;
@@ -1014,30 +1074,35 @@
   function renderProblems() {
     const errs = problems.filter((p) => p.level === 'err').length;
     const warns = problems.length - errs;
-    const b = $('cfg-problems');
+    const b = el('cfg-problems');
     b.textContent = errs || warns ? `${errs} error${errs === 1 ? '' : 's'}, ${warns} warning${warns === 1 ? '' : 's'}` : '✓ no problems';
     b.className = 'btn sml ' + (errs ? 'dan' : warns ? 'wrn' : 'ok');
-    const list = $('cfg-problem-list');
+    const list = el('cfg-problem-list');
     list.innerHTML = '';
     for (const p of [...problems].sort((a, b) => (a.level === b.level ? 0 : a.level === 'err' ? -1 : 1))) { // errors first
-      const where = p.item ? [...(p.parents || []).map((x) => x.item.uid), p.item.uid].join(':') : 'config';
-      list.append(newEl('div', { cls: 'prob ' + p.level, onclick: () => { if (p.item) select(p.item, p.arr, p.ctx, p.parents); list.hidden = true; } },
+      const where = p.item ? [...(p.parents || []).map((x) => x.item.uid), p.item.uid].join(':') : p.script ? 'script' : 'config';
+      const go = () => {
+        if (p.item) select(p.item, p.arr, p.ctx, p.parents);
+        else if (p.script) location.hash = '#scripts=' + encodeURIComponent(p.script); // opens it in the Scripts tab
+        list.hidden = true;
+      };
+      list.append(newEl('div', { cls: 'prob ' + p.level, onclick: go },
         newEl('span', { cls: 'prob-where', text: where + (p.field && !p.field.startsWith('_') ? '.' + p.field : '') }), ' ', p.msg));
     }
   }
 
   function syncJson() {
     if (!jsonOpen) return;
-    const ta = $('cfg-json');
+    const ta = el('cfg-json');
     if (document.activeElement === ta) return; // do not overwrite while typing there
     ta.value = JSON.stringify(sel ? sel.item : cfg, null, 2);
     ta.classList.remove('bad');
-    $('cfg-json-what').textContent = sel ? `JSON of ${sel.item.uid || 'item'}` : 'JSON of the whole config';
+    el('cfg-json-what').textContent = sel ? `JSON of ${sel.item.uid || 'item'}` : 'JSON of the whole config';
   }
 
   function refreshDirty() {
     const dirty = JSON.stringify(cfg) !== savedText;
-    $('cfg-dirty').hidden = !dirty;
+    el('cfg-dirty').hidden = !dirty;
     return dirty;
   }
 
@@ -1053,7 +1118,7 @@
     validate();
     syncJson();
     refreshDirty();
-    const list = $('cfg-uidpaths');
+    const list = el('cfg-uidpaths');
     list.innerHTML = '';
     for (const p of allUidPaths()) list.append(newEl('option', { value: p }));
   }
@@ -1061,10 +1126,25 @@
   // ═══════════════════════════════════════════════════════════════
   // LOAD / SAVE / APPLY
   // ═══════════════════════════════════════════════════════════════
-  /** one root device per line: readable, and not much bigger than compact JSON (the firmware
-      reserves about twice the file size in RAM to parse it) */
+  /** one device per line, as in a hand written cfg.json: a device is compact JSON, but its arrays of child
+      items (items, units ...) are expanded, one child per line, indented by depth:
+        {"uid":"temps","type":"1WTG","items":[
+          {"uid":"a","pin":27,"items":[
+            {"uid":"a","romid":"28:.."}
+          ]}
+        ]},
+      other values (objects, arrays of values, empty arrays) stay inline. Not much bigger than compact JSON,
+      which matters as the firmware reserves about twice the file size in RAM to parse it. */
   function cfgText() {
-    return '[\n' + cfg.map((d) => '  ' + JSON.stringify(d)).join(',\n') + '\n]\n';
+    const isItemArray = (v) => Array.isArray(v) && v.some(isObj);
+    const fmt = (v, indent) => {
+      if (!isObj(v)) return JSON.stringify(v);
+      const parts = Object.entries(v).map(([k, x]) => JSON.stringify(k) + ':' + (isItemArray(x)
+        ? '[\n' + x.map((c) => ' '.repeat(indent + 2) + fmt(c, indent + 2)).join(',\n') + '\n' + ' '.repeat(indent) + ']'
+        : JSON.stringify(x)));
+      return '{' + parts.join(',') + '}';
+    };
+    return '[\n' + cfg.map((d) => '  ' + fmt(d, 2)).join(',\n') + '\n]\n';
   }
 
   async function loadFromDevice(force = false) {
@@ -1096,6 +1176,7 @@
   }
 
   async function saveOnly() {
+    if (!(await scriptsOk())) return;
     const errs = problems.filter((p) => p.level === 'err').length;
     if (errs && !confirm(`The config has ${errs} error(s), the firmware will not load it at the next start.\n\nSave it anyway?`)) return;
     try {
@@ -1115,6 +1196,7 @@
   const logLines = (t) => t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
   async function apply() {
+    if (!(await scriptsOk())) return;
     const errs = problems.filter((p) => p.level === 'err').length;
     if (errs && !confirm(`The editor found ${errs} error(s).\n\nSend it to the device anyway? The device checks it again and keeps the running config if it is not valid.`)) return;
     const text = cfgText();
@@ -1145,7 +1227,7 @@
   }
 
   function showDeviceLog(lines, failed) {
-    const box = $('cfg-devlog');
+    const box = el('cfg-devlog');
     if (!lines) { box.hidden = true; return; }
     box.hidden = false;
     box.className = failed ? 'failed' : '';
@@ -1161,13 +1243,13 @@
   // TOOLBAR, SIDEBAR ACTIONS
   // ═══════════════════════════════════════════════════════════════
   function wire() {
-    $('cfg-reload').onclick = loadFromDevice;
-    $('cfg-save').onclick = saveOnly;
-    $('cfg-apply').onclick = apply;
-    $('cfg-problems').onclick = () => { $('cfg-problem-list').hidden = !$('cfg-problem-list').hidden || !problems.length; };
-    $('cfg-export').onclick = () => downloadUrl(URL.createObjectURL(new Blob([cfgText()], { type: 'application/json' })), 'cfg.json');
-    $('cfg-import').onclick = () => $('cfg-import-file').click();
-    $('cfg-import-file').onchange = async (e) => {
+    el('cfg-reload').onclick = loadFromDevice;
+    el('cfg-save').onclick = saveOnly;
+    el('cfg-apply').onclick = apply;
+    el('cfg-problems').onclick = () => { el('cfg-problem-list').hidden = !el('cfg-problem-list').hidden || !problems.length; };
+    el('cfg-export').onclick = () => downloadUrl(URL.createObjectURL(new Blob([cfgText()], { type: 'application/json' })), 'cfg.json');
+    el('cfg-import').onclick = () => el('cfg-import-file').click();
+    el('cfg-import-file').onchange = async (e) => {
       const f = e.target.files[0];
       e.target.value = '';
       if (!f) return;
@@ -1181,13 +1263,13 @@
         status(`imported ${f.name} into the editor, not saved on the device yet`, 'warn');
       } catch (err) { status(`import failed: ${err.message}`, 'err'); }
     };
-    $('cfg-json-btn').onclick = () => {
+    el('cfg-json-btn').onclick = () => {
       jsonOpen = !jsonOpen;
-      $('cfg-json-panel').hidden = !jsonOpen;
-      $('cfg-json-btn').classList.toggle('on', jsonOpen);
+      el('cfg-json-panel').hidden = !jsonOpen;
+      el('cfg-json-btn').classList.toggle('on', jsonOpen);
       syncJson();
     };
-    $('cfg-json').addEventListener('input', (e) => {
+    el('cfg-json').addEventListener('input', (e) => {
       const ta = e.target;
       try {
         const v = JSON.parse(ta.value);
@@ -1203,24 +1285,24 @@
         changed({ tree: true, form: true });
       } catch (err) { ta.classList.add('bad'); }
     });
-    $('cfg-expand-all').onclick = () => expandAll(true);
-    $('cfg-collapse-all').onclick = () => expandAll(false);
-    $('cfg-add').onclick = () => {
-      const t = $('cfg-add-type').value;
+    el('cfg-expand-all').onclick = () => expandAll(true);
+    el('cfg-collapse-all').onclick = () => expandAll(false);
+    el('cfg-add').onclick = () => {
+      const t = el('cfg-add-type').value;
       const root = { kind: 'reg', regPath: 'ROOT' };
       const n = newItem(cfg, root, t);
       cfg.push(n);
       changed({ tree: true });
       select(n, cfg, root, []);
     };
-    $('cfg-add-comment').onclick = () => {
+    el('cfg-add-comment').onclick = () => {
       const t = prompt('Comment (a text item, ignored by the firmware):');
       if (!t) return;
       const i = sel && sel.arr === cfg ? cfg.indexOf(sel.item) + 1 : cfg.length;
       cfg.splice(i, 0, t);
       changed({ tree: true });
     };
-    $('cfg-del').onclick = () => {
+    el('cfg-del').onclick = () => {
       if (!sel || !confirm(`Delete "${sel.item.uid || '?'}"${childArrays(defOf(sel.item, sel.ctx)).length ? ' with everything in it' : ''}?`)) return;
       sel.arr.splice(sel.arr.indexOf(sel.item), 1);
       const p = sel.parents[sel.parents.length - 1];
@@ -1229,7 +1311,7 @@
       status('deleted');
       if (p) treeRows.get(p.item)?.click();
     };
-    $('cfg-dup').onclick = () => {
+    el('cfg-dup').onclick = () => {
       if (!sel) return;
       const copy = JSON.parse(JSON.stringify(sel.item));
       copy.uid = freeUid(sel.arr, String(sel.item.uid || 'copy').replace(/\d+$/, ''));
@@ -1244,11 +1326,11 @@
       [sel.arr[i], sel.arr[j]] = [sel.arr[j], sel.arr[i]];
       changed({ tree: true, form: true });
     };
-    $('cfg-up').onclick = () => move(-1);
-    $('cfg-down').onclick = () => move(1);
+    el('cfg-up').onclick = () => move(-1);
+    el('cfg-down').onclick = () => move(1);
     window.addEventListener('beforeunload', (e) => { if (cfg && refreshDirty()) { e.preventDefault(); e.returnValue = ''; } });
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#cfg-problem-list') && e.target.id !== 'cfg-problems') $('cfg-problem-list').hidden = true;
+      if (!e.target.closest('#cfg-problem-list') && e.target.id !== 'cfg-problems') el('cfg-problem-list').hidden = true;
     });
   }
 
@@ -1274,6 +1356,8 @@
     }
     fillAddSelect();
     await loadFromDevice(true);
+    await loadScripts();
+    validate();
     openFromHash();
   }
 
@@ -1290,7 +1374,7 @@
   }
 
   window.ConfigTab = {
-    onShow: openFromHash,
+    onShow: async () => { openFromHash(); if (SCHEMA) { await loadScripts(); validate(); } },
     // for tests: the editor state and actions
     _state: () => ({ cfg, problems: problems.map((p) => ({ where: p.item ? [...(p.parents || []).map((x) => x.item.uid), p.item.uid].join(':') : '', field: p.field, msg: p.msg, level: p.level })) }),
     _apply: apply,

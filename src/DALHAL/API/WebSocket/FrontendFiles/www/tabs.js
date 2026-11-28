@@ -8,6 +8,7 @@ const TABS = {
   console: { script: null },
   files:   { script: 'files.js', api: () => window.FilesTab },
   config:  { script: 'config.js', api: () => window.ConfigTab },
+  scripts: { script: 'scripts.js', api: () => window.ScriptsTab },
 };
 const tabLoaded = {};
 

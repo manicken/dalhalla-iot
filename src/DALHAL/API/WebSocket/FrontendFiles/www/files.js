@@ -6,15 +6,11 @@
 // A location in this file is "fs:/path", e.g. "littlefs:/cfg.json" or "sd:/logs/a.txt".
 // A .zip is unpacked here in the browser (zip.js) and its files are sent one by one with PUT /fs/file;
 // the other way, a folder is read file by file and packed into a .zip in the browser (download / backup).
-// ACE is not in the firmware: it is loaded from cdnjs, else from LittleFS /edit/ace.js (as FSBrowser),
-// else a plain textarea is used (e.g. in failsafe AP mode without internet).
+// The editor (ACE or a textarea) comes from codeEditor.js.
 
 (() => {
-  const el = (id) => document.getElementById(id);
   const q = encodeURIComponent;
 
-  const ACE_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/';
-  const ACE_LOCAL = '/edit/';
   const DEFAULT_FS = 'littlefs';
   const FS_LABELS = { littlefs: 'flash (littlefs)', sd: 'SD card' };
   const IMAGE_EXT = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp', 'svg'];
@@ -33,7 +29,6 @@
   let open = null;         // { path: location, kind: 'text'|'image'|'binary' }
   let dirty = false;
   let editor = null;       // { get, set(text, mode), resize, focus }
-  let loadingText = false; // set() fires change events, they must not mark the file dirty
 
   // ── locations "fs:/path" ──
   function split(loc) {
@@ -79,57 +74,8 @@
   /** body as application/octet-stream, so no server tries to parse it as a form */
   const asBinary = (data) => new Blob([data], { type: 'application/octet-stream' });
 
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const s = newEl('script', { src, onload: resolve, onerror: () => { s.remove(); reject(new Error('could not load ' + src)); } });
-      document.head.append(s);
-    });
-  }
-
-  // ── editor: ACE or textarea ──
-  async function createEditor() {
-    const host = el('fsb-editor');
-    let base = null;
-    for (const b of [ACE_CDN, ACE_LOCAL]) {
-      try { await loadScript(b + 'ace.js'); base = b; break; } catch (e) { /* next */ }
-    }
-    if (base && window.ace) {
-      ace.config.set('basePath', base);
-      const ed = ace.edit(host);
-      ed.setOptions({ fontSize: '13px', showPrintMargin: false, tabSize: 2, useSoftTabs: true });
-      const applyTheme = () => ed.setTheme(document.body.classList.contains('dark') ? 'ace/theme/tomorrow_night' : 'ace/theme/chrome');
-      applyTheme();
-      new MutationObserver(applyTheme).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-      ed.commands.addCommand({ name: 'save', bindKey: { win: 'Ctrl-S', mac: 'Command-S' }, exec: () => save() });
-      ed.on('change', onEdit);
-      el('fsb-editor-kind').textContent = 'ACE ' + (base === ACE_CDN ? '(cdnjs)' : '(LittleFS /edit/)');
-      return {
-        get: () => ed.getValue(),
-        set: (text, mode) => {
-          ed.session.setMode('ace/mode/' + mode);
-          ed.setValue(text, -1);
-          ed.session.getUndoManager().reset();
-        },
-        resize: () => ed.resize(),
-        focus: () => ed.focus(),
-      };
-    }
-    // no ACE: plain textarea
-    const ta = newEl('textarea', { id: 'fsb-textarea', spellcheck: 'false', oninput: onEdit, onkeydown: (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); }
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end');
-        onEdit();
-      }
-    } });
-    host.append(ta);
-    el('fsb-editor-kind').textContent = 'plain editor (ACE could not be loaded)';
-    return { get: () => ta.value, set: (text) => { ta.value = text; }, resize: () => {}, focus: () => ta.focus() };
-  }
-
   function onEdit() {
-    if (loadingText || dirty || !open) return;
+    if (dirty || !open) return;
     dirty = true;
     updateFileBar();
   }
@@ -344,9 +290,7 @@
     if (text !== null) {
       open = { path: l, kind: 'text' };
       dirty = false;
-      loadingText = true;
       editor.set(text, MODES[ext] || 'text');
-      loadingText = false;
       showPane('text');
       editor.focus();
     } else {
@@ -749,7 +693,8 @@
     setCurDir(curDir);
     showPane('none');
     updateFileBar();
-    editor = await createEditor();
+    editor = await CodeEditor.create(el('fsb-editor'), { onChange: onEdit, onSave: save }); // codeEditor.js
+    el('fsb-editor-kind').textContent = editor.kind;
     await reloadTree();
     openFromHash();
   })();

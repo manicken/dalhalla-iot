@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/modal.css">
 <link rel="stylesheet" href="css/files.css">
 <link rel="stylesheet" href="css/config.css">
+<link rel="stylesheet" href="css/scripts.css">
 </head>
 <body class="light">
 
@@ -19,6 +20,7 @@
       <a href="#console" data-tab="console">Console</a>
       <a href="#files" data-tab="files">Files</a>
       <a href="#config" data-tab="config">Config</a>
+      <a href="#scripts" data-tab="scripts">Scripts</a>
     </nav>
     <button id="theme-toggle" onclick="toggleTheme()">🌙 dark</button>
   </div>
@@ -155,7 +157,45 @@
   <datalist id="cfg-uidpaths"></datalist>
 </div>
 
+<!-- ── Tab: Scripts, the script editor (scripts.js is loaded when the tab is first shown) ── -->
+<div id="tab-scripts" class="tab-page" hidden>
+  <div id="scr-header">
+    <div class="btn-row">
+      <button class="cmd-btn" id="scr-new" title="new script file in /scripts">+ new</button>
+      <button class="cmd-btn" id="scr-rename">✎ rename</button>
+      <button class="cmd-btn danger" id="scr-delete">🗑 delete</button>
+    </div>
+    <span id="scr-devcount"></span>
+    <button class="cmd-btn" id="scr-reload" title="load all active scripts (list.txt) on the device">⟳ reload scripts</button>
+  </div>
+  <div id="scr-main">
+    <div id="scr-side">
+      <div id="scr-side-head">/scripts <span title="checked = active, listed in list.txt">(☑ = active)</span></div>
+      <div id="scr-files"></div>
+      <div id="scr-missing"></div>
+    </div>
+    <div id="scr-right">
+      <div id="scr-filebar">
+        <span id="scr-path"></span>
+        <span id="scr-check"></span>
+        <div class="btn-row">
+          <button class="cmd-btn" id="scr-validate" title="let the device check the script (saves it first)">✓ check</button>
+          <button class="cmd-btn" id="scr-save" title="save and check on the device (Ctrl+S)">save</button>
+        </div>
+      </div>
+      <div id="scr-editor"></div>
+      <div id="scr-empty-editor">select a script on the left, or create one with + new.<br><br>
+        Autocomplete: device uid paths, <code>uid#</code> for values and functions, <code>uid@</code> for events,
+        triggers after <code>on</code>, snippets for <code>on … endon</code> and <code>if … endif</code>.</div>
+      <div id="scr-problems" hidden></div>
+    </div>
+  </div>
+  <div id="scr-footer"><span id="scr-msg"></span><span id="scr-editor-kind"></span></div>
+</div>
+
 <script src="domHelpers.js"></script>
+<script src="codeEditor.js"></script>
+<script src="scriptTools.js"></script>
 <script src="main.js"></script>
 <script src="log-helpers.js"></script>
 <script src="autocomplete.js"></script>

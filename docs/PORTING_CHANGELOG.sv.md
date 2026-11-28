@@ -39,6 +39,46 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
 
 ## 2026-11-28
 
+### Tillagt
+- Scripts-flik (`scripts.js`, `css/scripts.css`): en skripteditor.
+  - Skriptfilerna i `/scripts` med en kryssruta "aktiv" som ändrar `list.txt` varsamt: dess kommentarer och ordning
+    behålls, ett avstängt skript kommenteras ut (`//script2.txt`), att slå på det igen tar bort kommentaren.
+  - ACE med färgmarkering för skriptspråket (on/then/do/endon, if/elseif/else/endif, and/or, eachloop, tal, hex,
+    kommentarer, uid-sökvägar, `#namn`, `@Event`) och indrag efter then/do.
+  - Autokomplettering från den körande enheten (cfg.json + `hal/meta/reg/functions` och `events`): uid-sökvägar
+    (`temps:a:b`), `uid#` ger typens namngivna värden och funktioner (`neo#color`, `birel#set()`), `uid@` dess events,
+    efter `on` triggers (`eachloop`, `i2c:pcf2@Interrupt` ...), mallar för on/endon och if/endif.
+  - Kontroller medan man skriver (varningar): uid som inte finns i konfigurationen, okända `#namn` och `@events` (bara där
+    registret beskriver typen; t.ex. enheterna i en 1-wire-grupp beskrivs inte, så de kontrolleras inte).
+  - Spara (Ctrl+S) låter enheten kontrollera filen (`hal/scripts/validate`), dess fel med radnummer markeras i editorn
+    och listas under den. "reload scripts" laddar de aktiva skripten (`hal/scripts/reload`).
+- Firmware: `hal/scripts/validate/<fil>` (`ScriptEngine::ValidateScriptFile`): parsar bara en skriptfil i `/scripts`,
+  felen hamnar i loggen; de laddade skripten och deras körläge påverkas inte.
+- Firmware: `hal/scripts/check/<namn>/<skripttext>` (`ScriptEngine::ValidateScriptText`): kontrollerar ett skript som
+  skickas med kommandot, i RAM, inget skrivs till flash (inget slitage, snabbare); felen har rad/kolumn i texten.
+  Parsern är delad för det: `Parser::ParseScriptText(text, namn, callback)` gör jobbet, `ReadAndParseScriptFile`
+  läser bara filen och anropar den (laddning av skript fungerar som förut).
+  Scripts-fliken använder det vid sparande (aktiva skript) och för check-knappen, så editorns text kontrolleras som den är.
+  Båda kontrollkommandona svarar success även när skriptet inte är giltigt (svaret säger det), eftersom ett misslyckat
+  kommando skulle eka hela kommandot, här skriptet, som ett extra fel.
+- Arduino WebSocket-API: ett meddelande som kommer i delar (större än ett TCP-paket, t.ex. ett skript till
+  hal/scripts/check) sätts ihop per klient (max 16 kB, som ESP-IDF-versionen); förut kastades det med
+  "WS EVT_DATA rx error". Testat med ett skript på 12 kB: kontrollerat, felrad 172 rapporterad rätt.
+- `codeEditor.js`: ACE-/textrute-editorn delas av Files- och Scripts-flikarna (låg i files.js); `loadScript()` flyttad till
+  `domHelpers.js`.
+
+- Skript och konfiguration hålls i takt (firmwaren laddar om skripten efter varje konfigurationsladdning, och ett
+  skript som använder en saknad enhet stoppar alla skript):
+  - Scripts-fliken: ett aktivt skript är alltid giltigt. Att spara det vägras när det använder en enhet som saknas
+    eller är avstängd i konfigurationen (kontrolleras direkt), eller när enheten inte godkänner det (texten
+    kontrolleras först i RAM, se hal/scripts/check, filen skrivs bara när den är giltig). Ett skript aktiveras bara
+    när det är giltigt. Inaktiva skript är utkast: sparas, med felen visade. Saknade/avstängda enheter är fel i editorn.
+  - Config-fliken: läser skripten och kontrollerar dem mot konfigurationen medan man redigerar (`scriptTools.js`, delad
+    med Scripts-fliken): "active script script1.txt line 3 uses "var1", which is disabled"; klick öppnar skriptet.
+    Save och apply vägras så länge ett aktivt skript använder en enhet som konfigurationen inte skapar.
+    Inaktiva skript ger varningar. Byta namn på en enhet som ett skript använder: gör skriptet inaktivt, ändra
+    konfigurationen, rätta skriptet, aktivera det igen.
+
 ### Ändrat
 - Config-fliken: enhetsträdet har hopfällbara noder (▸/▾, dubbelklick fäller också), hopfällda från start så bara
   rotenheterna syns; antal och problemprickar syns även på hopfällda noder. När något väljs någon annanstans ifrån
@@ -51,6 +91,11 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
   (kodfilerna krymper med ca 660 byte, domHelpers.js lägger till 181); framför allt blir koden kortare och lättare att läsa.
   Kontrollerat i en riktig webbläsare på esp32dev: konsolens knappar/förslag/logg, WiFi-dialogen, filträd/meny/editor, config-fliken.
 - Config-fliken: problemlistan visar fel före varningar.
+- Config-fliken: cfg.json skrivs som en handskriven: en enhet är kompakt JSON på en rad, men dess arrayer med
+  underenheter (items, units ...) expanderas, en per rad, indenterade efter djup, `]}` på egen rad.
+  Övriga värden (objekt, arrayer med värden) förblir inline. Ca 6 % större än en rotenhet per rad.
+- Frontend: `el(id)` (getElementById) ligger i `domHelpers.js` och används överallt; config.js använder inte längre `$`
+  för det (det såg ut som jQuery, som inte används), files.js tappade sin egen kopia.
 - `tools/gen_frontend.py` minifierar JS, CSS och HTML före gzip: kommentarer, indentering och avslutande mellanslag bort.
   Varje rad behåller sitt radnummer (en kommentar eller tom rad blir en tom rad), så ett fel på rad N i webbläsarens
   dev tools finns på rad N i källfilen; det kostar ca 300 byte efter gzip.
@@ -58,6 +103,11 @@ Den här filen listar vad som gjorts, ett kapitel per dag, senaste först.
   tas inte för en kommentar. Inget nytt beroende. Inbäddad frontend: 51960 -> 41870 byte (-19 %). Kontrollerat: varje
   JS-fil har identiskt syntaxträd före/efter (TypeScripts parser) med varje nod på samma rad, och hela gränssnittet fungerar på esp32dev.
   `DALHAL_FRONTEND_MINIFY=0` behåller filerna som de är.
+
+### Rättat
+- `hal/scripts/reload` svarade `"info":"ok"` utan `{}` (inte giltig JSON), nu ett JSON-objekt.
+- Upptäckt, inte ändrat: en misslyckad `hal/scripts/reload` lämnar skripten stoppade (`ScriptBlocks::running = false`
+  före valideringen), Scripts-fliken säger det.
 
 ## 2026-11-27
 

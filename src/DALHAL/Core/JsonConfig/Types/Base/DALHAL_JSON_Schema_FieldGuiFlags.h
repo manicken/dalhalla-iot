@@ -43,6 +43,7 @@ namespace DALHAL {
             static const FieldGuiFlagsType DisableByDefault       = 1 << 2;
             static const FieldGuiFlagsType ReadOnly               = 1 << 3;
             static const FieldGuiFlagsType HideLabel              = 1 << 4;
+            static const FieldGuiFlagsType Secret                 = 1 << 5;
 
             static bool HaveAny(FieldGuiFlagsType flags);
             static bool HaveAnyNotIncludingInline(FieldGuiFlagsType flags);

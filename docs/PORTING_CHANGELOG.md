@@ -39,6 +39,46 @@ This file lists what has been done, one chapter per day, newest first.
 
 ## 2026-11-28
 
+### Added
+- Scripts tab (`scripts.js`, `css/scripts.css`): a script editor.
+  - The script files in `/scripts` with an "active" check box that edits `list.txt` with care: its comments and
+    order stay, a switched off script is commented out (`//script2.txt`), switching it on again removes the comment.
+  - ACE with highlighting for the script language (on/then/do/endon, if/elseif/else/endif, and/or, eachloop,
+    numbers, hex, comments, uid paths, `#name`, `@Event`) and indenting after then/do.
+  - Autocomplete from the running device (cfg.json + `hal/meta/reg/functions` and `events`): uid paths (`temps:a:b`),
+    `uid#` gives the named values and functions of its type (`neo#color`, `birel#set()`), `uid@` its events,
+    after `on` the triggers (`eachloop`, `i2c:pcf2@Interrupt` ...), snippets for on/endon and if/endif.
+  - Checks while typing (warnings): uids that are not in the config, unknown `#names` and `@events` (only where the
+    registry describes the type; e.g. the devices of a 1-wire group are not described, so they are not checked).
+  - Save (Ctrl+S) lets the device check the file (`hal/scripts/validate`), its errors with line numbers are marked in
+    the editor and listed below it. "reload scripts" loads the active scripts (`hal/scripts/reload`).
+- Firmware: `hal/scripts/validate/<file>` (`ScriptEngine::ValidateScriptFile`): only parses one script file of
+  `/scripts`, the errors go to the log; the loaded scripts and their running state are not touched.
+- Firmware: `hal/scripts/check/<name>/<script text>` (`ScriptEngine::ValidateScriptText`): checks a script that is
+  sent with the command, in RAM, nothing is written to the flash (no wear, faster); the errors have the line/col of
+  the text. The parser is split for it: `Parser::ParseScriptText(text, name, callback)` does the work,
+  `ReadAndParseScriptFile` only loads the file and calls it (loading scripts works as before).
+  The Scripts tab uses it for save (active scripts) and the check button, so the editor text is checked as it is.
+  Both check commands answer success also when the script is not valid (the answer says it), as a failing command
+  would echo the whole command, here the script, as an extra error.
+- Arduino WebSocket API: a message that arrives in parts (bigger than one TCP packet, e.g. a script for
+  hal/scripts/check) is put together per client (max 16 kB, as the ESP-IDF version); before, it was dropped with
+  "WS EVT_DATA rx error". Tested with a 12 kB script: checked, error line 172 reported right.
+- `codeEditor.js`: the ACE / textarea editor is shared by the Files and Scripts tabs (was inside files.js);
+  `loadScript()` moved to `domHelpers.js`.
+
+- Scripts and config stay consistent (the firmware loads the scripts again after every config load, and one
+  script that uses a missing device stops all scripts):
+  - Scripts tab: an active script is always valid. Saving it is refused when it uses a device that is missing or
+    disabled in the config (checked at once), or when the device does not accept it (the text is checked in RAM
+    first, see hal/scripts/check, the file is only written when it is valid). A script is only activated when it is valid.
+    Inactive scripts are drafts: saved, with their errors shown. Missing/disabled devices are errors in the editor.
+  - Config tab: reads the scripts and checks them against the config while editing (`scriptTools.js`, shared with
+    the Scripts tab): "active script script1.txt line 3 uses "var1", which is disabled"; clicking it opens the script.
+    Save and apply are refused while an active script uses a device that the config does not create.
+    Inactive scripts give warnings. Renaming a device that a script uses: make the script inactive, change the
+    config, fix the script, activate it again.
+
 ### Changed
 - Config tab: the device tree has collapsible nodes (▸/▾, double click also toggles), collapsed at start so only the
   root devices show; child count and problem dots stay visible on collapsed nodes. Selecting an item from elsewhere
@@ -51,6 +91,11 @@ This file lists what has been done, one chapter per day, newest first.
   (the code files shrink by about 660 bytes, domHelpers.js adds 181); mainly it is shorter and easier to read.
   Checked in a real browser on esp32dev: console buttons/suggestions/log, WiFi dialog, files tree/menu/editor, config tab.
 - Config tab: the problem list shows errors before warnings.
+- Config tab: cfg.json is written as a hand written one: a device is compact JSON on one line, but its arrays of
+  child items (items, units ...) are expanded, one child per line, indented by depth, `]}` on its own line.
+  Other values (objects, arrays of values) stay inline. About 6 % bigger than one root device per line.
+- Frontend: `el(id)` (getElementById) is in `domHelpers.js` and used everywhere; config.js no longer uses `$`
+  for it (it looked like jQuery, which is not used), files.js lost its own copy.
 - `tools/gen_frontend.py` minifies JS, CSS and HTML before gzip: comments, indentation and trailing spaces out.
   Every line keeps its line number (a comment or empty line becomes an empty line), so an error at line N in the
   browser dev tools is at line N in the source file; that costs about 300 bytes after gzip.
@@ -58,6 +103,11 @@ This file lists what has been done, one chapter per day, newest first.
   is not a comment. No new dependency. Embedded frontend: 51960 -> 41870 bytes (-19 %). Checked: every JS file has
   an identical syntax tree before/after (TypeScript parser) with every node on the same line, and the whole UI works on esp32dev.
   `DALHAL_FRONTEND_MINIFY=0` keeps the files as they are.
+
+### Fixed
+- `hal/scripts/reload` answered `"info":"ok"` without `{}` (not valid JSON), now a JSON object.
+- Noticed, not changed: a failing `hal/scripts/reload` leaves the scripts stopped (`ScriptBlocks::running = false`
+  before the validation), the Scripts tab says so.
 
 ## 2026-11-27
 

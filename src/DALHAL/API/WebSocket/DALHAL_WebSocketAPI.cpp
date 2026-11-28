@@ -33,6 +33,11 @@
 #endif
 
 #include <DALHAL/API/DALHAL_CommandExecutor.h>
+#include <map>
+#include <string>
+
+// longest WebSocket text message accepted (a command line, a script sent to hal/scripts/check), as the ESP-IDF version
+#define DALHAL_WS_MAX_MESSAGE_LENGTH (16 * 1024)
 
 #include <DALHAL/Support/DALHAL_Logger.h>
 
@@ -48,6 +53,9 @@
 #include <System/HttpServer.h>
 
 namespace DALHAL {
+
+    /** the parts of a message that is bigger than one TCP packet, per client, until it is complete */
+    static std::map<uint32_t, std::string> rxParts;
 
     AsyncWebServer* WebSocketAPI::asyncWebserver = nullptr;
     AsyncWebSocket* WebSocketAPI::asyncWebSocket = nullptr;
@@ -77,26 +85,38 @@ namespace DALHAL {
             Serial.print(F("WS client #"));
             Serial.print(client->id());
             Serial.print(F(" disconnected"));
+            rxParts.erase(client->id());
             
             break;
 
         case WS_EVT_DATA: {
             AwsFrameInfo *info = (AwsFrameInfo*)arg;
 
-            if (!info->final || info->index != 0 || info->len != len) {
-                Serial.println(F("WS EVT_DATA rx error"));
-                return;
+            std::string cmd;
+            if (info->final && info->index == 0 && info->len == len) {
+                if (info->opcode != WS_TEXT) {
+                    Serial.println(F("info->opcode != WS_TEXT"));
+                    return;
+                }
+                cmd.assign((char*)data, len); // the usual case: the whole message at once
+            } else {
+                // a bigger message comes in parts (info->index = offset in the frame, info->len = frame length)
+                std::string& part = rxParts[client->id()];
+                if (info->index == 0 && info->num == 0) part.clear();
+                if (part.size() + len > DALHAL_WS_MAX_MESSAGE_LENGTH) {
+                    Serial.println(F("WS message too long, ignored"));
+                    rxParts.erase(client->id());
+                    return;
+                }
+                part.append((char*)data, len);
+                if (info->index + len < info->len || !info->final) return; // more to come
+                cmd = std::move(part);
+                rxParts.erase(client->id());
             }
-            if (info->opcode != WS_TEXT) {
-                Serial.println(F("info->opcode != WS_TEXT"));
-                return;
-            }
-
-            std::string cmd((char*)data, len);
             //Serial.printf("WS RX: %s\n", cmd.c_str());
 #if defined(DALHAL_SYSTEM_H_)
             // absolute failsafe command as WS run througth AsyncWebServer and runs in the BG it's mostly allways available
-            ZeroCopyString zcCmd((char*)data, len);
+            ZeroCopyString zcCmd(cmd.c_str());
             
             if (zcCmd.EqualsIC(F("system/EnterRecoveryMode"))) {
                 System::EnterRecoveryMode();

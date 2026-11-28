@@ -188,6 +188,8 @@ namespace DALHAL {
     HALOperationResult Exec_Hal_Config_Unload(ZeroCopyString& zcStr, CommandCallback cb);
 
     HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_Scripts_Validate(ZeroCopyString& zcStr, CommandCallback cb);
+    HALOperationResult Exec_Hal_Scripts_Check(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Scripts_Unload(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Scripts_Stop(ZeroCopyString& zcStr, CommandCallback cb);
     HALOperationResult Exec_Hal_Scripts_Start(ZeroCopyString& zcStr, CommandCallback cb);
@@ -219,6 +221,8 @@ namespace DALHAL {
 
     static constexpr CommandNode HalScriptItems[] = {
         DALHAL_CMD_EXEC_ENTRY_WFLAG("reload", Exec_Hal_Scripts_Reload, CommandNode::Flags::AUTOGEN_BUTTON, "scripts reload"),
+        DALHAL_CMD_EXEC_ENTRY("validate", Exec_Hal_Scripts_Validate, "validate one script file of the scripts folder without loading it: hal/scripts/validate/<file>, the errors are in the log"),
+        DALHAL_CMD_EXEC_ENTRY("check", Exec_Hal_Scripts_Check, "validate a script text without a file: hal/scripts/check/<name>/<script text>, the errors (with line/col of the text) are in the log"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("unload", Exec_Hal_Scripts_Unload, CommandNode::Flags::AUTOGEN_BUTTON, "hal script unload, can be used to provide a clean slate before loading new script"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("stop", Exec_Hal_Scripts_Stop, CommandNode::Flags::AUTOGEN_BUTTON, "scripts stop/pause execution"),
         DALHAL_CMD_EXEC_ENTRY_WFLAG("start", Exec_Hal_Scripts_Start, CommandNode::Flags::AUTOGEN_BUTTON, "scripts start/resume execution"),
@@ -961,12 +965,45 @@ namespace DALHAL {
 
     HALOperationResult Exec_Hal_Scripts_Reload(ZeroCopyString& zcStr, CommandCallback cb) {
         BlockStreamer bs(cb, "hal/scripts/reload", BlockStreamer::DataType::Json);
-        if (ScriptEngine::ValidateAndLoadAllActiveScripts()) {
-            bs.writer().write_jsonString(F("info"), F("ok"));
-            return HALOperationResult::Success;
-        }
-        bs.writer().write_jsonString(F("error"), F("could not ValidateAndLoadAllActiveScripts"));
-        return HALOperationResult::ExecutionFailed;
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        bool ok = ScriptEngine::ValidateAndLoadAllActiveScripts();
+        if (ok) sbs.write_jsonString(F("info"), F("ok"));
+        else sbs.write_jsonString(F("error"), F("could not ValidateAndLoadAllActiveScripts"));
+        sbs.write_json_object_end();
+        return ok ? HALOperationResult::Success : HALOperationResult::ExecutionFailed;
+    }
+
+    HALOperationResult Exec_Hal_Scripts_Validate(ZeroCopyString& zcStr, CommandCallback cb) {
+        std::string fileName = zcStr.SplitOffHead('/').ToString();
+        BlockStreamer bs(cb, "hal/scripts/validate", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        bool ok = ScriptEngine::ValidateScriptFile(fileName.c_str());
+        if (ok) sbs.write_jsonString(F("info"), F("ok"));
+        else sbs.write_jsonString(F("error"), F("the script is not valid, see the log"));
+        sbs.write_json_object_end();
+        return HALOperationResult::Success; // the check was done, the answer says if the script is valid
+    }
+
+    HALOperationResult Exec_Hal_Scripts_Check(ZeroCopyString& zcStr, CommandCallback cb) {
+        std::string name = zcStr.SplitOffHead('/').ToString();
+        // a copy of the text: the tokenizer changes it in place, and the command string is not ours
+        size_t length = zcStr.Length();
+        char* text = new char[length + 1];
+        if (length) memcpy(text, zcStr.start, length);
+        text[length] = '\0';
+        bool ok = ScriptEngine::ValidateScriptText(text, name.c_str());
+        delete[] text;
+
+        BlockStreamer bs(cb, "hal/scripts/check", BlockStreamer::DataType::Json);
+        StringBuilderStreamer& sbs = bs.writer();
+        sbs.write_json_object_begin();
+        if (ok) sbs.write_jsonString(F("info"), F("ok"));
+        else sbs.write_jsonString(F("error"), F("the script is not valid, see the log"));
+        sbs.write_json_object_end();
+        // Success also when it is not valid: a failing command would echo the whole command (the script) as an error
+        return HALOperationResult::Success;
     }
 
     HALOperationResult Exec_Hal_Scripts_Unload(ZeroCopyString& zcStr, CommandCallback cb) {

@@ -37,6 +37,12 @@ namespace DALHAL {
              * if the callback is not set (nullptr) then it's validate only
              */
             bool ReadAndParseScriptFile(const char* filePath, bool (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
+            /**
+             * the same for a script that is already in RAM (ReadAndParseScriptFile only loads the file and calls this);
+             * text is tokenized in place (changed), it must stay valid while the callback runs,
+             * name is used in the messages (e.g. the file name)
+             */
+            bool ParseScriptText(char* text, const char* name, bool (*parsedOKcallback)(ScriptTokens& tokens) = nullptr);
             
         }
     }

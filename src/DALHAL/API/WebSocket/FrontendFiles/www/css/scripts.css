@@ -1,0 +1,49 @@
+/* ── Scripts tab: file list left, editor right (same look as the Files tab) ── */
+#scr-header {
+  flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+  padding: 6px 12px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
+}
+#scr-devcount { font-size: 11px; color: var(--fg-subtle); margin-left: auto; }
+#scr-main { flex: 1 1 0; display: flex; min-height: 0; }
+#scr-side { flex: 0 0 240px; display: flex; flex-direction: column; background: var(--bg-panel); border-right: 1px solid var(--border); }
+#scr-side-head { padding: 6px 10px; font-size: 11px; color: var(--fg-subtle); border-bottom: 1px solid var(--border-dim); }
+#scr-files { flex: 1 1 0; overflow: auto; padding: 4px 0; }
+.scr-file { display: flex; align-items: center; gap: 6px; padding: 3px 10px; cursor: pointer; white-space: nowrap; }
+.scr-file:hover { background: var(--bg-sug-hover); }
+.scr-file.open { background: var(--bg-sug-hover); font-weight: bold; }
+.scr-file.inactive .scr-name { color: var(--fg-subtle); }
+.scr-name { overflow: hidden; text-overflow: ellipsis; }
+.scr-dirty { color: var(--c-red); }
+.scr-empty, #scr-missing { padding: 8px 10px; font-size: 11px; color: var(--fg-subtle); font-style: italic; }
+#scr-missing:empty { display: none; }
+#scr-missing { color: var(--c-red); }
+
+#scr-right { flex: 1 1 0; display: flex; flex-direction: column; min-width: 0; }
+#scr-filebar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 4px 12px;
+  background: var(--bg-input); border-bottom: 1px solid var(--border);
+}
+#scr-path { color: var(--c-green); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#scr-check { font-size: 11px; margin-right: auto; }
+#scr-check.ok { color: var(--c-green); }
+#scr-check.err { color: var(--c-red); }
+#scr-editor { flex: 1 1 0; position: relative; min-height: 0; }
+#scr-editor[hidden], #scr-empty-editor[hidden], #scr-problems[hidden] { display: none; }
+#scr-editor .code-textarea {
+  position: absolute; inset: 0; width: 100%; height: 100%; resize: none; border: none; outline: none;
+  padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 13px;
+  background: var(--bg-panel); color: var(--fg); tab-size: 2; white-space: pre;
+}
+#scr-empty-editor { flex: 1 1 0; padding: 24px; color: var(--fg-subtle); background: var(--bg-panel); line-height: 1.6; }
+#scr-empty-editor code { color: var(--c-blue); }
+#scr-problems { flex: 0 0 auto; max-height: 28%; overflow: auto; border-top: 1px solid var(--border); background: var(--bg-panel); font-size: 12px; }
+.scr-prob { padding: 3px 12px; cursor: pointer; border-left: 3px solid transparent; }
+.scr-prob:hover { background: var(--bg-sug-hover); }
+.scr-prob.err { border-left-color: var(--c-red); }
+.scr-prob.warn { border-left-color: #d97706; }
+.scr-prob-where { color: var(--c-blue); }
+#scr-footer {
+  flex: 0 0 auto; display: flex; justify-content: space-between; gap: 12px; padding: 3px 12px;
+  font-size: 11px; background: var(--bg-input); border-top: 1px solid var(--border); color: var(--fg-subtle);
+}
+#scr-msg.err { color: var(--c-red); }

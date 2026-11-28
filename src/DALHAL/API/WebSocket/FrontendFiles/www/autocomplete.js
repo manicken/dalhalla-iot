@@ -2,9 +2,9 @@
 // ── Command tree ──────────────────────────────────────────────────────────────
 var helpTree = {};
 
-const input   = document.getElementById('cmd-input');
-const sugBox  = document.getElementById('suggestions');
-const termOut = document.getElementById('autocomplete-output');
+const input   = el('cmd-input');
+const sugBox  = el('suggestions');
+const termOut = el('autocomplete-output');
 let activeIdx = -1, currentSugs = [], history = [], histIdx = -1;
 
 function termPrintLine(text, cls) {

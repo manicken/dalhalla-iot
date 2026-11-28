@@ -3,7 +3,7 @@ let isDark = false;
 function toggleTheme() {
   isDark = !isDark;
   document.body.className = isDark ? 'dark' : 'light';
-  document.getElementById('theme-toggle').textContent = isDark ? '☀️ light' : '🌙 dark';
+  el('theme-toggle').textContent = isDark ? '☀️ light' : '🌙 dark';
 }
 
 // ── WebSocket ─────────────────────────────────────────────────────────────────
@@ -46,9 +46,9 @@ function wsDeliver(match, settle) {
 const location_host = location.host;
 
 function setWsStatus(connected, text) {
-  const dot = document.getElementById('ws-indicator');
+  const dot = el('ws-indicator');
   dot.className = connected ? 'connected' : 'disconnected';
-  document.getElementById('ws-status').textContent = text;
+  el('ws-status').textContent = text;
 }
 
 function connect() {
@@ -81,7 +81,7 @@ function connect() {
               if (jsonData.tag == 'help') {
                 helpTree = JSON.parse(text); // create copy
 
-                renderAutoButtons(helpTree, document.getElementById('btn-container'), wsSend);
+                renderAutoButtons(helpTree, el('btn-container'), wsSend);
               } else {
                 for (let i=0;i<customParsers.length;i++) {
                    if (customParsers[i](jsonData.tag, text)) {
@@ -165,7 +165,7 @@ function renderAutoButtons(tree, container, wsSend) {
   }
 }
 
-const ext_toolbar = document.getElementById("extensions_toolbar");
+const ext_toolbar = el("extensions_toolbar");
 
 function registerToolbarButton(text, onclick, id = "") {
     const btn = newEl('button', { text, id: id || null, onclick });

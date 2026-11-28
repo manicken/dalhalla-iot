@@ -155,34 +155,24 @@ namespace DALHAL {
                 return anyError == false;
             }
 
-            bool ReadAndParseScriptFile(const char* filePath, bool (*parsedOKcallback)(ScriptTokens& tokens)) {
-                char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
-                MEASURE_TIME(DALHAL::ToStdString(F("ReadAndParseScriptFile - load_text_file time: ")).c_str(),
-                LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
-                if (fileResult != LittleFS_ext::FileResult::Success) {
-                    ReportInfo(DALHAL::ToStdString(F("Error: file could not be read/or is empty\n")));
-                    return false;
-                }
-                );
-
+            bool ParseScriptText(char* text, const char* name, bool (*parsedOKcallback)(ScriptTokens& tokens)) {
                 int tokenCount = 0;
             //MEASURE_TIME("CountTokens time: ",
-                tokenCount = ParseAndTokenize<ScriptToken>(fileContents, nullptr, -1); // count in the same function
+                tokenCount = ParseAndTokenize<ScriptToken>(text, nullptr, -1); // count in the same function
             //);
                 ReportInfo(DALHAL::ToStdString(F("Token count: ")).c_str() + std::to_string(tokenCount) + "\n");
                 ScriptTokens tokens(tokenCount);
                 
                 //MEASURE_TIME("Tokenize time: ",
-                if (ParseAndTokenize(fileContents, tokens.items, tokenCount) == -1)
+                if (ParseAndTokenize(text, tokens.items, tokenCount) == -1)
                 {
                     ReportInfo(DALHAL::ToStdString(F("Error: could not Tokenize\n")));
-                    delete[] fileContents;
                     return false;
                 }
                 //);
                 bool anyError = false;
                 MEASURE_TIME(DALHAL::ToStdString(F("ValidateParseScript time: ")).c_str(),
-                if (ValidateParseScript(tokens, parsedOKcallback==nullptr, filePath)) {
+                if (ValidateParseScript(tokens, parsedOKcallback==nullptr, name)) {
                     ReportInfo(DALHAL::ToStdString(F("ParseScript [OK]\n")));
                     
                     if (parsedOKcallback) {
@@ -197,9 +187,22 @@ namespace DALHAL {
                     anyError = true;
                 }
                 );
-                // dont forget to free/delete
-                delete[] fileContents;
                 return anyError == false;
+            }
+
+            bool ReadAndParseScriptFile(const char* filePath, bool (*parsedOKcallback)(ScriptTokens& tokens)) {
+                char* fileContents = nullptr;// = ReadFileToMutableBuffer(filePath, fileSize);
+                MEASURE_TIME(DALHAL::ToStdString(F("ReadAndParseScriptFile - load_text_file time: ")).c_str(),
+                LittleFS_ext::FileResult fileResult = LittleFS_ext::load_text_file(filePath, &fileContents);
+                if (fileResult != LittleFS_ext::FileResult::Success) {
+                    ReportInfo(DALHAL::ToStdString(F("Error: file could not be read/or is empty\n")));
+                    return false;
+                }
+                );
+                bool ok = ParseScriptText(fileContents, filePath, parsedOKcallback);
+                // dont forget to free/delete (after the callback, the loaded script refers to the text while it loads)
+                delete[] fileContents;
+                return ok;
             }
         }
     }

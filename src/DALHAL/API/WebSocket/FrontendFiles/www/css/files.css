@@ -83,7 +83,7 @@ button.cmd-btn:disabled { opacity: 0.4; cursor: default; }
 #fsb-path { color: var(--c-green); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #fsb-editor { flex: 1 1 0; position: relative; min-height: 0; }
 #fsb-editor[hidden], #fsb-preview[hidden] { display: none; }
-#fsb-textarea {
+#fsb-editor .code-textarea {
   position: absolute;
   inset: 0;
   width: 100%;

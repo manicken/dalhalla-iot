@@ -37,6 +37,7 @@
 #include <DALHAL/Support/DALHAL_Logger.h>
 
 #include <LittleFS.h>
+#include <cstring> // strchr, strstr
 
 #if defined(ESP32) || defined(ESP8266)
 #include <Support/LittleFS_ext.h>
@@ -65,6 +66,33 @@ namespace DALHAL {
                 //yield();
             }
             return true;
+        }
+
+        bool ValidateScriptFile(const char* fileName)
+        {
+            if (fileName == nullptr || *fileName == '\0' || strchr(fileName, '/') != nullptr || strstr(fileName, "..") != nullptr) {
+                GlobalLogger.Error(F("ValidateScriptFile - not a file name in the scripts folder"));
+                return false;
+            }
+            std::string path = DALHAL_SCRIPT_ENGINE_SCRIPTS_DIRECTORY;
+            path += fileName;
+            if (LittleFS.exists(path.c_str()) == false) {
+                GlobalLogger.Error(F("ValidateScriptFile - script file do not exist:"), path.c_str());
+                return false;
+            }
+            // validate only (no load callback): the stacks of the running scripts are not touched, it only
+            // raises the stack size counters, which the next ValidateAndLoadAllActiveScripts starts again from 0
+            return ScriptEngine::Parser::ReadAndParseScriptFile(path.c_str(), nullptr);
+        }
+
+        bool ValidateScriptText(char* text, const char* name)
+        {
+            if (text == nullptr || *text == '\0') {
+                GlobalLogger.Error(F("ValidateScriptText - the script is empty"));
+                return false;
+            }
+            // validate only, as ValidateScriptFile: the loaded scripts are not touched
+            return ScriptEngine::Parser::ParseScriptText(text, name, nullptr);
         }
 
         bool ValidateAndLoadAllActiveScripts()

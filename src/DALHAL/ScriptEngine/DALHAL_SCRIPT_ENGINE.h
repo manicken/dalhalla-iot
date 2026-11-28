@@ -35,6 +35,13 @@ namespace DALHAL {
          * and if all pass then it begins to load in the structures
          */
         bool ValidateAndLoadAllActiveScripts();
+        /** only parses one script file of the scripts folder (fileName without folder, e.g. "script1.txt"),
+         * the errors go to the log; the loaded scripts and their running state are not touched,
+         * so it can be used to check a script before it is activated (e.g. by the frontend script editor) */
+        bool ValidateScriptFile(const char* fileName);
+        /** the same for a script text in RAM (e.g. sent by the frontend before it is saved): nothing is written
+         * to the flash; text is changed (tokenized in place), name is only used in the messages */
+        bool ValidateScriptText(char* text, const char* name);
         
     }
 }
